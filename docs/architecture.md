@@ -25,17 +25,17 @@ and arenas matched to the lifetimes of TeX objects. Take checkpoints at quiescen
 boundaries where temporary execution state has already disappeared. Resume by
 restoring the persistent document state and entering the same outer driver loop.
 
-Choose the checkpoint boundary and the allocation lifetimes together. A boundary
-outside a paragraph at group level zero can make scanner scratch, paragraph
-working memory, and group-local work disappear before a snapshot is taken.
-That considerably reduces both snapshot size and the amount of machinery needed
-in the interpreter.
+The quiescence boundary is the end of a paragraph with no open groups. Paragraph
+working memory has been released and group-local bindings have been restored
+before a snapshot is taken. This keeps the execution model simple and reduces
+the state that checkpoints retain.
 
-Use a different storage strategy for each kind of data. Interned names can live
-for the process; paragraph scratch can be rewound after line breaking; definitions
-can occupy immutable session storage; small semantic tables can simply be copied.
-Checkpointing should fit those representations rather than impose a universal
-persistent heap.
+Execution proceeds linearly between checkpoints, making bump allocation a natural
+fit for much of the data created along the way. Storage choices follow each
+object's lifetime and mutability: process-lifetime interned names, rewindable
+scratch, immutable append storage, copied tables, copy-on-write data, and
+reference-counted heap objects can all coexist. The detailed mutable-storage
+design will choose the appropriate approach for each type.
 
 ## 3. System boundaries
 
@@ -69,8 +69,8 @@ See the [Rust target documentation](https://doc.rust-lang.org/stable/rustc/platf
 Scanning a number, matching macro arguments, expanding a command, constructing a
 paragraph, and running an output routine should primarily be Rust functions with
 local variables and ordinary calls. Their progress is encoded in the Rust stack.
-The outer interpreter loop regains control when an operation finishes and decides
-whether this is a checkpoint opportunity.
+The outer interpreter loop regains control when an operation finishes. At the
+end of a paragraph, it can take a checkpoint when no groups remain open.
 
 Keep persistent data where TeX itself needs it: current meanings, registers,
 source positions, saved values for groups, and unfinished page material. Token
@@ -103,7 +103,10 @@ execution path is working and measurable.
 
 The allocation architecture should make an object's intended lifetime natural:
 its owner chooses the storage at creation, and the end of that owner's work
-provides the reclamation point. The following are the main expected lifetimes.
+provides the reclamation point. Linear execution lets us allocate successive
+definitions, working data, and output into bump regions as they are produced.
+Objects with different lifetimes or mutation patterns can use different stores.
+The following are the main expected lifetimes.
 
 ### Process lifetime: identities and reusable immutable data
 
@@ -171,9 +174,10 @@ session workloads justify it.
 Boxes, marks, insertions, and unfinished page lists belong to stores organized
 around their semantic owners. A box register owns its box until replacement or
 transfer; page construction owns material until it is shipped or transferred;
-marks can remain useful on later pages. Typed pools or object arenas can support
-these transfers without an allocation for each node. Their snapshot behavior can
-be chosen separately from the immutable definition store.
+marks can remain useful on later pages. Much of this material can be bump-allocated
+as execution proceeds. Values that are mutated or shared across checkpoints may
+use copy-on-write storage, explicit copies, or reference-counted heap allocation
+for now. The mutable-storage deep dive will develop these choices by data type.
 
 ### Page and result lifetime: completed output
 
@@ -183,39 +187,33 @@ result and relevant checkpoints. The interpreter's page-building storage can the
 be recycled as that work completes. Saved boxes and other independently owned
 material continue in their own stores.
 
-These lifetimes suggest a small set of allocation primitives: append-only stores,
-rewindable scratch arenas, dense arrays, and pools for transferable objects.
+These lifetimes suggest a mix of allocation primitives: bump regions,
+rewindable scratch arenas, dense arrays, copy-on-write storage, and individually
+allocated shared objects where those are convenient.
 A custom arena layout or bump allocator may use unsafe code in a narrow primitive.
 Its documentation should explain why its allocation layout, references, and
 reclamation are valid, so callers can use a simple API with clear lifetimes.
 
 ## 6. Quiescent checkpoints
 
-Start by exploring a boundary at group level zero, outside a paragraph, after
-control has returned to the outer interpreter loop and active scanning,
-expansion, and output-routine calls have completed. File input positions and
-unfinished page material may still persist; temporary computation has ended.
-The exact boundary is a design choice to settle with representative TeX execution.
+Take checkpoints at the end of a paragraph with no open groups. Paragraph work
+has finished and group restoration is complete. File input positions and
+unfinished page material persist as ordinary document state.
 
-This boundary defines the checkpoint's contents. If group restoration is complete
-and paragraph working memory has been released, those stores are empty by
-construction. A checkpoint retains the document state that crosses the boundary,
-with each component using a suitable representation:
+This boundary defines the checkpoint's contents. Group-local restoration storage
+and paragraph working memory are empty by construction. Persistent data uses
+representations suited to its lifetime and mutability:
 
-| Kind of data                                     | Possible checkpoint representation                 |
-| ------------------------------------------------ | -------------------------------------------------- |
-| Process-owned identities and immutable resources | Shared directly; continue to exist across rollback |
-| Small scalar state and dense tables              | Copied at the boundary                             |
-| Immutable definitions and completed pages        | References into their existing stores              |
-| Larger, sparsely modified tables                 | Chunked copies or a compact change log             |
-| Mutable boxes and unfinished page material       | Pool snapshot or copies of the retained structures |
-| Source positions and output progress             | Small records associated with the checkpoint       |
+| Kind of data                               | Possible approach                                                 |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| Process-lifetime identities and resources  | Keep available across rollback                                    |
+| Immutable definitions and completed output | Retain their existing storage                                     |
+| Small mutable values and tables            | Copy at the boundary                                              |
+| Larger mutable or shared objects           | Copy-on-write, explicit copies, or reference-counted heap objects |
 
-A modest table copy may be faster and simpler than copy-on-write checks on every
-assignment. A large table with sparse changes may benefit from chunking. The
-node store may favor copying the relatively small amount of material left between
-paragraphs. Choose these independently, based on the work they save and the costs
-they introduce during ordinary execution.
+Each store can make its own choice. Bump allocation handles much of the linear
+construction work, while snapshot sharing and mutation are handled where each
+data type needs them. The detailed representations belong in the storage design.
 
 Checkpoint creation is a bulk operation at the boundary. Restoring one reestablishes
 these persistent values, resets the associated scratch stores, and reenters the
@@ -228,11 +226,9 @@ it can retain a snapshot and yield to the host; resumption enters the outer loop
 with the checkpoint state. Host-visible scheduling and cooperative cancellation
 use these same boundaries.
 
-Checkpoint cadence therefore follows document structure. A long paragraph or
-long-running expansion can delay the next opportunity. Run browser compilation
-in a worker, and use measurements to decide whether the chosen boundaries are
-frequent enough. Boundary selection is the way to improve responsiveness while
-keeping the execution model based on ordinary calls.
+Checkpoint cadence follows paragraph endings with no open groups. Run browser
+compilation in a worker; the host regains control at these boundaries. Scheduling
+keeps the same ordinary-call execution model as native compilation.
 
 Native adapters can resolve resources synchronously. For asynchronous browser
 acquisition, an unresolved resource can return an ordinary error/request through
@@ -303,10 +299,10 @@ with the interpreter as it starts compiling ordinary documents.
 
 ## 11. Areas to develop next
 
-First explore the interaction between ordinary execution and quiescence: where
-the driver regains control, what is still live there, and how frequently those
-points occur. Use that to develop the allocation layout and checkpoint strategy
-for each major class of objects.
+Develop the allocation layout and checkpoint strategy for each major class of
+objects, using paragraph endings with no open groups as the fixed boundary.
+The mutable-storage deep dive should choose representations from their lifetimes,
+sharing, and mutation patterns, with bump allocation covering linear construction.
 
 A small interpreter that handles input, definitions, groups, and simple output
 can already exercise the central design. Paragraph and page construction then
@@ -318,5 +314,5 @@ The next detailed designs should cover:
 - The input and expansion loops, with temporary state in Rust control flow.
 - Object stores and lifetime transitions for definitions, groups, paragraphs,
   boxes, and pages.
-- The quiescence boundary and per-component snapshot representations.
+- Snapshot representations at the established quiescence boundary.
 - Resource access and backend output storage around that boundary.
