@@ -16,8 +16,9 @@ Use two central operations:
 
 - `next_token()` reads one token and resolves its current meaning, without
   expanding it. Argument matching and other raw-token scanners use this path.
-- `next_expanded()` repeatedly reads and expands until it obtains a command for
-  the caller to consume. Ordinary execution and numerical scanners use this path.
+- `next_expanded()` repeatedly reads and expands until it obtains an unexpandable
+  command for the caller to consume. Ordinary execution and numerical scanners
+  use this path.
 
 Their proposed shape is:
 
@@ -28,6 +29,7 @@ fn next_expanded(&mut self) -> Result<ReadToken> {
         match read.meaning {
             Meaning::Macro(definition) => self.begin_macro(definition)?,
             Meaning::Expandable(primitive) => self.expand_primitive(primitive)?,
+            Meaning::Undefined => self.undefined_control_sequence(read.token)?,
             _ => return Ok(read),
         }
     }
@@ -43,7 +45,10 @@ contain compact token words.
 returns. The loop then consumes that source. A normal chain of macro calls
 therefore iterates through the loop. Primitive expansion can call scanners and
 other expansion functions directly where its operation requires them; those
-calls return normally.
+calls return normally. Expansion-order primitives can use an `expand_once` helper
+that dispatches an already-read token through the same macro and primitive
+functions. `next_expanded` continues reading afterward, while `expand_once`
+returns after the selected token's expansion.
 
 Execution consumes each returned command before asking for the next one. This
 preserves the ordering between assignments and later expansion. For example:
@@ -64,11 +69,11 @@ See [TeX's input and expansion code](https://github.com/TeX-Live/texlive-source/
 
 ## 2. Token identity and current meaning
 
-A character token carries its character and category code. A control-sequence
-token, including an active-character identity, carries an interned ID. On each
-read, a direct table lookup supplies the current meaning. The process interner
-keeps IDs available across rollback; the document's meaning table supplies the
-restored interpretation.
+A character token carries its character and category code, which directly
+determine its command. A control-sequence token, including an active-character
+identity, carries an interned ID; a direct table lookup supplies its current
+meaning. The process interner keeps IDs available across rollback; the document's
+meaning table supplies the restored interpretation.
 
 Macro invocation selects one immutable definition. Literal control sequences
 inside its replacement list are resolved when they are read. These are different
@@ -80,47 +85,62 @@ command stays in the reader's local result and is passed directly to its caller.
 This keeps stored tokens small and avoids a second meaning lookup in the normal
 dispatch path.
 
+Putting a token back into input preserves its identity. Reading it again resolves
+its meaning at that moment. One-read expansion suppression is handled separately
+by the reader, as described in section 8.
+
 File input is tokenized as it is consumed. Category-code changes affect subsequent
 characters, while tokens already captured in a definition or argument keep their
 category codes. The file reader retains the current line and lexical cursor;
 the detailed character scanner will build on this interface.
 
-## 3. Compact token sources
+## 3. Token sequences and input cursors
+
+A _span_ is a contiguous range of immutable token words. A _sequence_ is empty,
+one span in the common case, or an ordered collection of spans when input is mixed.
+Definitions, captured arguments, and constructed token lists use this same
+sequence representation. Builders retain existing spans and write new or
+transformed tokens directly into destination chunks; neighboring spans in the
+same chunk can be combined by adjusting their bounds.
+
+A completed sequence owns its span descriptions and retains the backing storage
+they need. Session-owned definition storage already has a suitable lifetime;
+shorter-lived chunks can use shared ownership. Input cursors carry read positions
+separately, so reading advances a cursor while the sequence remains immutable.
 
 Use a small tagged input cursor with source-specific payloads:
 
-| Source               | Cursor data                                         |
-| -------------------- | --------------------------------------------------- |
-| File                 | Current line, character position, and lexical state |
-| Immutable token list | Current position and end of a token range           |
-| Macro replacement    | Body cursor and access to its argument ranges       |
-| Argument             | Current token span and any remaining spans          |
-| Inserted tokens      | A short inline sequence or a generated token range  |
+| Source               | Cursor data                                          |
+| -------------------- | ---------------------------------------------------- |
+| File                 | Current line, character position, and lexical state  |
+| Immutable token list | Current span and position in its sequence            |
+| Macro replacement    | Body sequence cursor and its argument packet         |
+| Argument             | Cursor through the selected argument sequence        |
+| Inserted tokens      | Short inline tokens or a constructed sequence cursor |
 
 The current source is read directly. When it finishes, the reader retires it and
 continues with the source beneath it. A reusable vector holds suspended sources.
 The common token-list operation is a load and cursor advance; source changes
 perform the push/pop and ownership work.
 
+Token-sequence sources share span traversal: the current span is read directly,
+and another is selected when it ends. Macro body reading additionally handles
+the internal parameter markers.
+
 The macro body uses compact internal parameter markers. Reading one selects the
-corresponding argument and makes it the current source. When that input
+corresponding argument sequence and makes it the current source. When that input
 finishes, reading continues in the body. The body remains beneath the argument
 source until its final substitution has completed, so it retains the argument
 storage for all its uses.
 
 Parameter substitution is part of reading the source. Raw argument matching
 therefore sees the tokens supplied by an enclosing macro, even though it is
-performing no further expansion. Repeated parameters reread ranges; they require
+performing no further expansion. Repeated parameters reread sequences; they require
 no replacement-list construction.
 
 One- and two-token insertions are common in lookahead and expansion-order
 primitives. Give them inline storage in the input representation. Larger
-generated results use owned token buffers with the same range-reading path.
-
-An argument often consists of one contiguous token span. Mixed input can produce
-a short sequence of spans. The cursor reads the current span directly and moves
-to the next at a span boundary. Adjacent spans in the same backing storage can
-be combined by adjusting their bounds.
+generated results use constructed sequences with the same span-reading path.
 
 Token spans can use indices or internal pointers into stable backing storage.
 Definition segments live with the session; captured tokens stay stable once
@@ -135,12 +155,12 @@ replacement tokens. Its parameter descriptions record the delimiters for the
 arguments, up to TeX's nine parameters. Replacement tokens use internal parameter
 markers for substitution and ordinary token words for literals.
 
-Store these immutable parts together or in neighboring session arena ranges.
-The definition scanner builds new tokens directly in that storage, recording
-parameter markers as it reads. Existing compatible token ranges can be shared.
-Invocation uses the selected definition directly, with no compilation step or
-replacement-list copy on each call. A parameter-free macro only installs its
-body cursor.
+The definition scanner writes new tokens and parameter markers directly into
+session storage, while retaining compatible literal spans from existing sources.
+Its completed body is a sequence; its header and parameter descriptions can be
+built alongside it. Invocation uses the selected definition directly, with no
+compilation step or replacement-list copy on each call. A parameter-free macro
+only installs its body cursor.
 
 The definition scanner can prepare delimiter metadata where it helps the matcher.
 The literal body remains directly readable. More extensive macro precompilation
@@ -149,11 +169,12 @@ can be evaluated later using this execution path as the baseline.
 ## 5. Argument matching as an ordinary function
 
 `scan_arguments` owns its progress on the Rust stack: current parameter, brace
-depth, delimiter position, and captured ranges. It reads through `next_token()`
-and builds the arguments in a call-owned builder. That builder records retained
-token spans and materializes new tokens directly into their backing storage.
-Its result is an argument packet that `begin_macro` transfers to the macro input
-source.
+depth, delimiter position, and capture bounds. It shares the low-level source
+helpers behind `next_token()`, using them to read existing spans or produce new
+tokens directly into its builder. Both paths use the same meaning resolution,
+parameter substitution, and scanner-context checks as the scalar reader. Its
+result is an argument packet containing the captured sequences, transferred by
+`begin_macro` to the macro input source.
 
 The matcher handles a literal prefix, single-token or grouped undelimited
 arguments, and delimited arguments. It compares token identities, including
@@ -181,17 +202,19 @@ to the argument matcher; `\protected` affects expanded-list scanning separately.
 
 ## 6. Argument storage follows consumption
 
-The argument builder constructs the final packet in place. Already-tokenized
-input contributes slices of existing immutable storage. File input is tokenized
-directly into packet-owned bump storage. An argument spanning several sources
-records those pieces in consumption order, with the common single-span case
-kept compact.
+The argument builder constructs the packet's sequences in place. Range-backed
+token input contributes slices of existing immutable storage. File tokens and
+short inline insertions are written directly into destination bump storage.
+An argument spanning several sources records those pieces in consumption order,
+with the common single-span case kept compact.
 
-While matching within a stored-token source, retain its backing chunk once and
-track the consumed span bounds in locals. Record a new span when the source
-changes or the argument ends. Parameter substitution supplies spans from the
-enclosing argument in the same way. This pays ownership and descriptor work at
-span boundaries while the matching loop inspects token words directly.
+While matching within a stored-token source, retain its backing chunk before
+consuming it and track the captured span bounds in locals. Record a span when
+input moves to another backing span or the argument ends. Parameter substitution
+supplies spans from the enclosing argument in the same way. Delimiters and outer
+braces are excluded by trimming the resulting sequence. Ownership and descriptor
+work happen at span boundaries while the matching loop inspects token words
+directly.
 
 The builder retains the backing storage of a span as it captures it. Ownership
 then follows the captured input independently of the source cursor, which may
@@ -214,18 +237,19 @@ existing storage. The macro input source retains the packet until its body and
 argument sources finish. Unshared backing storage can then return to a reusable
 pool.
 
-Retention belongs at backing-chunk granularity. A child packet retains the chunks
-it uses directly; its span descriptors contain positions in those chunks. This
-also lets parent packet metadata retire during repeated expansion. Session-owned
-definition slices already have their longer lifetime. Shorter-lived captured
-storage can initially use reference-counted heap chunks, with ownership work paid
-when a span is retained or released.
+Retention belongs at backing-chunk granularity. Each packet holds the chunk
+owners used by its span descriptors. A child retains the actual backing chunks,
+so consumed packet records can retire independently. Session-owned definition
+slices already have their longer lifetime. Shorter-lived captured storage can
+initially use reference-counted heap chunks, with ownership work paid when chunks
+are retained or released.
 
 Chunk-backed bump allocation fits the construction of new tokens and packet
 metadata. Finish by retaining or transferring these chunks in place. Reusable
-chunks preserve capacity across invocations. The detailed storage design can
-choose the allocation mechanism while keeping span reads and ownership transfers
-the same.
+chunks preserve capacity across invocations. Newly built token spans become
+immutable when published to input; cursor movement only changes read positions.
+The detailed storage design can choose the allocation mechanism while keeping
+span reads and ownership transfers the same.
 
 A failed scan releases its builder and retained storage when the function
 returns. A completed packet follows the input source consuming it, including
@@ -254,14 +278,15 @@ Primitive functions use the same readers and insertion helpers. Their control
 flow encodes how much input to consume and where their result goes:
 
 - `\expandafter` saves the first token locally, expands the second once, and
-  places the saved token before the resulting input.
+  places the saved token before the resulting input. It saves the token identity;
+  the reader resolves its meaning again when it reaches that token.
 - `\noexpand` preserves the next token's identity and suppresses expansion for
   that read. A small input marker or flag supplies its effective meaning; the
   stored control-sequence token keeps its identity.
 - `\csname` calls expansion while collecting a name, interns the result, and
   returns it through input with the required meaning-table behavior.
-- Conversion primitives write character tokens directly into the buffer that
-  will become their input source.
+- Conversion primitives write character tokens directly into the destination
+  chunks that become their input sequence.
 
 Conditionals use ordinary functions for evaluation and skipping, with their
 nesting records in document state. Skip-loop depth and scan progress stay local.
@@ -275,8 +300,10 @@ expansion behavior needed for the list it is constructing.
 In particular, `\the` of a token list and `\unexpanded` contribute their tokens
 directly to an expanded-list builder. Protected definitions remain token
 identities in that builder and expand normally during ordinary execution.
-The collection loop can retain their existing spans in its result, while writing
-new or transformed tokens directly into destination storage.
+The collection loop uses the same sequence-building approach as argument capture
+and definitions: it retains existing spans where applicable and writes new or
+transformed tokens directly into destination chunks. The result retains any
+shorter-lived backing storage it uses.
 See the [e-TeX expansion changes](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/etexdir/etex.ch).
 
 The `\expanded` primitive can call this scanner to completion and then insert
