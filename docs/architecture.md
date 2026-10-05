@@ -37,6 +37,10 @@ scratch, immutable append storage, copied tables, copy-on-write data, and
 reference-counted heap objects can all coexist. The detailed mutable-storage
 design will choose the appropriate approach for each type.
 
+Build data directly in its destination storage and reuse existing immutable
+ranges. Transfers can move ownership of storage while leaving its contents
+in place.
+
 ## 3. System boundaries
 
 ```mermaid
@@ -99,6 +103,8 @@ code, with allocation and ownership bookkeeping paid at the relevant object or
 arena boundary. Optional macro precompilation can be explored once the basic
 execution path is working and measurable.
 
+See [expansion.md](expansion.md) for the input and expansion loop design.
+
 ## 5. Object lifetimes and allocation
 
 The allocation architecture should make an object's intended lifetime natural:
@@ -135,8 +141,9 @@ argument ranges until their input is exhausted. Whole ranges are reclaimed
 together, giving ordinary expansion cheap allocation.
 
 When an operation creates a durable value, such as a macro replacement list, it
-builds that value in the destination store or transfers the completed buffer to
-it. The scratch region then rewinds as part of returning from the operation.
+builds that value directly in its destination store. Existing token ranges can
+be retained and reused; completed buffers can transfer ownership in place.
+The scratch region then rewinds as part of returning from the operation.
 
 ### Group lifetime: local bindings and restoration data
 
@@ -199,6 +206,9 @@ reclamation are valid, so callers can use a simple API with clear lifetimes.
 Take checkpoints at the end of a paragraph with no open groups. Paragraph work
 has finished and group restoration is complete. File input positions and
 unfinished page material persist as ordinary document state.
+
+Replacement-list cursors and their argument storage can also remain as pending
+input. Their checkpoint behavior is developed in [expansion.md](expansion.md).
 
 This boundary defines the checkpoint's contents. Group-local restoration storage
 and paragraph working memory are empty by construction. Persistent data uses

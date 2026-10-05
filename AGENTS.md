@@ -37,6 +37,8 @@ tools and worktree caches checkout-local.
   Measure actual release execution paths and inspect generated instructions when
   tuning hot loops. Avoid repeated classification, bookkeeping, allocation,
   reference counting, and indirection without measured benefit.
+- Build data in place in its destination storage. Reuse immutable ranges and
+  transfer ownership of existing storage wherever possible to avoid copies.
 - Design object stores around semantic lifetimes and quiescent checkpoint
   boundaries. Keep unsafe allocation primitives narrow and document why their
   layout, references, and reclamation are valid.

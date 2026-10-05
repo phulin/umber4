@@ -4,6 +4,8 @@ Read the root `AGENTS.md` first.
 
 - `architecture.md` is the high-level design proposal. It records goals,
   recommended boundaries, tradeoffs, and unresolved design questions.
+- `expansion.md` develops the input and expansion loops, token-source cursors,
+  argument capture and lifetime, and their paragraph-checkpoint behavior.
 - Distinguish requirements, proposed choices, measured results, and open questions.
   Do not describe planned facilities as implemented.
 - Keep detailed subsystem contracts in focused documents when those designs are
