@@ -1,9 +1,7 @@
 # Umber4: high-level architecture proposal
 
-Status: draft for discussion. This document proposes the system's shape and
-the contracts that must survive later optimization. No implementation or
-performance result is implied. Detailed representations should be chosen through
-focused design reviews and executable experiments after this proposal is agreed.
+A working proposal for the execution model, object lifetimes, and checkpoint
+strategy. Detailed data structures will follow from exploring these areas.
 
 ## 1. Goals and initial scope
 
@@ -20,39 +18,24 @@ pdfTeX includes e-TeX extensions and supports both DVI and PDF output, so a
 pdfTeX compatibility claim needs a feature matrix beyond the TeX82 primitives.
 See the [pdfTeX project description](https://www.tug.org/applications/pdftex/).
 
-Use pinned upstream sources, manuals, and reference executables as authorities.
-Distinguish implemented, unsupported, and intentionally host-restricted behavior.
-The first execution slice may be small, but its semantics must be real TeX.
-Preserve integer arithmetic, category-code behavior, expansion order, grouping,
-layout decisions, and documented error recovery. Output equivalence includes
-generated auxiliary files and diagnostics, not just similar-looking pages.
-
-The initial design does not inherit all of Umber3's product scope. Modern Unicode
-shaping, HTML output, bibliography engines, and a full distribution downloader
-are possible later extensions. They are not prerequisites for proving the
-interpreter, PDF compatibility, and incremental compilation. Native and browser
-hosts need a usable resource interface from the start.
-
 ## 2. Central recommendation
 
-Build a sequential, explicitly represented TeX machine with compact hot data,
-memory regions chosen by semantic lifetime, and snapshots that retain immutable
-storage and share mutable state at coarse granularity. Incremental compilation
-restores this same machine; it never substitutes a second evaluator.
+Implement TeX through ordinary Rust control flow, using compact data structures
+and arenas matched to the lifetimes of TeX objects. Take checkpoints at quiescent
+boundaries where temporary execution state has already disappeared. Resume by
+restoring the persistent document state and entering the same outer driver loop.
 
-TeX execution order is authoritative. Parallelism belongs initially in host
-resource acquisition or processing detached output, where ordering permits it.
-Native performance should not depend on browser threads or a different native
-execution engine.
+Choose the checkpoint boundary and the allocation lifetimes together. A boundary
+outside a paragraph at group level zero can make scanner scratch, paragraph
+working memory, and group-local work disappear before a snapshot is taken.
+That considerably reduces both snapshot size and the amount of machinery needed
+in the interpreter.
 
-Three separations carry most of the architecture:
-
-- _Semantic lifetime versus allocation mechanism:_ groups, invocations,
-  paragraphs, pages, jobs, and checkpoint history have different escape rules.
-- _Live execution versus retained state:_ execution owns mutable chunks; retained
-  checkpoints and completed results hold stable roots into immutable versions.
-- _Interpreter effects versus publication:_ file writes, diagnostics, and output
-  remain revision-local until the host accepts a result.
+Use a different storage strategy for each kind of data. Interned names can live
+for the process; paragraph scratch can be rewound after line breaking; definitions
+can occupy immutable session storage; small semantic tables can simply be copied.
+Checkpointing should fit those representations rather than impose a universal
+persistent heap.
 
 ## 3. System boundaries
 
@@ -60,360 +43,280 @@ Three separations carry most of the architecture:
 flowchart TD
     N[Native CLI / Rust API] --> S[Compilation session]
     W[Wasm API / browser worker] --> S
-    S --> E[TeX machine]
-    S --> R[Versioned resources and effect journal]
-    E --> R
+    S --> E[TeX interpreter]
     E --> L[Exact layout algorithms]
-    E --> P[Detached pages and document events]
+    E --> R[Host resources]
+    E --> P[Pages and document output]
     P --> O[DVI / PDF serialization]
-    S --> C[Checkpoint history and dependency validation]
+    S --> C[Quiescent checkpoints]
     C --> E
 ```
 
-The session owns revisions, resources, history budgets, candidate execution, and
-acceptance. The machine owns TeX semantics: tokenization, expansion, assignments,
-groups, modes, layout construction, output routines, and primitive execution.
-Layout algorithms operate on well-defined data and exact arithmetic; they do not
-perform host I/O. Output serialization consumes owned pages and document events,
-not references into live interpreter arenas.
+The interpreter executes TeX in document order. A compilation session keeps the
+current document, its checkpoints, and completed output. Native and Wasm adapters
+provide resources and expose the session to their callers. Layout and output are
+modules with direct access to the data they need; crate boundaries can follow as
+those interfaces become clear.
 
-Start with a small module structure. Likely eventual package boundaries are the
-portable engine, native adapter, and Wasm adapter; detach arithmetic or output
-only when their interfaces are clear. Avoid building a family of generic memory
-and lifecycle crates before a working interpreter exercises their contracts.
-
-The portable core may use Rust's standard library for containers, but cannot
-require filesystem, network, clock, process, or thread services. The browser
-target is initially `wasm32-unknown-unknown`; its standard library does not
-provide working filesystem or thread-spawn services. Resource and environmental
-inputs therefore cross an explicit host boundary.
+The portable implementation uses ordinary Rust containers and allocation.
+Filesystem access and resource acquisition belong to the adapters. For the
+browser target, `wasm32-unknown-unknown`, Rust's standard library provides
+containers but lacks working filesystem and thread-spawn services.
 See the [Rust target documentation](https://doc.rust-lang.org/stable/rustc/platform-support/wasm32-unknown-unknown.html).
 
-## 4. The interpreter and its hot representations
+## 4. Execution through Rust control flow
 
-Model execution with explicit input/expansion frames, conditional and save
-stacks, scanner state, current modes, semantic tables, lists, and page-builder
-state. Rust functions may implement bounded operations, but a suspended engine
-must not depend on a live Rust call stack. Recursive macro expansion belongs on
-engine-owned stacks.
+Scanning a number, matching macro arguments, expanding a command, constructing a
+paragraph, and running an output routine should primarily be Rust functions with
+local variables and ordinary calls. Their progress is encoded in the Rust stack.
+The outer interpreter loop regains control when an operation finishes and decides
+whether this is a checkpoint opportunity.
 
-Proposed hot representations:
+Keep persistent data where TeX itself needs it: current meanings, registers,
+source positions, saved values for groups, and unfinished page material. Token
+consumption also needs cursors for active files and replacement lists. Represent
+those cursors compactly where the input algorithm needs them, while keeping the
+scanner's branches, intermediate values, and return path in Rust control flow.
+A token-source stack can serve the ordinary input loop without making every
+expansion or scanner operation a resumable state machine.
 
-- Compact tagged tokens, aiming for a 32-bit word for the classic compatibility
-  profile. Character tokens retain their category code at tokenization; control
-  sequence tokens carry stable symbol IDs and resolve their current meaning when
-  executed. Provenance lives in side storage.
-- Dense indexed tables for common equivalents, registers, and category codes;
-  intern names once rather than hashing strings at every invocation. Avoid a
-  separate registry that mirrors an already authoritative table.
-- Immutable token slices for macro bodies and parameter texts, with input frames
-  referring to ranges. Expansion splices argument ranges rather than repeatedly
-  copying replacement lists. Active invocations retain their original definition
-  after that control sequence is redefined.
-- Compact typed node pools and contiguous working arrays for layout. Choose
-  array-of-structures or structure-of-arrays by access pattern; do not force every
-  node kind into a large general-purpose object.
-- Tagged command dispatch and direct indexed access in hot loops. Host callbacks,
-  reference counting, heap allocation, and dynamic dispatch should occur at
-  resource, chunk, or publication boundaries rather than per token.
+The hot path should work with compact values and contiguous storage:
 
-Macro precompilation is an optional measured optimization. It must preserve
-late-bound meanings, exact argument matching, scanner restrictions, and token
-consumption on errors. Start from immutable token lists; do not let a macro VM
-become a prerequisite for the first faithful executor.
+- Character tokens encode their character and category code. Control-sequence
+  tokens carry an interned identity; their current meaning comes from a direct
+  table lookup. A 32-bit token is a useful starting point for the classic profile.
+- Definitions hold immutable token sequences. Expansion reads slices and argument
+  ranges, with invocation scratch allocated in bulk and released when the
+  invocation finishes.
+- Equivalents, registers, and category codes use dense tables where their domains
+  make that practical.
+- Layout uses compact node representations and working arrays chosen for the
+  access patterns of each algorithm.
 
-Use exact TeX numerical algorithms with explicit overflow and rounding behavior.
-Machine word size, allocator addresses, hash iteration order, and floating-point
-rounding must not change native/Wasm semantics. Handles are indices or
-region-relative offsets, never serialized pointers. Compact IDs need checked
-capacity limits and a defined exhaustion outcome.
+TeX arithmetic uses integer algorithms with the required rounding and overflow
+behavior. Expansion and layout loops should compile into straightforward release
+code, with allocation and ownership bookkeeping paid at the relevant object or
+arena boundary. Optional macro precompilation can be explored once the basic
+execution path is working and measurable.
 
-## 5. Memory follows semantic reachability
+## 5. Object lifetimes and allocation
 
-Use several specialized stores rather than one universal allocator. Regions may
-obtain chunks from the ordinary allocator; most individual semantic objects
-should then be created and reclaimed without individual allocator calls.
+The allocation architecture should make an object's intended lifetime natural:
+its owner chooses the storage at creation, and the end of that owner's work
+provides the reclamation point. The following are the main expected lifetimes.
 
-| Semantic lifetime               | Proposed storage                              | Reclamation condition                                                 |
-| ------------------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| Resource / reusable format      | Immutable validated chunks                    | No session, checkpoint, or result retains them                        |
-| Scanner or layout operation     | Reusable bump scratch and working vectors     | Operation finishes and no resumable frame refers to the data          |
-| Macro invocation / active input | Stack regions with explicit frame ownership   | Last frame consuming an argument or input range retires               |
-| Definition / token list         | Immutable append segments, retained by owners | No meaning, save entry, invocation, or checkpoint reaches the segment |
-| Mutable semantic tables         | Chunked dense arrays with versioned roots     | Old version loses its final checkpoint or candidate owner             |
-| Mutable lists / saved boxes     | Typed recyclable pools with versioned chunks  | No live machine or retained snapshot reaches that allocation          |
-| Completed output                | Immutable page regions and document resources | Last accepted/candidate/history/backend owner releases them           |
+### Process lifetime: identities and reusable immutable data
 
-Scope exit is not enough to reclaim arbitrary TeX objects. A global definition
-can survive its creating group. A saved definition must remain available for
-restoration, an active macro can retain an old definition, and boxes, marks,
-insertions, and output routines can carry nodes across paragraph or page
-boundaries. A group arena is appropriate only for data proved not to escape, or
-with a defined promotion rule applied before escape.
+Intern control-sequence names and other useful canonical token identities in a
+process-owned append-only store. Common names are small and likely to recur
+across documents and edits. Character tokens can usually be encoded directly;
+individual token occurrences remain in their containing lists or input buffers.
 
-Likewise, a paragraph arena is excellent for line-breaking scratch. It cannot
-be reset while the page builder retains its nodes. Detached output should copy
-or transfer exactly the information required for rendering and PDF semantics;
-then reclaim interpreter nodes only when no remaining semantic owner needs them.
+Interned identities remain stable when execution rolls back. If an edit occurs
+20% into a document, names discovered in the remaining 80% stay available and can
+be reused during recompilation. A checkpoint captures document-specific meanings,
+while the interner continues growing independently. An identity introduced after
+a checkpoint starts with the default meaning when that checkpoint is restored.
 
-Proposed ownership rules:
+Loaded font metrics, immutable font bytes, and reusable format data are also good
+candidates for process-owned caches. The process pays for each useful immutable
+resource once and subsequent compilations share it.
 
-1. Durable stores never retain borrowed references into rewound scratch.
-2. Cross-region references use typed IDs and explicit owning roots. Coarse chunk
-   owners retain storage; individual tokens and nodes do not each carry an `Rc`.
-3. Slot reuse is version-scoped. A checkpoint retains its own pool directory,
-   allocator/free-list state, and generations where necessary. A later branch
-   cannot mutate storage visible to an earlier snapshot or revive stale handles.
-4. Immutable segments may retain some dead objects. Segment size and compaction
-   policy must bound amplification; compaction/remapping happens at explicit
-   boundaries, never as hidden per-token tracing.
-5. Reclamation covers destructors, nested allocations, and retained capacity.
-   Region rewind alone is sufficient only for representations whose contents
-   have no additional owned resources, or whose destructors are handled explicitly.
+### Call and invocation lifetime: scanning and expansion scratch
 
-Keep unsafe code narrow, with proofs for initialization, aliasing, bounds, and
-reclamation. Safe indexed storage is the initial baseline. Do not export a Rust
-reference across an allocation, copy-on-write mutation, checkpoint, or host call.
+Scalar scanner state lives in Rust locals. Argument matching and temporary token
+construction use reusable buffers or a bump region belonging to the operation or
+invocation. Argument storage follows the invocation consuming it: recursive calls
+can use arena marks, while replacement-list cursors in the input loop can retain
+argument ranges until their input is exhausted. Whole ranges are reclaimed
+together, giving ordinary expansion cheap allocation.
 
-## 6. Checkpoints without cloning the whole heap
+When an operation creates a durable value, such as a macro replacement list, it
+builds that value in the destination store or transfers the completed buffer to
+it. The scratch region then rewinds as part of returning from the operation.
 
-A checkpoint is a full resumable state, not a token cursor or a format dump.
-It includes scalar execution state and roots for:
+### Group lifetime: local bindings and restoration data
 
-- Source/input cursors, buffered lines, token sources, expansion and scanner
-  continuations, conditionals, and parameter storage.
-- Symbols, equivalents, category codes, registers, groups/save stack, fonts,
-  hyphenation state, and profile-specific state including random generators.
-- All unfinished horizontal/vertical/math lists, paragraph work when applicable,
-  page-builder state, insertions, marks, and output-routine continuation.
-- Resource observations and environmental inputs; open input/output streams,
-  generated-file versions, delayed writes, diagnostics/log events, pages, and
-  document-level PDF state.
-- Allocation roots and any free-list or identity state required to interpret
-  stored handles consistently.
+The save stack records the values restored when a group ends. Group-local
+restoration records and temporary construction buffers can occupy a stack arena:
+closing the group restores bindings and rewinds its storage in the same operation.
 
-Proposed snapshot mechanism: immutable macro/resource/output segments are shared;
-mutable tables and pools use chunk-level copy-on-write; short scalar state and
-small stacks are copied. Growing stacks may use segmented tails, but their
-complexity must earn its place through measurement. Checkpoint creation freezes
-roots and leaves execution ready to obtain private writable chunks.
+The values named by those bindings have their own lifetimes. A macro replacement
+list lives in the definition store, so an invocation can keep reading it after
+its binding is restored. A global assignment writes into the persistent semantic
+tables and allocates its value in the appropriate session store. This makes local
+binding lifetime and value lifetime separate, straightforward choices.
 
-Use an explicit uniqueness/epoch check to acquire a mutable chunk, then batch
-operations while the borrow is valid. Do not introduce an ownership check for
-every scalar store by default. No checkpoint is created while such a borrow is
-active. A chunk is copied at most once per sharing interval before subsequent
-mutations use that private version.
+### Paragraph lifetime: layout working memory
 
-This is a hypothesis, not a free performance win. Copy amplification depends on
-chunk size and mutation density; root directories and active stacks also cost
-time and memory to snapshot. A large sparsely changed table favors smaller
-chunks, while a sequentially edited list may favor another layout. Benchmark
-representative traces before choosing chunk sizes or a persistent directory.
+Line-breaking candidates, active lists, measurement buffers, and related
+algorithm scratch belong to a paragraph arena. The paragraph function performs
+its work, places the resulting lines in page/list storage, then rewinds the
+working arena before returning. Large buffers can retain capacity for the next
+paragraph.
 
-Measure chunked copy-on-write against a deep-copy checkpoint baseline and a
-coarse mutation-journal alternative. Journaling may suit sparse table changes,
-but universal undo logging would add work to every node mutation and complicate
-branching. The design should support different storage policies where semantic
-access patterns warrant them.
+The resulting lines have a longer lifetime than the computation that found them.
+Building them directly in their destination storage keeps this distinction
+visible in the layout API.
 
-## 7. Scheduling and resuming checkpoints
+### Session lifetime: definitions and persistent TeX values
 
-Expose a driver operation conceptually like
-`advance(work_budget) -> Progress | ResourceRequest | Complete | DiagnosticStop`.
-At return, all resumable state is owned by the machine. Cancellation and budget
-checks occur at defined execution transitions and inside potentially long
-scanning/layout loops. Tight loops should process batches rather than call the
-host after each token.
+Immutable macro bodies and token lists are well suited to a session-owned
+segmented bump store. Redefinition changes a table entry; the old body stays
+available to an active invocation and to any checkpoint using that definition.
+Starting with session lifetime makes their ownership cheap and simple. Segment
+reclamation or reuse of identical bodies across replay can be added where actual
+session workloads justify it.
 
-Distinguish a _scheduler yield_ from a _retained history checkpoint_. Yields may
-be frequent for browser responsiveness; snapshot history is created only when
-its expected replay benefit justifies retention cost. A parser can yield without
-making that moment useful as an edit restart point.
+Boxes, marks, insertions, and unfinished page lists belong to stores organized
+around their semantic owners. A box register owns its box until replacement or
+transfer; page construction owns material until it is shipped or transferred;
+marks can remain useful on later pages. Typed pools or object arenas can support
+these transfers without an allocation for each node. Their snapshot behavior can
+be chosen separately from the immutable definition store.
 
-Prefer checkpoints at top-level command, completed paragraph, or settled page
-transitions, subject to an explicit eligibility predicate. Do not assume `\par`,
-group exit, or shipout empties the engine: pending expansion, output routines,
-insertions, and partially built pages can all remain. Their state must either be
-represented in the snapshot or make that boundary ineligible.
+### Page and result lifetime: completed output
 
-Set an interval in measured execution work, with a host policy for wall-time
-responsiveness. If preferred boundaries are too far apart, either use an owned
-continuation that permits a mid-operation snapshot or accept and report the
-replay gap. A long macro expansion or paragraph must not turn a claimed fixed
-checkpoint interval into an unbounded promise. Continuation granularity is an
-early design question, especially for paragraph breaking and input scanners.
+A shipped page becomes an owned, immutable output object with its required
+resource references. Its output data can occupy a page arena retained by the
+result and relevant checkpoints. The interpreter's page-building storage can then
+be recycled as that work completes. Saved boxes and other independently owned
+material continue in their own stores.
 
-Resource acquisition happens outside the interpreter. Prefer requesting missing
-bytes from an owned continuation before semantic mutation. If a particular
-operation cannot yet suspend safely, return to a previously retained full state
-and replay after acquisition; its staged effects must be discarded. Normal
-control flow handles these outcomes, not panic unwinding or serialized Rust
-stacks.
+These lifetimes suggest a small set of allocation primitives: append-only stores,
+rewindable scratch arenas, dense arrays, and pools for transferable objects.
+A custom arena layout or bump allocator may use unsafe code in a narrow primitive.
+Its documentation should explain why its allocation layout, references, and
+reclamation are valid, so callers can use a simple API with clear lifetimes.
 
-In-memory checkpoint sharing is the initial requirement. A portable on-disk
-checkpoint schema is a separate facility with versioning and validation; it
-cannot dump Rust layouts or native pointers. Reusable INITEX-style formats
-similarly contain validated semantic state and start fresh job-local execution.
+## 6. Quiescent checkpoints
 
-## 8. Incremental compilation is validated replay
+Start by exploring a boundary at group level zero, outside a paragraph, after
+control has returned to the outer interpreter loop and active scanning,
+expansion, and output-routine calls have completed. File input positions and
+unfinished page material may still persist; temporary computation has ended.
+The exact boundary is a design choice to settle with representative TeX execution.
 
-Each candidate revision sees immutable, versioned source and resource data plus
-its own generated-file overlay. Retain the last accepted result while the
-candidate runs. The first incremental implementation reuses a valid execution
-prefix and then runs the ordinary engine to completion.
+This boundary defines the checkpoint's contents. If group restoration is complete
+and paragraph working memory has been released, those stores are empty by
+construction. A checkpoint retains the document state that crosses the boundary,
+with each component using a suitable representation:
 
-For an edit, select the latest preceding checkpoint whose observations remain
-valid under the candidate inputs. Track what execution actually observed, not
-just the current source position: include nested inputs, file search results,
-existence probes, EOF, metadata, and all bytes already buffered or scanned ahead.
-Changing the end of a buffered line can invalidate a checkpoint before its
-apparent character cursor.
+| Kind of data                                     | Possible checkpoint representation                 |
+| ------------------------------------------------ | -------------------------------------------------- |
+| Process-owned identities and immutable resources | Shared directly; continue to exist across rollback |
+| Small scalar state and dense tables              | Copied at the boundary                             |
+| Immutable definitions and completed pages        | References into their existing stores              |
+| Larger, sparsely modified tables                 | Chunked copies or a compact change log             |
+| Mutable boxes and unfinished page material       | Pool snapshot or copies of the retained structures |
+| Source positions and output progress             | Small records associated with the checkpoint       |
 
-An open source cursor needs a stable mapping into the new source version and
-proof that its buffered state and observed prefix remain identical. Begin with
-conservative invalidation, even whole-file invalidation where necessary. Later,
-immutable source pieces and range dependencies can retain more checkpoints
-across edits without weakening the proof. A changed resource search order can
-invalidate an unchanged file's resolution or a previous absence observation.
+A modest table copy may be faster and simpler than copy-on-write checks on every
+assignment. A large table with sparse changes may benefit from chunking. The
+node store may favor copying the relatively small amount of material left between
+paragraphs. Choose these independently, based on the work they save and the costs
+they introduce during ordinary execution.
 
-On restore, share the checkpoint's valid page/event prefix, replace the remaining
-source view according to the validated mapping, fork its generated-file overlay,
-and re-execute the remaining work. Group locality and unchanged visible text do
-not prove validity: earlier macros, auxiliary reads, and output routines can
-change later behavior.
+Checkpoint creation is a bulk operation at the boundary. Restoring one reestablishes
+these persistent values, resets the associated scratch stores, and reenters the
+outer loop. Checkpoints stay in memory for the compilation session.
 
-Treat unchanged-suffix reuse as a later optimization. Matching rendered pages or
-a short state hash is insufficient. It needs equivalent complete semantic state,
-continuation, future resource/input observations, and file/output state, allowing
-for revision-local IDs and relocated source spans. Hashes may reject candidates
-quickly; acceptance requires structural equality or another documented proof.
-Correct prefix replay remains useful without this optimization.
+## 7. Scheduling at checkpoint boundaries
 
-Incremental and full execution must agree under the same environment. Test edits
-affecting definitions, category codes, grouping, includes, auxiliary files,
-output routines, and EOF; include cancellation and edits while a candidate runs.
-Source mappings belong to revisions. Preserve optional compact source origins
-without enlarging every hot token; richer expansion ancestry can be developed
-later and its production overhead must be measured.
+The interpreter runs uninterrupted between checkpoint boundaries. At a boundary
+it can retain a snapshot and yield to the host; resumption enters the outer loop
+with the checkpoint state. Host-visible scheduling and cooperative cancellation
+use these same boundaries.
 
-## 9. Effects, output, and project passes
+Checkpoint cadence therefore follows document structure. A long paragraph or
+long-running expansion can delay the next opportunity. Run browser compilation
+in a worker, and use measurements to decide whether the chosen boundaries are
+frequent enough. Boundary selection is the way to improve responsiveness while
+keeping the execution model based on ordinary calls.
 
-Every observable effect passes through revision-owned state: generated files,
-terminal/log messages, diagnostics, pages, and document-level output records.
-Checkpoints retain a coherent effect prefix. Restoring one discards candidate
-effects after that prefix instead of repeating irreversible writes.
+Native adapters can resolve resources synchronously. For asynchronous browser
+acquisition, an unresolved resource can return an ordinary error/request through
+the Rust calls. The session restores the preceding checkpoint and yields there;
+once the resource arrives, execution repeats from that checkpoint. The request
+records what the host needs to fetch, while the checkpoint supplies the restart
+state.
 
-Model TeX's open/write/close streams and immediate versus delayed writes. The
-candidate must read its own generated bytes when TeX semantics permit it.
-Resource contents, lookup outcomes, job time, random state, and other
-environmental inputs need stable replay behavior. Truly external effects such
-as process execution require a separate host contract or an explicit restriction
-on incremental replay; they cannot be repeated blindly.
+## 8. Resources and output
 
-At shipout, create owned page data and document events while respecting output
-routine execution. DVI is useful as an early positioning oracle; PDF remains the
-initial product output target. PDF has shared font subsets, object identities,
-images, forms, links, and cross-references, so detachable pages alone do not
-constitute a complete backend snapshot. Retain semantic PDF state with the
-machine or journal and serialize it deterministically from coherent roots.
+A session owns input resources, generated-file buffers, and completed pages.
+The native adapter serves files; the browser adapter serves cached bytes and
+fetches missing resources. The interpreter reads these through a small resource
+interface with ordinary byte access in the hot path.
 
-Initially regenerate the final PDF from retained and newly produced pages/events;
-avoid promising byte-range patching of an existing PDF. Preview consumers can
-reuse immutable page objects. Byte-for-byte reference PDF equivalence is a
-separate question from layout and primitive compatibility; metadata, compression,
-and object numbering require an explicit comparison policy.
+Generated files can be represented as buffers with TeX's normal stream behavior.
+A checkpoint retains the buffer versions or lengths needed to resume its output
+position. The same idea applies to logs and diagnostics: they are appendable
+session data with a saved position.
 
-Auxiliary files often require multiple TeX passes. The host/session layer can
-orchestrate passes with a convergence limit and versioned generated-file inputs.
-A checkpoint valid for one pass is not automatically valid after its input
-auxiliaries change. Accept the final source revision, generated files,
-diagnostics, and document artifacts together after a successful candidate.
+Page output is produced in document order. DVI and PDF backends consume owned page
+data and retain their document-wide structures, such as font and PDF object
+information. Their checkpoint representation belongs to each backend. Retaining
+completed pages lets a resumed compilation reuse its output prefix and construct
+the rest of the document. The final PDF can be serialized from this combined
+output; its exact representation is an area for a later design.
 
-## 10. Budgets and history policy
+Auxiliary files and repeated TeX passes fit above the interpreter in the session
+or application layer. Their detailed orchestration can follow once a single pass
+and its checkpoint behavior are working.
 
-Bound execution work, input/expansion depth, reserved memory, retained checkpoints,
-output, and resource retries. Report resource-limit outcomes distinctly from TeX
-diagnostics. Allocation and snapshot failure must preserve the accepted revision;
-staged growth must not partially publish broken roots.
+## 9. Memory use over a session
 
-Memory accounting includes physical chunks, directories, nested allocations,
-scratch capacity, immutable resources, page data, and overlap during copying.
-Report shared physical bytes separately from logical per-revision reachability.
-Keep headroom for the accepted result plus a candidate and its copied chunks;
-checkpoint eviction cannot release storage still owned by either one.
+Bulk allocation makes memory behavior largely a question of store sizes and
+lifetimes. Paragraph scratch is reused; process interners and resource caches
+accumulate reusable data; definitions live with the session; output and snapshots
+live as long as the application keeps them.
 
-Prefer denser recent checkpoints and sparser older ones, subject to both a byte
-budget and measured replay gaps. A format/job-start state supplies a cold
-fallback. Eviction drops owners without per-object hot-loop tracing. Session
-reset or explicit compaction may be necessary to bound interned names and dead
-segments across a long edit history; a job arena that only grows is not enough.
+Checkpoint history is an application-level choice about memory versus repeated
+work. Releasing an old checkpoint releases the storage retained only for that
+snapshot. The application can retain more checkpoints around the part of a
+document being edited and fewer elsewhere. We can choose a simple initial policy
+and refine it from measurements.
 
-## 11. Performance and correctness evidence
+Measure the cost of long edit sessions as well as individual compilations.
+Process-lifetime identities are a deliberate investment in reuse. Larger values,
+such as successive macro bodies or saved node versions, may benefit from shorter
+storage generations if their retained size becomes significant. Those choices
+can evolve independently of the interner and scratch allocators.
 
-Agree on a benchmark corpus and reference configuration before claiming
-comparability. Pin pdfTeX, formats, fonts, resources, command-line behavior, and
-environmental inputs. Compare equal work, including equivalent output generation
-and pass counts. Separate engine timing from process startup, resource fetching,
-format preparation, and host publication, then also report end-to-end timing.
+## 10. Performance and correctness during development
 
-Proposed acceptance targets for discussion:
+Use native pdfTeX as the performance reference on real documents, alongside
+smaller workloads that isolate scanning, expansion, paragraph construction, and
+page output. Compare full compilation and repeated edits, and measure native and
+Wasm execution of the same interpreter.
 
-- Native full compilation with periodic checkpointing: corpus geometric-mean
-  elapsed-time ratio at most 1.25 versus native pdfTeX, with each representative
-  workload at most 1.5. Report individual results to expose poor cases.
-- Checkpoint-enabled full execution: at most 10% additional elapsed time versus
-  the same Umber4 engine without retained history under an agreed interval and
-  history budget. Report snapshot time, bytes copied, and peak reserved memory.
-- Incremental edits: report p50/p95 latency, replayed work, reuse distance, and
-  peak memory for a fixed edit corpus. Include early edits and edits that invalidate
-  most checkpoints; do not report only late-document best cases.
-- Wasm: execute the same correctness and edit corpus in actual browser workers
-  and report separately against native pdfTeX and native Umber4. The browser
-  runtime's overhead is an additional measured gap, not assumed parity.
+The most useful early measurements are time spent executing versus checkpointing,
+allocation frequency, bytes copied per checkpoint, and memory retained across
+recompilations. Release-code inspection should show where the design introduces
+extra work in the token and node loops. These observations can guide table layout,
+arena sizes, and snapshot strategies without fixing them in advance.
 
-These numbers are proposed goals, not measurements. Browser memory budgets and
-checkpoint cadence still need agreement. Tune based on macro-heavy documents,
-plain text, mathematics, alignments, floats/output routines, and PDF assets;
-microbenchmarks should explain production results rather than replace them.
+Check behavior against TeX/pdfTeX and compare a resumed run with a fresh one.
+Definitions, local/global assignments, saved boxes, and output routines are useful
+examples because they exercise both semantics and lifetimes. Grow these checks
+with the interpreter as it starts compiling ordinary documents.
 
-Start correctness evidence with independent scanner/arithmetic fixtures,
-reference-engine comparisons, and TeX's established validation tests where
-applicable. Extend it to real plain TeX/LaTeX documents and packages. Compare
-node/layout decisions, DVI/PDF structure, diagnostics, and auxiliary bytes under
-an explicit normalization policy. Native and Wasm must agree, and every supported
-incremental scenario must match a fresh run. Repeated restoration, branching,
-history eviction, and dropped candidate states need memory-lifetime verification.
+## 11. Areas to develop next
 
-## 12. Design sequence and unresolved choices
+First explore the interaction between ordinary execution and quiescence: where
+the driver regains control, what is still live there, and how frequently those
+points occur. Use that to develop the allocation layout and checkpoint strategy
+for each major class of objects.
 
-The first deep review should cover the machine state and its ownership graph
-together. Inventory resumable continuations, roots, escape paths, and mutations;
-otherwise an allocator design will optimize lifetimes that TeX does not have.
-Then develop storage/checkpoint representations, resource/effect semantics,
-scanner/expander execution, layout, and output with concrete examples and measured
-experiments.
+A small interpreter that handles input, definitions, groups, and simple output
+can already exercise the central design. Paragraph and page construction then
+bring in the larger working arenas and retained node stores. Those executable
+examples will help choose the structures before broadening compatibility.
 
-Implementation should grow through executable vertical slices. A small real
-interpreter handling input, definitions, groups, and writes should already
-demonstrate checkpoint/restore parity. Extend it into exact paragraph/page
-layout and detached output, then broad e-TeX/pdfTeX and package compatibility.
-Do not postpone the first checkpoint experiment until after a complete engine,
-or build a large memory framework without an interpreter to measure.
+The next detailed designs should cover:
 
-Decisions to settle during review:
-
-| Question                            | Current recommendation                                                                          |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Compatibility boundary              | Target pdfLaTeX through TeX82/e-TeX/pdfTeX; explicitly inventory missing features               |
-| Snapshot representation             | Hybrid immutable segments and chunk-level copy-on-write; measure alternatives                   |
-| Continuation granularity            | Explicit engine frames; establish safe bounded yield and snapshot points early                  |
-| Arena escape handling               | Allocate persistent semantic objects durably; reserve scope arenas for proved scratch lifetimes |
-| Incremental dependency granularity  | Conservative validation first, then source ranges and stable piece mappings                     |
-| Suffix reuse                        | Defer until prefix replay is correct and its limitations are measured                           |
-| Performance thresholds              | Review the proposed ratios, corpus, browser expectations, and history budget                    |
-| Persistence across process restarts | Later portable schema; initial checkpoints remain in memory                                     |
-
-The highest-risk hypothesis is that retained snapshots can preserve locality and
-cheap mutation while bounding history memory. Resolve it with real interpreter
-traces that exercise redefinition, saved boxes, and output routines before
-committing to a universal pool representation.
+- The input and expansion loops, with temporary state in Rust control flow.
+- Object stores and lifetime transitions for definitions, groups, paragraphs,
+  boxes, and pages.
+- The quiescence boundary and per-component snapshot representations.
+- Resource access and backend output storage around that boundary.

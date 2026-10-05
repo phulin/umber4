@@ -32,14 +32,14 @@ tools and worktree caches checkout-local.
 - For complex features, write technical documentation in `docs/` before
   implementation. Do not commit temporary task plans or notes.
 - Treat Umber3 as reference material, not an inherited architecture or correctness
-  oracle. Use pinned upstream TeX/pdfTeX sources and independent fixtures for
-  compatibility evidence.
+  oracle. Use upstream TeX/pdfTeX and independent fixtures for compatibility evidence.
 - Preserve exact TeX semantics, ownership, and failure behavior during optimization.
   Measure actual release execution paths and inspect generated instructions when
   tuning hot loops. Avoid repeated classification, bookkeeping, allocation,
   reference counting, and indirection without measured benefit.
-- Memory lifetimes follow semantic reachability. Document checkpoint retention,
-  escaping objects, and reclamation before introducing an arena or unsafe code.
+- Design object stores around semantic lifetimes and quiescent checkpoint
+  boundaries. Keep unsafe allocation primitives narrow and document why their
+  layout, references, and reclamation are valid.
 - Aim to keep source files below roughly 600 lines when a logical split exists.
   Prefer `#[cfg(test)] mod tests;` with separate test files for nontrivial tests.
 - Run checks appropriate to the change. Once Rust code exists, run relevant tests,
