@@ -1,0 +1,7 @@
+/target/
+**/target/
+/.worktrees/
+__pycache__/
+*.rs.bk
+rustc-ice-*.txt
+.env
