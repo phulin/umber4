@@ -57,7 +57,12 @@ def program(case, size):
 def measure(engines, path, expected, repeats):
     timings = {name: [] for name in engines}
     for repeat in range(repeats + 1):
-        order = ["umber", "pdftex"] if repeat % 2 else ["pdftex", "umber"]
+        order = list(engines)
+        if "baseline" in engines:
+            offset = repeat % len(order)
+            order = order[offset:] + order[:offset]
+        if repeat % 2 == 0:
+            order.reverse()
         for name in order:
             cmd, engine_env = engines[name]
             start = time.perf_counter_ns()
@@ -69,14 +74,19 @@ def measure(engines, path, expected, repeats):
             if repeat:
                 timings[name].append(elapsed)
     medians = {name: statistics.median(values) for name, values in timings.items()}
-    return {"seconds": timings, "median": medians,
-            "ratio": medians["umber"] / medians["pdftex"]}
+    result = {"seconds": timings, "median": medians,
+              "ratio": medians["umber"] / medians["pdftex"]}
+    if "baseline" in engines:
+        result["ratio_to_baseline"] = medians["umber"] / medians["baseline"]
+    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
     parser.add_argument("--pdftex")
+    parser.add_argument("--baseline", type=Path,
+                        help="previous Umber binary to time in the same run")
     parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
     parser.add_argument("--sizes", nargs="+", type=int, default=[10000, 100000, 1000000])
     parser.add_argument("--repeats", type=int, default=7)
@@ -93,6 +103,8 @@ def main():
     output = ROOT / "target/benchmark"
     command, env = reference(args.pdftex, output / "pdftex")
     engines = {"umber": ([str(args.umber.resolve())], None), "pdftex": (command, env)}
+    if args.baseline:
+        engines["baseline"] = ([str(args.baseline.resolve())], None)
     version = subprocess.check_output([command[0], "--version"], env=env).decode().splitlines()[0]
     cpu_model = platform.processor()
     if Path("/proc/cpuinfo").is_file():
@@ -106,6 +118,8 @@ def main():
               "umber_binary_sha256": hashlib.sha256(args.umber.read_bytes()).hexdigest(),
               "generator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
               "repeats": args.repeats, "complete": False, "samples": []}
+    if args.baseline:
+        report["baseline_binary_sha256"] = hashlib.sha256(args.baseline.read_bytes()).hexdigest()
     startup = output / "startup.tex"
     startup.write_text(BOOT + r"\message{UMBER:0,0:END}\end" + "\n")
     report["startup"] = measure(engines, startup, b"0,0", args.repeats)
@@ -120,7 +134,10 @@ def main():
             medians = row["median"]
             report["samples"].append(row)
             print(f"{case:12} {size:9}  umber {medians['umber']:.6f}s  "
-                  f"pdftex {medians['pdftex']:.6f}s  ratio {row['ratio']:.3f}", flush=True)
+                  f"pdftex {medians['pdftex']:.6f}s  ratio {row['ratio']:.3f}"
+                  + (f"  previous {medians['baseline']:.6f}s"
+                     f"  ratio {row['ratio_to_baseline']:.3f}" if args.baseline else ""),
+                  flush=True)
             args.report.parent.mkdir(parents=True, exist_ok=True)
             args.report.write_text(json.dumps(report, indent=2) + "\n")
     report["complete"] = True

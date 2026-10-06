@@ -1,0 +1,19 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\discard#1#2{OK}
+\message{UMBER:\discard{\unknown\count0=666}{xyz}:END}
+\count0=5\relax\def\touch{\advance\count0by1\relax}\def\discard#1{D}
+\message{UMBER:\discard{\touch}/\the\count0:END}
+\def\hash#1{##}\message{UMBER:\hash{ignored}:END}
+\long\def\discard#1{L}\long\def\pass#1{\discard{#1}}
+\message{UMBER:\pass{A\par B}:END}
+\def\grab#1aba{G}\message{UMBER:\grab aaba:END}
+\def\grab#1\par!{G}\message{UMBER:\grab X\par Y\par!:END}
+\def\brace#1#{B}\message{UMBER:\brace X{Y}:END}
+\def\empty#1#2{}\empty{A}{B}\count1=2\relax
+\message{UMBER:\the\count0/\the\count1:END}
+\def\prefix X#1{P}\message{UMBER:\prefix X{Y}:END}
+\def\erase#1{E}\edef\expanded#1{\erase{#1}}
+\message{UMBER:\expanded{\unknown}:END}
+\def\marker{##1}\edef\expanded#1{\marker}
+\message{UMBER:\expanded{X}:END}
+\end

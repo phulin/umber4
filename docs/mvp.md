@@ -65,6 +65,16 @@ so retiring a parent does not invalidate it. Reuse packet and capture-buffer
 capacity. Parameter-free invocation installs the existing body without allocation
 or reference counting. Retire exhausted sources before installing a successor.
 
+Definitions record whether their replacement tokens substitute any parameter.
+Calls always scan and validate all arguments. A body using no parameters can
+consume the arguments without retaining a packet or capture storage. Select this
+scanning mode once per invocation; the token loops use the same matching rules.
+
+Grouped arguments scan an immutable source window directly, retaining one range
+at its boundary. Parameter substitution and source advancement resume this scan
+at the next window. One-token substitutions return the existing token and range
+directly while the body retains their owner, avoiding a temporary input source.
+
 Keep grouping in a reused save stack, preserving local/global/local restoration
 and the extended profile's identical-local-assignment behavior. Character tokens
 keep their captured category codes. Backing up a token preserves identity, while

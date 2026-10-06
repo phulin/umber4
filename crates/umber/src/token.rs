@@ -31,10 +31,10 @@ impl Token {
         self.0 as u8
     }
     pub fn is_begin(self) -> bool {
-        !self.is_cs() && self.cat() == 1
+        self.0 >> 8 == 1
     }
     pub fn is_end(self) -> bool {
-        !self.is_cs() && self.cat() == 2
+        self.0 >> 8 == 2
     }
     pub fn is_space(self) -> bool {
         self.0 == (10 << 8 | 32)
@@ -147,6 +147,7 @@ pub(crate) struct Sequence {
     pub rest: Vec<Span>,
 }
 impl Sequence {
+    #[inline(always)]
     pub fn append(&mut self, span: Span) {
         if span.empty() {
             return;
@@ -195,6 +196,7 @@ pub(crate) struct Definition {
     pub body: Span,
     pub signature: Span,
     pub long: bool,
+    pub uses_parameters: bool,
     pub failures: Vec<Vec<usize>>,
 }
 #[derive(Default)]

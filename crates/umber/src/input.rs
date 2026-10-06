@@ -212,6 +212,9 @@ impl Engine<'_> {
                     if token.0 & PARAM != 0 && !token.is_cs() {
                         let packet = cursor.macro_packet.ok_or(Error::Syntax)?;
                         let argument = token.byte() - 1;
+                        if let Some(raw) = self.single_argument(packet, argument) {
+                            return Ok(raw);
+                        }
                         self.push_sequence(SequenceRef::Argument(packet, argument), None, None)?;
                         continue;
                     }
@@ -234,6 +237,27 @@ impl Engine<'_> {
                 }
             }
         }
+    }
+    #[inline(always)]
+    pub(crate) fn single_argument(&self, packet: u32, argument: u8) -> Option<Raw> {
+        let sequence = &self.packets[packet as usize].arguments[argument as usize];
+        let span = sequence.first;
+        if span.end - span.start != 1 || !sequence.rest.is_empty() {
+            return None;
+        }
+        let token = if span.store == DEFS {
+            self.arena.get(span.start)
+        } else {
+            self.captures[span.store as usize].tokens[span.start as usize]
+        };
+        // Argument tokens contain no internal parameter markers: their scanner
+        // already substituted them. The body keeps this backing alive until the
+        // next read; a child capture retains it before that read can retire it.
+        Some(Raw {
+            token,
+            origin: Some(span),
+            suppress: false,
+        })
     }
     pub(crate) fn span_for(&self, sequence: SequenceRef, index: usize) -> Option<Span> {
         match sequence {
@@ -321,7 +345,7 @@ impl Engine<'_> {
         }));
         Ok(())
     }
-    fn advance_source(&mut self) -> Result<()> {
+    pub(crate) fn advance_source(&mut self) -> Result<()> {
         let Some(Source::Tokens(cursor)) = self.sources.last() else {
             return Err(Error::Syntax);
         };

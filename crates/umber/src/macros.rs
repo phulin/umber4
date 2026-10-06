@@ -59,6 +59,7 @@ impl Engine<'_> {
         self.arena.push(Token(PARAM | 255))?;
         let body_start = self.arena.len;
         let mut depth = 1usize;
+        let mut uses_parameters = false;
         loop {
             let read = if expanded {
                 self.next_expanded()?
@@ -88,6 +89,7 @@ impl Engine<'_> {
                 {
                     self.arena
                         .push(Token(PARAM | u32::from(next.token.byte() - b'0')))?;
+                    uses_parameters = true;
                 } else {
                     return Err(Error::Syntax);
                 }
@@ -137,6 +139,7 @@ impl Engine<'_> {
             body,
             signature,
             long,
+            uses_parameters,
             failures,
         });
         self.assign_meaning(
@@ -215,6 +218,19 @@ impl Engine<'_> {
         self.packets[packet as usize].arguments[argument].append(span);
         Ok(())
     }
+    #[inline(always)]
+    fn capture_span(&mut self, packet: u32, argument: usize, span: Span) {
+        let sequence = &mut self.packets[packet as usize].arguments[argument];
+        let last = sequence.rest.last_mut().unwrap_or(&mut sequence.first);
+        if !last.empty() && last.store == span.store && last.end == span.start {
+            last.end = span.end;
+            return;
+        }
+        if span.store != DEFS {
+            self.retain_capture(packet, span.store);
+        }
+        self.packets[packet as usize].arguments[argument].append(span);
+    }
     #[inline(never)]
     fn retain_capture(&mut self, packet: u32, id: u32) {
         let owners = &mut self.packets[packet as usize].owners;
@@ -259,10 +275,135 @@ impl Engine<'_> {
             self.retire_exhausted();
             return self.push_body(id, body);
         }
-        self.begin_macro_with_arguments(id)
+        if definition.uses_parameters {
+            self.begin_macro_with_arguments::<true>(id)
+        } else {
+            self.begin_macro_with_arguments::<false>(id)
+        }
+    }
+    #[inline(always)]
+    fn capture_group<const RETAIN: bool>(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        long: bool,
+        builder: &mut Option<u32>,
+    ) -> Result<()> {
+        let mut depth = 1;
+        loop {
+            if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+                let first = cursor.next;
+                let mut next = first;
+                let parameter = loop {
+                    if next == cursor.end {
+                        break None;
+                    }
+                    // SAFETY: this window consists of initialized immutable
+                    // tokens in one allocation, retained by the source. No
+                    // source or backing storage changes during this scan.
+                    let token = unsafe { next.read() };
+                    if token.0 & PARAM != 0 && !token.is_cs() {
+                        break Some(token.byte() - 1);
+                    }
+                    if !long && token == self.par {
+                        return Err(Error::Argument);
+                    }
+                    // SAFETY: next is before the end of the same allocation.
+                    next = unsafe { next.add(1) };
+                    if token.is_begin() {
+                        depth += 1;
+                    }
+                    if token.is_end() {
+                        depth -= 1;
+                        if depth == 0 {
+                            break None;
+                        }
+                    }
+                };
+                let parent = cursor.macro_packet;
+                // SAFETY: a parameter marker was read strictly before end.
+                cursor.next = if parameter.is_some() {
+                    unsafe { next.add(1) }
+                } else {
+                    next
+                };
+                if next != first {
+                    // SAFETY: all pointers belong to this one source window.
+                    let start = cursor.window_end_position
+                        - unsafe { cursor.end.offset_from(first) } as u32;
+                    let end = start + unsafe { next.offset_from(first) } as u32;
+                    let span = Span {
+                        store: cursor.span.store,
+                        start,
+                        end: end - u32::from(depth == 0),
+                    };
+                    // Retain before the scalar reader can retire this source.
+                    if RETAIN && !span.empty() {
+                        self.capture_span(packet, argument, span);
+                    }
+                    if depth == 0 {
+                        return Ok(());
+                    }
+                }
+                if let Some(parent_argument) = parameter {
+                    let parent = parent.ok_or(Error::Syntax)?;
+                    if let Some(raw) = self.single_argument(parent, parent_argument) {
+                        if self.capture_group_token::<RETAIN>(
+                            packet, argument, long, builder, &mut depth, raw,
+                        )? {
+                            return Ok(());
+                        }
+                    } else {
+                        self.push_sequence(
+                            SequenceRef::Argument(parent, parent_argument),
+                            None,
+                            None,
+                        )?;
+                    }
+                } else {
+                    self.advance_source()?;
+                }
+                continue;
+            }
+            // File input and short insertions use the ordinary reader. Token
+            // source transitions above resume directly at the next window.
+            let raw = self.next_raw()?;
+            if self
+                .capture_group_token::<RETAIN>(packet, argument, long, builder, &mut depth, raw)?
+            {
+                return Ok(());
+            }
+        }
+    }
+    #[inline(always)]
+    fn capture_group_token<const RETAIN: bool>(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        long: bool,
+        builder: &mut Option<u32>,
+        depth: &mut usize,
+        raw: Raw,
+    ) -> Result<bool> {
+        if !long && raw.token == self.par {
+            return Err(Error::Argument);
+        }
+        if raw.token.is_begin() {
+            *depth += 1;
+        }
+        if raw.token.is_end() {
+            *depth -= 1;
+            if *depth == 0 {
+                return Ok(true);
+            }
+        }
+        if RETAIN {
+            self.capture_raw(packet, argument, raw, builder)?;
+        }
+        Ok(false)
     }
     #[inline(never)]
-    fn begin_macro_with_arguments(&mut self, id: u32) -> Result<()> {
+    fn begin_macro_with_arguments<const RETAIN: bool>(&mut self, id: u32) -> Result<()> {
         let prefix = self.definitions[id as usize].prefix;
         for position in prefix.start..prefix.end {
             let expected = self.arena.get(position);
@@ -275,7 +416,7 @@ impl Engine<'_> {
             self.retire_exhausted();
             return self.push_sequence(SequenceRef::Body(id), None, None);
         }
-        let packet = self.take_packet(count)?;
+        let packet = if RETAIN { self.take_packet(count)? } else { 0 };
         let mut builder = None;
         let long = self.definitions[id as usize].long;
         for argument in 0..count {
@@ -294,24 +435,8 @@ impl Engine<'_> {
                     return Err(Error::Argument);
                 }
                 if first.token.is_begin() {
-                    let mut depth = 1;
-                    loop {
-                        let raw = self.next_raw()?;
-                        if !long && raw.token == self.par {
-                            return Err(Error::Argument);
-                        }
-                        if raw.token.is_begin() {
-                            depth += 1;
-                        }
-                        if raw.token.is_end() {
-                            depth -= 1;
-                            if depth == 0 {
-                                break;
-                            }
-                        }
-                        self.capture_raw(packet, argument, raw, &mut builder)?;
-                    }
-                } else {
+                    self.capture_group::<RETAIN>(packet, argument, long, &mut builder)?;
+                } else if RETAIN {
                     self.capture_raw(packet, argument, first, &mut builder)?;
                 }
             } else {
@@ -327,7 +452,9 @@ impl Engine<'_> {
                     if seen == 1 {
                         first_group = raw.token.is_begin();
                     }
-                    self.capture_raw(packet, argument, raw, &mut builder)?;
+                    if RETAIN {
+                        self.capture_raw(packet, argument, raw, &mut builder)?;
+                    }
                     if depth == 0 {
                         while matched > 0
                             && self.arena.get(delimiter.start + matched as u32) != raw.token
@@ -360,17 +487,25 @@ impl Engine<'_> {
                         }
                     }
                 }
-                let sequence = &mut self.packets[packet as usize].arguments[argument];
-                sequence.trim_back(length);
-                if group_end == Some(seen - length) {
-                    sequence.trim_front();
-                    sequence.trim_back(1);
+                if RETAIN {
+                    let sequence = &mut self.packets[packet as usize].arguments[argument];
+                    sequence.trim_back(length);
+                    if group_end == Some(seen - length) {
+                        sequence.trim_front();
+                        sequence.trim_back(1);
+                    }
                 }
             }
         }
-        self.finish_capture(packet, builder);
+        if RETAIN {
+            self.finish_capture(packet, builder);
+        }
         self.retire_exhausted();
-        self.push_sequence(SequenceRef::Body(id), Some(packet), Some(packet))
+        if RETAIN {
+            self.push_sequence(SequenceRef::Body(id), Some(packet), Some(packet))
+        } else {
+            self.push_body(id, self.definitions[id as usize].body)
+        }
     }
     pub(crate) fn same_meaning(&self, a: Meaning, b: Meaning) -> bool {
         if a == b {

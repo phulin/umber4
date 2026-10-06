@@ -1,0 +1,20 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\id#1{#1}\def\pass#1{\id{#1}}
+\def\wrap#1{\pass{L{#1}R}\pass{}}
+\def\invoke{\id{A{B}C}}
+\message{UMBER:\invoke/\wrap{X}/\wrap{}:END}
+\def\invoke{\id{{AB}}}\message{UMBER:\invoke:END}
+\def\mix#1{\pass{A#1B}}
+\message{UMBER:\mix{X}/\mix{Y}/\mix{}:END}
+\def\join#1#2{#1/#2}\def\swap#1#2{\join{L#2R}{#1}}
+\message{UMBER:\swap{A}{B}/\swap{C}{D}:END}
+\def\open#{\id}\message{UMBER:\open{A{B}C}:END}
+\message{UMBER:\expandafter\id\noexpand{D{E}F}:END}
+\long\def\id#1{#1}\def\invoke{\id{P\par Q}}
+\message{UMBER:\invoke:END}
+\let\L={\let\R=}\def\invoke{\id{A\L B\R C}}
+\message{UMBER:\invoke:END}
+\catcode91=1 \catcode93=2\relax
+\def\invoke{\id[A[B]C]}
+\message{UMBER:\invoke:END}
+\end

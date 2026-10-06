@@ -131,6 +131,14 @@ fn argument_backing_survives_tail_retirement_and_repetition() {
         r"\def\id#1{#1}\def\pass#1{\id{A#1B}}\message{\pass{X}\pass{Y}}",
         b"AXBAYB",
     );
+    message(
+        r"\def\twice#1{#1/#1}\message{\twice{X}/\twice{Y}}",
+        b"X/X/Y/Y",
+    );
+    message(
+        r"\def\id#1{#1}\def\tick{T}\message{\expandafter\id\noexpand\tick}",
+        b"T",
+    );
 }
 
 #[test]
@@ -149,6 +157,41 @@ fn active_definition_cursors_survive_chunk_and_header_growth() {
 }
 
 #[test]
+fn grouped_argument_windows() {
+    let payload = format!("{}{{Y}}{}", "X".repeat(4097), "Z".repeat(4097));
+    let program = format!(
+        r"\def\id#1{{#1}}\def\pass#1{{\id{{A#1B}}}}\def\invoke{{\pass{{{payload}}}}}\message{{\invoke\invoke}}"
+    );
+    let expected = format!("A{payload}BA{payload}B");
+    message(&program, expected.as_bytes());
+
+    let source = format!(
+        r"{BOOT}\def\id#1{{#1}}\def\invoke{{\id{{{}\par}}}}\invoke\end",
+        "X".repeat(4097)
+    );
+    assert_eq!(
+        Engine::new(source.as_bytes()).run().err(),
+        Some(Error::Argument)
+    );
+
+    let result = Engine::new(include_bytes!("../../../fixtures/mvp/window-arguments.tex"))
+        .run()
+        .unwrap();
+    let expected: &[&[u8]] = &[
+        b"UMBER:A{B}C/L{X}R/L{}R:END",
+        b"UMBER:{AB}:END",
+        b"UMBER:AXB/AYB/AB:END",
+        b"UMBER:LBR/A/LDR/C:END",
+        b"UMBER:A{B}C:END",
+        b"UMBER:D{E}F:END",
+        br"UMBER:P\par Q:END",
+        br"UMBER:A\L B\R C:END",
+        b"UMBER:A[B]C:END",
+    ];
+    assert_eq!(result.messages, expected);
+}
+
+#[test]
 fn shared_upstream_interactions() {
     let result = Engine::new(include_bytes!("../../../fixtures/mvp/interactions.tex"))
         .run()
@@ -161,10 +204,41 @@ fn shared_upstream_interactions() {
 }
 
 #[test]
+fn discarded_arguments_still_follow_scanning_rules() {
+    let result = Engine::new(include_bytes!(
+        "../../../fixtures/mvp/discarded-arguments.tex"
+    ))
+    .run()
+    .unwrap();
+    let expected: &[&[u8]] = &[
+        b"UMBER:OK:END",
+        b"UMBER:D/5:END",
+        b"UMBER:##:END",
+        b"UMBER:L:END",
+        b"UMBER:G:END",
+        b"UMBER:G:END",
+        b"UMBER:B{Y}:END",
+        b"UMBER:5/2:END",
+        b"UMBER:P:END",
+        b"UMBER:E:END",
+        b"UMBER:X:END",
+    ];
+    assert_eq!(result.messages, expected);
+}
+
+#[test]
 fn supported_failure_boundaries() {
     let cases: &[(&[u8], Error)] = &[
         (
             include_bytes!("../../../fixtures/mvp/failures/paragraph-argument.tex"),
+            Error::Argument,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/paragraph-stored-argument.tex"),
+            Error::Argument,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/paragraph-discarded-argument.tex"),
             Error::Argument,
         ),
         (
