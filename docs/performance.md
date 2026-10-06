@@ -38,8 +38,9 @@ reuse. Snapshot sharing operates at tables, chunks, and semantic owner boundarie
 The first executable storage comparison should cover contiguous versus segmented
 token sequences, node-cell size, table-block/node-chunk size, and direct/scoped
 node lookup. Measure allocation frequency, materialized token words, copied bytes,
-and retained owners as well as time. A compact representation that adds another
-indirection on every token may cost more than the memory it saves.
+and retained owners as well as time. Include I/O tail capacity, retained range
+descriptors, and bytes materialized by prefix overwrites. A compact representation
+that adds another indirection on every token may cost more than the memory it saves.
 
 Checkpointing can be disabled or sparsely retained in a one-shot session while
 running the same interpreter. Compare that path with paragraph checkpoints
@@ -75,11 +76,12 @@ Resource and result crossings follow [resources.md](resources.md).
 
 ## 4. Comparable full compilations
 
-Use native pdfTeX as the performance reference with the same TeX inputs, format,
-font/image resources, output mode, and enabled extensions. Compare actual full
-compilations, including startup and output work. Report format construction/import
+Use native pdfTeX as the performance reference with the same TeX inputs, format
+semantics, font/image resources, output mode, and enabled extensions. Compare full
+compilations, including startup and output work. Report format construction/export
 and cache warmup separately so a cached Rust format is compared with the relevant
-native format-loading path.
+native format-loading path. Measure cold Umber format reads separately from warm
+in-memory baseline reuse.
 
 Use several real workloads: macro-heavy package loading, plain text, formula and
 alignment-heavy documents, insertion/output-routine-heavy documents, and PDF

@@ -115,7 +115,7 @@ equivalence between two arbitrary engine states.
 
 Choose the latest retained checkpoint whose already-observed inputs are unchanged.
 First revalidate the selected format baseline and its setup dependencies. If they
-changed, rebuild/reimport it, discard the old document checkpoints, and create a
+changed, rebuild or reload it, discard the old document checkpoints, and create a
 fresh initialization root; restarting from the old root would retain stale format
 semantics. [formats.md](formats.md) defines baseline identity and setup.
 For character input, the relevant prefix includes whole prepared lines, since
@@ -146,6 +146,10 @@ Revalidate retained prefix checkpoints too, replacing their source-view owners
 with the new versions when valid and keeping exact prepared-line contents and
 lexical state. Rebind raw-line spans to the validated new bytes too; independently
 owned normalized or rewritten lines can keep their existing owners.
+Rebind ordinary external readers' unread read-ahead ranges as well, recomputing
+window/refill bounds for a shortened suffix while preserving the prepared line
+and logical cursor. Already-aliased external windows keep their backing under
+the full-version validation rule in [resources.md](resources.md).
 Release invalid younger checkpoints and obsolete source buffers. Otherwise a
 small suffix edit could retain an entire old source version per editing branch.
 

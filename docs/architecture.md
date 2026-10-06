@@ -272,8 +272,8 @@ Ordered shipout produces owned page output and updates the DVI/PDF document-wide
 structures, such as font and PDF object information. Their checkpoint
 representation belongs to each backend. Retaining
 completed pages lets a resumed compilation reuse its output prefix and construct
-the rest of the document. The final PDF can be serialized from this combined
-output, reusing completed content streams and finalizing document resources.
+the rest of the document. Final PDF serialization continues the logical output
+file, reusing completed content streams and finalizing document resources.
 [resources.md](resources.md) and [output.md](output.md) develop I/O ordering,
 backend state, and serialization.
 
@@ -336,7 +336,7 @@ design proposal; representation costs remain implementation measurements.
 | In-memory snapshots and prefix restart              | [checkpoints.md](checkpoints.md)         |
 | Native/Wasm resources, streams, and replay          | [resources.md](resources.md)             |
 | Ordered shipout and DVI/PDF serialization           | [output.md](output.md)                   |
-| Bootstrap, format reuse/import, and startup         | [formats.md](formats.md)                 |
+| Bootstrap, Umber format export/read, and startup    | [formats.md](formats.md)                 |
 | Native/Wasm execution and performance evidence      | [performance.md](performance.md)         |
 
 A small interpreter for input, definitions, groups, and simple output can already

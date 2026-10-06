@@ -1,8 +1,8 @@
 # Resources, streams, and host adapters
 
 This proposal supplies native and Wasm resource access for the interpreter in
-[architecture.md](architecture.md). The core works with byte views and logical
-streams. The adapters decide how to find and acquire those bytes.
+[architecture.md](architecture.md). The core uses shared input bytes, append
+buffers, and ordinary stream handles. The adapters find and acquire the bytes.
 
 ## 1. A synchronous core interface
 
@@ -10,7 +10,7 @@ The interpreter makes ordinary calls to resolve a logical name, open an input,
 load font or image bytes, or operate on a generated stream. A call returns its
 answer or an ordinary error/request. It does not suspend a scanner.
 
-Acquire the chosen format and its startup resources during session setup, before
+Acquire the chosen Umber format and its startup resources during setup, before
 creating the initialization restart root. Pending setup acquisition returns to
 the host directly; paragraph-checkpoint replay applies after document execution
 starts.
@@ -27,101 +27,98 @@ file-existence checks and EOF behavior require that distinction. An adapter's
 actual lookup failure follows TeX's selected interaction/error behavior;
 pending acquisition uses restart before the operation can complete.
 
-## 2. Byte ownership and lookup
+## 2. Shared input bytes
 
-A resource key identifies logical name, resource kind, lookup operation/search
-policy, resolution context, and the active input view. A resolved lookup provides
-the relevant existence and metadata answers without loading the whole resource.
-Byte acquisition supplies an immutable content version and shared storage when
-a reader or parser needs them. Font metrics, font programs, image data, format input, and
-ordinary TeX files can have different lookup rules while using the same ownership
-interface.
+Acquire external bytes once into an immutable shared buffer. Ordinary input uses
+a cursor and ranges into that buffer; metric and image parsers build directly in
+their cache destination. Normalized lines need their own buffer only when their
+contents change. Cache parsed resources by content version and parsing options.
 
-The native compatibility adapter follows the relevant TeX search conventions,
-including extension defaults and resource-specific paths. Implement lookup
-outside token and layout loops. Its result can cache a concrete path and immutable
-bytes. The browser adapter resolves the same logical requests against its bundle
-and configured provider. Name scanning remains in the interpreter, since its
-expansion and termination are TeX semantics.
+Name resolution remains an adapter operation outside token/layout loops. Its key
+includes resource kind, lookup policy, context, and input view. Follow the selected
+TeX search conventions, including the distinct `\openin` probe and `\input`
+acquisition policies. Resolved file identity lets aliases name the same file.
+A small document file table supplies generated contents at each search candidate;
+creation, truncation, or removal invalidates affected cached lookup outcomes.
+A removed destination masks its older external entry rather than exposing stale
+bytes from the input bundle.
 
-Input files retain shared bytes plus their mutable cursors. Metric and image
-parsers consume borrowed ranges and build their parsed representation directly in
-its cache destination. Only mutable normalization buffers need a separate owner.
-Resource-cache keys include content version and parsing options, so a changed file
-does not reuse an old parsed object merely because its name stayed the same.
+Input handles retain position, open/EOF state, and the read-ahead window required
+by the selected host profile. For an immutable source, that window can be a range
+in the shared buffer. If output later aliases the source, already buffered bytes
+remain available and subsequent fills consult the file's current visible contents.
+This state is recorded from opening, so an alias requires no reconstruction of
+earlier reads. Generated-file read windows own their buffered bytes.
 
-Checkpoint validation retains per-resource input observations: prepared text
-prefixes, observed EOF boundaries, full-resource versions, lookup outcomes, and
-attributes actually queried by primitives such as `\pdffilemoddate`. Metadata can
-change while byte content stays identical. Distinguish `\openin` probe policy
-from `\input` acquisition policy in lookup and negative-cache keys; Web2C's
-search behavior can differ between them. Resources used later than
-a checkpoint can remain cached without becoming prerequisites of that earlier
-state. Reopening a source consults the current input view rather than reviving a
-stale resolution by filename alone.
-Resolution checks the current overlay at each profile-ordered search candidate
-before using cached external outcomes. Overlay creation, truncation, or removal
-invalidates affected lookup results, including earlier cached misses.
-Release obsolete ordinary-file versions when no active input view or checkpoint
-needs them; reusable parsed font/image caches have their own retention policy.
+Checkpoint observations retain prepared prefixes, observed EOF, lookup outcomes,
+whole-resource versions, and metadata actually queried by TeX. Use full-version
+validation initially for external inputs aliased by output. Reopening consults
+the current input view. [checkpoints.md](checkpoints.md) defines prefix validation;
+obsolete source versions release when their last cursor/checkpoint owner disappears.
+Parsed font/image caches have their own retention policy.
 
-## 3. Generated output and immediate semantics
+## 3. Generated files: a shared prefix and writable tail
 
-Generated files live in a document-owned overlay. A logical file has versioned
-visible bytes; each numbered stream and `\input` reader has its own file binding,
-position, open/EOF state, and any buffered bytes. `\openout` opens for writing
-and truncates that file, including when another handle already names it. It does
-not reset the other handle's position. Writing at a handle's position usually
-appends, but an aliased handle can overwrite an existing range.
+Keep one file record per resolved identity and ordinary handle records for numbered
+streams, input readers, and the main output. A handle names the file, not a frozen
+byte version. Each writer retains the starting offset of its pending buffer;
+its next-write position is that offset plus the pending length. Readers retain
+their consumed position, refill position, buffered window, and EOF state.
 
-Logical open also asks the adapter to accept or reserve the destination.
-An unwritable or otherwise rejected destination follows TeX's open-error and
-filename-retry behavior at that operation. A later failure to publish an accepted
-result is an adapter I/O failure, distinct from TeX's filename scanning/recovery.
+Represent visible file contents as retained immutable byte ranges followed by a
+uniquely owned `Vec<u8>` tail. Ordinary appends write into that tail. A checkpoint
+moves a changed, nonempty tail into shared ownership and starts a fresh tail;
+it retains range descriptors and lengths rather than copying accumulated bytes.
+Freeze the vector without shrinking or repacking its allocation. Finalized
+stream/page publication can also seal a tail after its patches finish, then start
+a fresh unique tail. A flat range list is sufficient initially, using the same
+byte owners as page output.
 
-TeX distinguishes immediate execution from deferred nodes. `\immediate\write`
-expands and writes at execution time. A normal `\write` retains its token list
-in a node and expands it during shipout, with the then-current meanings.
-Open and close commands can also be deferred. The core performs those effects
-while traversing a shipped page, before publishing its completed page record.
-This ordering is defined by `out_what`, `write_out`, and the write commands in the
-[TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+Writes wholly within the unique tail update it directly. This includes PDF
+stream-length patches during normal output; see
+[pdfTeX's seek-and-write helper](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/pdftexdir/utils.c).
+A write touching retained prefix bytes materializes the current file once into
+a unique contiguous buffer, then applies the change there. Truncation installs
+empty contents without copying the old prefix. This gives unusual alias overwrites
+a simple cold path while normal append and tail patching remain direct.
 
-Shipout suppresses ordinary deferred open/write/close effects inside leaders,
-following TeX's traversal context. Terminal and log write destinations also keep
-their command-specific routing rather than becoming ordinary generated files.
+The selected host profile determines when pending writer bytes become visible.
+`\immediate\write` executes immediately but does not inherently flush.
+Close flushes; seek/flush operations preserve the profile's visibility points.
+At an append flush, transfer a completed buffer into a compatible unique tail,
+preserving writable stream headers until their patches finish. Otherwise copy
+only those pending bytes into the tail. Pending writer bytes and visible file
+bytes are separate state. Checkpoint sealing changes ownership only: it leaves
+pending writes unflushed. Copy small handle buffers and retain their immutable
+range owners at checkpoints.
 
-The selected Web2C host profile defines buffering and flush behavior. Executing
-an immediate write does not imply flushing its bytes to another read handle.
-Output buffers commit at their handle's offset when flushed; closing flushes them.
-Generated-file readers retain their read-ahead state and observe visible file
-bytes on subsequent fills. Preserve those small handle records at checkpoints.
-Ordinary stable external resources still use simple immutable byte cursors.
-This exception includes a reader opened on an external file before `\openout`
-aliases and truncates it. Retained read-ahead bytes can outlive that truncation.
-Their external backing is a checkpoint input observation; use full-version
-validation initially for such aliased readers. File bindings use the adapter's
-resolved identity so different names for the same file share these effects.
-Web2C lowers writes to C stdio and opens output files in write mode; see
+`\openout` truncates the shared file at its execution point. Other handles keep
+their offsets, pending bytes, and read-ahead. A writer flushing at an offset beyond
+the new EOF produces a zero-filled gap. Later reader fills see the current visible
+bytes, while buffered bytes and EOF state follow the profile's normal transitions.
+Keep TeX's open/closed stream state separate from the reader's sticky EOF.
+File-size, byte-dump, and checksum queries use visible contents; file metadata
+updates at logical truncation/commit using retained environment answers.
+The Web2C lowering and open behavior are in
 [fixwrites.c](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/web2c/fixwrites.c) and
 [openclose.c](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/lib/openclose.c).
 
-Visible files and buffers use chunked byte builders. The append path writes into
-its destination chunk. Aliased overwrites make the affected chunks writable;
-snapshots share untouched chunks and copy handle positions and buffers as needed.
-Opening, closing, truncation, and failed-read EOF transitions retain their native
-profile semantics. This small stream layer handles live generated content without
-turning every immutable resource into a virtual filesystem.
-At flush, pending chunks can transfer or become visible ranges without copying
-their bytes. Generated-file metadata belongs to the versioned file state and
-uses retained environment answers when timestamps are assigned.
+Logical output open asks the adapter to accept the destination. Rejection follows
+TeX's open-error and filename-retry behavior there. The native CLI publishes
+accepted file ranges to disk; an embedding receives logical results. Publication
+after accepted execution lets replay replace a suffix without reversing disk
+writes. A later publication failure is an adapter I/O failure.
 
-The native CLI writes the accepted generated files to disk; an embedding receives
-their logical results. Deferring physical publication lets restored execution
-replace a suffix without undoing filesystem writes. Immediate versus deferred
-TeX effects are still distinct inside the compilation. Physical visibility to
-another process during a running compile is a separate adapter behavior, outside
-the initial incremental-session contract.
+Deferred open/write/close nodes perform their effects in shipout order.
+A deferred write expands with the then-current meanings. Leaders suppress the
+specified effects; terminal/log destinations keep their command-specific routing.
+These rules follow `out_what` and `write_out` in the
+[TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+
+Restore selects the retained file contents and handle records, dropping the
+abandoned tail. Measure tail capacity, range descriptors, pending buffers, and
+prefix materialization on alias writes. Large ordinary output should stay on the
+append path; more elaborate byte indexing can follow an actual measured need.
 
 ## 4. Diagnostics and run environment
 
@@ -166,7 +163,7 @@ acquisition request.
 ## 6. Multiple passes and external operations
 
 The session driver owns repeated TeX passes. A pass reads a stable external input
-view plus its live generated overlay; accepted outputs become the next pass's
+view plus its document file table; accepted outputs become the next pass's
 inputs. Keep those layers distinct so an `.aux` file written during one pass is
 not accidentally treated as an unchanged editor input on restore.
 Passes and publication retain or transfer generated chunks directly; flattening

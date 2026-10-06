@@ -14,8 +14,8 @@ Read the root `AGENTS.md` first.
   and retained file cursors.
 - `checkpoints.md` develops paragraph handoff, heterogeneous snapshots,
   in-memory restore, and conservative prefix restart after edits.
-- `resources.md` develops native/Wasm byte acquisition, logical streams,
-  generated output, diagnostics, and resource-request replay.
+- `resources.md` develops native/Wasm byte acquisition, shared input buffers,
+  generated-file append storage, stream handles, diagnostics, and replay.
 - `paragraphs.md` develops font state, character/ligature construction, packing,
   hyphenation, exact line breaking, and pdfTeX spacing extensions.
 - `math-alignments.md` develops math atoms/conversion, display math, alignment
@@ -24,8 +24,8 @@ Read the root `AGENTS.md` first.
   output routines, and retained unfinished pages.
 - `output.md` develops ordered shipout, detached pages, backend document state,
   DVI/PDF resources, and direct serialization.
-- `formats.md` develops bootstrap, source-built and imported formats, shared
-  semantic baselines, and document startup.
+- `formats.md` develops bootstrap, Umber format export/read, shared semantic
+  baselines, and document startup.
 - `performance.md` develops native/Wasm hot paths, allocation experiments,
   comparable upstream measurements, and compatibility evidence.
 - Distinguish requirements, proposed choices, measured results, and open questions.

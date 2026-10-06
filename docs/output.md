@@ -32,7 +32,10 @@ operation's actual first-open point, before its ordered effects. That includes
 PDF operations such as image scanning or immediate object emission that can
 initialize output before any page. Retain the emitted file prefix, position,
 and buffering state, so same-job file queries and aliased streams see the correct
-bytes. Page records and the output file can share emitted chunks.
+bytes. The shared prefix and writable tail in [resources.md](resources.md)
+support appends and stream-length patches directly. Before sharing completed
+ranges with a page record, finish their patches and seal their byte owner;
+subsequent output uses a fresh writable tail.
 
 If acquisition returns a pending request, the ordinary result unwinds shipout and
 the session restores its preceding checkpoint. Only a successfully completed
@@ -95,9 +98,10 @@ count, and previous beginning-of-page offset are known during sequential shipout
 Emit the backward page link directly and retain those counters in backend state.
 Restoring a prefix restores its offsets; the postamble is emitted after execution.
 
-The serializer writes the preamble, retained pages, font definitions, postamble,
-and final padding in the required order. It can stream chunks to a native sink or
-produce the embedding's result buffer. Exact DVI comparison is useful where the
+The preamble and pages enter the logical file during ordered emission. Finalization
+writes the remaining font definitions, postamble, and padding through its existing
+handle. Publication streams that file's authoritative ranges to a native sink or
+the embedding's result buffer. Exact DVI comparison is useful where the
 chosen command encoding follows upstream; equivalent encodings still require
 independent structural and placement comparisons.
 
@@ -194,12 +198,12 @@ and writes into the destination. An embedding that needs one contiguous file
 allocates that file buffer as the destination.
 Native streaming does not require assembling a second whole document in memory.
 
-Restored execution reuses its immutable output prefix and rebuilds the later
-document state. It can reserialize a complete file from those retained objects.
-A previous PDF file's bytes are not the mutable live document: later font subsets,
-page references, and object tables can change the final serialization. A page
-preview can use a separately finalized retained result without mutating the live
-backend or consuming pending TeX effects.
+Restored execution continues from the logical file prefix and matching backend
+state. Finalization writes through that file's handle, preserving any aliased
+truncation or overwrite performed by TeX. The file's logical contents are the
+accepted job output. A preview can separately serialize retained page/object data
+into its own destination, without mutating the live backend or consuming pending
+TeX effects.
 
 Final result status also follows the selected backend/profile: a zero-page run
 does not create DVI, unused immediate PDF objects do not create a page-only
