@@ -28,6 +28,8 @@ Read the root `AGENTS.md` first.
   baselines, and document startup.
 - `performance.md` develops native/Wasm hot paths, allocation experiments,
   comparable upstream measurements, and compatibility evidence.
+- `mvp.md` defines the first executable expansion/register slice, supported
+  primitives, compatibility fixtures, and same-source performance comparison.
 - Distinguish requirements, proposed choices, measured results, and open questions.
   Do not describe planned facilities as implemented.
 - Keep detailed subsystem contracts in focused documents when those designs are
