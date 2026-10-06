@@ -5,6 +5,7 @@ use std::rc::Rc;
 pub(crate) const CS: u32 = 1 << 24;
 pub(crate) const PARAM: u32 = 1 << 23;
 pub(crate) const DEFS: u32 = u32::MAX;
+pub(crate) const SINGLE: u32 = DEFS - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
 pub(crate) const CHUNK_BITS: u32 = 12;
 const CHUNK_LEN: usize = 1 << CHUNK_BITS;
@@ -132,6 +133,8 @@ pub(crate) struct Integer {
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Span {
+    // SINGLE encodes an inline token in start with end = start + 1. It is
+    // confined to a one-token sequence and promoted before another range joins.
     pub store: u32,
     pub start: u32,
     pub end: u32,

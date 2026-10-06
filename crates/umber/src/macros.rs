@@ -183,7 +183,7 @@ impl Engine<'_> {
             capture.building = true;
             return Ok(id as u32);
         }
-        if self.captures.len() >= DEFS as usize {
+        if self.captures.len() >= SINGLE as usize {
             return Err(Error::Capacity);
         }
         let id = self.captures.len() as u32;
@@ -201,6 +201,18 @@ impl Engine<'_> {
         raw: Raw,
         builder: &mut Option<u32>,
     ) -> Result<()> {
+        let first = self.packets[packet as usize].arguments[argument].first;
+        if first.empty() && raw.origin.is_none() {
+            self.packets[packet as usize].arguments[argument].first = Span {
+                store: SINGLE,
+                start: raw.token.0,
+                end: raw.token.0 + 1,
+            };
+            return Ok(());
+        }
+        if first.store == SINGLE && !first.empty() {
+            self.promote_single(packet, argument, builder)?;
+        }
         let span = if let Some(span) = raw.origin {
             let sequence = &mut self.packets[packet as usize].arguments[argument];
             let last = sequence.rest.last_mut().unwrap_or(&mut sequence.first);
@@ -219,17 +231,44 @@ impl Engine<'_> {
         Ok(())
     }
     #[inline(always)]
-    fn capture_span(&mut self, packet: u32, argument: usize, span: Span) {
+    fn capture_span(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        span: Span,
+        builder: &mut Option<u32>,
+    ) -> Result<()> {
+        let first = self.packets[packet as usize].arguments[argument].first;
+        if first.store == SINGLE && !first.empty() {
+            self.promote_single(packet, argument, builder)?;
+        }
         let sequence = &mut self.packets[packet as usize].arguments[argument];
         let last = sequence.rest.last_mut().unwrap_or(&mut sequence.first);
         if !last.empty() && last.store == span.store && last.end == span.start {
             last.end = span.end;
-            return;
+            return Ok(());
         }
         if span.store != DEFS {
             self.retain_capture(packet, span.store);
         }
         self.packets[packet as usize].arguments[argument].append(span);
+        Ok(())
+    }
+    #[inline(never)]
+    fn promote_single(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        builder: &mut Option<u32>,
+    ) -> Result<()> {
+        let token = Token(
+            self.packets[packet as usize].arguments[argument]
+                .first
+                .start,
+        );
+        let span = self.materialize_token(token, builder)?;
+        self.packets[packet as usize].arguments[argument].first = span;
+        Ok(())
     }
     #[inline(never)]
     fn retain_capture(&mut self, packet: u32, id: u32) {
@@ -259,13 +298,18 @@ impl Engine<'_> {
             end: start + 1,
         })
     }
+    #[inline(always)]
     pub(crate) fn finish_capture(&mut self, packet: u32, builder: Option<u32>) {
         if let Some(id) = builder {
-            self.captures[id as usize].building = false;
-            self.packets[packet as usize]
-                .owners
-                .push((id, Rc::clone(&self.captures[id as usize].tokens)));
+            self.publish_capture(packet, id);
         }
+    }
+    #[inline(never)]
+    fn publish_capture(&mut self, packet: u32, id: u32) {
+        self.captures[id as usize].building = false;
+        self.packets[packet as usize]
+            .owners
+            .push((id, Rc::clone(&self.captures[id as usize].tokens)));
     }
     #[inline(always)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
@@ -339,7 +383,7 @@ impl Engine<'_> {
                     };
                     // Retain before the scalar reader can retire this source.
                     if RETAIN && !span.empty() {
-                        self.capture_span(packet, argument, span);
+                        self.capture_span(packet, argument, span, builder)?;
                     }
                     if depth == 0 {
                         return Ok(());

@@ -1,0 +1,17 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\id#1{#1}\def\pass#1{\id{#1}}\def\twice#1{\pass{#1}\pass{#1}}
+\message{UMBER:\twice{X}/\twice{Y}/\twice{}:END}
+\def\word{W}\message{UMBER:\twice{\word}:END}
+\def\grow#1{\id{#1A}\id{B#1}}\message{UMBER:\grow{X}:END}
+\def\swap#1#2{\id{#2A#1}\id{#1B#2}}\message{UMBER:\swap{X}{Y}:END}
+\def\bracket#1{[#1]}\message{UMBER:\bracket{AB}/\bracket{{C}}:END}
+\def\delim#1x{[#1]}\message{UMBER:\delim Yx/\delim{Z}x/\delim x:END}
+\def\keep#1{\let\saved=#1}\keep{X}\catcode88=12\relax
+\message{UMBER:\ifx\saved XCHANGED\else FROZEN\fi:END}\catcode88=11\relax
+\def\mutate#1{\def\word{NEW}\message{UMBER:\id{#1}:END}}\mutate{\word}
+\count0=0\relax\message{UMBER:\the\count0/\number9/\number-7/\number123:END}
+\def\change{\catcode94=12\relax\count0=}\change^^2b7\relax
+\message{UMBER:\the\count0:END}\catcode94=7\relax
+\def\a{A}\message{UMBER:\^^5e^61:END}
+\catcode33=7\relax\message{UMBER:!!2b:END}
+\end

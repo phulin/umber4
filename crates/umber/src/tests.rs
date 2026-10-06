@@ -204,6 +204,28 @@ fn shared_upstream_interactions() {
 }
 
 #[test]
+fn inline_argument_values_and_promotion() {
+    let result = Engine::new(include_bytes!("../../../fixtures/mvp/inline-arguments.tex"))
+        .run()
+        .unwrap();
+    let expected: &[&[u8]] = &[
+        b"UMBER:XX/YY/:END",
+        b"UMBER:WW:END",
+        b"UMBER:XABX:END",
+        b"UMBER:YAXXBY:END",
+        b"UMBER:[AB]/[{C}]:END",
+        b"UMBER:[Y]/[Z]/[]:END",
+        b"UMBER:FROZEN:END",
+        b"UMBER:NEW:END",
+        b"UMBER:0/9/-7/123:END",
+        b"UMBER:7:END",
+        b"UMBER:A:END",
+        b"UMBER:+:END",
+    ];
+    assert_eq!(result.messages, expected);
+}
+
+#[test]
 fn discarded_arguments_still_follow_scanning_rules() {
     let result = Engine::new(include_bytes!(
         "../../../fixtures/mvp/discarded-arguments.tex"

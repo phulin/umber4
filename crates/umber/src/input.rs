@@ -26,21 +26,23 @@ impl<'a> FileInput<'a> {
         self.loaded = true;
         self.line.clear();
         let start = self.offset;
-        while self.offset < self.bytes.len() && !matches!(self.bytes[self.offset], b'\n' | b'\r') {
-            self.offset += 1;
+        let mut offset = start;
+        while offset < self.bytes.len() && !matches!(self.bytes[offset], b'\n' | b'\r') {
+            offset += 1;
         }
-        let mut end = self.offset;
+        let mut end = offset;
         while end > start && self.bytes[end - 1] == b' ' {
             end -= 1;
         }
         self.line.extend_from_slice(&self.bytes[start..end]);
-        if self.offset < self.bytes.len() {
-            let b = self.bytes[self.offset];
-            self.offset += 1;
-            if b == b'\r' && self.bytes.get(self.offset) == Some(&b'\n') {
-                self.offset += 1;
+        if offset < self.bytes.len() {
+            let b = self.bytes[offset];
+            offset += 1;
+            if b == b'\r' && self.bytes.get(offset) == Some(&b'\n') {
+                offset += 1;
             }
         }
+        self.offset = offset;
         if (0..=255).contains(&endline) {
             self.line.push(endline as u8);
         }
@@ -48,6 +50,17 @@ impl<'a> FileInput<'a> {
         self.state = 0;
         Ok(())
     }
+    #[inline(always)]
+    fn classified(&mut self, cats: &[Integer; 256]) -> (u8, u8) {
+        let byte = self.line[self.position];
+        let cat = cats[byte as usize].value as u8;
+        if cat != 7 {
+            return (byte, cat);
+        }
+        let byte = self.translated(cats);
+        (byte, cats[byte as usize].value as u8)
+    }
+    #[inline(never)]
     fn translated(&mut self, cats: &[Integer; 256]) -> u8 {
         let p = self.position;
         loop {
@@ -88,22 +101,21 @@ impl<'a> FileInput<'a> {
                 self.load(endline)?;
                 continue;
             }
-            let b = self.translated(cats);
+            let (b, cat) = self.classified(cats);
             self.position += 1;
-            let cat = cats[b as usize].value as u8;
             match cat {
                 0 => {
                     if self.position == self.line.len() {
                         self.state = 2;
                         return Ok(Token::cs(1));
                     }
-                    let first = self.translated(cats);
-                    if cats[first as usize].value == 11 {
+                    let (first, cat) = self.classified(cats);
+                    if cat == 11 {
                         let start = self.position;
                         self.position += 1;
                         while self.position < self.line.len() {
-                            let c = self.translated(cats);
-                            if cats[c as usize].value != 11 {
+                            let (_, cat) = self.classified(cats);
+                            if cat != 11 {
                                 break;
                             }
                             self.position += 1;
@@ -112,11 +124,7 @@ impl<'a> FileInput<'a> {
                         return Ok(Token::cs(names.intern(&self.line[start..self.position])?));
                     }
                     self.position += 1;
-                    self.state = if cats[first as usize].value == 10 {
-                        2
-                    } else {
-                        1
-                    };
+                    self.state = if cat == 10 { 2 } else { 1 };
                     return Ok(Token::cs(2 + u32::from(first)));
                 }
                 5 => {
@@ -245,6 +253,13 @@ impl Engine<'_> {
         if span.end - span.start != 1 || !sequence.rest.is_empty() {
             return None;
         }
+        if span.store == SINGLE {
+            return Some(Raw {
+                token: Token(span.start),
+                origin: None,
+                suppress: false,
+            });
+        }
         let token = if span.store == DEFS {
             self.arena.get(span.start)
         } else {
@@ -297,6 +312,16 @@ impl Engine<'_> {
             }
             return Ok(());
         };
+        if span.store == SINGLE {
+            if self.sources.len() > 10000 {
+                return Err(Error::Capacity);
+            }
+            self.back(Token(span.start));
+            if let Some(packet) = owns_packet {
+                self.release_packet(packet);
+            }
+            return Ok(());
+        }
         self.push_span(sequence, span, owns_packet, macro_packet)
     }
     #[inline]

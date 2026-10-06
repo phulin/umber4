@@ -1,4 +1,9 @@
-"""Same-source, full-process expansion/register benchmarks against INITEX."""
+"""Same-source, full-process expansion/register benchmarks against INITEX.
+
+The CLI holds the source bytes in memory before execution. The historical
+file-parameters case tokenizes arguments from those bytes; parameters reads
+arguments from stored macro tokens. Neither performs per-argument file I/O.
+"""
 
 import argparse
 from datetime import datetime, timezone
@@ -133,7 +138,8 @@ def main():
                    **measure(engines, path, expected, args.repeats)}
             medians = row["median"]
             report["samples"].append(row)
-            print(f"{case:12} {size:9}  umber {medians['umber']:.6f}s  "
+            label = "source args" if case == "file-parameters" else case
+            print(f"{label:12} {size:9}  umber {medians['umber']:.6f}s  "
                   f"pdftex {medians['pdftex']:.6f}s  ratio {row['ratio']:.3f}"
                   + (f"  previous {medians['baseline']:.6f}s"
                      f"  ratio {row['ratio_to_baseline']:.3f}" if args.baseline else ""),

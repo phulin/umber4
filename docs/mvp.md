@@ -59,8 +59,8 @@ built directly in session-owned stable chunks. Common token sources read one
 contiguous span; source changes do the ownership work.
 
 Invocation packets own argument sequences and their backing capture chunks.
-Existing token ranges are retained; newly scanned file tokens are written once
-into the packet's destination. A child capture retains backing storage directly,
+Existing token ranges are retained; newly scanned source tokens are built in
+the packet's inline slot or capture buffer. A captured range retains its backing directly,
 so retiring a parent does not invalidate it. Reuse packet and capture-buffer
 capacity. Parameter-free invocation installs the existing body without allocation
 or reference counting. Retire exhausted sources before installing a successor.
@@ -72,8 +72,20 @@ scanning mode once per invocation; the token loops use the same matching rules.
 
 Grouped arguments scan an immutable source window directly, retaining one range
 at its boundary. Parameter substitution and source advancement resume this scan
-at the next window. One-token substitutions return the existing token and range
-directly while the body retains their owner, avoiding a temporary input source.
+at the next window. One-token arguments stored as ranges return the existing
+token and range directly while the body retains their owner, avoiding a temporary
+input source.
+
+A single newly read token fits directly in its argument packet as a token value.
+Substitution carries that identity without backing ownership. If another token
+or range follows, move the first value into capture storage and continue building
+there; borrowed ranges retain their existing backing. This keeps single-token
+arguments small without changing the construction path for larger arguments.
+
+File bytes are already resident in the native adapter. Ordinary bytes are
+classified inline using the live category table. The rare superscript translation
+path rewrites the prepared line, including committed control-word lookahead;
+token construction remains lazy across executed assignments.
 
 Keep grouping in a reused save stack, preserving local/global/local restoration
 and the extended profile's identical-local-assignment behavior. Character tokens
