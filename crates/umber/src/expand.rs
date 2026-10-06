@@ -37,7 +37,7 @@ impl Engine<'_> {
                 } else if second.meaning.expandable() {
                     self.expand(second)?;
                 } else {
-                    self.back(second.raw.token);
+                    self.back(second.token);
                 }
                 self.back(first);
                 Ok(())
@@ -59,13 +59,13 @@ impl Engine<'_> {
                     if part.meaning.command == cmd::ENDCSNAME {
                         break;
                     }
-                    if part.raw.token.is_cs() {
+                    if part.token.is_cs() {
                         return Err(Error::Syntax);
                     }
-                    name.push(part.raw.token.byte());
+                    name.push(part.token.byte());
                 }
-                let id = self.intern(&name);
-                if self.bindings[id as usize].meaning == Meaning::UNDEFINED {
+                let id = self.intern(&name)?;
+                if self.bindings[id as usize].meaning() == Meaning::UNDEFINED {
                     self.assign_meaning(id as usize, Meaning::RELAX, false);
                 }
                 self.back(Token::cs(id));
@@ -78,7 +78,7 @@ impl Engine<'_> {
             cmd::ELSE | cmd::FI => {
                 let phase = *self.conditions.last().ok_or(Error::Conditional)?;
                 if phase == Condition::Pending {
-                    self.insert_pair(FROZEN_RELAX, read.raw.token);
+                    self.insert_pair(FROZEN_RELAX, read.token);
                     return Ok(());
                 }
                 if read.meaning.command == cmd::FI {
@@ -108,7 +108,7 @@ impl Engine<'_> {
             }
             cmd::IFNUM => {
                 let a = self.scan_int()?;
-                let relation = self.nonspace(true)?.raw.token;
+                let relation = self.nonspace(true)?.token;
                 let b = self.scan_int()?;
                 if relation == Token::other(b'=') {
                     a == b
@@ -159,7 +159,7 @@ impl Engine<'_> {
         }
     }
     fn insert_number(&mut self, value: i32) -> Result<()> {
-        let packet = self.take_packet(1);
+        let packet = self.take_packet(1)?;
         let mut builder = None;
         if value < 0 {
             self.capture_raw(
@@ -171,7 +171,7 @@ impl Engine<'_> {
                     suppress: false,
                 },
                 &mut builder,
-            );
+            )?;
         }
         let number = value.unsigned_abs();
         let mut power = 1;
@@ -189,7 +189,7 @@ impl Engine<'_> {
                     suppress: false,
                 },
                 &mut builder,
-            );
+            )?;
             if power == 1 {
                 break;
             }

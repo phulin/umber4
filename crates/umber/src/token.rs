@@ -1,3 +1,4 @@
+use crate::{Error, Result};
 use std::cell::UnsafeCell;
 use std::rc::Rc;
 
@@ -100,15 +101,28 @@ impl Meaning {
 }
 #[derive(Clone, Copy)]
 pub(crate) struct Binding {
-    pub meaning: Meaning,
+    pub value: i32,
     pub level: u16,
+    pub command: u8,
+}
+impl Binding {
+    pub fn new(meaning: Meaning, level: u16) -> Self {
+        Self {
+            value: meaning.value,
+            command: meaning.command,
+            level,
+        }
+    }
+    pub fn meaning(self) -> Meaning {
+        Meaning {
+            command: self.command,
+            value: self.value,
+        }
+    }
 }
 impl Default for Binding {
     fn default() -> Self {
-        Self {
-            meaning: Meaning::UNDEFINED,
-            level: 0,
-        }
+        Self::new(Meaning::UNDEFINED, 0)
     }
 }
 #[derive(Clone, Copy, Default)]
@@ -152,14 +166,6 @@ impl Sequence {
         } else {
             self.rest.get(index - 1).copied()
         }
-    }
-    pub fn len(&self) -> usize {
-        (self.first.end - self.first.start) as usize
-            + self
-                .rest
-                .iter()
-                .map(|s| (s.end - s.start) as usize)
-                .sum::<usize>()
     }
     pub fn trim_front(&mut self) {
         self.first.start += 1;
@@ -217,7 +223,10 @@ pub(crate) struct TokenArena {
     pub len: u32,
 }
 impl TokenArena {
-    pub fn push(&mut self, token: Token) {
+    pub fn push(&mut self, token: Token) -> Result<()> {
+        if self.len == u32::MAX {
+            return Err(Error::Capacity);
+        }
         if (self.len as usize).is_multiple_of(CHUNK_LEN) {
             self.chunks
                 .push((0..CHUNK_LEN).map(|_| UnsafeCell::new(Token(0))).collect());
@@ -229,6 +238,7 @@ impl TokenArena {
             self.chunks[chunk][offset].get().write(token);
         }
         self.len += 1;
+        Ok(())
     }
     pub fn get(&self, index: u32) -> Token {
         assert!(index < self.len);
@@ -237,14 +247,14 @@ impl TokenArena {
             *self.chunks[index as usize >> CHUNK_BITS][index as usize & (CHUNK_LEN - 1)].get()
         }
     }
-    pub fn window(&self, start: u32, end: u32) -> (*const Token, *const Token) {
+    pub fn window(&self, start: u32, end: u32) -> (*const Token, *const Token, u32) {
         assert!(start < end && end <= self.len);
         let chunk = start as usize >> CHUNK_BITS;
         let offset = start as usize & (CHUNK_LEN - 1);
         let count = ((end - start) as usize).min(CHUNK_LEN - offset);
         let first = self.chunks[chunk][offset].get().cast_const();
         // SAFETY: UnsafeCell has Token's layout; count stays within this chunk.
-        (first, unsafe { first.add(count) })
+        (first, unsafe { first.add(count) }, start + count as u32)
     }
 }
 pub(crate) struct Names {
@@ -266,12 +276,12 @@ impl Names {
             hashes: vec![0; 514],
         }
     }
-    pub fn intern(&mut self, name: &[u8]) -> u32 {
+    pub fn intern(&mut self, name: &[u8]) -> Result<u32> {
         if name.is_empty() {
-            return 1;
+            return Ok(1);
         }
         if name.len() == 1 {
-            return 2 + u32::from(name[0]);
+            return Ok(2 + u32::from(name[0]));
         }
         let mut hash = 0xcbf29ce484222325u64;
         for &b in name {
@@ -284,9 +294,12 @@ impl Names {
                 break;
             }
             if self.hashes[id as usize] == hash && self.spellings[id as usize].as_ref() == name {
-                return id;
+                return Ok(id);
             }
             slot = (slot + 1) & (self.buckets.len() - 1);
+        }
+        if self.spellings.len() >= CS as usize {
+            return Err(Error::Capacity);
         }
         let id = self.spellings.len() as u32;
         self.spellings.push(name.into());
@@ -303,19 +316,19 @@ impl Names {
             }
             self.buckets = buckets;
         }
-        id
+        Ok(id)
     }
 }
 #[derive(Clone, Copy)]
 pub(crate) enum SequenceRef {
     Body(u32),
-    Argument(u32, usize),
+    Argument(u32, u8),
 }
 pub(crate) struct Cursor {
     pub sequence: SequenceRef,
     pub span_index: usize,
     pub span: Span,
-    pub position: u32,
+    pub window_end_position: u32,
     pub next: *const Token,
     pub end: *const Token,
     pub owns_packet: Option<u32>,
@@ -338,6 +351,6 @@ pub(crate) struct Raw {
 }
 #[derive(Clone, Copy)]
 pub(crate) struct Read {
-    pub raw: Raw,
+    pub token: Token,
     pub meaning: Meaning,
 }

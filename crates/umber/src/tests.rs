@@ -68,6 +68,10 @@ fn conditional_semantics() {
 }
 #[test]
 fn lazy_character_input() {
+    message("\\message{X\tZ/X\t\nY}", br"X^^IZ/X^^I Y");
+    message("\\message{X\rY}", b"X Y");
+    message("\\catcode9=10\\relax\n\\message{X\t\nY}", b"X Y");
+    message("\\catcode32=12\\relax\n\\message{X  \nY}", b"X Y");
     message(r"\catcode64=11\def\a@b{OK}\message{\a@b}", b"OK");
     message(r"\def\a{\catcode94=12\relax}\a\message{^^2b}", b"^^2b");
     message(r"\def\a{A}\message{\^^61}", b"A");
@@ -142,4 +146,49 @@ fn active_definition_cursors_survive_chunk_and_header_growth() {
     );
     let huge = format!(r"\def\a{{{}\count0=7\relax}}\a", r"\relax".repeat(10000));
     assert_eq!(run(&huge).counts[0], 7);
+}
+
+#[test]
+fn shared_upstream_interactions() {
+    let result = Engine::new(include_bytes!("../../../fixtures/mvp/interactions.tex"))
+        .run()
+        .unwrap();
+    let expected: Vec<_> = include_str!("../../../fixtures/mvp/interactions.expected")
+        .lines()
+        .map(|line| line.as_bytes().to_vec())
+        .collect();
+    assert_eq!(result.messages, expected);
+}
+
+#[test]
+fn supported_failure_boundaries() {
+    let cases: &[(&[u8], Error)] = &[
+        (
+            include_bytes!("../../../fixtures/mvp/failures/paragraph-argument.tex"),
+            Error::Argument,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/group-kind.tex"),
+            Error::Group,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/divide-zero.tex"),
+            Error::Overflow,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/integer-overflow.tex"),
+            Error::Overflow,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/category-range.tex"),
+            Error::Number,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/extra-conditional.tex"),
+            Error::Conditional,
+        ),
+    ];
+    for &(source, expected) in cases {
+        assert_eq!(Engine::new(source).run().err(), Some(expected));
+    }
 }

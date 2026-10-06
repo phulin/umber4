@@ -7,3 +7,6 @@ descriptors; `input.rs` supplies lazy character input and token cursors;
 `expand.rs` implements expansion and conditionals; `execute.rs` handles
 assignments and groups; `tests.rs` contains semantic fixtures; `main.rs` is the
 native file/message adapter. Keep host access out of the portable library.
+
+`examples/allocations.rs` is a separate native diagnostic adapter. Its allocator
+counters cover engine construction and execution, excluding the host input buffer.

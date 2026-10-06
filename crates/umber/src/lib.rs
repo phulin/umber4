@@ -128,10 +128,12 @@ impl<'a> Engine<'a> {
             (b"end", cmd::END, 0),
             (b"par", cmd::PAR, 0),
         ];
-        engine.bindings[0].meaning = Meaning::RELAX;
+        engine.bindings[0] = Binding::new(Meaning::RELAX, 0);
         for &(name, command, value) in primitives {
-            let id = engine.intern(name);
-            engine.bindings[id as usize].meaning = Meaning { command, value };
+            let id = engine
+                .intern(name)
+                .expect("primitive names fit the token encoding");
+            engine.bindings[id as usize] = Binding::new(Meaning { command, value }, 0);
             if command == cmd::PAR {
                 engine.par = Token::cs(id);
             }
@@ -156,17 +158,17 @@ impl<'a> Engine<'a> {
             self.execute(read)?;
         }
     }
-    pub(crate) fn intern(&mut self, name: &[u8]) -> u32 {
-        let id = self.names.intern(name);
+    pub(crate) fn intern(&mut self, name: &[u8]) -> Result<u32> {
+        let id = self.names.intern(name)?;
         if id as usize >= self.bindings.len() {
             self.bindings.resize(id as usize + 1, Binding::default());
         }
-        id
+        Ok(id)
     }
     #[inline(always)]
     pub(crate) fn resolve(&self, token: Token) -> Meaning {
         if token.is_cs() {
-            self.bindings[token.id()].meaning
+            self.bindings[token.id()].meaning()
         } else {
             Meaning {
                 command: token.cat(),
@@ -186,7 +188,10 @@ impl<'a> Engine<'a> {
                 value: 257,
             };
         }
-        Ok(Read { raw, meaning })
+        Ok(Read {
+            token: raw.token,
+            meaning,
+        })
     }
     #[inline]
     pub(crate) fn next_expanded(&mut self) -> Result<Read> {

@@ -22,8 +22,8 @@ impl Engine<'_> {
     }
     pub(crate) fn scan_equals(&mut self) -> Result<()> {
         let read = self.nonspace(true)?;
-        if read.raw.token != Token::other(b'=') {
-            self.back(read.raw.token);
+        if read.token != Token::other(b'=') {
+            self.back(read.token);
         }
         Ok(())
     }
@@ -46,13 +46,13 @@ impl Engine<'_> {
         let mut negative = false;
         let mut read = loop {
             let read = self.nonspace(true)?;
-            if read.raw.token == Token::other(b'-') {
+            if read.token == Token::other(b'-') {
                 negative = !negative;
-            } else if read.raw.token != Token::other(b'+') {
+            } else if read.token != Token::other(b'+') {
                 break read;
             }
         };
-        let value = if read.raw.token == Token::other(b'`') {
+        let value = if read.token == Token::other(b'`') {
             let raw = self.next_raw()?;
             let value = if !raw.token.is_cs() {
                 i32::from(raw.token.byte())
@@ -65,7 +65,7 @@ impl Engine<'_> {
             };
             let read = self.next_expanded()?;
             if read.meaning.command != cmd::SPACE {
-                self.back(read.raw.token);
+                self.back(read.token);
             }
             value
         } else if matches!(
@@ -74,9 +74,9 @@ impl Engine<'_> {
         ) {
             self.internal_int(read)?
         } else {
-            let radix = if read.raw.token == Token::other(b'\'') {
+            let radix = if read.token == Token::other(b'\'') {
                 8
-            } else if read.raw.token == Token::other(b'"') {
+            } else if read.token == Token::other(b'"') {
                 16
             } else {
                 10
@@ -87,7 +87,7 @@ impl Engine<'_> {
             let mut value = 0i32;
             let mut digits = 0;
             loop {
-                let token = read.raw.token;
+                let token = read.token;
                 let digit = if !token.is_cs() && token.cat() == 12 && token.byte().is_ascii_digit()
                 {
                     i32::from(token.byte() - b'0')
@@ -111,7 +111,7 @@ impl Engine<'_> {
                 read = self.next_expanded()?;
             }
             if read.meaning.command != cmd::SPACE {
-                self.back(read.raw.token);
+                self.back(read.token);
             }
             if digits == 0 {
                 return Err(Error::Number);
@@ -132,8 +132,8 @@ impl Engine<'_> {
             } else {
                 self.next_expanded()?
             };
-            tokens[index] = read.raw.token;
-            if read.raw.token.is_cs() || read.raw.token.byte().to_ascii_lowercase() != byte {
+            tokens[index] = read.token;
+            if read.token.is_cs() || read.token.byte().to_ascii_lowercase() != byte {
                 for token in tokens[..=index].iter().rev() {
                     self.back(*token);
                 }
@@ -145,14 +145,14 @@ impl Engine<'_> {
     pub(crate) fn scan_cs(&mut self) -> Result<usize> {
         let read = loop {
             let read = self.next_token()?;
-            if !read.raw.token.is_space() {
+            if !read.token.is_space() {
                 break read;
             }
         };
-        if !read.raw.token.is_cs() || read.raw.token == FROZEN_RELAX {
+        if !read.token.is_cs() || read.token == FROZEN_RELAX {
             return Err(Error::Syntax);
         }
-        Ok(read.raw.token.id())
+        Ok(read.token.id())
     }
     pub(crate) fn opening_brace(&mut self) -> Result<()> {
         loop {

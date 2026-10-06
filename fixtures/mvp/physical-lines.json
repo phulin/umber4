@@ -1,0 +1,8 @@
+{
+  "literal-tabs": "\\catcode123=1 \\catcode125=2\\relax\n\\message{UMBER:X\tZ/X\t\nY:END}\\end\n",
+  "spacer-tabs": "\\catcode123=1 \\catcode125=2\\relax\n\\catcode9=10\\relax\n\\message{UMBER:X\t\nY:END}\\end\n",
+  "trailing-other-spaces": "\\catcode123=1 \\catcode125=2\\relax\n\\catcode32=12\\relax\n\\message{UMBER:X  \nY:END}\\end\n",
+  "crlf": "\\catcode123=1 \\catcode125=2\\relax\r\n\\message{UMBER:X\r\nY:END}\\end\r\n",
+  "cr-only": "\\catcode123=1 \\catcode125=2\\relax\r\\message{UMBER:X\rY:END}\\end\r",
+  "comment-join": "\\catcode123=1 \\catcode125=2\\relax\n\\message{UMBER:X% ignored\t\nY:END}\\end\n"
+}

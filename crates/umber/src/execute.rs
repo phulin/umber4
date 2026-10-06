@@ -56,7 +56,7 @@ impl Engine<'_> {
             cmd::LET => {
                 let id = self.scan_cs()?;
                 let mut right = self.nonspace(false)?;
-                if right.raw.token == Token::other(b'=') {
+                if right.token == Token::other(b'=') {
                     right = self.next_token()?;
                     if right.meaning.command == cmd::SPACE {
                         right = self.next_token()?;
@@ -125,17 +125,17 @@ impl Engine<'_> {
                 let mut depth = 1;
                 let mut bytes = Vec::new();
                 loop {
-                    let raw = self.next_expanded()?.raw;
-                    if raw.token.is_begin() {
+                    let token = self.next_expanded()?.token;
+                    if token.is_begin() {
                         depth += 1;
                     }
-                    if raw.token.is_end() {
+                    if token.is_end() {
                         depth -= 1;
                         if depth == 0 {
                             break;
                         }
                     }
-                    self.print_token(raw.token, &mut bytes);
+                    self.print_token(token, &mut bytes);
                 }
                 self.messages.push(bytes);
                 Ok(())
@@ -184,16 +184,13 @@ impl Engine<'_> {
     }
     pub(crate) fn assign_meaning(&mut self, id: usize, meaning: Meaning, global: bool) {
         let old = self.bindings[id];
-        if !global && old.meaning == meaning {
+        if !global && old.meaning() == meaning {
             return;
         }
         if !global && self.level > 0 && old.level != self.level {
             self.save.push(Save::Meaning(id, old));
         }
-        self.bindings[id] = Binding {
-            meaning,
-            level: if global { 0 } else { self.level },
-        };
+        self.bindings[id] = Binding::new(meaning, if global { 0 } else { self.level });
     }
     fn close_group(&mut self, kind: bool) -> Result<()> {
         if self.level == 0 {

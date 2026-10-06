@@ -30,7 +30,7 @@ impl<'a> FileInput<'a> {
             self.offset += 1;
         }
         let mut end = self.offset;
-        while end > start && matches!(self.bytes[end - 1], b' ' | b'\t') {
+        while end > start && self.bytes[end - 1] == b' ' {
             end -= 1;
         }
         self.line.extend_from_slice(&self.bytes[start..end]);
@@ -109,7 +109,7 @@ impl<'a> FileInput<'a> {
                             self.position += 1;
                         }
                         self.state = 2;
-                        return Ok(Token::cs(names.intern(&self.line[start..self.position])));
+                        return Ok(Token::cs(names.intern(&self.line[start..self.position])?));
                     }
                     self.position += 1;
                     self.state = if cats[first as usize].value == 10 {
@@ -209,18 +209,23 @@ impl Engine<'_> {
                     let token = unsafe { cursor.next.read() };
                     // SAFETY: next < end within the same backing allocation.
                     cursor.next = unsafe { cursor.next.add(1) };
-                    let origin = Span {
-                        store: cursor.span.store,
-                        start: cursor.position,
-                        end: cursor.position + 1,
-                    };
-                    cursor.position += 1;
                     if token.0 & PARAM != 0 && !token.is_cs() {
                         let packet = cursor.macro_packet.ok_or(Error::Syntax)?;
-                        let argument = (token.0 & 255) as usize - 1;
+                        let argument = token.byte() - 1;
                         self.push_sequence(SequenceRef::Argument(packet, argument), None, None)?;
                         continue;
                     }
+                    // SAFETY: next and end belong to the same window. Derive
+                    // coordinates only for capture; resolved reads discard this
+                    // metadata, leaving a single pointer advance on their path.
+                    let position = cursor.window_end_position
+                        - unsafe { cursor.end.offset_from(cursor.next) } as u32
+                        - 1;
+                    let origin = Span {
+                        store: cursor.span.store,
+                        start: position,
+                        end: position + 1,
+                    };
                     return Ok(Raw {
                         token,
                         origin: Some(origin),
@@ -236,11 +241,11 @@ impl Engine<'_> {
                 .then_some(self.definitions[id as usize].body)
                 .filter(|s| !s.empty()),
             SequenceRef::Argument(packet, arg) => {
-                self.packets[packet as usize].arguments[arg].span(index)
+                self.packets[packet as usize].arguments[arg as usize].span(index)
             }
         }
     }
-    fn window(&self, span: Span, start: u32) -> (*const Token, *const Token) {
+    fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
         if span.store == DEFS {
             self.arena.window(start, span.end)
         } else {
@@ -251,6 +256,7 @@ impl Engine<'_> {
                 (
                     tokens.as_ptr().add(start as usize),
                     tokens.as_ptr().add(span.end as usize),
+                    span.end,
                 )
             }
         }
@@ -267,15 +273,47 @@ impl Engine<'_> {
             }
             return Ok(());
         };
+        self.push_span(sequence, span, owns_packet, macro_packet)
+    }
+    #[inline]
+    pub(crate) fn push_body(&mut self, id: u32, body: Span) -> Result<()> {
+        if body.empty() {
+            return Ok(());
+        }
         if self.sources.len() > 10000 {
             return Err(Error::Capacity);
         }
-        let (next, end) = self.window(span, span.start);
+        // Definition bodies always belong to the immutable token arena.
+        let (next, end, window_end_position) = self.arena.window(body.start, body.end);
+        self.sources.push(Source::Tokens(Cursor {
+            sequence: SequenceRef::Body(id),
+            span_index: 0,
+            span: body,
+            window_end_position,
+            next,
+            end,
+            owns_packet: None,
+            macro_packet: None,
+        }));
+        Ok(())
+    }
+    #[inline]
+    fn push_span(
+        &mut self,
+        sequence: SequenceRef,
+        span: Span,
+        owns_packet: Option<u32>,
+        macro_packet: Option<u32>,
+    ) -> Result<()> {
+        if self.sources.len() > 10000 {
+            return Err(Error::Capacity);
+        }
+        let (next, end, window_end_position) = self.window(span, span.start);
         self.sources.push(Source::Tokens(Cursor {
             sequence,
             span_index: 0,
             span,
-            position: span.start,
+            window_end_position,
             next,
             end,
             owns_packet,
@@ -291,19 +329,20 @@ impl Engine<'_> {
             cursor.sequence,
             cursor.span_index + 1,
             cursor.span,
-            cursor.position,
+            cursor.window_end_position,
         );
         if position < old_span.end {
-            let (next, end) = self.window(old_span, position);
+            let (next, end, window_end_position) = self.window(old_span, position);
             if let Some(Source::Tokens(c)) = self.sources.last_mut() {
                 c.next = next;
                 c.end = end;
+                c.window_end_position = window_end_position;
             }
         } else if let Some(span) = self.span_for(sequence, next_index) {
-            let (next, end) = self.window(span, span.start);
+            let (next, end, window_end_position) = self.window(span, span.start);
             if let Some(Source::Tokens(c)) = self.sources.last_mut() {
                 c.span = span;
-                c.position = span.start;
+                c.window_end_position = window_end_position;
                 c.span_index = next_index;
                 c.next = next;
                 c.end = end;
@@ -325,7 +364,8 @@ impl Engine<'_> {
             let done = match self.sources.last() {
                 Some(Source::Inline { position, len, .. }) => position == len,
                 Some(Source::Tokens(c)) => {
-                    c.position == c.span.end
+                    c.next == c.end
+                        && c.window_end_position == c.span.end
                         && self.span_for(c.sequence, c.span_index + 1).is_none()
                 }
                 None => false,
@@ -352,12 +392,5 @@ impl Engine<'_> {
             len: 2,
             suppress: false,
         });
-    }
-    pub(crate) fn token_at(&self, store: u32, position: u32) -> Token {
-        if store == DEFS {
-            self.arena.get(position)
-        } else {
-            self.captures[store as usize].tokens[position as usize]
-        }
     }
 }

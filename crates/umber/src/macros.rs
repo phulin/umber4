@@ -12,20 +12,20 @@ impl Engine<'_> {
         let mut brace_tail = None;
         loop {
             let read = self.next_token()?;
-            if read.raw.token.is_begin() {
+            if read.token.is_begin() {
                 break;
             }
-            if read.raw.token.is_end() {
+            if read.token.is_end() {
                 return Err(Error::Syntax);
             }
             if read.meaning.command == 6 {
                 let next = self.next_token()?;
-                if next.raw.token.is_begin() {
-                    self.arena.push(next.raw.token);
-                    brace_tail = Some(next.raw.token);
+                if next.token.is_begin() {
+                    self.arena.push(next.token)?;
+                    brace_tail = Some(next.token);
                     break;
                 }
-                if parameters == 9 || next.raw.token != Token::other(b'1' + parameters) {
+                if parameters == 9 || next.token != Token::other(b'1' + parameters) {
                     return Err(Error::Syntax);
                 }
                 if parameters == 0 {
@@ -37,11 +37,11 @@ impl Engine<'_> {
                         end: self.arena.len,
                     });
                 }
-                self.arena.push(Token(PARAM | read.meaning.value as u32));
+                self.arena.push(Token(PARAM | read.meaning.value as u32))?;
                 parameters += 1;
                 delimiter_start = self.arena.len;
             } else {
-                self.arena.push(read.raw.token);
+                self.arena.push(read.token)?;
             }
         }
         if parameters > 0 {
@@ -56,7 +56,7 @@ impl Engine<'_> {
             start: signature_start,
             end: prefix_end.unwrap_or(self.arena.len),
         };
-        self.arena.push(Token(PARAM | 255));
+        self.arena.push(Token(PARAM | 255))?;
         let body_start = self.arena.len;
         let mut depth = 1usize;
         loop {
@@ -65,10 +65,10 @@ impl Engine<'_> {
             } else {
                 self.next_token()?
             };
-            if read.raw.token.is_begin() {
+            if read.token.is_begin() {
                 depth += 1;
             }
-            if read.raw.token.is_end() {
+            if read.token.is_end() {
                 depth -= 1;
                 if depth == 0 {
                     break;
@@ -81,22 +81,22 @@ impl Engine<'_> {
                     self.next_token()?
                 };
                 if next.meaning.command == 6 {
-                    self.arena.push(next.raw.token);
-                } else if !next.raw.token.is_cs()
-                    && next.raw.token.cat() == 12
-                    && (b'1'..b'1' + parameters).contains(&next.raw.token.byte())
+                    self.arena.push(next.token)?;
+                } else if !next.token.is_cs()
+                    && next.token.cat() == 12
+                    && (b'1'..b'1' + parameters).contains(&next.token.byte())
                 {
                     self.arena
-                        .push(Token(PARAM | u32::from(next.raw.token.byte() - b'0')));
+                        .push(Token(PARAM | u32::from(next.token.byte() - b'0')))?;
                 } else {
                     return Err(Error::Syntax);
                 }
             } else {
-                self.arena.push(read.raw.token);
+                self.arena.push(read.token)?;
             }
         }
         if let Some(token) = brace_tail {
-            self.arena.push(token);
+            self.arena.push(token)?;
         }
         let body = Span {
             store: DEFS,
@@ -127,6 +127,9 @@ impl Engine<'_> {
                 failure
             })
             .collect();
+        if self.definitions.len() > i32::MAX as usize {
+            return Err(Error::Capacity);
+        }
         let id = self.definitions.len() as u32;
         self.definitions.push(Definition {
             prefix,
@@ -146,10 +149,13 @@ impl Engine<'_> {
         );
         Ok(())
     }
-    pub(crate) fn take_packet(&mut self, count: usize) -> u32 {
+    pub(crate) fn take_packet(&mut self, count: usize) -> Result<u32> {
         let id = if let Some(id) = self.free_packets.pop() {
             id
         } else {
+            if self.packets.len() >= u32::MAX as usize {
+                return Err(Error::Capacity);
+            }
             let id = self.packets.len() as u32;
             self.packets.push(Packet::default());
             id
@@ -157,13 +163,13 @@ impl Engine<'_> {
         self.packets[id as usize]
             .arguments
             .resize_with(count, Sequence::default);
-        id
+        Ok(id)
     }
     pub(crate) fn release_packet(&mut self, id: u32) {
         self.packets[id as usize].clear();
         self.free_packets.push(id);
     }
-    fn capture_buffer(&mut self) -> u32 {
+    fn capture_buffer(&mut self) -> Result<u32> {
         if let Some((id, capture)) = self
             .captures
             .iter_mut()
@@ -172,47 +178,70 @@ impl Engine<'_> {
         {
             Rc::get_mut(&mut capture.tokens).unwrap().clear();
             capture.building = true;
-            return id as u32;
+            return Ok(id as u32);
+        }
+        if self.captures.len() >= DEFS as usize {
+            return Err(Error::Capacity);
         }
         let id = self.captures.len() as u32;
         self.captures.push(Capture {
             tokens: Rc::new(Vec::with_capacity(16)),
             building: true,
         });
-        id
+        Ok(id)
     }
+    #[inline(always)]
     pub(crate) fn capture_raw(
         &mut self,
         packet: u32,
         argument: usize,
         raw: Raw,
         builder: &mut Option<u32>,
-    ) {
+    ) -> Result<()> {
         let span = if let Some(span) = raw.origin {
-            if span.store != DEFS
-                && !self.packets[packet as usize]
-                    .owners
-                    .iter()
-                    .any(|(id, _)| *id == span.store)
-            {
-                let owner = Rc::clone(&self.captures[span.store as usize].tokens);
-                self.packets[packet as usize]
-                    .owners
-                    .push((span.store, owner));
+            let sequence = &mut self.packets[packet as usize].arguments[argument];
+            let last = sequence.rest.last_mut().unwrap_or(&mut sequence.first);
+            if !last.empty() && last.store == span.store && last.end == span.start {
+                last.end = span.end;
+                return Ok(());
+            }
+            if span.store != DEFS {
+                self.retain_capture(packet, span.store);
             }
             span
         } else {
-            let id = *builder.get_or_insert_with(|| self.capture_buffer());
-            let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
-            let start = tokens.len() as u32;
-            tokens.push(raw.token);
-            Span {
-                store: id,
-                start,
-                end: start + 1,
-            }
+            self.materialize_token(raw.token, builder)?
         };
         self.packets[packet as usize].arguments[argument].append(span);
+        Ok(())
+    }
+    #[inline(never)]
+    fn retain_capture(&mut self, packet: u32, id: u32) {
+        let owners = &mut self.packets[packet as usize].owners;
+        if !owners.iter().any(|(old, _)| *old == id) {
+            owners.push((id, Rc::clone(&self.captures[id as usize].tokens)));
+        }
+    }
+    #[inline(never)]
+    fn materialize_token(&mut self, token: Token, builder: &mut Option<u32>) -> Result<Span> {
+        let id = if let Some(id) = *builder {
+            id
+        } else {
+            let id = self.capture_buffer()?;
+            *builder = Some(id);
+            id
+        };
+        let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
+        if tokens.len() >= u32::MAX as usize {
+            return Err(Error::Capacity);
+        }
+        let start = tokens.len() as u32;
+        tokens.push(token);
+        Ok(Span {
+            store: id,
+            start,
+            end: start + 1,
+        })
     }
     pub(crate) fn finish_capture(&mut self, packet: u32, builder: Option<u32>) {
         if let Some(id) = builder {
@@ -222,7 +251,18 @@ impl Engine<'_> {
                 .push((id, Rc::clone(&self.captures[id as usize].tokens)));
         }
     }
+    #[inline(always)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
+        let definition = &self.definitions[id as usize];
+        if definition.prefix.empty() && definition.delimiters.is_empty() {
+            let body = definition.body;
+            self.retire_exhausted();
+            return self.push_body(id, body);
+        }
+        self.begin_macro_with_arguments(id)
+    }
+    #[inline(never)]
+    fn begin_macro_with_arguments(&mut self, id: u32) -> Result<()> {
         let prefix = self.definitions[id as usize].prefix;
         for position in prefix.start..prefix.end {
             let expected = self.arena.get(position);
@@ -235,7 +275,7 @@ impl Engine<'_> {
             self.retire_exhausted();
             return self.push_sequence(SequenceRef::Body(id), None, None);
         }
-        let packet = self.take_packet(count);
+        let packet = self.take_packet(count)?;
         let mut builder = None;
         let long = self.definitions[id as usize].long;
         for argument in 0..count {
@@ -269,18 +309,25 @@ impl Engine<'_> {
                                 break;
                             }
                         }
-                        self.capture_raw(packet, argument, raw, &mut builder);
+                        self.capture_raw(packet, argument, raw, &mut builder)?;
                     }
                 } else {
-                    self.capture_raw(packet, argument, first, &mut builder);
+                    self.capture_raw(packet, argument, first, &mut builder)?;
                 }
             } else {
                 let length = (delimiter.end - delimiter.start) as usize;
                 let mut matched = 0;
                 let mut depth = 0;
+                let mut seen = 0;
+                let mut first_group = false;
+                let mut group_end = None;
                 loop {
                     let raw = self.next_raw()?;
-                    self.capture_raw(packet, argument, raw, &mut builder);
+                    seen += 1;
+                    if seen == 1 {
+                        first_group = raw.token.is_begin();
+                    }
+                    self.capture_raw(packet, argument, raw, &mut builder)?;
                     if depth == 0 {
                         while matched > 0
                             && self.arena.get(delimiter.start + matched as u32) != raw.token
@@ -308,44 +355,22 @@ impl Engine<'_> {
                             return Err(Error::Argument);
                         }
                         depth -= 1;
+                        if depth == 0 && first_group && group_end.is_none() {
+                            group_end = Some(seen);
+                        }
                     }
                 }
-                self.packets[packet as usize].arguments[argument].trim_back(length);
-                self.strip_outer_group(packet, argument);
+                let sequence = &mut self.packets[packet as usize].arguments[argument];
+                sequence.trim_back(length);
+                if group_end == Some(seen - length) {
+                    sequence.trim_front();
+                    sequence.trim_back(1);
+                }
             }
         }
         self.finish_capture(packet, builder);
         self.retire_exhausted();
         self.push_sequence(SequenceRef::Body(id), Some(packet), Some(packet))
-    }
-    fn strip_outer_group(&mut self, packet: u32, argument: usize) {
-        let seq = &self.packets[packet as usize].arguments[argument];
-        if seq.first.empty() || !self.token_at(seq.first.store, seq.first.start).is_begin() {
-            return;
-        }
-        let length = seq.len();
-        let mut seen = 0;
-        let mut depth = 0;
-        for span in std::iter::once(&seq.first).chain(&seq.rest) {
-            for p in span.start..span.end {
-                let token = self.token_at(span.store, p);
-                seen += 1;
-                if token.is_begin() {
-                    depth += 1;
-                }
-                if token.is_end() {
-                    depth -= 1;
-                }
-                if depth == 0 {
-                    if seen == length {
-                        let seq = &mut self.packets[packet as usize].arguments[argument];
-                        seq.trim_front();
-                        seq.trim_back(1);
-                    }
-                    return;
-                }
-            }
-        }
     }
     pub(crate) fn same_meaning(&self, a: Meaning, b: Meaning) -> bool {
         if a == b {
