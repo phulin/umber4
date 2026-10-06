@@ -12,6 +12,10 @@ The [MVP](docs/mvp.md) implements a small expansion/register interpreter in
 [crates/umber](crates/umber/). Layout, shipout, formats, and checkpoints remain
 design proposals.
 
+[Native measurements](docs/mvp-results.md) reach pdfTeX-comparable throughput
+across eight core workloads. The implementation builds new data in place and
+reuses captured token ranges and invocation storage.
+
 ```bash
 cargo build --release
 target/release/umber fixtures/mvp/macros.tex

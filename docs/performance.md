@@ -3,7 +3,9 @@
 This proposal explains how to turn the subsystem designs into measurable Rust
 without letting measurement machinery take over the architecture. The target is
 full native execution comparable to native pdfTeX, with useful incremental restart
-and the same interpreter on Wasm. No implementation measurements exist yet.
+and the same interpreter on Wasm. The first expansion/register implementation
+has [native measurements](mvp-results.md); layout, checkpoint, and Wasm runtime
+measurements will follow those implementations.
 
 ## 1. One execution path
 
@@ -144,5 +146,6 @@ backend serialization and broader extensions complete the compatibility target.
 
 Those slices should produce actual executable evidence and ordinary focused
 tests. They do not require a universal storage abstraction, a second continuation
-machine, or speculative benchmark infrastructure. Introduce Cargo/crate structure
-and checks when implementation begins; this documentation repository has none yet.
+machine, or speculative benchmark infrastructure. The [MVP](mvp.md) now supplies
+the Cargo workspace, focused tests, native oracle, and same-source benchmark
+runner. Broaden those tools alongside the next implemented slice.

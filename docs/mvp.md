@@ -6,6 +6,10 @@ macros and change integer state, then report their result with `\message`.
 Shipout, fonts, layout, format files, and document checkpoints come later. There
 is no paragraph handoff yet, so this slice has no scheduler yield point.
 
+The slice is implemented in [crates/umber](../crates/umber/). Its
+[native measurements](mvp-results.md) record the tested behavior, optimization
+results, and reproduction commands.
+
 ## Scope
 
 Use byte-oriented INITEX input and its initial category table. Programs explicitly
@@ -65,6 +69,14 @@ Keep grouping in a reused save stack, preserving local/global/local restoration
 and the extended profile's identical-local-assignment behavior. Character tokens
 keep their captured category codes. Backing up a token preserves identity, while
 its next read resolves its current meaning and any one-read suppression is spent.
+
+The implemented arena uses 4,096-token boxed chunks. Published tokens are
+immutable; fresh suffix writes use `UnsafeCell` and chunk addresses remain stable
+when the directory grows. A source window covers initialized cells in one chunk.
+Capture buffers grow while uniquely owned; publication gives their packets shared
+ownership and makes the buffers immutable. A child retains that backing before
+the parent source can retire. Source pointers remain valid through those semantic
+owners. Checked name and storage indices preserve the compact token layout.
 
 Start with ordinary Rust storage. If direct cursor access needs a small unsafe
 primitive, document its initialized bounds, stable backing owner, and source

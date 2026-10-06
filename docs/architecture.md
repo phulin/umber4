@@ -339,8 +339,8 @@ design proposal; representation costs remain implementation measurements.
 | Bootstrap, Umber format export/read, and startup    | [formats.md](formats.md)                 |
 | Native/Wasm execution and performance evidence      | [performance.md](performance.md)         |
 
-A small interpreter for input, definitions, groups, and simple output can already
-exercise the central representations. Paragraph and page construction bring in
+The [expansion/register MVP](mvp.md) exercises the central representations and
+provides [native performance evidence](mvp-results.md). Paragraph and page construction bring in
 working arenas and retained nodes; real formats and output routines connect those
 paths. Use their executable evidence to refine the proposed structures before
 broadening compatibility.
