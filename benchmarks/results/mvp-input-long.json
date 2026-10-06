@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-06T20:22:24.456622+00:00",
+  "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "rustflags": "",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "umber_binary_sha256": "c4735cbc32eb681c01198c6889eedf5f7a9e7e3f5ada164ae2213ff00f1fc81e",
+  "generator_sha256": "ecf7c10618f0b29e45854347d343778914d493e75fc242dba1ee3ea0a6b909b6",
+  "repeats": 7,
+  "baseline_binary_sha256": "de6ee83ade5fb6188fb164e7f862da8cd5140367655c9a56fa7546560ce92fb4",
+  "source_recipe": {
+    "bootstrap": "\\catcode123=1 \\catcode125=2 \\catcode35=6 \\catcode94=7\\relax\n",
+    "setup": "\\def\\take#1{\\advance\\count0by1\\relax}\\def\\twice#1{\\take{#1}\\take{#1}}",
+    "body": "\\twice{abcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh}",
+    "separator": "\n",
+    "iterations": 100000,
+    "tail": "\\message{UMBER:200000,0:END}\\end\n"
+  },
+  "bytes": 26500163,
+  "sha256": "5a38fd990f9bdbc9e42a21d39c83ec52c24f8c5e832e41c47643ce455143b663",
+  "seconds": {
+    "umber": [
+      0.728271429,
+      0.714150033,
+      0.714101671,
+      0.76296584,
+      0.780752362,
+      0.739588347,
+      0.729198869
+    ],
+    "pdftex": [
+      1.212141137,
+      1.138056703,
+      1.169828156,
+      1.112648767,
+      1.14362342,
+      1.162720685,
+      1.143853558
+    ],
+    "baseline": [
+      0.840454037,
+      0.808397026,
+      0.837014191,
+      0.830722421,
+      0.802497401,
+      0.803523416,
+      0.799394712
+    ]
+  },
+  "median": {
+    "umber": 0.729198869,
+    "pdftex": 1.143853558,
+    "baseline": 0.808397026
+  },
+  "ratio": 0.637493203478762,
+  "ratio_to_baseline": 0.902030618059201,
+  "case": "long arguments tokenized from bytes",
+  "baseline_revision": "d74a61c",
+  "complete": true
+}
