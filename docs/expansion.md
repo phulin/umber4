@@ -75,6 +75,11 @@ identity, carries an interned ID; a direct table lookup supplies its current
 meaning. The process interner keeps IDs available across rollback; the document's
 meaning table supplies the restored interpretation.
 
+Engine-private frozen commands and permanent font selectors use reserved
+identities distinct from ordinary names even when printed alike. They follow
+the same compact cursor/meaning path; [formats.md](formats.md) describes their
+bootstrap and import mapping.
+
 Macro invocation selects one immutable definition. Literal control sequences
 inside its replacement list are resolved when they are read. These are different
 lifetimes: the chosen body stays fixed during the invocation, while the commands

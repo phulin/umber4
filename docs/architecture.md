@@ -1,7 +1,8 @@
 # Umber4: high-level architecture proposal
 
 A working proposal for the execution model, object lifetimes, and checkpoint
-strategy. Detailed data structures will follow from exploring these areas.
+strategy. The linked subsystem proposals develop the data structures and hot
+paths; implementation and measurements will test these choices.
 
 ## 1. Goals and initial scope
 
@@ -34,8 +35,8 @@ Execution proceeds linearly between checkpoints, making bump allocation a natura
 fit for much of the data created along the way. Storage choices follow each
 object's lifetime and mutability: process-lifetime interned names, rewindable
 scratch, immutable append storage, copied tables, copy-on-write data, and
-reference-counted heap objects can all coexist. The detailed mutable-storage
-design will choose the appropriate approach for each type.
+reference-counted heap objects can all coexist. The [storage design](storage.md)
+develops the approach for each type.
 
 Build data directly in its destination storage and reuse existing immutable
 ranges. Transfers can move ownership of storage while leaving its contents
@@ -104,6 +105,8 @@ arena boundary. Optional macro precompilation can be explored once the basic
 execution path is working and measurable.
 
 See [expansion.md](expansion.md) for the input and expansion loop design.
+Character scanning and primitive/group execution are developed in
+[input.md](input.md) and [execution.md](execution.md).
 
 ## 5. Object lifetimes and allocation
 
@@ -177,6 +180,8 @@ available to an active invocation and to any checkpoint using that definition.
 Starting with session lifetime makes their ownership cheap and simple. Segment
 reclamation or reuse of identical bodies across replay can be added where actual
 session workloads justify it.
+When rollback drops every younger owner, an abandoned definition tail can rewind
+to the checkpoint's append boundary. Retained prefix definitions remain in place.
 
 Boxes, marks, insertions, and unfinished page lists belong to stores organized
 around their semantic owners. A box register owns its box until replacement or
@@ -184,7 +189,7 @@ transfer; page construction owns material until it is shipped or transferred;
 marks can remain useful on later pages. Much of this material can be bump-allocated
 as execution proceeds. Values that are mutated or shared across checkpoints may
 use copy-on-write storage, explicit copies, or reference-counted heap allocation
-for now. The mutable-storage deep dive will develop these choices by data type.
+for now. [storage.md](storage.md) develops these choices by data type.
 
 ### Page and result lifetime: completed output
 
@@ -200,6 +205,8 @@ allocated shared objects where those are convenient.
 A custom arena layout or bump allocator may use unsafe code in a narrow primitive.
 Its documentation should explain why its allocation layout, references, and
 reclamation are valid, so callers can use a simple API with clear lifetimes.
+See [storage.md](storage.md) for allocation and mutable roots and
+[formats.md](formats.md) for shared startup baselines.
 
 ## 6. Quiescent checkpoints
 
@@ -228,6 +235,8 @@ data type needs them. The detailed representations belong in the storage design.
 Checkpoint creation is a bulk operation at the boundary. Restoring one reestablishes
 these persistent values, resets the associated scratch stores, and reenters the
 outer loop. Checkpoints stay in memory for the compilation session.
+[checkpoints.md](checkpoints.md) develops retained roots, restore, and prefix
+restart using this boundary.
 
 ## 7. Scheduling at checkpoint boundaries
 
@@ -255,16 +264,18 @@ fetches missing resources. The interpreter reads these through a small resource
 interface with ordinary byte access in the hot path.
 
 Generated files can be represented as buffers with TeX's normal stream behavior.
-A checkpoint retains the buffer versions or lengths needed to resume its output
-position. The same idea applies to logs and diagnostics: they are appendable
-session data with a saved position.
+File contents and individual stream positions/buffers are versioned document
+state, including aliased handles and the main output file. Logs and diagnostics
+are appendable session data with a saved position.
 
-Page output is produced in document order. DVI and PDF backends consume owned page
-data and retain their document-wide structures, such as font and PDF object
-information. Their checkpoint representation belongs to each backend. Retaining
+Ordered shipout produces owned page output and updates the DVI/PDF document-wide
+structures, such as font and PDF object information. Their checkpoint
+representation belongs to each backend. Retaining
 completed pages lets a resumed compilation reuse its output prefix and construct
 the rest of the document. The final PDF can be serialized from this combined
-output; its exact representation is an area for a later design.
+output, reusing completed content streams and finalizing document resources.
+[resources.md](resources.md) and [output.md](output.md) develop I/O ordering,
+backend state, and serialization.
 
 Auxiliary files and repeated TeX passes fit above the interpreter in the session
 or application layer. Their detailed orchestration can follow once a single pass
@@ -307,22 +318,29 @@ Definitions, local/global assignments, saved boxes, and output routines are usef
 examples because they exercise both semantics and lifetimes. Grow these checks
 with the interpreter as it starts compiling ordinary documents.
 
-## 11. Areas to develop next
+## 11. Detailed subsystem proposals
 
-Develop the allocation layout and checkpoint strategy for each major class of
-objects, using paragraph endings with no open groups as the fixed boundary.
-The mutable-storage deep dive should choose representations from their lifetimes,
-sharing, and mutation patterns, with bump allocation covering linear construction.
+The deep dives share ordinary Rust execution, in-place construction, semantic
+lifetimes, and the fixed paragraph/no-open-groups checkpoint boundary. Each is a
+design proposal; representation costs remain implementation measurements.
 
-A small interpreter that handles input, definitions, groups, and simple output
-can already exercise the central design. Paragraph and page construction then
-bring in the larger working arenas and retained node stores. Those executable
-examples will help choose the structures before broadening compatibility.
+| Area                                                | Design                                   |
+| --------------------------------------------------- | ---------------------------------------- |
+| Character input and scanners                        | [input.md](input.md)                     |
+| Token reading, expansion, and argument capture      | [expansion.md](expansion.md)             |
+| Meanings, assignments, groups, and modes            | [execution.md](execution.md)             |
+| Allocation, immutable spans, and mutable stores     | [storage.md](storage.md)                 |
+| Fonts, character construction, and line breaking    | [paragraphs.md](paragraphs.md)           |
+| Math lists and alignment templates                  | [math-alignments.md](math-alignments.md) |
+| Page breaks, insertions, marks, and output routines | [pages.md](pages.md)                     |
+| In-memory snapshots and prefix restart              | [checkpoints.md](checkpoints.md)         |
+| Native/Wasm resources, streams, and replay          | [resources.md](resources.md)             |
+| Ordered shipout and DVI/PDF serialization           | [output.md](output.md)                   |
+| Bootstrap, format reuse/import, and startup         | [formats.md](formats.md)                 |
+| Native/Wasm execution and performance evidence      | [performance.md](performance.md)         |
 
-The next detailed designs should cover:
-
-- The input and expansion loops, with temporary state in Rust control flow.
-- Object stores and lifetime transitions for definitions, groups, paragraphs,
-  boxes, and pages.
-- Snapshot representations at the established quiescence boundary.
-- Resource access and backend output storage around that boundary.
+A small interpreter for input, definitions, groups, and simple output can already
+exercise the central representations. Paragraph and page construction bring in
+working arenas and retained nodes; real formats and output routines connect those
+paths. Use their executable evidence to refine the proposed structures before
+broadening compatibility.
