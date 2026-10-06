@@ -1,0 +1,8 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\catcode64=11\def\a@b{OK}\message{UMBER:\a@b:END}
+\def\a{A}\message{UMBER:\^^61:END}
+\catcode64=13\relax\def@{ACTIVE}\message{UMBER:@:END}
+\let\p=#\def\grab\p1{\p1}\message{UMBER:\grab{MARKER}:END}
+\let\open={\message\open UMBER:BRACE:END}
+\def\mutate{\catcode94=12\relax}\mutate\message{UMBER:^^2b:END}
+\end

@@ -1,0 +1,11 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\count0=1{\count0=2\global\count0=3\count0=4}
+\count1=-7\divide\count1 BY2\relax
+\countdef\a=4\a='17\advance\a BY"A\relax
+\message{UMBER:\the\count0,\the\count1,\the\a:END}
+\def\a{A}{\def\a{B}\gdef\a{C}\def\a{D}}\message{UMBER:\a:END}
+\count2=--+`A\relax\multiply\count2 by3\relax
+\begingroup\count2=7\begingroup\global\count2=8\endgroup\count2=9\endgroup
+\message{UMBER:\the\count2,\the\catcode123,\the\endlinechar:END}
+\noexpand\count0=2\relax\message{UMBER:\the\count0:END}
+\end

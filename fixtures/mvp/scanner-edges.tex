@@ -1,0 +1,12 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\let\B={\def\a\B{X}\message{UMBER:\a\B:END}
+\def\n{1}\edef\a#1{#\n}\message{UMBER:\a{X}:END}
+\def\a{A}\message{UMBER:\expandafter\ifx\noexpand\a\relax Y\else N\fi:END}
+\global\relax\count0=7\relax\message{UMBER:\the\count0:END}
+\def\make#1#2{\let\s=#1#2}\make{ }{ }\def\s{X}\message{UMBER:\s:END}
+\def\a#1\par!{[#1]}\message{UMBER:\a X\par Y\par!:END}
+\catcode64=6\relax\def\a#1{#1}\def\b@1{@1}
+\message{UMBER:\ifx\a\b SAME\else DISTINCT\fi:END}
+\message{UMBER:\csname\endcsname/#/^^01/^^80:END}
+\advance\endlinechar by1\relax\message{UMBER:\the\endlinechar:END}
+\end

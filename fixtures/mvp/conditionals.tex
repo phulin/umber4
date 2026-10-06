@@ -1,0 +1,8 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\a#1{#1}\def\b#1{#1}\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\message{UMBER:\ifx\notknown\otherunknown Y\else N\fi:END}
+\message{UMBER:\ifnum1=1\else N\fi Y:END}
+\let\test=\iftrue\message{UMBER:\iffalse BAD\test INNER\else BAD\fi\else OK\fi:END}
+\def\again{\advance\count0by1\ifnum\count0<10000 \expandafter\again\fi}\again
+\message{UMBER:\the\count0:END}
+\end

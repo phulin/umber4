@@ -6,14 +6,19 @@ added, removed, or repurposed.
 
 Umber4 is a fresh design for a Rust TeX interpreter targeting native binaries
 and WebAssembly, with native pdfTeX performance as the baseline and resumable
-checkpoints for incremental compilation. The repository currently contains
-design documentation and coordination skills; it has no interpreter or Cargo
-workspace yet. The architecture is a proposal until reviewed with the user.
+checkpoints for incremental compilation. The repository contains design documents
+and an initial expansion/register interpreter. The full architecture remains a
+proposal until reviewed with the user.
 
 ## Repository Map
 
 - `docs/`: architecture proposals and, as implementation proceeds, subsystem
   contracts and performance methodology.
+- `crates/umber/`: portable expansion/register MVP and its native CLI.
+- `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.
+- `fixtures/mvp/`: same-source INITEX compatibility fixtures.
+- `scripts/`: native oracle setup and compatibility comparison.
+- `benchmarks/`: source generators and comparable native timing.
 - `.agents/skills/coordinate/`: GitHub Issues coordination and agent dispatch.
 - `.agents/skills/parallel/`: isolated persistent worktrees and integration.
 - `README.md`: project purpose and entry point to the design.

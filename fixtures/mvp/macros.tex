@@ -1,0 +1,12 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\a{old}\let\b=\a\def\a{new}
+\message{UMBER:\b/\a:END}
+\def\id#1{#1}\def\pass#1{\id#1}\def\twice#1{#1/#1}
+\message{UMBER:\pass{X}/\twice{ab}:END}
+\def\grab#1aba{(#1)}\message{UMBER:\grab aaba:END}
+\def\grab#1x{(#1)}\message{UMBER:\grab{a{x}b}x:END}
+\def\brace#1#{#1/}\message{UMBER:\brace abc{Y}:END}
+\def\a{A}\edef\b{\noexpand\a}\def\a{B}\message{UMBER:\b:END}
+\expandafter\def\csname made\endcsname{YES}\message{UMBER:\made:END}
+\def\a{\def\a{new}\count0=5\relax}\a\message{UMBER:\a/\the\count0:END}
+\end
