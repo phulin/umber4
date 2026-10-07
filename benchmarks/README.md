@@ -7,7 +7,8 @@ same complete input in Umber and native `pdftex -ini -etex`, validate every run,
 alternate engine order, pin a CPU on Linux, and retain raw timings and identities.
 On Unix, reports also retain each child's user-plus-system CPU time. Wall time
 includes scheduling waits; the CPU samples help identify interference from other
-work on a shared host. Both clocks include the complete engine process.
+work on a shared host. Console summaries use CPU time when available and label
+the selected clock. Both clocks include the complete engine process.
 
 ```bash
 cargo build --release

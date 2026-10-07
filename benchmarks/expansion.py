@@ -242,11 +242,14 @@ def main():
                    "sha256": hashlib.sha256(source).hexdigest(),
                    **measure(engines, path, expected, args.repeats)}
             report["samples"].append(row)
-            medians = row["median"]
-            print(f"{case:16} {size:7}  umber {medians['umber']:.6f}s  "
-                  f"pdftex {medians['pdftex']:.6f}s  ratio {row['ratio']:.3f}"
+            clock = "cpu" if "cpu_median" in row else "wall"
+            medians = row.get("cpu_median", row["median"])
+            ratio = row.get("cpu_ratio", row["ratio"])
+            print(f"{case:16} {size:7}  {clock} umber {medians['umber']:.6f}s  "
+                  f"pdftex {medians['pdftex']:.6f}s  ratio {ratio:.3f}"
                   + (f"  previous {medians['baseline']:.6f}s"
-                     f"  ratio {row['ratio_to_baseline']:.3f}" if args.baseline else ""),
+                     f"  ratio {row.get('cpu_ratio_to_baseline', row['ratio_to_baseline']):.3f}"
+                     if args.baseline else ""),
                   flush=True)
             args.report.parent.mkdir(parents=True, exist_ok=True)
             args.report.write_text(json.dumps(report, indent=2) + "\n")

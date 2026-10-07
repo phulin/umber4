@@ -159,13 +159,16 @@ def main():
             row = {"case": case, "size": size, "bytes": len(source),
                    "sha256": hashlib.sha256(source).hexdigest(),
                    **measure(engines, path, expected, args.repeats)}
-            medians = row["median"]
+            clock = "cpu" if "cpu_median" in row else "wall"
+            medians = row.get("cpu_median", row["median"])
+            ratio = row.get("cpu_ratio", row["ratio"])
             report["samples"].append(row)
             label = "source args" if case == "file-parameters" else case
-            print(f"{label:12} {size:9}  umber {medians['umber']:.6f}s  "
-                  f"pdftex {medians['pdftex']:.6f}s  ratio {row['ratio']:.3f}"
+            print(f"{label:12} {size:9}  {clock} umber {medians['umber']:.6f}s  "
+                  f"pdftex {medians['pdftex']:.6f}s  ratio {ratio:.3f}"
                   + (f"  previous {medians['baseline']:.6f}s"
-                     f"  ratio {row['ratio_to_baseline']:.3f}" if args.baseline else ""),
+                     f"  ratio {row.get('cpu_ratio_to_baseline', row['ratio_to_baseline']):.3f}"
+                     if args.baseline else ""),
                   flush=True)
             args.report.parent.mkdir(parents=True, exist_ok=True)
             args.report.write_text(json.dumps(report, indent=2) + "\n")
