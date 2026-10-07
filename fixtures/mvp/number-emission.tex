@@ -4,4 +4,15 @@
 \edef\saved{\values}\message{UMBER:\saved:END}
 \count0=\number-9\relax\advance\count0by\number99\relax
 \message{UMBER:\the\count0:END}
-\def\take#1{[#1/#1]}\message{UMBER:\expandafter\take\expandafter{\number99}:END}\end
+\def\take#1{[#1/#1]}\message{UMBER:\expandafter\take\expandafter{\number99}:END}
+\count2=2147483647 \count3=-2147483647\relax
+\message{UMBER:\the\count2/\number\count3:END}
+\def\wanted{0/1/-2147483647/2147483647}\count4=0 \count5=1\relax
+\def\restore{\catcode48=12 \catcode49=12 \catcode45=12\relax}
+\catcode48=1 \catcode49=6 \catcode45=2\relax
+\edef\saved{\the\count4/\number\count5/\the\count3/\number\count2}
+\ifx\saved\wanted\message{UMBER:OTHER:END}\else\message{UMBER:BAD:END}\fi\restore
+\edef\saved{\number\number100\relax/\number\numexpr(7+3)*99\relax}
+\message{UMBER:\saved:END}
+\advance\count3 by-1\relax\message{UMBER:\the\count3/\number\count3:END}
+\edef\take#1{#\number12}\message{UMBER:\take{X}:END}\end

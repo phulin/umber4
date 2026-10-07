@@ -46,8 +46,30 @@ impl Engine<'_> {
                                     emit(self, self.arena.get(position))?;
                                 }
                             }
-                            Internal::Integer(value) => self.insert_number(value)?,
+                            Internal::Integer(value) => self.emit_number(value, &mut emit)?,
                         },
+                        cmd::NUMBER => self.with_expansion(|engine| {
+                            let value = engine.scan_int()?;
+                            engine.emit_number(value, &mut emit)
+                        })?,
+                        cmd::STRING | cmd::MEANING | cmd::ROMAN | cmd::DETOKENIZE => {
+                            self.with_expansion(|engine| {
+                                let mut nonempty = false;
+                                engine.conversion::<true>(read, |engine, byte| {
+                                    nonempty = true;
+                                    let token = if byte == b' ' {
+                                        Token::character(10, byte)
+                                    } else {
+                                        Token::other(byte)
+                                    };
+                                    emit(engine, token)
+                                })?;
+                                if nonempty && engine.sources.len() > 10000 {
+                                    return Err(Error::Capacity);
+                                }
+                                Ok(())
+                            })?;
+                        }
                         cmd::UNEXPANDED => {
                             self.opening_brace()?;
                             self.scan_raw_body(&mut emit)?;
@@ -113,6 +135,33 @@ impl Engine<'_> {
             }
             emit(self, token)?;
         }
+    }
+    fn emit_number(
+        &mut self,
+        value: i32,
+        emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
+    ) -> Result<()> {
+        // Preserve the general expansion path's source limit even though this
+        // scanner needs no additional source for the generated characters.
+        if self.sources.len() > 10000 {
+            return Err(Error::Capacity);
+        }
+        if value < 0 {
+            emit(self, Token::other(b'-'))?;
+        }
+        self.emit_digits(value.unsigned_abs(), emit)
+    }
+    fn emit_digits(
+        &mut self,
+        value: u32,
+        emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
+    ) -> Result<()> {
+        // At most ten ordinary calls emit directly in reading order. Decimal
+        // characters cannot alter brace depth or parameter interpretation.
+        if value >= 10 {
+            self.emit_digits(value / 10, emit)?;
+        }
+        emit(self, Token::other(b'0' + (value % 10) as u8))
     }
     // These destination emitters append only: they preserve sources and the
     // immutable window backing. A new output chunk can move arena descriptors,

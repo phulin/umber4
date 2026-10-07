@@ -76,14 +76,23 @@ expansion. Destination emitters only append output; they preserve the installed
 source and its immutable backing, including while destination storage grows.
 Window exhaustion returns to the existing cursor refill and source retirement.
 
+Expanded list scanners can emit conversion output directly into their
+destination. Decimal output consists entirely of other-character tokens;
+`\string`, `\meaning`, `\romannumeral`, and `\detokenize` produce other-character
+and space tokens. This output needs no further expansion, group balancing, or
+parameter interpretation. Read operands with the existing scanners and
+expansion-depth accounting. Emit digits in reading order using bounded ordinary
+Rust calls; text conversion shares its byte emitter with general expansion.
+General expansion installs a token source when later input consumers need one.
+
 Scalar tables share an array of integer values and group levels. A compact target
 identifies its slot directly; assignment uses that slot for the read, save, and
-write. Token registers and meanings retain their own representations. Generated
-conversion and decimal output append directly to a uniquely owned reusable buffer
-and publish one range at completion. Decimal digits are generated with division
-by ten and reversed in place before publication. Numbers that fit in the existing
-two-token inline source use it directly. Other empty and singleton generated
-output stays inline in its packet.
+write. Token registers and meanings retain their own representations. When
+general expansion needs a token source, generated conversion and decimal output
+append to a uniquely owned reusable buffer and publish one range at completion.
+Decimal digits are generated with division by ten and reversed in place before
+publication. Numbers that fit in the existing two-token inline source use it
+directly. Other empty and singleton generated output stays inline in its packet.
 
 Token-arena chunks have their fixed size in the Rust type. Per-word appending
 uses a small inline gate; allocation remains in a separate growth helper. Common

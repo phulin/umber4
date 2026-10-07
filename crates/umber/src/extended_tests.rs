@@ -83,6 +83,50 @@ fn calendar_is_host_initialized_and_assignable() {
 }
 
 #[test]
+fn nested_number_limits_match_in_scanners_and_expanded_lists() {
+    for depth in [255, 256, 257] {
+        let number = format!("{}7", r"\number".repeat(depth));
+        for statement in [
+            format!(r"\count0={number}\relax\message{{\the\count0}}"),
+            format!(r"\message{{{number}}}"),
+            format!(r"\edef\saved{{{number}}}\message{{\saved}}"),
+        ] {
+            let source = format!(r"\catcode123=1 \catcode125=2\relax{statement}\end");
+            let result = Engine::new(source.as_bytes()).run();
+            if depth > 256 {
+                assert_eq!(result.err(), Some(Error::Capacity), "depth {depth}");
+            } else {
+                assert_eq!(result.unwrap().messages, [b"7"], "depth {depth}");
+            }
+        }
+    }
+}
+
+#[test]
+fn conversion_operand_errors_precede_destination_capacity() {
+    for (operand, expected) in [
+        (br"{\detokenize{ABCDE}}".as_slice(), Error::Capacity),
+        (br"{\detokenize{ABCDE".as_slice(), Error::Eof),
+        (br"{\detokenize ABCDE}".as_slice(), Error::Syntax),
+    ] {
+        let mut source = b"\\catcode123=1 \\catcode125=2\\relax\\end ".to_vec();
+        source.extend_from_slice(operand);
+        let mut engine = Engine::new(&source);
+        // Stop the ordinary driver before the list, retaining its live state.
+        loop {
+            let read = engine.next_expanded().unwrap();
+            if read.meaning.command == crate::token::cmd::END {
+                break;
+            }
+            engine.execute(read).unwrap();
+        }
+        engine.opening_brace().unwrap();
+        let result = engine.scan_body::<true>(Some(0), |_, _| Err(Error::Capacity));
+        assert_eq!(result, Err(expected));
+    }
+}
+
+#[test]
 fn generated_buffers_survive_nested_reads_and_reuse() {
     let text = "X".repeat(10003);
     let source = format!(

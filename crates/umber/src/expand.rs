@@ -2,11 +2,18 @@ use crate::{Engine, Error, Result, token::*};
 
 impl Engine<'_> {
     pub(crate) fn expand(&mut self, read: Read) -> Result<()> {
+        self.with_expansion(|engine| engine.expand_inner(read))
+    }
+    #[inline]
+    pub(crate) fn with_expansion(
+        &mut self,
+        action: impl FnOnce(&mut Self) -> Result<()>,
+    ) -> Result<()> {
         if self.expansion_depth >= 256 {
             return Err(Error::Capacity);
         }
         self.expansion_depth += 1;
-        let result = self.expand_inner(read);
+        let result = action(self);
         self.expansion_depth -= 1;
         result
     }

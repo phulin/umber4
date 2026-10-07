@@ -102,40 +102,47 @@ impl Engine<'_> {
         }
         Ok(())
     }
-    fn conversion_text(
+    fn emit_text(
         &mut self,
-        packet: u32,
-        builder: &mut Option<u32>,
         text: &[u8],
+        emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
         for &byte in text {
-            self.generated_byte(packet, builder, byte)?;
+            emit(self, byte)?;
         }
         Ok(())
     }
-    fn escaped_text(&mut self, packet: u32, builder: &mut Option<u32>, text: &[u8]) -> Result<()> {
+    fn escaped_text(
+        &mut self,
+        text: &[u8],
+        emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
+    ) -> Result<()> {
         let escape = self.scalars[Target::ESCAPECHAR].value;
         if (0..=255).contains(&escape) {
-            self.generated_byte(packet, builder, escape as u8)?;
+            emit(self, escape as u8)?;
         }
-        self.conversion_text(packet, builder, text)
+        self.emit_text(text, emit)
     }
-    fn meaning_tokens(&mut self, read: Read, packet: u32, builder: &mut Option<u32>) -> Result<()> {
+    fn meaning_text(
+        &mut self,
+        read: Read,
+        emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
+    ) -> Result<()> {
         let meaning = read.meaning;
         if meaning.is_macro() {
             let id = meaning.value as usize;
             let long = self.definitions[id].long;
             let protected = meaning.command == cmd::PROTECTED_MACRO;
             if protected {
-                self.escaped_text(packet, builder, b"protected")?;
+                self.escaped_text(b"protected", emit)?;
             }
             if long {
-                self.escaped_text(packet, builder, b"long")?;
+                self.escaped_text(b"long", emit)?;
             }
             if protected || long {
-                self.generated_byte(packet, builder, b' ')?;
+                emit(self, b' ')?;
             }
-            self.conversion_text(packet, builder, b"macro:")?;
+            self.emit_text(b"macro:", emit)?;
             let signature = self.definitions[id].signature;
             let body_start = self.definitions[id].body.start;
             let mut marker = b'#';
@@ -145,21 +152,19 @@ impl Engine<'_> {
                 if token.0 & PARAM != 0 && !token.is_cs() {
                     if position < body_start {
                         if token.byte() == 255 {
-                            self.conversion_text(packet, builder, b"->")?;
+                            self.emit_text(b"->", emit)?;
                         } else {
                             marker = token.byte();
                             parameter += 1;
-                            self.generated_byte(packet, builder, marker)?;
-                            self.generated_byte(packet, builder, b'0' + parameter)?;
+                            emit(self, marker)?;
+                            emit(self, b'0' + parameter)?;
                         }
                     } else {
-                        self.generated_byte(packet, builder, marker)?;
-                        self.generated_byte(packet, builder, b'0' + token.byte())?;
+                        emit(self, marker)?;
+                        emit(self, b'0' + token.byte())?;
                     }
                 } else {
-                    self.token_text(token, true, |engine, byte| {
-                        engine.generated_byte(packet, builder, byte)
-                    })?;
+                    self.token_text(token, true, &mut *emit)?;
                 }
             }
             return Ok(());
@@ -178,36 +183,31 @@ impl Engine<'_> {
             _ => None,
         };
         if let Some(prefix) = prefix {
-            self.conversion_text(packet, builder, prefix)?;
-            return self.generated_byte(packet, builder, meaning.value as u8);
+            self.emit_text(prefix, emit)?;
+            return emit(self, meaning.value as u8);
         }
         if meaning.command == cmd::UNDEFINED {
-            return self.conversion_text(packet, builder, b"undefined");
+            return self.emit_text(b"undefined", emit);
         }
         if meaning.command == cmd::CHAR_GIVEN {
-            self.escaped_text(packet, builder, b"char\"")?;
+            self.escaped_text(b"char\"", emit)?;
             let value = meaning.value as u8;
             if value >= 16 {
-                self.generated_byte(packet, builder, b"0123456789ABCDEF"[(value >> 4) as usize])?;
+                emit(self, b"0123456789ABCDEF"[(value >> 4) as usize])?;
             }
-            return self.generated_byte(
-                packet,
-                builder,
-                b"0123456789ABCDEF"[(value & 15) as usize],
-            );
+            return emit(self, b"0123456789ABCDEF"[(value & 15) as usize]);
         }
         if matches!(meaning.command, cmd::COUNT_REF | cmd::TOKS_REF) {
             self.escaped_text(
-                packet,
-                builder,
                 if meaning.command == cmd::COUNT_REF {
                     b"count"
                 } else {
                     b"toks"
                 },
+                emit,
             )?;
             let value = meaning.value.to_string();
-            return self.conversion_text(packet, builder, value.as_bytes());
+            return self.emit_text(value.as_bytes(), emit);
         }
         let name: &[u8] = match meaning.command {
             cmd::RELAX => b"relax",
@@ -285,29 +285,52 @@ impl Engine<'_> {
             ][meaning.value as usize],
             _ => return Err(Error::Unsupported),
         };
-        self.escaped_text(packet, builder, name)
+        self.escaped_text(name, emit)
     }
     pub(crate) fn convert(&mut self, read: Read) -> Result<()> {
         let packet = self.take_packet(1)?;
         let mut builder = None;
+        self.conversion::<false>(read, |engine, byte| {
+            engine.generated_byte(packet, &mut builder, byte)
+        })?;
+        self.finish_generated(packet, builder);
+        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
+    }
+    // Operands are read once; consumers choose their destination. The callback
+    // appends only and preserves installed sources and immutable input spans.
+    #[inline(never)]
+    pub(crate) fn conversion<const DEFER_EMISSION: bool>(
+        &mut self,
+        read: Read,
+        mut emit: impl FnMut(&mut Self, u8) -> Result<()>,
+    ) -> Result<()> {
         match read.meaning.command {
             cmd::STRING => {
                 let token = self.next_raw()?.token;
-                self.token_text(token, false, |engine, byte| {
-                    engine.generated_byte(packet, &mut builder, byte)
-                })?;
+                self.token_text(token, false, &mut emit)?;
             }
             cmd::MEANING => {
                 let token = self.next_token()?;
-                self.meaning_tokens(token, packet, &mut builder)?;
+                self.meaning_text(token, &mut emit)?;
             }
             cmd::DETOKENIZE => {
                 self.opening_brace()?;
+                let mut emission = Ok(());
                 self.scan_raw_body(|engine, token| {
                     engine.token_text(token, true, |engine, byte| {
-                        engine.generated_byte(packet, &mut builder, byte)
+                        if DEFER_EMISSION {
+                            // A direct destination error follows operand scan
+                            // errors, as when the conversion used a token source.
+                            if emission.is_ok() {
+                                emission = emit(engine, byte);
+                            }
+                            Ok(())
+                        } else {
+                            emit(engine, byte)
+                        }
                     })
                 })?;
+                emission?;
             }
             cmd::ROMAN => {
                 let mut value = self.scan_int()?;
@@ -327,15 +350,14 @@ impl Engine<'_> {
                     (1, b"i"),
                 ] {
                     while value >= number {
-                        self.conversion_text(packet, &mut builder, text)?;
+                        self.emit_text(text, &mut emit)?;
                         value -= number;
                     }
                 }
             }
             _ => return Err(Error::Unsupported),
         }
-        self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
+        Ok(())
     }
     pub(crate) fn change_case(&mut self, which: usize) -> Result<()> {
         self.opening_brace()?;
