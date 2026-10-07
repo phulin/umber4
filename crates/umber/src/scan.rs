@@ -114,7 +114,50 @@ impl Engine<'_> {
             _ => Err(Error::Number),
         }
     }
+    #[inline(always)]
+    fn literal_digit(&mut self) -> Option<i32> {
+        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+            return None;
+        };
+        if cursor.next == cursor.end {
+            return None;
+        }
+        // SAFETY: this source retains its initialized immutable window. Peeking
+        // neither changes sources nor retires their backing storage.
+        let digit = Self::digit(unsafe { cursor.next.read() }, 10);
+        if digit >= 10 {
+            return None;
+        }
+        // SAFETY: next is before end in the same allocation. A literal digit
+        // needs no expansion or meaning lookup; the suffix uses the usual scan.
+        cursor.next = unsafe { cursor.next.add(1) };
+        Some(digit)
+    }
+    // Keep the suffix loop out of the general scanner's recursive stack frame.
+    #[inline(never)]
+    fn decimal_suffix(&mut self, mut value: i32) -> Result<i32> {
+        loop {
+            if self.scan_digit_window(10, &mut value)? {
+                return Ok(value);
+            }
+            let read = self.next_expanded()?;
+            let digit = Self::digit(read.token, 10);
+            if digit >= 10 {
+                if read.meaning.command != cmd::SPACE {
+                    self.back(read.token);
+                }
+                return Ok(value);
+            }
+            value = value
+                .checked_mul(10)
+                .and_then(|v| v.checked_add(digit))
+                .ok_or(Error::Overflow)?;
+        }
+    }
     pub(crate) fn scan_int(&mut self) -> Result<i32> {
+        if let Some(value) = self.literal_digit() {
+            return self.decimal_suffix(value);
+        }
         let mut negative = false;
         let mut read = loop {
             let read = self.nonspace(true)?;

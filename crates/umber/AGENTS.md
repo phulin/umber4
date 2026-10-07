@@ -11,7 +11,8 @@ integers and primitive operands; `expression.rs` evaluates integer expressions;
 conversion and case-change output; `expand.rs` dispatches expansion;
 `condition.rs` handles conditional selection/skipping; `execute.rs` handles
 assignments, groups, and deferred tokens; `tests.rs` and `extended_tests.rs`
-contain semantic fixtures; `main.rs` is the native file/message adapter. Keep
+contain semantic fixtures; `scan_tests.rs` checks operand cursor boundaries and
+rollback; `main.rs` is the native file/message adapter. Keep
 host access out of the portable library.
 
 `examples/allocations.rs` is a separate native diagnostic adapter. Its allocator

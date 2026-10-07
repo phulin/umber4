@@ -1,5 +1,5 @@
 {
-  "engine_source_base_commit": "a6326a5",
+  "engine_source_base_commit": "198950f",
   "build": {
     "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
     "profdata_version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
@@ -16,18 +16,19 @@
       "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
       "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
       "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
-      "crates/umber/src/extended_tests.rs": "120470a4050c86b00975b958e86b40468c84c263cd908ee3c053fbc3ce9ecb95",
+      "crates/umber/src/extended_tests.rs": "5e30d5ada459bd96c49b2d830a367e10bf51e485c73d90aee452050f693f9fd6",
       "crates/umber/src/input.rs": "72c1333c149bb14962b87c47e324b296a11bb1259c77d696b066a4825c2cbf53",
-      "crates/umber/src/lib.rs": "7874f8ceeaed8020afdde6c468dbf857badadc304c99e1a0bd575733b240dbe9",
+      "crates/umber/src/lib.rs": "dd5765a031bd66eb8dd768601ce5bf512ead995c8feccacf7b363e59b34d9b03",
       "crates/umber/src/lists.rs": "fa2d4af0c8ff6b2dfce4d48f692604b6eb627f2111073b3b114582da46592721",
       "crates/umber/src/macros.rs": "978900409595062e9204d31ad25aa5b3eb1b7341f4220c86bc551cde9eb0e8a0",
       "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
       "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
-      "crates/umber/src/scan.rs": "86461d7afd37a9cedcdecdc73da8bb24b820c160bbee2b009f6c699f073c4afc",
+      "crates/umber/src/scan.rs": "1a55caf0cf54b573b8fd6f88b990392163e8da4598764f2feb09a9377716ea05",
+      "crates/umber/src/scan_tests.rs": "66344b70d989db80b5b1d06dd54d90dcf0c83c7cd8e289a8c09b8174a3c9179e",
       "crates/umber/src/tests.rs": "fabf9a92f3938069c8fa144b631af6578afe7ecd774acc0a4f1eea3df3f2a2bc",
       "crates/umber/src/token.rs": "7c59201e5284d0e5666915f3b5607bfd3d7bdaea2c7313a2cd6dce2636320216"
     },
-    "training_binary_sha256": "2f8f9140f9479ed7f8b9894f66a3dceb3007a671d2c927b74e2188ce23452af6",
+    "training_binary_sha256": "15cd41c61635b2375fbecaaa4fd651e6b3ec8fd5a571d144c49d43b984fa8235",
     "generators": {
       "mvp": "c3cdafbdb683f8a457356bc5776e8b7916ae64c400561cad9927674bc8169956",
       "expansion": "ebff0d53c33f20fdd0c53ae7f2c8c1241d9cbf585d6b7c75057fa069f0d060cd"
@@ -131,12 +132,12 @@
         "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
       }
     ],
-    "profile_path": "target/pgo/84b4ef8531453e032fc9b771ca97a48c8a4c432a480f52674ae9acab3d67cd2b.profdata",
-    "profile_sha256": "84b4ef8531453e032fc9b771ca97a48c8a4c432a480f52674ae9acab3d67cd2b",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/84b4ef8531453e032fc9b771ca97a48c8a4c432a480f52674ae9acab3d67cd2b.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "profile_path": "target/pgo/77e423252f8592ff19f52fa67f750cd54c22045644e5161cdc6fc5816b8479aa.profdata",
+    "profile_sha256": "77e423252f8592ff19f52fa67f750cd54c22045644e5161cdc6fc5816b8479aa",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/77e423252f8592ff19f52fa67f750cd54c22045644e5161cdc6fc5816b8479aa.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
     "rustflags_args": [
       "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/84b4ef8531453e032fc9b771ca97a48c8a4c432a480f52674ae9acab3d67cd2b.profdata",
+      "profile-use=/home/phulin/umber4/target/pgo/77e423252f8592ff19f52fa67f750cd54c22045644e5161cdc6fc5816b8479aa.profdata",
       "-C",
       "llvm-args=-pgo-warn-missing-function",
       "-C",
@@ -146,8 +147,8 @@
       "-C",
       "llvm-args=--align-all-functions=6"
     ],
-    "umber_binary_sha256": "3aa4c862c55743654a62af72dd810706e3ace89058f00e54178a5a2e108bffd1",
-    "allocation_binary_sha256": "75203d42859e6b984b329729cbd790358ac138be54960692b6618fc3a16fbcac"
+    "umber_binary_sha256": "0f62558893920f143715f42990bcfd7c2f54c860fbf795befcf6504deafe1da8",
+    "allocation_binary_sha256": "aad47959aba4efb8546d829e57f7fc14028a656cf229333d0dbe131132c95714"
   },
   "identity": "The build record identifies the exact interpreter and allocation diagnostic used in the timing and allocation reports."
 }

@@ -1,0 +1,12 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\digit{7}\count0=\digit\relax\message{UMBER:\the\count0:END}
+\def\digit{7 \relax}\count0=\digit\message{UMBER:\the\count0:END}
+\def\digit{7\relax}\count0=\digit\message{UMBER:\the\count0:END}
+\def\empty{}\def\digit{7\empty8\relax}\count0=\digit\message{UMBER:\the\count0:END}
+\def\make#1#2{\let\space=#1#2}\make{ }{ }
+\def\digit{7\space\relax}\count0=\digit\message{UMBER:\the\count0:END}
+\lccode32=48\relax\lowercase{\def\gap{ }}
+\def\digit{7\gap\relax}\count0=\digit\message{UMBER:\the\count0:END}
+\def\digit{7\count1=9\relax}\count0=\digit\message{UMBER:\the\count0/\the\count1:END}
+\def\id#1{#1}\def\digit{7\id{8}\relax}\count0=\digit\message{UMBER:\the\count0:END}
+\end

@@ -248,4 +248,6 @@ impl<'a> Engine<'a> {
 #[cfg(test)]
 mod extended_tests;
 #[cfg(test)]
+mod scan_tests;
+#[cfg(test)]
 mod tests;
