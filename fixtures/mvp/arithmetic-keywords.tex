@@ -1,0 +1,26 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\run{\advance\count0bY7\multiply\count0BY3\divide\count0By2\relax}
+\count0=10\relax\run\message{UMBER:\the\count0:END}
+\def\a{b}\def\z{Y}\def\run{\advance\count0\a\z4\relax}
+\run\message{UMBER:\the\count0:END}
+\def\run#1#2{\advance\count0#1#2\relax}
+\run{b}{Y6}\message{UMBER:\the\count0:END}
+\def\gap{ }\def\run{\advance\count0\gap by2\relax}
+\run\message{UMBER:\the\count0:END}
+\countdef\n=1 \lccode32=98\relax\lowercase{\def\bs{ }}
+\def\run{\advance\n\bs y4\relax}\run\message{UMBER:\the\n:END}
+\def\shift#1{\def\run{\advance\n#1y6\relax}}
+\lowercase{\shift{ }}\run\message{UMBER:\the\n:END}
+\def\pass#1{\advance\n#1y5\relax}
+\lowercase{\pass{ }}\message{UMBER:\the\n:END}
+\lccode32=113\relax\lowercase{\def\qs{ }}
+\def\run{\advance\n\qs by2\relax}\run\message{UMBER:\the\n:END}
+\catcode98=12 \catcode121=12\relax
+\def\run{\advance\count0by3\relax}\run\message{UMBER:\the\count0:END}
+\catcode98=1 \catcode121=2\relax
+\def\run{\advance\count0by4\relax}\run\message{UMBER:\the\count0:END}
+\catcode98=6 \catcode121=12\relax
+\def\run{\advance\count0bby5\relax}\run\message{UMBER:\the\count0:END}
+\catcode98=13\relax\def b{B}
+\def\run{\advance\count0by1\relax}\run\message{UMBER:\the\count0:END}
+\end

@@ -197,15 +197,37 @@ impl Engine<'_> {
         })
     }
     pub(crate) fn scan_keyword(&mut self, keyword: &[u8]) -> Result<bool> {
+        if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+            // SAFETY: both pointers belong to this retained immutable window.
+            let available = unsafe { cursor.end.offset_from(cursor.next) } as usize;
+            if keyword.len() <= available {
+                let matched = keyword.iter().enumerate().all(|(index, &byte)| {
+                    // SAFETY: index < keyword.len() <= available. Peeking neither
+                    // mutates the source nor retires its backing storage.
+                    let token = unsafe { cursor.next.add(index).read() };
+                    token.0 < 16 << 8 && token.byte().to_ascii_lowercase() == byte
+                });
+                if matched {
+                    // SAFETY: the matched range ends at or before window end.
+                    cursor.next = unsafe { cursor.next.add(keyword.len()) };
+                    return Ok(true);
+                }
+            }
+        }
         let mut tokens = [Token(0); 8];
         for (index, &byte) in keyword.iter().enumerate() {
-            let read = if index == 0 {
-                self.nonspace(true)?
-            } else {
-                self.next_expanded()?
-            };
-            tokens[index] = read.token;
-            if read.token.is_cs() || read.token.byte().to_ascii_lowercase() != byte {
+            loop {
+                let read = self.next_expanded()?;
+                // TeX tests character identity before skipping a leading
+                // spacer: case changes can give that category a keyword byte.
+                if !read.token.is_cs() && read.token.byte().to_ascii_lowercase() == byte {
+                    tokens[index] = read.token;
+                    break;
+                }
+                if index == 0 && read.meaning.command == cmd::SPACE {
+                    continue;
+                }
+                tokens[index] = read.token;
                 for token in tokens[..=index].iter().rev() {
                     self.back(*token);
                 }
