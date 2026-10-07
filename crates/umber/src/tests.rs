@@ -192,6 +192,22 @@ fn grouped_argument_windows() {
 }
 
 #[test]
+fn single_group_words_cross_source_windows() {
+    // Move the opening brace, sole word, and closing brace through a definition
+    // chunk boundary. Also forward the word through an inline parameter and
+    // finish an argument source whose capture backing can retire immediately.
+    for padding in 4084..=4092 {
+        let program = format!(
+            r"\def\padding{{{}}}\def\id#1{{#1}}\def\stored{{\id{{X}}}}
+\def\emit#1{{\id{{#1}}}}\def\forward#1{{#1}}
+\message{{\stored/\stored/\emit{{Y}}/\forward{{\id{{Z}}}}}}",
+            "P".repeat(padding)
+        );
+        message(&program, b"X/X/Y/Z");
+    }
+}
+
+#[test]
 fn shared_upstream_interactions() {
     let result = Engine::new(include_bytes!("../../../fixtures/mvp/interactions.tex"))
         .run()

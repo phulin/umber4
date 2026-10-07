@@ -187,6 +187,51 @@ impl Engine<'_> {
         }
     }
     #[inline(always)]
+    fn capture_single_group(&mut self, packet: u32, argument: usize) -> bool {
+        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+            return false;
+        };
+        let first = cursor.next;
+        if first == cursor.end {
+            return false;
+        }
+        // SAFETY: first is initialized in the retained immutable window. The
+        // second pointer is at most one past it; read only when before end.
+        let second = unsafe { first.add(1) };
+        if second == cursor.end || !unsafe { second.read() }.is_end() {
+            return false;
+        }
+        // SAFETY: first precedes second in the same retained window.
+        let token = unsafe { first.read() };
+        let token = if token.0 & PARAM != 0 && !token.is_cs() {
+            let Some(parent) = cursor.macro_packet else {
+                return false;
+            };
+            let sequence = &self.packets[parent as usize].arguments[(token.byte() - 1) as usize];
+            if sequence.first.store != SINGLE {
+                return false;
+            }
+            // SINGLE is constructed only for a sequence containing one word.
+            Token(sequence.first.start)
+        } else {
+            token
+        };
+        if !(3 << 8..PARAM).contains(&token.0) {
+            return false;
+        }
+        // SAFETY: second was initialized in this window. Looking up an argument
+        // only borrowed packet metadata; this cursor and its backing stay live.
+        cursor.next = unsafe { second.add(1) };
+        // Initial grouped capture has an empty argument. A character word
+        // has value semantics and needs no backing owner after retirement.
+        self.packets[packet as usize].arguments[argument].first = Span {
+            store: SINGLE,
+            start: token.0,
+            end: token.0 + 1,
+        };
+        true
+    }
+    #[inline(always)]
     fn capture_group<const RETAIN: bool>(
         &mut self,
         packet: u32,
@@ -194,6 +239,9 @@ impl Engine<'_> {
         long: bool,
         builder: &mut Option<u32>,
     ) -> Result<()> {
+        if RETAIN && self.capture_single_group(packet, argument) {
+            return Ok(());
+        }
         let mut depth = 1;
         loop {
             if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
@@ -207,6 +255,11 @@ impl Engine<'_> {
                     // tokens in one allocation, retained by the source. No
                     // source or backing storage changes during this scan.
                     let token = unsafe { next.read() };
+                    if (3 << 8..PARAM).contains(&token.0) {
+                        // SAFETY: next precedes end in this retained window.
+                        next = unsafe { next.add(1) };
+                        continue;
+                    }
                     if token.0 & PARAM != 0 && !token.is_cs() {
                         break Some(token.byte() - 1);
                     }

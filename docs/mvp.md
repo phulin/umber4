@@ -90,7 +90,9 @@ promotion precedes later matching errors. Partial prefixes and window transition
 return to the ordinary reader and matcher.
 
 Grouped arguments scan an immutable source window directly, retaining one range
-at its boundary. Parameter substitution and source advancement resume this scan
+at its boundary. Ordinary character words use one range classification before
+advancing the pointer; braces, control sequences, and parameter words take the
+structural path. Parameter substitution and source advancement resume this scan
 at the next window. One-token arguments stored as ranges return the existing
 token and range directly while the body retains their owner, avoiding a temporary
 input source.
@@ -105,6 +107,11 @@ When grouped capture finishes with exactly one token and an empty destination,
 keep that word directly in the packet as well. The source window already supplies
 its value; repeated substitution then reads the packet's value. Larger and mixed
 captures continue retaining their immutable ranges.
+Retained arguments beginning with an ordinary character followed by a closing
+brace in the same window can finish capture directly. An inline parameter word
+qualifies when it supplies an ordinary character. The invocation keeps the
+resulting word in its inline slot. Discarded arguments use the window scanner
+directly.
 
 Grouped arguments from source bytes append ordinary character runs directly into
 the uniquely owned capture buffer, recording one contiguous range per run.

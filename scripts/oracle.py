@@ -9,12 +9,13 @@ import subprocess
 from reference import ROOT, execute, reference
 
 
-def delimited_windows(folder):
+def wrapped(text):
     # Comments join physical lines without adding tokens, keeping the generated
     # literals within the native INITEX reader's default line-buffer capacity.
-    def wrapped(text):
-        return "%\n".join(text[index:index + 1000] for index in range(0, len(text), 1000))
+    return "%\n".join(text[index:index + 1000] for index in range(0, len(text), 1000))
 
+
+def delimited_windows(folder):
     sources = []
     for length in (1, 4093, 4094, 4095, 4096, 4097, 8191, 8192, 8193):
         text = wrapped("X" * length)
@@ -38,6 +39,21 @@ def delimited_windows(folder):
     return sources
 
 
+def single_group_windows(folder):
+    sources = []
+    for padding in range(4084, 4093):
+        text = wrapped("P" * padding)
+        source = (r"\catcode123=1 \catcode125=2 \catcode35=6\relax" + "\n"
+                  + r"\def\padding{" + text + r"}\def\id#1{#1}\def\stored{\id{X}}"
+                  + "\n" + r"\def\emit#1{\id{#1}}\def\forward#1{#1}" + "\n"
+                  + r"\message{UMBER:\stored/\stored/\emit{Y}/\forward{\id{Z}}:END}\end"
+                  + "\n")
+        path = folder / f"single-group-window-{padding}.tex"
+        path.write_text(source)
+        sources.append(path)
+    return sources
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
@@ -56,6 +72,9 @@ def main():
         for path in delimited_windows(ROOT / "target/oracle"):
             sources.append(path)
             generated_expected[path] = [b"Y"] * 4
+        for path in single_group_windows(ROOT / "target/oracle"):
+            sources.append(path)
+            generated_expected[path] = [b"X/X/Y/Z"]
     for source in sources:
         native = execute(command, source, env)
         umber = execute([str(args.umber.resolve())], source)
