@@ -289,7 +289,12 @@ impl Engine<'_> {
                 continue;
             }
             if self.sources.is_empty() {
-                self.capture_file_characters::<RETAIN>(packet, argument, builder)?;
+                self.capture_file_characters::<RETAIN, false>(
+                    packet,
+                    argument,
+                    builder,
+                    Token(u32::MAX),
+                )?;
             }
             // Special file categories and short insertions use the ordinary
             // reader. Source transitions resume directly at the next window.
@@ -302,17 +307,25 @@ impl Engine<'_> {
         }
     }
     #[inline(never)]
-    fn capture_file_characters<const RETAIN: bool>(
+    pub(crate) fn capture_file_characters<const RETAIN: bool, const EXCEPT: bool>(
         &mut self,
         packet: u32,
         argument: usize,
         builder: &mut Option<u32>,
+        except: Token,
     ) -> Result<()> {
         if !RETAIN {
-            while self.file.read_character(self.scalars.catcodes()).is_some() {}
+            while self
+                .file
+                .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+                .is_some()
+            {}
             return Ok(());
         }
-        let Some(first) = self.file.read_character(self.scalars.catcodes()) else {
+        let Some(first) = self
+            .file
+            .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+        else {
             return Ok(());
         };
         self.capture_raw(
@@ -325,7 +338,10 @@ impl Engine<'_> {
             },
             builder,
         )?;
-        let Some(mut token) = self.file.read_character(self.scalars.catcodes()) else {
+        let Some(mut token) = self
+            .file
+            .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+        else {
             return Ok(());
         };
         if self.packets[packet as usize].arguments[argument]
@@ -346,7 +362,10 @@ impl Engine<'_> {
                 return Err(Error::Capacity);
             }
             tokens.push(token);
-            let Some(next) = self.file.read_character(self.scalars.catcodes()) else {
+            let Some(next) = self
+                .file
+                .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+            else {
                 break;
             };
             token = next;
@@ -384,75 +403,6 @@ impl Engine<'_> {
             self.capture_raw(packet, argument, raw, builder)?;
         }
         Ok(false)
-    }
-    #[inline(never)]
-    fn capture_delimited<const RETAIN: bool>(
-        &mut self,
-        id: u32,
-        packet: u32,
-        argument: usize,
-        builder: &mut Option<u32>,
-    ) -> Result<()> {
-        let delimiter = self.definitions[id as usize].delimiters[argument];
-        let long = self.definitions[id as usize].long;
-        let length = (delimiter.end - delimiter.start) as usize;
-        let mut matched = 0;
-        let mut depth = 0;
-        let mut seen = 0;
-        let mut first_group = false;
-        let mut group_end = None;
-        loop {
-            let raw = self.next_raw()?;
-            if RETAIN {
-                seen += 1;
-                if seen == 1 {
-                    first_group = raw.token.is_begin();
-                }
-                self.capture_raw(packet, argument, raw, builder)?;
-            }
-            if depth == 0 {
-                loop {
-                    if self.arena.get(delimiter.start + matched as u32) == raw.token {
-                        matched += 1;
-                        break;
-                    }
-                    if matched == 0 {
-                        break;
-                    }
-                    matched = self.definitions[id as usize].failures[argument][matched - 1];
-                }
-                if matched == length {
-                    break;
-                }
-            }
-            // Tokens previously matched against a delimiter become argument
-            // content without another par check on fallback. The current token
-            // is checked only when it is unmatched.
-            if !long && raw.token == self.par && (depth > 0 || matched == 0) {
-                return Err(Error::Argument);
-            }
-            if raw.token.is_begin() {
-                depth += 1;
-            }
-            if raw.token.is_end() {
-                if depth == 0 {
-                    return Err(Error::Argument);
-                }
-                depth -= 1;
-                if RETAIN && depth == 0 && first_group && group_end.is_none() {
-                    group_end = Some(seen);
-                }
-            }
-        }
-        if RETAIN {
-            let sequence = &mut self.packets[packet as usize].arguments[argument];
-            sequence.trim_back(length);
-            if group_end == Some(seen - length) {
-                sequence.trim_front();
-                sequence.trim_back(1);
-            }
-        }
-        Ok(())
     }
     #[inline(never)]
     fn begin_macro_with_arguments<const RETAIN: bool>(&mut self, id: u32) -> Result<()> {

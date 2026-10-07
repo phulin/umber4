@@ -1,0 +1,9 @@
+UMBER:[XXa]/[aaba]/[]:END
+UMBER:[AB]/[{AB}TAIL]/[AB{CD}]:END
+UMBER:[ABC]|[DE{F}GH]/[DEF]|[prefix {GH} suffix]:END
+UMBER:[aaa]/[a!\relax b]:END
+UMBER:[ABC\par X]:END
+UMBER:[AB]/[CD]:END
+UMBER:[ABCDEF]:END
+UMBER:[ABC DEF]:END
+UMBER:[ABC]{XYZ}:END

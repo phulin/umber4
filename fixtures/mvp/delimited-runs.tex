@@ -1,0 +1,19 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\overlap#1aaba{[#1]}\def\stop#1x{[#1]}
+\message{UMBER:\overlap XXaaaba/\overlap{aaba}aaba/\overlap{}aaba:END}
+\message{UMBER:\stop{AB}x/\stop{AB}TAILx/\stop AB{CD}x:END}
+\def\record[#1]#2\par{[#1]|[#2]}
+\message{UMBER:\record[ABC]{DE{F}GH}\par/\record[DEF]prefix {GH} suffix\par:END}
+\long\def\ending#1!\relax{[#1]}
+\message{UMBER:\ending aaa!\relax/\ending{a!\relax b}!\relax:END}
+\def\paragraph#1\par!{[#1]}
+\message{UMBER:\paragraph ABC\par X\par!:END}
+\def\square[#1]#2!{[#1]/[#2]}
+\message{UMBER:\square[AB^^5dCD^^21:END}
+\message{UMBER:\stop ABC% discarded
+DEFx:END}
+\message{UMBER:\stop ABC
+DEFx:END}
+\def\open#1#{[#1]}
+\message{UMBER:\open ABC{XYZ}:END}
+\end

@@ -91,12 +91,27 @@ impl<'a> FileInput<'a> {
     }
     #[inline]
     pub fn read_character(&mut self, cats: &[Integer; 256]) -> Option<Token> {
+        self.read_character_except::<false>(cats, Token(u32::MAX))
+    }
+    pub fn position(&self) -> usize {
+        self.position
+    }
+    #[inline]
+    pub fn read_character_except<const EXCEPT: bool>(
+        &mut self,
+        cats: &[Integer; 256],
+        except: Token,
+    ) -> Option<Token> {
         if let Some(&byte) = self.line.get(self.position) {
             let cat = cats[byte as usize].value as u8;
             if matches!(cat, 11 | 12) {
+                let token = Token::character(cat, byte);
+                if EXCEPT && token == except {
+                    return None;
+                }
                 self.position += 1;
                 self.state = 1;
-                return Some(Token::character(cat, byte));
+                return Some(token);
             }
         }
         None

@@ -49,6 +49,10 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/file-arguments.tex"),
             include_str!("../../../fixtures/mvp/file-arguments.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/delimited-runs.tex"),
+            include_str!("../../../fixtures/mvp/delimited-runs.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();

@@ -77,6 +77,11 @@ consume the arguments without retaining a packet or capture storage. Select this
 scanning mode once per invocation; the token loops use the same matching rules.
 Delimited matching runs in a separate Rust function, keeping its local matching
 state and group trimming out of the common undelimited scanner.
+When no delimiter prefix is pending, file input scans character runs up to a
+possible first delimiter word. Inside a group, the run follows the group's
+ordinary character rules. Runs append into the existing capture buffer; their
+consumed length updates group-trimming counters at the boundary. Partial matches,
+braces, control sequences, and source transitions use the surrounding matcher.
 
 Grouped arguments scan an immutable source window directly, retaining one range
 at its boundary. Parameter substitution and source advancement resume this scan
