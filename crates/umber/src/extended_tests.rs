@@ -166,6 +166,30 @@ fn calendar_is_host_initialized_and_assignable() {
 }
 
 #[test]
+fn integer_overflow_consumes_its_digit_across_arena_windows() {
+    use crate::token::{Token, cmd};
+    for number in ["2147483648", "'20000000000", "\"80000000"] {
+        for padding in [0, 4079, 4087, 4090] {
+            let source = format!(
+                r"\catcode123=1 \catcode125=2\relax
+\def\padding{{{}}}\def\digits{{{number}X}}\end\digits",
+                "P".repeat(padding)
+            );
+            let mut engine = Engine::new(source.as_bytes());
+            loop {
+                let read = engine.next_expanded().unwrap();
+                if read.meaning.command == cmd::END {
+                    break;
+                }
+                engine.execute(read).unwrap();
+            }
+            assert_eq!(engine.scan_int(), Err(Error::Overflow));
+            assert_eq!(engine.next_raw().unwrap().token, Token::character(11, b'X'));
+        }
+    }
+}
+
+#[test]
 fn nested_number_limits_match_in_scanners_and_expanded_lists() {
     for depth in [255, 256, 257] {
         let number = format!("{}7", r"\number".repeat(depth));

@@ -307,7 +307,7 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-Thirty-one Rust tests cover the core plus token-register retention, protected
+Thirty-two Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
@@ -359,6 +359,8 @@ The arena-window and register-retention tests pass Miri with the cached write
 cursor, covering neighboring-cell access, disjoint appends, descriptor growth,
 active sources surviving register replacement, overlapping chunk comparisons,
 and empty ranges.
+The integer-overflow test also passes Miri: decimal, octal, and hexadecimal
+scans consume the offending digit and retain the next token across arena windows.
 
 Measured on 2026-10-07, Linux x86-64, AMD EPYC 7642, pinned to CPU 0:
 
