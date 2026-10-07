@@ -275,17 +275,17 @@ pub(crate) struct Capture {
 // A cached cursor therefore remains valid while a disjoint suffix is initialized.
 #[derive(Default)]
 pub(crate) struct TokenArena {
-    chunks: Vec<Box<[UnsafeCell<Token>]>>,
+    chunks: Vec<Box<[UnsafeCell<Token>; CHUNK_LEN]>>,
     pub len: u32,
 }
 impl TokenArena {
+    #[inline(always)]
     pub fn push(&mut self, token: Token) -> Result<()> {
         if self.len == u32::MAX {
             return Err(Error::Capacity);
         }
         if (self.len as usize).is_multiple_of(CHUNK_LEN) {
-            self.chunks
-                .push((0..CHUNK_LEN).map(|_| UnsafeCell::new(Token(0))).collect());
+            self.grow();
         }
         let chunk = self.len as usize >> CHUNK_BITS;
         let offset = self.len as usize & (CHUNK_LEN - 1);
@@ -295,6 +295,13 @@ impl TokenArena {
         }
         self.len += 1;
         Ok(())
+    }
+    #[inline(never)]
+    fn grow(&mut self) {
+        let chunk: Box<[UnsafeCell<Token>]> =
+            (0..CHUNK_LEN).map(|_| UnsafeCell::new(Token(0))).collect();
+        self.chunks
+            .push(chunk.try_into().expect("fixed token chunk length"));
     }
     pub fn get(&self, index: u32) -> Token {
         assert!(index < self.len);

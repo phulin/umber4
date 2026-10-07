@@ -1,6 +1,7 @@
 use crate::{Engine, Error, Result, token::*};
 
 impl Engine<'_> {
+    #[inline(never)]
     pub(crate) fn define(
         &mut self,
         expanded: bool,

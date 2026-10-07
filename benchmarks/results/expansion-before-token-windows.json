@@ -1,0 +1,1135 @@
+{
+  "date": "2026-10-07T02:01:02.348728+00:00",
+  "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "rustflags": "",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "umber_binary_sha256": "e25698c70a3117c9bae4eaf2cadb7ffafaa9a3cdb15f69ad765835ea0e65fc8c",
+  "generator_sha256": "04f0c0c658f8bb839005d608da011eaffe6d4da1022450d6404d892cace5e6e6",
+  "measurement_sha256": "ecf7c10618f0b29e45854347d343778914d493e75fc242dba1ee3ea0a6b909b6",
+  "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+  "corpus": {
+    "title": "A Gentle Introduction to TeX",
+    "author": "Michael Doob",
+    "version": "1.1",
+    "url": "https://ctan.net/info/gentle/gentle.tex",
+    "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "kernels": [
+      {
+        "name": "spelling",
+        "lines": [
+          98,
+          112
+        ],
+        "adaptation": "Definitions unchanged. Bootstrap ifcanspell with let instead of loading plain newif. The preceding aesthetic macro needs an accent and is omitted."
+      },
+      {
+        "name": "today",
+        "lines": [
+          305,
+          307
+        ],
+        "adaptation": "Definition unchanged. Define plain's space macro and assign calendar parameters explicitly."
+      },
+      {
+        "name": "talks",
+        "lines": [
+          3756,
+          3756
+        ],
+        "adaptation": "Definition unchanged. Consume expanded sentences in definitions rather than typesetting them."
+      },
+      {
+        "name": "contentsentry",
+        "lines": [
+          197,
+          201
+        ],
+        "adaptation": "Retain the complete write payload in a parameterized macro invoked in edef. Stringified line/dotfill names and braces are never executed. Bootstrap pageno with countdef."
+      },
+      {
+        "name": "maketable",
+        "lines": [
+          261,
+          269
+        ],
+        "adaptation": "Retain the bracketed-title and paragraph-delimited signature; replace the box/display body with edef of both complete payloads."
+      }
+    ]
+  },
+  "validation": "Every record compares its expanded definition with independently generated expected tokens; comparison and expected definition construction are timed.",
+  "storage": "Definition and token-register replacements accumulate immutable arena tokens within the Umber run; total work is bounded by the selected size.",
+  "repeats": 7,
+  "complete": true,
+  "samples": [
+    {
+      "case": "gentle-text",
+      "size": 1000,
+      "bytes": 236667,
+      "expanded_text_bytes": 38108,
+      "name_table_width": null,
+      "sha256": "fce2e4169a7ad74d3d355c483fff6ef062e5c0040c19ce69d3b3a4c99a3a49bf",
+      "seconds": {
+        "umber": [
+          0.005391512,
+          0.005645898,
+          0.005824772,
+          0.005958251,
+          0.005562182,
+          0.006583545,
+          0.00613028
+        ],
+        "pdftex": [
+          0.012521412,
+          0.011478665,
+          0.011844892,
+          0.011720591,
+          0.011762773,
+          0.012410649,
+          0.012156838
+        ],
+        "baseline": [
+          0.006146873,
+          0.006128072,
+          0.006356671,
+          0.006020359,
+          0.005698005,
+          0.006493421,
+          0.006378229
+        ]
+      },
+      "median": {
+        "umber": 0.005824772,
+        "pdftex": 0.011844892,
+        "baseline": 0.006146873
+      },
+      "ratio": 0.49175391383897804,
+      "ratio_to_baseline": 0.947599210200048
+    },
+    {
+      "case": "gentle-text",
+      "size": 10000,
+      "bytes": 2350179,
+      "expanded_text_bytes": 381114,
+      "name_table_width": null,
+      "sha256": "2fa4cce87042c5fd23614ed51d45cf4ef0a92ddb20a203acc7acff9f13d4cafa",
+      "seconds": {
+        "umber": [
+          0.044293007,
+          0.045109696,
+          0.04414293,
+          0.043891871,
+          0.045291543,
+          0.044484071,
+          0.04481598
+        ],
+        "pdftex": [
+          0.06665812,
+          0.065661107,
+          0.06598528,
+          0.067192328,
+          0.065524258,
+          0.067062044,
+          0.065585201
+        ],
+        "baseline": [
+          0.043747808,
+          0.047581271,
+          0.043611722,
+          0.044343114,
+          0.045841361,
+          0.045593848,
+          0.046050643
+        ]
+      },
+      "median": {
+        "umber": 0.044484071,
+        "pdftex": 0.06598528,
+        "baseline": 0.045593848
+      },
+      "ratio": 0.6741514319557332,
+      "ratio_to_baseline": 0.9756595012555203
+    },
+    {
+      "case": "gentle-text",
+      "size": 50000,
+      "bytes": 11743481,
+      "expanded_text_bytes": 1905538,
+      "name_table_width": null,
+      "sha256": "91e5e2a70541c94abd0478b7702258297cab3dc484aa6cd2699ef6e029c208b0",
+      "seconds": {
+        "umber": [
+          0.229662655,
+          0.218562151,
+          0.212278501,
+          0.216564433,
+          0.214378897,
+          0.217783472,
+          0.231747528
+        ],
+        "pdftex": [
+          0.303098064,
+          0.314209664,
+          0.316968349,
+          0.322294353,
+          0.311289567,
+          0.316382778,
+          0.309775671
+        ],
+        "baseline": [
+          0.228682565,
+          0.222079919,
+          0.222326513,
+          0.222733943,
+          0.224384378,
+          0.222351631,
+          0.228689311
+        ]
+      },
+      "median": {
+        "umber": 0.217783472,
+        "pdftex": 0.314209664,
+        "baseline": 0.222733943
+      },
+      "ratio": 0.6931151296479539,
+      "ratio_to_baseline": 0.97777406113625
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 1000,
+      "bytes": 193117,
+      "expanded_text_bytes": 14843,
+      "name_table_width": null,
+      "sha256": "dc9688d58f4a35ca4d5ae84e04183f5f18531b336dfea4559e92e316f9074880",
+      "seconds": {
+        "umber": [
+          0.005123938,
+          0.005144223,
+          0.005057814,
+          0.005128512,
+          0.004864078,
+          0.004786655,
+          0.006830515
+        ],
+        "pdftex": [
+          0.013774833,
+          0.010899791,
+          0.011797926,
+          0.011357561,
+          0.010159803,
+          0.010119731,
+          0.00988103
+        ],
+        "baseline": [
+          0.005864666,
+          0.005238799,
+          0.005643407,
+          0.005168663,
+          0.00490394,
+          0.005142232,
+          0.005312739
+        ]
+      },
+      "median": {
+        "umber": 0.005123938,
+        "pdftex": 0.010899791,
+        "baseline": 0.005238799
+      },
+      "ratio": 0.47009506879535573,
+      "ratio_to_baseline": 0.9780749366410125
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 10000,
+      "bytes": 1914581,
+      "expanded_text_bytes": 148450,
+      "name_table_width": null,
+      "sha256": "9a60d241ee061549ac6e534e2ef77029022b9f33c09667f6c2a50538a49dfc1e",
+      "seconds": {
+        "umber": [
+          0.039964698,
+          0.037300427,
+          0.038411685,
+          0.038203797,
+          0.03818085,
+          0.037518625,
+          0.037287468
+        ],
+        "pdftex": [
+          0.063521891,
+          0.060859851,
+          0.062486222,
+          0.060610274,
+          0.060149547,
+          0.059013399,
+          0.060158587
+        ],
+        "baseline": [
+          0.037791194,
+          0.037993016,
+          0.037950185,
+          0.040638633,
+          0.037814403,
+          0.038690362,
+          0.037459736
+        ]
+      },
+      "median": {
+        "umber": 0.03818085,
+        "pdftex": 0.060610274,
+        "baseline": 0.037950185
+      },
+      "ratio": 0.6299402309252059,
+      "ratio_to_baseline": 1.0060780994875256
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 50000,
+      "bytes": 9565527,
+      "expanded_text_bytes": 742252,
+      "name_table_width": null,
+      "sha256": "fab3a9c93dbcef2225869be0a23c293465d6332c0108d408f21c5c197f2cd4c7",
+      "seconds": {
+        "umber": [
+          0.181883254,
+          0.185742107,
+          0.234342763,
+          0.19663984,
+          0.184139271,
+          0.178073071,
+          0.177089346
+        ],
+        "pdftex": [
+          0.285932664,
+          0.284315357,
+          0.291339474,
+          0.27619304,
+          0.285516045,
+          0.289005924,
+          0.284093016
+        ],
+        "baseline": [
+          0.187631638,
+          0.19241211,
+          0.189756065,
+          0.183473745,
+          0.186973887,
+          0.18549811,
+          0.180718749
+        ]
+      },
+      "median": {
+        "umber": 0.184139271,
+        "pdftex": 0.285516045,
+        "baseline": 0.186973887
+      },
+      "ratio": 0.6449349317653934,
+      "ratio_to_baseline": 0.9848395086314914
+    },
+    {
+      "case": "gentle-contents",
+      "size": 1000,
+      "bytes": 464607,
+      "expanded_text_bytes": 125650,
+      "name_table_width": null,
+      "sha256": "fba791be743190c3b246e034d664f1e4f8351ed9448b3ec7d7408cf5db494a75",
+      "seconds": {
+        "umber": [
+          0.019449646,
+          0.019375527,
+          0.019882966,
+          0.019622367,
+          0.019453801,
+          0.021018476,
+          0.019483984
+        ],
+        "pdftex": [
+          0.025256385,
+          0.025569529,
+          0.026167993,
+          0.026129492,
+          0.027529381,
+          0.026740915,
+          0.027601041
+        ],
+        "baseline": [
+          0.022272621,
+          0.022715233,
+          0.022069952,
+          0.022102089,
+          0.022752554,
+          0.023380432,
+          0.023202138
+        ]
+      },
+      "median": {
+        "umber": 0.019483984,
+        "pdftex": 0.026167993,
+        "baseline": 0.022715233
+      },
+      "ratio": 0.7445731126571303,
+      "ratio_to_baseline": 0.8577496871812849
+    },
+    {
+      "case": "gentle-contents",
+      "size": 10000,
+      "bytes": 4629814,
+      "expanded_text_bytes": 1257177,
+      "name_table_width": null,
+      "sha256": "dc98d4a8920abdcd02453a500c999a1759361cecd99960ac5fc120968cb9dee2",
+      "seconds": {
+        "umber": [
+          0.185754671,
+          0.193065501,
+          0.184733594,
+          0.184424249,
+          0.185535617,
+          0.18683805,
+          0.194673617
+        ],
+        "pdftex": [
+          0.2082113,
+          0.213433101,
+          0.208413002,
+          0.366896393,
+          0.213312377,
+          0.211418983,
+          0.220144256
+        ],
+        "baseline": [
+          0.210877523,
+          0.211605709,
+          0.207467224,
+          0.216311412,
+          0.228238766,
+          0.219422792,
+          0.224479206
+        ]
+      },
+      "median": {
+        "umber": 0.185754671,
+        "pdftex": 0.213312377,
+        "baseline": 0.216311412
+      },
+      "ratio": 0.8708105624832075,
+      "ratio_to_baseline": 0.8587372681012317
+    },
+    {
+      "case": "gentle-contents",
+      "size": 50000,
+      "bytes": 23141928,
+      "expanded_text_bytes": 6286224,
+      "name_table_width": null,
+      "sha256": "a97e212664cbf03e1c7fba3dacca9ee8b15c35e53d94bb9c561cfa9ffea3eb92",
+      "seconds": {
+        "umber": [
+          0.902304024,
+          0.90298932,
+          0.925634016,
+          0.901487594,
+          0.889656584,
+          0.927472552,
+          0.887770843
+        ],
+        "pdftex": [
+          1.008372793,
+          1.030524352,
+          1.023252076,
+          1.017788869,
+          1.02334253,
+          1.059998017,
+          1.004117762
+        ],
+        "baseline": [
+          1.043658648,
+          1.05853595,
+          1.052497423,
+          1.037774094,
+          1.052373826,
+          1.107198197,
+          1.041539776
+        ]
+      },
+      "median": {
+        "umber": 0.902304024,
+        "pdftex": 1.023252076,
+        "baseline": 1.052373826
+      },
+      "ratio": 0.8818003355802623,
+      "ratio_to_baseline": 0.8573987700070375
+    },
+    {
+      "case": "gentle-records",
+      "size": 1000,
+      "bytes": 840995,
+      "expanded_text_bytes": 348772,
+      "name_table_width": null,
+      "sha256": "eaaeea792d1aa2802b348b50dcbd2c78f87e0b969f181189685368ae6d96eb95",
+      "seconds": {
+        "umber": [
+          0.024380503,
+          0.026727459,
+          0.023893521,
+          0.025651079,
+          0.024356924,
+          0.024509107,
+          0.024458536
+        ],
+        "pdftex": [
+          0.031165525,
+          0.029144113,
+          0.029888548,
+          0.033161124,
+          0.029757725,
+          0.031476741,
+          0.030467787
+        ],
+        "baseline": [
+          0.025103138,
+          0.024943908,
+          0.026851626,
+          0.02656081,
+          0.02749582,
+          0.02639195,
+          0.025436276
+        ]
+      },
+      "median": {
+        "umber": 0.024458536,
+        "pdftex": 0.030467787,
+        "baseline": 0.02639195
+      },
+      "ratio": 0.8027670667383883,
+      "ratio_to_baseline": 0.9267422831583115
+    },
+    {
+      "case": "gentle-records",
+      "size": 10000,
+      "bytes": 8393367,
+      "expanded_text_bytes": 3487708,
+      "name_table_width": null,
+      "sha256": "b2b051e964b7c79f9d9b47e4b9a041272b663e8eca4dd9969364924a30e66c49",
+      "seconds": {
+        "umber": [
+          0.233401723,
+          0.234659994,
+          0.245934115,
+          0.244627079,
+          0.243677322,
+          0.238175822,
+          0.247245584
+        ],
+        "pdftex": [
+          0.253601736,
+          0.247090915,
+          0.253174254,
+          0.262081076,
+          0.261573921,
+          0.25896954,
+          0.254686013
+        ],
+        "baseline": [
+          0.246946802,
+          0.249374538,
+          0.245541161,
+          0.249868329,
+          0.253410009,
+          0.237601969,
+          0.232097212
+        ]
+      },
+      "median": {
+        "umber": 0.243677322,
+        "pdftex": 0.254686013,
+        "baseline": 0.246946802
+      },
+      "ratio": 0.9567754394113508,
+      "ratio_to_baseline": 0.9867603873647248
+    },
+    {
+      "case": "gentle-records",
+      "size": 50000,
+      "bytes": 41959401,
+      "expanded_text_bytes": 17438498,
+      "name_table_width": null,
+      "sha256": "f4555b0af99aa439743fa81944c84a0e4d6f6a04b87605ca9bfb2d5ccc99b25f",
+      "seconds": {
+        "umber": [
+          1.205319929,
+          1.20872096,
+          1.263073664,
+          1.238081556,
+          1.229986205,
+          1.21911749,
+          1.256586376
+        ],
+        "pdftex": [
+          1.210864202,
+          1.246613159,
+          1.273139645,
+          1.270898693,
+          1.245966533,
+          1.228909965,
+          1.250399671
+        ],
+        "baseline": [
+          1.227044784,
+          1.221837098,
+          1.193918536,
+          1.184544901,
+          1.192231595,
+          1.178454803,
+          1.218014967
+        ]
+      },
+      "median": {
+        "umber": 1.229986205,
+        "pdftex": 1.246613159,
+        "baseline": 1.193918536
+      },
+      "ratio": 0.9866622986610075,
+      "ratio_to_baseline": 1.030209489100352
+    },
+    {
+      "case": "token-pipeline",
+      "size": 1000,
+      "bytes": 1531013,
+      "expanded_text_bytes": 594259,
+      "name_table_width": null,
+      "sha256": "388c26e20fd91e47c4aac2c08af97853d6d9908e94cd0180c4991caa69a5b6e0",
+      "seconds": {
+        "umber": [
+          0.037009594,
+          0.038242794,
+          0.039580022,
+          0.037280008,
+          0.03827235,
+          0.041672876,
+          0.038338349
+        ],
+        "pdftex": [
+          0.049896486,
+          0.048495243,
+          0.053396891,
+          0.053547087,
+          0.050148391,
+          0.051743009,
+          0.052925556
+        ],
+        "baseline": [
+          0.037973584,
+          0.03931767,
+          0.042075491,
+          0.037525142,
+          0.039492794,
+          0.038883676,
+          0.040520924
+        ]
+      },
+      "median": {
+        "umber": 0.03827235,
+        "pdftex": 0.051743009,
+        "baseline": 0.03931767
+      },
+      "ratio": 0.7396622411348361,
+      "ratio_to_baseline": 0.9734134805038039
+    },
+    {
+      "case": "token-pipeline",
+      "size": 10000,
+      "bytes": 15292613,
+      "expanded_text_bytes": 5942559,
+      "name_table_width": null,
+      "sha256": "20fdb1c9c3393190230db9d59d60447a3493b49706d6a6076686dfc2efc6ba4b",
+      "seconds": {
+        "umber": [
+          0.36669963,
+          0.355073375,
+          0.362502888,
+          0.355716398,
+          0.366356806,
+          0.362978972,
+          0.353565172
+        ],
+        "pdftex": [
+          0.461693339,
+          0.490242887,
+          0.476970394,
+          0.484523309,
+          0.465732106,
+          0.487497024,
+          0.483961807
+        ],
+        "baseline": [
+          0.355483459,
+          0.350575223,
+          0.357597148,
+          0.361851407,
+          0.37133216,
+          0.372422447,
+          0.366998643
+        ]
+      },
+      "median": {
+        "umber": 0.362502888,
+        "pdftex": 0.483961807,
+        "baseline": 0.361851407
+      },
+      "ratio": 0.7490320160739461,
+      "ratio_to_baseline": 1.001800410299358
+    },
+    {
+      "case": "token-pipeline",
+      "size": 50000,
+      "bytes": 76455271,
+      "expanded_text_bytes": 29712774,
+      "name_table_width": null,
+      "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+      "seconds": {
+        "umber": [
+          1.82555774,
+          1.786232355,
+          1.822594004,
+          1.834194289,
+          1.866373176,
+          1.802350035,
+          1.848176707
+        ],
+        "pdftex": [
+          2.332354356,
+          2.429381619,
+          2.331683448,
+          2.423515784,
+          2.391623841,
+          2.317550675,
+          2.43068724
+        ],
+        "baseline": [
+          1.805550321,
+          1.822515143,
+          1.828060716,
+          1.773701023,
+          1.821464427,
+          1.815414629,
+          1.895465627
+        ]
+      },
+      "median": {
+        "umber": 1.82555774,
+        "pdftex": 2.391623841,
+        "baseline": 1.821464427
+      },
+      "ratio": 0.7633130715224377,
+      "ratio_to_baseline": 1.0022472648597052
+    },
+    {
+      "case": "name-table",
+      "size": 1000,
+      "bytes": 243338,
+      "expanded_text_bytes": 43344,
+      "name_table_width": 125,
+      "sha256": "3123407e89bd90dc93fde3788a361b0e34f618438d94234563b17c5b1dd2fb63",
+      "seconds": {
+        "umber": [
+          0.005401563,
+          0.005560333,
+          0.00533389,
+          0.005733543,
+          0.005357238,
+          0.005315422,
+          0.005371401
+        ],
+        "pdftex": [
+          0.011882913,
+          0.011462571,
+          0.011166053,
+          0.012129901,
+          0.010768951,
+          0.01034738,
+          0.010445889
+        ],
+        "baseline": [
+          0.00607663,
+          0.005476575,
+          0.005614117,
+          0.005413818,
+          0.005559522,
+          0.005583262,
+          0.00554516
+        ]
+      },
+      "median": {
+        "umber": 0.005371401,
+        "pdftex": 0.011166053,
+        "baseline": 0.005559522
+      },
+      "ratio": 0.4810474211433529,
+      "ratio_to_baseline": 0.9661623787080975
+    },
+    {
+      "case": "name-table",
+      "size": 10000,
+      "bytes": 2437877,
+      "expanded_text_bytes": 434376,
+      "name_table_width": 1250,
+      "sha256": "4897ca4af7537db822ab45ff673764bc21de05c0f0cc2d54327e04ef6a4d77bc",
+      "seconds": {
+        "umber": [
+          0.043556091,
+          0.043874589,
+          0.042164794,
+          0.043566298,
+          0.044000901,
+          0.043811023,
+          0.041918525
+        ],
+        "pdftex": [
+          0.073549878,
+          0.071865665,
+          0.065742007,
+          0.065133353,
+          0.067172399,
+          0.067609885,
+          0.06547424
+        ],
+        "baseline": [
+          0.044858683,
+          0.043790314,
+          0.044293007,
+          0.044917836,
+          0.045567356,
+          0.044153064,
+          0.043370118
+        ]
+      },
+      "median": {
+        "umber": 0.043566298,
+        "pdftex": 0.067172399,
+        "baseline": 0.044293007
+      },
+      "ratio": 0.6485743943729032,
+      "ratio_to_baseline": 0.9835931437213102
+    },
+    {
+      "case": "name-table",
+      "size": 50000,
+      "bytes": 12045473,
+      "expanded_text_bytes": 2171472,
+      "name_table_width": 4096,
+      "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+      "seconds": {
+        "umber": [
+          0.229529199,
+          0.215717975,
+          0.234503561,
+          0.220960251,
+          0.222630892,
+          0.226597479,
+          0.240923148
+        ],
+        "pdftex": [
+          0.319785761,
+          0.325306963,
+          0.337170742,
+          0.325054714,
+          0.317458076,
+          0.335296828,
+          0.328679365
+        ],
+        "baseline": [
+          0.218102691,
+          0.224759834,
+          0.215348084,
+          0.228825447,
+          0.219124478,
+          0.215158399,
+          0.240926897
+        ]
+      },
+      "median": {
+        "umber": 0.226597479,
+        "pdftex": 0.325306963,
+        "baseline": 0.219124478
+      },
+      "ratio": 0.6965651054939146,
+      "ratio_to_baseline": 1.0341039078253957
+    },
+    {
+      "case": "optional-arguments",
+      "size": 1000,
+      "bytes": 800225,
+      "expanded_text_bytes": 332214,
+      "name_table_width": null,
+      "sha256": "029485fd09af3f5d38b6aaa600c553c8c9cb1d08afbcc0d477f4f527b688b812",
+      "seconds": {
+        "umber": [
+          0.024396946,
+          0.02621321,
+          0.025034646,
+          0.023875827,
+          0.026074107,
+          0.02651098,
+          0.023958304
+        ],
+        "pdftex": [
+          0.03499798,
+          0.036975169,
+          0.037897227,
+          0.043984106,
+          0.034765327,
+          0.03707782,
+          0.042961958
+        ],
+        "baseline": [
+          0.024042561,
+          0.025155534,
+          0.025932243,
+          0.025221567,
+          0.034967666,
+          0.024169635,
+          0.025626583
+        ]
+      },
+      "median": {
+        "umber": 0.025034646,
+        "pdftex": 0.03707782,
+        "baseline": 0.025221567
+      },
+      "ratio": 0.6751919611239281,
+      "ratio_to_baseline": 0.9925888427154427
+    },
+    {
+      "case": "optional-arguments",
+      "size": 10000,
+      "bytes": 7993021,
+      "expanded_text_bytes": 3332060,
+      "name_table_width": null,
+      "sha256": "d24a2ef5ce58db196cd615a96a2874b3e4d6a6c5e6f172f3f207fb3f418bd7dc",
+      "seconds": {
+        "umber": [
+          0.225111795,
+          0.224318101,
+          0.233732428,
+          0.223695135,
+          0.234058599,
+          0.230005846,
+          0.226173463
+        ],
+        "pdftex": [
+          0.304848593,
+          0.314772378,
+          0.326980739,
+          0.312061591,
+          0.342073361,
+          0.339463765,
+          0.357915588
+        ],
+        "baseline": [
+          0.225538299,
+          0.237337035,
+          0.224164342,
+          0.224473011,
+          0.225495166,
+          0.232761351,
+          0.229418443
+        ]
+      },
+      "median": {
+        "umber": 0.226173463,
+        "pdftex": 0.326980739,
+        "baseline": 0.225538299
+      },
+      "ratio": 0.6917027091311332,
+      "ratio_to_baseline": 1.0028162134893108
+    },
+    {
+      "case": "optional-arguments",
+      "size": 50000,
+      "bytes": 39990667,
+      "expanded_text_bytes": 16694375,
+      "name_table_width": null,
+      "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+      "seconds": {
+        "umber": [
+          1.153409518,
+          1.140259618,
+          1.095023225,
+          1.127033047,
+          1.11570887,
+          1.073575352,
+          1.168154882
+        ],
+        "pdftex": [
+          1.580654512,
+          1.60150869,
+          1.545244361,
+          1.573477296,
+          1.572041518,
+          1.585106937,
+          1.561528318
+        ],
+        "baseline": [
+          1.090900363,
+          1.140335004,
+          1.136288846,
+          1.133243628,
+          1.095790896,
+          1.152918679,
+          1.147780979
+        ]
+      },
+      "median": {
+        "umber": 1.127033047,
+        "pdftex": 1.573477296,
+        "baseline": 1.136288846
+      },
+      "ratio": 0.7162690239414805,
+      "ratio_to_baseline": 0.9918543607705185
+    }
+  ],
+  "baseline_binary_sha256": "9be4eacf7bfaec7f54e6b16945524972dbadeae3368d2d20f6ce3ff9a4e3cea1",
+  "startup": {
+    "seconds": {
+      "umber": [
+        0.001385358,
+        0.001368625,
+        0.001336729,
+        0.001472769,
+        0.001538863,
+        0.001661391,
+        0.001670069
+      ],
+      "pdftex": [
+        0.005417403,
+        0.005073787,
+        0.005743593,
+        0.005502146,
+        0.005000777,
+        0.005863684,
+        0.007801665
+      ],
+      "baseline": [
+        0.001451122,
+        0.001559619,
+        0.001946751,
+        0.001583758,
+        0.001397888,
+        0.001558828,
+        0.001993069
+      ]
+    },
+    "median": {
+      "umber": 0.001472769,
+      "pdftex": 0.005502146,
+      "baseline": 0.001559619
+    },
+    "ratio": 0.26767174117153564,
+    "ratio_to_baseline": 0.9443133226768846
+  },
+  "allocation_diagnostic": {
+    "binary_sha256": "cc4df854190e22d68dc5b869c65d5b1b104221c608176d774c9766dc25c6cb93",
+    "scope": "Engine construction and execution, excluding host input bytes, Rust stack, allocator overhead and native pdfTeX memory.",
+    "samples": [
+      {
+        "case": "gentle-text",
+        "size": 10000,
+        "allocations": 867,
+        "requested_bytes": 9214879,
+        "peak_bytes": 6302972
+      },
+      {
+        "case": "gentle-text",
+        "size": 50000,
+        "allocations": 1696,
+        "requested_bytes": 63126431,
+        "peak_bytes": 40000764
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 10000,
+        "allocations": 737,
+        "requested_bytes": 7113625,
+        "peak_bytes": 4203766
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 50000,
+        "allocations": 1050,
+        "requested_bytes": 29490073,
+        "peak_bytes": 17923318
+      },
+      {
+        "case": "gentle-contents",
+        "size": 10000,
+        "allocations": 1608,
+        "requested_bytes": 21089572,
+        "peak_bytes": 18163339
+      },
+      {
+        "case": "gentle-contents",
+        "size": 50000,
+        "allocations": 5326,
+        "requested_bytes": 122506532,
+        "peak_bytes": 99280523
+      },
+      {
+        "case": "gentle-records",
+        "size": 10000,
+        "allocations": 2382,
+        "requested_bytes": 33901189,
+        "peak_bytes": 30950576
+      },
+      {
+        "case": "gentle-records",
+        "size": 50000,
+        "allocations": 9219,
+        "requested_bytes": 163596933,
+        "peak_bytes": 151766192
+      },
+      {
+        "case": "token-pipeline",
+        "size": 10000,
+        "allocations": 5083,
+        "requested_bytes": 83990812,
+        "peak_bytes": 78064687
+      },
+      {
+        "case": "token-pipeline",
+        "size": 50000,
+        "allocations": 22692,
+        "requested_bytes": 407820572,
+        "peak_bytes": 384199727
+      },
+      {
+        "case": "name-table",
+        "size": 10000,
+        "allocations": 28005,
+        "requested_bytes": 10100531,
+        "peak_bytes": 6899464
+      },
+      {
+        "case": "name-table",
+        "size": 50000,
+        "allocations": 187563,
+        "requested_bytes": 45016993,
+        "peak_bytes": 31054998
+      },
+      {
+        "case": "optional-arguments",
+        "size": 10000,
+        "allocations": 2724,
+        "requested_bytes": 39191868,
+        "peak_bytes": 36242209
+      },
+      {
+        "case": "optional-arguments",
+        "size": 50000,
+        "allocations": 10869,
+        "requested_bytes": 190317884,
+        "peak_bytes": 178488097
+      }
+    ]
+  }
+}

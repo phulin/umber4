@@ -69,11 +69,25 @@ messages append formatted bytes into their output buffer. Raw insertions within
 expanded scans use that destination directly. Avoid building an intermediate
 token list just to print a message or preserve an unexpanded group.
 
+Within an installed token window, scan consecutive ordinary characters using
+Rust pointer locals and emit them directly. Braces, parameter tokens, and control
+sequences return to the surrounding scanner for nesting, substitution, and
+expansion. Destination emitters only append output; they preserve the installed
+source and its immutable backing, including while destination storage grows.
+Window exhaustion returns to the existing cursor refill and source retirement.
+
 Scalar tables share an array of integer values and group levels. A compact target
 identifies its slot directly; assignment uses that slot for the read, save, and
 write. Token registers and meanings retain their own representations. Generated
-conversion text appends directly to a uniquely owned reusable buffer and publishes
-one range at completion. Empty and singleton output stay inline in their packet.
+conversion and decimal output append directly to a uniquely owned reusable buffer
+and publish one range at completion. Decimal digits are generated with division
+by ten and reversed in place before publication. Empty and singleton output stay
+inline in their packet.
+
+Token-arena chunks have their fixed size in the Rust type. Per-word appending
+uses a small inline gate; allocation remains in a separate growth helper. Common
+control-sequence name assembly uses stack scratch space, spilling once for long
+names. Interned spellings retain their existing session lifetime.
 
 Expanded definitions and token-register replacements still accumulate arena
 storage within a run. Benchmarks expose this cost through definition churn and

@@ -32,6 +32,7 @@ impl Engine<'_> {
         let mut depth = 1;
         let mut uses_parameters = false;
         loop {
+            self.emit_characters(&mut emit)?;
             let read = if EXPANDED {
                 loop {
                     let read = self.next_token()?;
@@ -99,6 +100,7 @@ impl Engine<'_> {
     ) -> Result<()> {
         let mut depth = 1;
         loop {
+            self.emit_characters(&mut emit)?;
             let token = self.next_raw()?.token;
             if token.is_begin() {
                 depth += 1;
@@ -111,6 +113,40 @@ impl Engine<'_> {
             }
             emit(self, token)?;
         }
+    }
+    // These destination emitters append only: they preserve sources and the
+    // immutable window backing. A new output chunk can move arena descriptors,
+    // while the boxed input chunk itself stays at its original address.
+    #[inline]
+    fn emit_characters(
+        &mut self,
+        emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
+    ) -> Result<()> {
+        let Some(Source::Tokens(cursor)) = self.sources.last() else {
+            return Ok(());
+        };
+        let (mut next, end) = (cursor.next, cursor.end);
+        while next != end {
+            // SAFETY: this installed window contains initialized immutable
+            // tokens; its source retains the backing throughout emission.
+            let token = unsafe { next.read() };
+            if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2 | 6) {
+                break;
+            }
+            // SAFETY: next is within this window and advances at most to end.
+            next = unsafe { next.add(1) };
+            let result = emit(self, token);
+            if result.is_err() {
+                if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+                    cursor.next = next;
+                }
+                return result;
+            }
+        }
+        if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+            cursor.next = next;
+        }
+        Ok(())
     }
     pub(crate) fn store_body(&mut self) -> Result<Span> {
         let start = self.arena.len;

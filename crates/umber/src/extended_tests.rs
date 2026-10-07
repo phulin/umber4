@@ -25,6 +25,14 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/expressions.tex"),
             include_str!("../../../fixtures/mvp/expressions.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/name-scanning.tex"),
+            include_str!("../../../fixtures/mvp/name-scanning.expected"),
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/list-windows.tex"),
+            include_str!("../../../fixtures/mvp/list-windows.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();
@@ -86,6 +94,87 @@ fn generated_buffers_survive_nested_reads_and_reuse() {
         ]
         .map(String::into_bytes)
     );
+}
+
+#[test]
+fn stored_list_windows_preserve_nested_and_parameter_boundaries() {
+    let left = "a".repeat(4103);
+    let right = "b".repeat(8231);
+    // Native messages print parameter tokens doubled and preserve protected
+    // macros. The small list-windows fixture records the same oracle behavior.
+    let text = format!("{left}{{{right}}}##");
+    let raw = format!("{left}{{{right}}}####");
+    let source = format!(
+        r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\stored{{{left}{{{right}}}####}}\def\pass#1{{[#1/#1]}}
+\protected\def\keep{{K}}
+\edef\actual{{\pass{{\stored}}\noexpand\keep\unexpanded{{#}}}}
+\message{{\actual}}
+\toks0=\expandafter{{\stored}}\edef\actual{{\the\toks0}}
+\message{{\actual}}
+\edef\actual{{\unexpanded\expandafter{{\stored}}}}
+\message{{\actual}}\end"
+    );
+    let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+    for (index, (actual, expected)) in actual
+        .iter()
+        .zip([format!(r"[{text}/{text}]\keep ##"), raw.clone(), raw])
+        .enumerate()
+    {
+        assert_eq!(actual.len(), expected.len(), "message {index} length");
+        assert!(actual == expected.as_bytes(), "message {index} bytes");
+    }
+    assert_eq!(actual.len(), 3);
+}
+
+#[test]
+fn retained_argument_windows_survive_generated_buffer_growth() {
+    let inputs = [
+        format!(
+            "{} {{IJ KL}} {}",
+            "AbCdEfGh".repeat(1601),
+            "MN".repeat(2053)
+        ),
+        format!("{} {{OP QR}}", "STuV".repeat(2051)),
+    ];
+    let mut source = String::from(
+        r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\inspect#1{\edef\saved{\detokenize{#1}}\message{\saved}
+\lowercase{\def\lowered{#1}}\message{\lowered}
+\message{\detokenize{#1}}}",
+    );
+    for input in &inputs {
+        source.push_str(&format!(r"\inspect{{{input}}}"));
+    }
+    source.push_str(r"\end");
+    let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+    let expected: Vec<_> = inputs
+        .iter()
+        .flat_map(|input| [input.clone(), input.to_ascii_lowercase(), input.clone()])
+        .collect();
+    assert_eq!(actual.len(), expected.len());
+    for (index, (actual, expected)) in actual.iter().zip(expected).enumerate() {
+        assert_eq!(actual.len(), expected.len(), "message {index} length");
+        assert!(actual == expected.as_bytes(), "message {index} bytes");
+    }
+}
+
+#[test]
+fn stored_parameter_substitution_crosses_window_edges() {
+    for length in [4093, 4094, 8190, 8191] {
+        let prefix = "A".repeat(length);
+        let suffix = "B".repeat(4097);
+        let source = format!(
+            r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\pass#1{{{prefix}#1X#1{suffix}}}
+\edef\actual{{\pass{{{{Y}}}}}}\message{{\actual}}\end"
+        );
+        let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+        let expected = format!("{prefix}{{Y}}X{{Y}}{suffix}");
+        assert_eq!(actual.len(), 1);
+        assert_eq!(actual[0].len(), expected.len(), "prefix length {length}");
+        assert!(actual[0] == expected.as_bytes(), "prefix length {length}");
+    }
 }
 
 #[test]

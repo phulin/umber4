@@ -1,0 +1,11 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\stored{aaa{bbb}####}\def\pass#1{[#1/#1]}
+\protected\def\keep{K}
+\edef\actual{\pass{\stored}\noexpand\keep\unexpanded{#}}
+\message{UMBER:\actual:END}
+\toks0=\expandafter{\stored}\edef\actual{\the\toks0}
+\message{UMBER:\actual:END}
+\edef\actual{\unexpanded\expandafter{\stored}}
+\message{UMBER:\actual:END}
+\let\hash=#\edef\stored{\unexpanded{AAAA\hash1BBBB}}
+\edef\result#1{\stored}\message{UMBER:\result{Z}:END}\end

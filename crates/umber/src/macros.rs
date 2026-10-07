@@ -215,14 +215,15 @@ impl Engine<'_> {
                     }
                     // SAFETY: next is before the end of the same allocation.
                     next = unsafe { next.add(1) };
-                    if token.is_begin() {
-                        depth += 1;
-                    }
-                    if token.is_end() {
-                        depth -= 1;
-                        if depth == 0 {
-                            break None;
+                    match token.0 >> 8 {
+                        1 => depth += 1,
+                        2 => {
+                            depth -= 1;
+                            if depth == 0 {
+                                break None;
+                            }
                         }
+                        _ => {}
                     }
                 };
                 let parent = cursor.macro_packet;
@@ -342,11 +343,11 @@ impl Engine<'_> {
         let mut group_end = None;
         loop {
             let raw = self.next_raw()?;
-            seen += 1;
-            if seen == 1 {
-                first_group = raw.token.is_begin();
-            }
             if RETAIN {
+                seen += 1;
+                if seen == 1 {
+                    first_group = raw.token.is_begin();
+                }
                 self.capture_raw(packet, argument, raw, builder)?;
             }
             if depth == 0 {
@@ -374,7 +375,7 @@ impl Engine<'_> {
                     return Err(Error::Argument);
                 }
                 depth -= 1;
-                if depth == 0 && first_group && group_end.is_none() {
+                if RETAIN && depth == 0 && first_group && group_end.is_none() {
                     group_end = Some(seen);
                 }
             }

@@ -5,6 +5,9 @@ seven larger macro workloads, including excerpts from Michael Doob's
 [gentle.tex](https://ctan.net/info/gentle/gentle.tex). Both runners execute the
 same complete input in Umber and native `pdftex -ini -etex`, validate every run,
 alternate engine order, pin a CPU on Linux, and retain raw timings and identities.
+On Unix, reports also retain each child's user-plus-system CPU time. Wall time
+includes scheduling waits; the CPU samples help identify interference from other
+work on a shared host. Both clocks include the complete engine process.
 
 ```bash
 cargo build --release

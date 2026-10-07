@@ -80,40 +80,26 @@ impl Engine<'_> {
         let packet = self.take_packet(1)?;
         let mut builder = None;
         if value < 0 {
-            self.capture_raw(
-                packet,
-                0,
-                Raw {
-                    token: Token::other(b'-'),
-                    origin: None,
-                    suppress: false,
-                },
-                &mut builder,
-            )?;
+            self.generated_token(packet, &mut builder, Token::other(b'-'))?;
         }
-        let number = value.unsigned_abs();
-        let mut power = 1;
-        while number / power >= 10 {
-            power *= 10;
-        }
+        let mut number = value.unsigned_abs();
         loop {
-            let token = Token::other(b'0' + ((number / power) % 10) as u8);
-            self.capture_raw(
-                packet,
-                0,
-                Raw {
-                    token,
-                    origin: None,
-                    suppress: false,
-                },
-                &mut builder,
-            )?;
-            if power == 1 {
+            let token = Token::other(b'0' + (number % 10) as u8);
+            self.generated_token(packet, &mut builder, token)?;
+            number /= 10;
+            if number == 0 {
                 break;
             }
-            power /= 10;
         }
-        self.finish_capture(packet, builder);
+        if let Some(id) = builder {
+            // The unpublished buffer has one writer. Reverse its digit suffix
+            // in place; the optional sign stays at the front. Singleton positive
+            // output is already in order and remains inline in the packet.
+            std::rc::Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap()
+                [usize::from(value < 0)..]
+                .reverse();
+        }
+        self.finish_generated(packet, builder);
         self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
     }
 }

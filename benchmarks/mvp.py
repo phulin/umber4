@@ -18,6 +18,11 @@ import subprocess
 import sys
 import time
 
+try:
+    import resource
+except ImportError:
+    resource = None
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from reference import ROOT, execute, reference
 
@@ -61,6 +66,13 @@ def program(case, size):
 
 def measure(engines, path, expected, repeats):
     timings = {name: [] for name in engines}
+    cpu_timings = {name: [] for name in engines} if resource else None
+
+    def child_cpu_time():
+        # Engines run sequentially, with no other children in this interval.
+        usage = resource.getrusage(resource.RUSAGE_CHILDREN)
+        return usage.ru_utime + usage.ru_stime
+
     for repeat in range(repeats + 1):
         order = list(engines)
         if "baseline" in engines:
@@ -70,19 +82,30 @@ def measure(engines, path, expected, repeats):
             order.reverse()
         for name in order:
             cmd, engine_env = engines[name]
+            cpu_start = child_cpu_time() if resource else None
             start = time.perf_counter_ns()
             result = execute(cmd, path, engine_env)
             elapsed = (time.perf_counter_ns() - start) / 1e9
+            cpu_elapsed = child_cpu_time() - cpu_start if resource else None
             checksum = re.findall(rb"UMBER:(.*?):END", result)
             if checksum != [expected]:
                 raise SystemExit(f"{path.name} {name}: {checksum!r}, expected {expected!r}")
             if repeat:
                 timings[name].append(elapsed)
+                if cpu_timings is not None:
+                    cpu_timings[name].append(cpu_elapsed)
     medians = {name: statistics.median(values) for name, values in timings.items()}
     result = {"seconds": timings, "median": medians,
               "ratio": medians["umber"] / medians["pdftex"]}
     if "baseline" in engines:
         result["ratio_to_baseline"] = medians["umber"] / medians["baseline"]
+    if cpu_timings is not None:
+        cpu_medians = {name: statistics.median(values)
+                       for name, values in cpu_timings.items()}
+        result.update(cpu_seconds=cpu_timings, cpu_median=cpu_medians,
+                      cpu_ratio=cpu_medians["umber"] / cpu_medians["pdftex"])
+        if "baseline" in engines:
+            result["cpu_ratio_to_baseline"] = cpu_medians["umber"] / cpu_medians["baseline"]
     return result
 
 
