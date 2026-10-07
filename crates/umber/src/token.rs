@@ -274,10 +274,19 @@ pub(crate) struct Capture {
 // Cells use interior mutability solely for their one initialization. Published
 // cells never change; chunk addresses stay stable and Engine retains all chunks.
 // A cached cursor therefore remains valid while a disjoint suffix is initialized.
-#[derive(Default)]
 pub(crate) struct TokenArena {
     chunks: Vec<Box<[UnsafeCell<Token>; CHUNK_LEN]>>,
     pub len: u32,
+    next: *mut Token,
+}
+impl Default for TokenArena {
+    fn default() -> Self {
+        Self {
+            chunks: Vec::new(),
+            len: 0,
+            next: std::ptr::null_mut(),
+        }
+    }
 }
 impl TokenArena {
     #[inline(always)]
@@ -288,11 +297,12 @@ impl TokenArena {
         if (self.len as usize).is_multiple_of(CHUNK_LEN) {
             self.grow();
         }
-        let chunk = self.len as usize >> CHUNK_BITS;
-        let offset = self.len as usize & (CHUNK_LEN - 1);
-        // SAFETY: the cell is allocated and not yet published.
+        // SAFETY: grow installs the unused suffix of a stable boxed chunk.
+        // The length check and chunk-boundary growth ensure next points to an
+        // unpublished cell. Each push advances at most one past this chunk.
         unsafe {
-            self.chunks[chunk][offset].get().write(token);
+            self.next.write(token);
+            self.next = self.next.add(1);
         }
         self.len += 1;
         Ok(())
@@ -303,6 +313,8 @@ impl TokenArena {
             (0..CHUNK_LEN).map(|_| UnsafeCell::new(Token(0))).collect();
         self.chunks
             .push(chunk.try_into().expect("fixed token chunk length"));
+        let chunk = self.chunks.last().expect("new arena chunk");
+        self.next = UnsafeCell::raw_get(chunk.as_ptr());
     }
     pub fn get(&self, index: u32) -> Token {
         assert!(index < self.len);

@@ -21,7 +21,8 @@ ROOT = mvp.ROOT
 OUTPUT = ROOT / "target/pgo"
 OPTIONS = ["-C", "llvm-args=-pgo-warn-missing-function",
            "-C", "llvm-args=--inline-enable-cost-benefit-analysis=false",
-           "-C", "llvm-args=--hot-callsite-threshold=1000"]
+           "-C", "llvm-args=--hot-callsite-threshold=1000",
+           "-C", "llvm-args=--align-all-functions=6"]
 
 
 def digest(path):

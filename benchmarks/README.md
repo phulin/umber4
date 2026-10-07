@@ -35,7 +35,8 @@ expanded records, then runs the native oracle. The final build passes the oracle
 again. Artifacts and input/compiler identities stay under `target/pgo`; the
 ordinary release and Wasm builds use their existing paths. The profile builder
 also produces `target/pgo/use/release/examples/allocations` for diagnostics.
-Its LLVM inlining settings are measured choices for the recorded compiler;
+Its LLVM inlining settings and 64-byte function alignment are measured choices
+for the recorded compiler;
 compare both suites when changing them or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |
