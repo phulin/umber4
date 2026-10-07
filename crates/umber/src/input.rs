@@ -139,16 +139,23 @@ impl<'a> FileInput<'a> {
                     let (first, cat) = self.classified(cats);
                     if cat == 11 {
                         let start = self.position;
+                        let mut hash = Names::hash_byte(Names::HASH_START, first);
                         self.position += 1;
                         while self.position < self.line.len() {
-                            let (_, cat) = self.classified(cats);
+                            let (byte, cat) = self.classified(cats);
                             if cat != 11 {
                                 break;
                             }
+                            hash = Names::hash_byte(hash, byte);
                             self.position += 1;
                         }
                         self.state = 2;
-                        return Ok(Token::cs(names.intern(&self.line[start..self.position])?));
+                        let id = if self.position - start == 1 {
+                            2 + u32::from(first)
+                        } else {
+                            names.intern_hashed(&self.line[start..self.position], hash)?
+                        };
+                        return Ok(Token::cs(id));
                     }
                     self.position += 1;
                     self.state = if cat == 10 { 2 } else { 1 };

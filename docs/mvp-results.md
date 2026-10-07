@@ -2,12 +2,12 @@
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
 implemented, with 63 primitive names. At the largest sizes, Umber uses about
-0.10–0.65 times native pdfTeX's CPU time on the original eight workloads and
-0.40–0.57 times on eight broader macro workloads. Grouped arguments now classify
-ordinary stored characters in one check and capture an initial one-word group
-directly. Long arguments use 34.5% less CPU time than the preceding build, short
-repeated arguments 12.2% less, and arguments from resident source bytes 6.8% less.
-Raw and stored-body dispatch take 3.3% and 4.6% more CPU time.
+0.10–0.62 times native pdfTeX's CPU time on the original eight workloads and
+0.41–0.56 times on eight broader macro workloads. Source control words now compute
+their hash during lexical scanning. Stored-body expansion uses 10.0% less CPU
+time than the preceding build, repeated/nested arguments 7.6% less, and arguments
+from resident source bytes 4.4% less. Broader changes range from 0.6% to 4.6% less
+CPU time; the smaller differences need the variation context below.
 These measurements cover parsing, expansion, and macro/scalar execution. Layout,
 shipout, formats, checkpoints, and Wasm runtime timing come later.
 
@@ -39,24 +39,24 @@ CPU medians at 50,000 records; ratios below 1 favor Umber:
 
 | Workload                           | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ---------------------------------- | --------: | ---------: | -------------: | -----------------------: |
-| Gentle spelling and text templates |     0.180 |      0.315 |          0.572 |                    -1.4% |
-| Gentle calendar formatter          |     0.149 |      0.279 |          0.536 |                    -0.5% |
-| Gentle contents serialization      |     0.482 |      1.024 |          0.471 |                    +0.8% |
-| Gentle paragraph-delimited records |     0.606 |      1.243 |          0.488 |                    -0.1% |
-| Gentle records from stored tokens  |     0.654 |      1.546 |          0.423 |                    +0.2% |
-| Token-register pipeline            |     1.113 |      2.337 |          0.476 |                    -0.1% |
-| Dynamic name table                 |     0.168 |      0.324 |          0.518 |                    +1.0% |
-| Optional-argument parser           |     0.641 |      1.598 |          0.401 |                    -1.8% |
+| Gentle spelling and text templates |     0.175 |      0.313 |          0.560 |                    -2.3% |
+| Gentle calendar formatter          |     0.143 |      0.279 |          0.511 |                    -4.6% |
+| Gentle contents serialization      |     0.483 |      1.016 |          0.475 |                    -1.6% |
+| Gentle paragraph-delimited records |     0.604 |      1.279 |          0.472 |                    -1.4% |
+| Gentle records from stored tokens  |     0.650 |      1.533 |          0.424 |                    -2.0% |
+| Token-register pipeline            |     1.116 |      2.365 |          0.472 |                    -1.6% |
+| Dynamic name table                 |     0.172 |      0.326 |          0.528 |                    -2.2% |
+| Optional-argument parser           |     0.641 |      1.579 |          0.406 |                    -0.6% |
 
-The broader suite is effectively unchanged in this pass: differences range from
-1.8% less CPU time to 1.0% more, within the variation seen in the control run.
+The calendar formatter uses 4.6% less CPU time. Other broader differences range
+from 0.6% to 2.3% less, close to the variation seen in the control run.
 The stored variant alternates between immutable macro bodies and forwarded
 captured arguments, while retaining the same consumer and expected text as the
 source-input variant.
 
-The growth ratios between 10,000 and 50,000 records range from 0.40 to 0.58,
+The growth ratios between 10,000 and 50,000 records range from 0.40 to 0.57,
 so these conclusions hold after removing small-case startup advantage.
-The comparison binary is the preceding 63-primitive interpreter at `5116b18`,
+The comparison binary is the preceding 63-primitive interpreter at `6783c43`,
 timed in the same run. Full samples, source hashes, corpus provenance, compiler
 identity, and executable hashes are retained in
 [expansion-native.json](../benchmarks/results/expansion-native.json).
@@ -69,20 +69,27 @@ CPU medians at one million work iterations, with the same comparison binary:
 
 | Workload                       | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ------------------------------ | --------: | ---------: | -------------: | -----------------------: |
-| Raw byte dispatch              |     0.251 |      0.561 |          0.447 |                    +3.3% |
-| Stored macro bodies            |     0.142 |      0.264 |          0.539 |                    +4.6% |
-| Integer assignments            |     0.166 |      0.362 |          0.457 |                    -2.4% |
-| Repeated/nested parameters     |     0.413 |      0.635 |          0.651 |                   -12.2% |
-| Arguments tokenized from bytes |     0.486 |      0.791 |          0.614 |                    -6.8% |
-| Repeated 256-token arguments   |     0.869 |      8.538 |          0.102 |                   -34.5% |
-| Overlapping delimiters         |     0.161 |      0.270 |          0.594 |                    +1.1% |
-| Local/global grouped writes    |     0.290 |      0.520 |          0.558 |                    -6.5% |
+| Raw byte dispatch              |     0.238 |      0.566 |          0.420 |                    -2.2% |
+| Stored macro bodies            |     0.126 |      0.259 |          0.488 |                   -10.0% |
+| Integer assignments            |     0.158 |      0.365 |          0.434 |                    -3.8% |
+| Repeated/nested parameters     |     0.384 |      0.621 |          0.619 |                    -7.6% |
+| Arguments tokenized from bytes |     0.464 |      0.795 |          0.583 |                    -4.4% |
+| Repeated 256-token arguments   |     0.859 |      8.673 |          0.099 |                    -3.1% |
+| Overlapping delimiters         |     0.159 |      0.266 |          0.597 |                    -0.8% |
+| Local/global grouped writes    |     0.283 |      0.533 |          0.531 |                    -4.9% |
 
-Repeated 256-token arguments use 34.5% less CPU time, repeated/nested arguments
-12.2% less, and arguments tokenized from resident bytes 6.8% less. Grouped writes
-and integer assignments take 6.5% and 2.4% less CPU time. Raw dispatch takes 3.3%
-more, stored-body dispatch 4.6% more, and delimiter matching 1.1% more. The closest
-case to pdfTeX is repeated/nested arguments, at 0.65 times its CPU time. The earlier
+Stored-body expansion uses 10.0% less CPU time, repeated/nested arguments 7.6%
+less, and arguments tokenized from resident bytes 4.4% less. Grouped writes
+and integer assignments take 4.9% and 3.8% less CPU time. Long arguments use 3.1%
+less, raw dispatch 2.2% less, and delimiter matching 0.8% less. The closest
+case to pdfTeX is repeated/nested arguments, at 0.62 times its CPU time.
+Stored-token paths reuse existing name IDs; these whole-binary comparisons include
+code-generation and layout effects alongside the source hashing change.
+The 10,000-iteration parameter case takes 10.0% more CPU time (6.2 versus 5.7 ms);
+its two larger sizes improve. A
+[fifteen-sample follow-up](../benchmarks/results/short-parameter-followup.json)
+uses 4.7% less (5.1 versus 5.4 ms), so the small-case regression does not repeat.
+The earlier
 expansion pass added 9–23% to several paths relative to the 32-primitive
 interpreter at `993107b`; that comparison remains in
 [mvp-before-token-windows.json](../benchmarks/results/mvp-before-token-windows.json).
@@ -94,8 +101,8 @@ The CLI reads the source into memory before execution. The historical
 `file-parameters` key measures tokenization over resident bytes, with full-process
 input reading still included in timing.
 
-The growth ratios from 100,000 to one million iterations range from 0.10 to 0.65.
-Startup probes in the two runs use 1.12–1.25 ms CPU time in Umber and 4.13–5.41 ms
+The growth ratios from 100,000 to one million iterations range from 0.10 to 0.61.
+Startup probes in the two runs use 1.07–1.33 ms CPU time in Umber and 4.65–6.30 ms
 in pdfTeX. Current samples are retained in
 [mvp-native.json](../benchmarks/results/mvp-native.json).
 Earlier reports in `benchmarks/results/` retain the original optimization passes,
@@ -209,10 +216,17 @@ Their arena storage and definition headers accumulate until the run ends:
 Common dynamic names use 64 bytes of stack scratch space, spilling once for
 longer names. Fixed symbol spellings use a static byte table, eliminating their
 separate heap allocations. Spelling handles and hashes retain direct ID indexing;
-the native name-lookup instructions match the preceding implementation.
+the shared lookup compares the completed spelling after its stored hash matches.
 Name assembly and static spellings reduce allocation calls in the largest
 name-table case from 187,563 to 5,476, a 97.1% reduction. Interned spellings retain
 their session lifetime.
+
+Source control words compute their hash while consuming classified letters,
+then enter that shared lookup. Superscript translation rewrites the consumed
+byte before hashing; translated nonletter lookahead stays outside the spelling.
+Dynamic name construction uses the same byte operation. One-byte names retain
+their fixed IDs. The inspected release letter loop contains the hash XOR and
+multiply followed by one lookup call, eliminating the second hashing walk.
 
 These are requested heap peaks, not process RSS. The token pipeline grows from
 74.4 MiB at 10,000 records to 366.2 MiB at 50,000. Replaced field, expected,
@@ -227,7 +241,7 @@ Thirty-one Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
-dynamic names. The native oracle compares 270 marked messages and 26 rejected
+dynamic names. The native oracle compares 280 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
 Symbol fixtures check NUL, bytes 127/128/255, empty names, and distinct ordinary
@@ -237,6 +251,11 @@ retain results in expanded definitions, and feed them into scanners and captures
 They compare generated token categories after changing digit and sign catcodes,
 include both integer extremes, and use numeric output as a parameter operand.
 Malformed conversion operands retain priority over destination-capacity errors.
+Control-word fixtures compare source and dynamic names, translated letters at
+the beginning/middle/end, recursive translation, case distinctions, long
+spellings, and NUL/high bytes classified as letters. A translated terminator
+remains committed when its macro changes the superscript category. Character
+input and scanner-edge tests also pass Miri in this pass.
 Macro-equality fixtures distinguish category codes, control-sequence identities,
 parameter marker spellings, and macro flags. Generated equality tests cross
 shifted chunk boundaries and change signature prefixes, lengths, and body words;

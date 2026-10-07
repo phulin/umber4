@@ -30,6 +30,10 @@ fn extended_upstream_fixtures() {
             include_str!("../../../fixtures/mvp/name-scanning.expected"),
         ),
         (
+            include_bytes!("../../../fixtures/mvp/control-word-names.tex"),
+            include_str!("../../../fixtures/mvp/control-word-names.expected"),
+        ),
+        (
             include_bytes!("../../../fixtures/mvp/list-windows.tex"),
             include_str!("../../../fixtures/mvp/list-windows.expected"),
         ),

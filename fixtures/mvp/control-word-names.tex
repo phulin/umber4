@@ -1,0 +1,25 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\ab{AB}\def\abc{ABC}\def\abcd{ABCD}
+\def\abcdefg{SEVEN}\def\abcdefgh{EIGHT}\def\abcdefghi{NINE}
+\message{UMBER:\csname ab\endcsname/\csname abc\endcsname/\csname abcd\endcsname/\csname abcdefg\endcsname/\csname abcdefgh\endcsname/\csname abcdefghi\endcsname:END}
+\expandafter\def\csname dynamicword\endcsname{DYNAMIC}
+\message{UMBER:\dynamicword/\csname dynamicword\endcsname:END}
+\def\^^61lpha{FIRST}\def\be^^74a{MIDDLE}\def\gamm^^61{LAST}
+\message{UMBER:\alpha/\beta/\gamma/\csname alpha\endcsname/\csname beta\endcsname/\csname gamma\endcsname:END}
+\def\^^5e^61lpha{RECURSIVE}
+\message{UMBER:\alpha/\^^5e^61lpha/\csname alpha\endcsname:END}
+\def\Case{UPPER}\def\case{LOWER}
+\message{UMBER:\csname Case\endcsname/\csname case\endcsname:END}
+\def\lookahead{\catcode94=12\relax\count0=}
+\lookahead^^2b7\relax
+\message{UMBER:\number\count0:END}
+\catcode94=7\relax
+\catcode0=11 \catcode128=11 \catcode255=11\relax
+\def\a^^00b{ZERO}\def\a^^80b{HIGH}\def\a^^ffb{TOP}
+\message{UMBER:\a^^00b/\a^^80b/\a^^ffb:END}
+\message{UMBER:\csname a^^00b\endcsname/\csname a^^80b\endcsname/\csname a^^ffb\endcsname:END}
+\def\^^00{SINGLEZ}\def\^^80{SINGLEH}
+\message{UMBER:\^^00/\^^80/\csname ^^00\endcsname/\csname ^^80\endcsname:END}
+\expandafter\def\csname abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr\endcsname{LONG}
+\message{UMBER:\abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr:END}
+\end

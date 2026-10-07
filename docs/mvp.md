@@ -125,6 +125,11 @@ path rewrites the prepared line, including committed control-word lookahead;
 token construction remains lazy across executed assignments.
 A newly interned name extends the dense meaning table through a separate growth
 helper, keeping allocation and initialization out of ordinary reader loops.
+Control-word scanning computes the interner hash from each consumed letter byte.
+Superscript translation commits that byte to the prepared line before hashing.
+Single-byte names use their fixed symbol ID; multi-byte names enter the shared
+lookup with the hash of their completed spelling. Dynamic name construction uses
+the same hash operation.
 List scanners consume ordinary letter and other-character runs directly from the
 current source line and emit into their destination. Special categories and line
 transitions return to the complete reader. Each emitted byte advances the cursor
@@ -166,6 +171,9 @@ meaning snapshots, repeated/nested arguments, delimiter overlap, expanded
 definitions, suppression and expansion ordering, category changes, conditional
 skipping, numeric consumption, and group restoration. Compare final registers and
 message contents, plus success/failure where the supported subset defines it.
+Control-name fixtures exercise source/dynamic identity, translated letters at
+each position, recursive translation, committed nonletter lookahead, and byte
+spellings containing NUL or high bytes.
 
 Rust tests cover those semantics and storage lifetimes; an oracle runner executes
 the same source with both binaries. Build the portable library for native and

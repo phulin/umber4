@@ -368,6 +368,11 @@ pub(crate) struct Names {
     hashes: Vec<u64>,
 }
 impl Names {
+    pub const HASH_START: u64 = 0xcbf29ce484222325;
+    #[inline(always)]
+    pub fn hash_byte(hash: u64, byte: u8) -> u64 {
+        (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3)
+    }
     pub fn new() -> Self {
         let mut spellings = Vec::with_capacity(1024);
         spellings.resize_with(NAMED_BASE, Box::default);
@@ -397,10 +402,15 @@ impl Names {
         if name.len() == 1 {
             return Ok(2 + u32::from(name[0]));
         }
-        let mut hash = 0xcbf29ce484222325u64;
+        let mut hash = Self::HASH_START;
         for &b in name {
-            hash = (hash ^ u64::from(b)).wrapping_mul(0x100000001b3);
+            hash = Self::hash_byte(hash, b);
         }
+        self.intern_hashed(name, hash)
+    }
+    // Both callers select multi-byte names after the fixed-symbol path. The
+    // lexer hashes consumed, translated letters; intern hashes its whole slice.
+    pub fn intern_hashed(&mut self, name: &[u8], hash: u64) -> Result<u32> {
         let mut slot = hash as usize & (self.buckets.len() - 1);
         loop {
             let id = self.buckets[slot];
