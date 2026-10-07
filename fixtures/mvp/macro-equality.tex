@@ -1,0 +1,17 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\a Q#1aaba#2{#2/#1\relax}\def\b Q#1aaba#2{#2/#1\relax}
+\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\let\b=\a\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\def\b R#1aaba#2{#2/#1\relax}\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\let\left=\relax\let\right=\relax
+\def\a{\left}\def\b{\right}\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\def\a{A}\catcode65=12\def\b{A}\catcode65=11\relax
+\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\def\a#1{#1}\catcode33=6\def\b!1{!1}\catcode33=12\relax
+\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\long\def\a{A}\def\b{A}\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\protected\def\a{A}\def\b{A}\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\long\protected\def\a#1{#1}\long\protected\def\b#1{#1}
+\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\def\a{}\def\b{}\message{UMBER:\ifx\a\b Y\else N\fi:END}
+\end

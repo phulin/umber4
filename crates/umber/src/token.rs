@@ -10,6 +10,7 @@ pub(crate) const FROZEN_RELAX: Token = Token(CS);
 pub(crate) const CHUNK_BITS: u32 = 12;
 const CHUNK_LEN: usize = 1 << CHUNK_BITS;
 
+#[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Token(pub u32);
 impl Token {
@@ -315,9 +316,40 @@ impl TokenArena {
         let chunk = start as usize >> CHUNK_BITS;
         let offset = start as usize & (CHUNK_LEN - 1);
         let count = ((end - start) as usize).min(CHUNK_LEN - offset);
-        let first = self.chunks[chunk][offset].get().cast_const();
-        // SAFETY: UnsafeCell has Token's layout; count stays within this chunk.
+        // Derive from the whole chunk so the pointer retains access to every
+        // cell in the window, rather than borrowing just its first cell.
+        let base = UnsafeCell::raw_get(self.chunks[chunk].as_ptr()).cast_const();
+        // SAFETY: UnsafeCell has Token's layout. Offset and count remain within
+        // this chunk, and start..end is part of the initialized prefix.
+        let first = unsafe { base.add(offset) };
         (first, unsafe { first.add(count) }, start + count as u32)
+    }
+    pub fn equal_ranges(&self, mut first: u32, mut second: u32, length: u32) -> bool {
+        assert!(first <= self.len && second <= self.len);
+        assert!(length <= self.len - first && length <= self.len - second);
+        let first_end = first + length;
+        let second_end = second + length;
+        while first != first_end {
+            let (a, _, a_end) = self.window(first, first_end);
+            let (b, _, b_end) = self.window(second, second_end);
+            let count = (a_end - first).min(b_end - second);
+            // SAFETY: Token is transparent over u32. Both windows contain
+            // initialized, immutable words in stable arena chunks, and count
+            // stays within each allocation. The shared arena borrow excludes
+            // append operations throughout these temporary slice reads.
+            let (a, b) = unsafe {
+                (
+                    std::slice::from_raw_parts(a.cast::<u32>(), count as usize),
+                    std::slice::from_raw_parts(b.cast::<u32>(), count as usize),
+                )
+            };
+            if a != b {
+                return false;
+            }
+            first += count;
+            second += count;
+        }
+        true
     }
 }
 const NAMED_BASE: usize = 514;

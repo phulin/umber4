@@ -41,12 +41,79 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/symbol-names.tex"),
             include_str!("../../../fixtures/mvp/symbol-names.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/macro-equality.tex"),
+            include_str!("../../../fixtures/mvp/macro-equality.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();
         let expected: Vec<_> = expected.lines().map(|line| line.as_bytes()).collect();
         assert_eq!(result.messages, expected);
     }
+}
+
+#[test]
+fn macro_equality_crosses_shifted_chunk_boundaries() {
+    for length in [1, 2, 4093, 4096, 8193, 12289] {
+        let text = "A".repeat(length);
+        let padding = "P".repeat(17 + length % 53);
+        let mut source = format!(
+            r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\first Q#1aaba#2{{{text}#2/#1\relax}}
+\def\padding{{{padding}}}
+\def\second Q#1aaba#2{{{text}#2/#1\relax}}
+\message{{\ifx\first\second Y\else N\fi}}"
+        );
+        let mut expected = vec![b"Y".as_slice()];
+        let mut positions = vec![0, length / 2, length - 1];
+        positions.extend([4095, 8191].into_iter().filter(|&p| p < length));
+        positions.sort_unstable();
+        positions.dedup();
+        for position in positions {
+            let mut changed = text.clone();
+            changed.replace_range(position..position + 1, "B");
+            source.push_str(&format!(
+                r"\def\second Q#1aaba#2{{{changed}#2/#1\relax}}
+\message{{\ifx\first\second Y\else N\fi}}"
+            ));
+            expected.push(b"N");
+        }
+        // Prefix identity and total length remain part of the complete macro
+        // signature, alongside body characters, parameter references and names.
+        for (prefix, body) in [('R', text.as_str()), ('Q', &text[..length - 1])] {
+            source.push_str(&format!(
+                r"\def\second {prefix}#1aaba#2{{{body}#2/#1\relax}}
+\message{{\ifx\first\second Y\else N\fi}}"
+            ));
+            expected.push(b"N");
+        }
+        source.push_str(r"\end");
+        let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+        assert_eq!(actual, expected, "body length {length}");
+    }
+}
+
+#[test]
+fn arena_windows_retain_whole_chunk_access() {
+    use crate::token::{Token, TokenArena};
+    let mut arena = TokenArena::default();
+    for index in 0..4100 {
+        arena.push(Token::other(index as u8)).unwrap();
+    }
+    let (first, end, next) = arena.window(4094, 4100);
+    assert_eq!(next, 4096);
+    arena.push(Token::other(99)).unwrap();
+    // SAFETY: this published window retains its whole chunk, including after
+    // a disjoint suffix is initialized. Both words precede the returned end.
+    unsafe {
+        assert_eq!(first.read(), Token::other(254));
+        assert_eq!(first.add(1).read(), Token::other(255));
+        assert_eq!(first.add(2), end);
+    }
+    assert!(arena.equal_ranges(1, 257, 3843));
+    assert!(!arena.equal_ranges(1, 258, 3842));
+    assert!(arena.equal_ranges(arena.len, 0, 0));
 }
 
 #[test]

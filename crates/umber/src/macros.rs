@@ -456,8 +456,10 @@ impl Engine<'_> {
         let b = &self.definitions[b.value as usize];
         a.long == b.long
             && a.signature.end - a.signature.start == b.signature.end - b.signature.start
-            && (0..a.signature.end - a.signature.start).all(|p| {
-                self.arena.get(a.signature.start + p) == self.arena.get(b.signature.start + p)
-            })
+            && self.arena.equal_ranges(
+                a.signature.start,
+                b.signature.start,
+                a.signature.end - a.signature.start,
+            )
     }
 }

@@ -2,11 +2,11 @@
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
 implemented, with 63 primitive names. At the largest sizes, Umber uses about
-0.14–0.71 times native pdfTeX's CPU time on the original eight workloads and
-0.57–0.84 times on seven broader macro workloads. Fusing the main driver reduces
-stored-body CPU time by 26.6% versus the preceding build. These measurements
-cover parsing, expansion, and macro/scalar execution. Layout, shipout, formats,
-checkpoints, and Wasm runtime timing come later.
+0.14–0.67 times native pdfTeX's CPU time on the original eight workloads and
+0.57–0.80 times on seven broader macro workloads. Bulk signature comparison reduces
+Gentle-record CPU time by 2.3% and token-pipeline CPU time by 2.7% versus the
+preceding build. These measurements cover parsing, expansion, and macro/scalar
+execution. Layout, shipout, formats, checkpoints, and Wasm runtime timing come later.
 
 The tables use child user-plus-system CPU medians for the complete engine process.
 Reports also retain wall time and all samples. Wall time includes scheduling
@@ -31,21 +31,21 @@ CPU medians at 50,000 records; ratios below 1 favor Umber:
 
 | Workload                           | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ---------------------------------- | --------: | ---------: | -------------: | -----------------------: |
-| Gentle spelling and text templates |     0.194 |      0.309 |          0.625 |                    -1.7% |
-| Gentle calendar formatter          |     0.155 |      0.273 |          0.567 |                    -6.5% |
-| Gentle contents serialization      |     0.665 |      0.987 |          0.674 |                    -3.2% |
-| Gentle paragraph-delimited records |     1.029 |      1.232 |          0.835 |                     0.0% |
-| Token-register pipeline            |     1.465 |      2.364 |          0.620 |                    -1.6% |
-| Dynamic name table                 |     0.191 |      0.323 |          0.592 |                    +4.0% |
-| Optional-argument parser           |     0.928 |      1.548 |          0.599 |                    -1.5% |
+| Gentle spelling and text templates |     0.208 |      0.325 |          0.640 |                    +4.4% |
+| Gentle calendar formatter          |     0.161 |      0.284 |          0.567 |                    -0.6% |
+| Gentle contents serialization      |     0.672 |      1.036 |          0.649 |                    -2.9% |
+| Gentle paragraph-delimited records |     1.047 |      1.312 |          0.798 |                    -2.3% |
+| Token-register pipeline            |     1.422 |      2.372 |          0.600 |                    -2.7% |
+| Dynamic name table                 |     0.186 |      0.326 |          0.571 |                    -3.0% |
+| Optional-argument parser           |     0.910 |      1.543 |          0.590 |                    +0.2% |
 
-The calendar formatter uses 6.5% less CPU time; contents serialization uses
-3.2% less. Other broader cases change by -1.7% to +4.0%, with the increase in the
-name-table workload. All changes are shown above.
+Contents, records, token pipelines, and name tables use 2.3–3.0% less CPU time.
+Calendar and optional-argument changes are below 1%; text templates take 4.4%
+more. All changes are shown above.
 
-The growth ratios between 10,000 and 50,000 records range from 0.57 to 0.85,
+The growth ratios between 10,000 and 50,000 records range from 0.57 to 0.80,
 so these conclusions hold after removing small-case startup advantage.
-The comparison binary is the preceding 63-primitive interpreter at `e4343ab`,
+The comparison binary is the preceding 63-primitive interpreter at `1be8a97`,
 timed in the same run. Full samples, source hashes, corpus provenance, compiler
 identity, and executable hashes are retained in
 [expansion-native.json](../benchmarks/results/expansion-native.json).
@@ -58,20 +58,19 @@ CPU medians at one million work iterations, with the same comparison binary:
 
 | Workload                       | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ------------------------------ | --------: | ---------: | -------------: | -----------------------: |
-| Raw byte dispatch              |     0.251 |      0.555 |          0.452 |                    -3.4% |
-| Stored macro bodies            |     0.144 |      0.258 |          0.558 |                   -26.6% |
-| Integer assignments            |     0.167 |      0.357 |          0.467 |                   -17.7% |
-| Repeated/nested parameters     |     0.450 |      0.634 |          0.710 |                    -1.0% |
-| Arguments tokenized from bytes |     0.521 |      0.795 |          0.656 |                    +0.3% |
-| Repeated 256-token arguments   |     1.195 |      8.432 |          0.142 |                    -1.4% |
-| Overlapping delimiters         |     0.148 |      0.266 |          0.558 |                   -16.6% |
-| Local/global grouped writes    |     0.311 |      0.528 |          0.589 |                   -13.4% |
+| Raw byte dispatch              |     0.268 |      0.572 |          0.468 |                    +4.4% |
+| Stored macro bodies            |     0.147 |      0.275 |          0.534 |                    -1.2% |
+| Integer assignments            |     0.167 |      0.363 |          0.460 |                    +1.0% |
+| Repeated/nested parameters     |     0.426 |      0.638 |          0.669 |                    -6.0% |
+| Arguments tokenized from bytes |     0.520 |      0.808 |          0.644 |                    -3.8% |
+| Repeated 256-token arguments   |     1.222 |      8.693 |          0.141 |                    +0.7% |
+| Overlapping delimiters         |     0.161 |      0.278 |          0.579 |                    +0.4% |
+| Local/global grouped writes    |     0.321 |      0.547 |          0.588 |                    +3.2% |
 
-Stored bodies, integer assignments, delimiter matching, and grouped writes
-improve by 13.4–26.6%. Raw dispatch and stored-argument cases improve by 1.0–3.4%.
-Byte-tokenized arguments take 0.3% more CPU time. This recovers the stored-body
-and delimiter regressions from the preceding conversion pass. The earlier
-expansion pass added 9–23% to several paths relative to the 32-primitive
+Stored-body, repeated-parameter, and byte-argument loops improve by 1.2–6.0%.
+The other changes range from +0.4% to +4.4%; raw dispatch has the largest increase,
+and grouped writes take 3.2% more CPU time. The earlier expansion pass added
+9–23% to several paths relative to the 32-primitive
 interpreter at `993107b`; that comparison remains in
 [mvp-before-token-windows.json](../benchmarks/results/mvp-before-token-windows.json).
 
@@ -82,8 +81,8 @@ The CLI reads the source into memory before execution. The historical
 `file-parameters` key measures tokenization over resident bytes, with full-process
 input reading still included in timing.
 
-The growth ratios from 100,000 to one million iterations range from 0.14 to 0.71.
-Startup probes in the two runs use 1.03–1.07 ms CPU time in Umber and 4.16–4.29 ms
+The growth ratios from 100,000 to one million iterations range from 0.14 to 0.67.
+Startup probes in the two runs use 1.17–1.38 ms CPU time in Umber and 5.26–5.65 ms
 in pdfTeX. Current samples are retained in
 [mvp-native.json](../benchmarks/results/mvp-native.json).
 Earlier reports in `benchmarks/results/` retain the original optimization passes,
@@ -118,6 +117,14 @@ The main driver fuses token reading, expansion dispatch, and execution in one
 Rust loop. Operand scanners retain `next_expanded`. The inspected release loop
 reads sources directly, avoiding the expanded-reader call and return on each
 main-loop token while keeping the same macro and primitive helpers.
+
+Arena windows derive their pointers from the whole chunk with
+[`UnsafeCell::raw_get`](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html#method.raw_get).
+Macro equality compares complete signatures through these immutable windows.
+Each step compares the shorter available window as transparent 32-bit token
+words, then advances both ranges. The inspected native release code calls
+`bcmp` for these contiguous ranges. Meaning, command, flag, and length shortcuts
+remain ahead of the comparison; no tokens are copied or allocated.
 
 Scalar tables share integer values and group levels in one indexed array.
 Assignments resolve one slot for reading, saving, and writing. Prefix scans live
@@ -164,11 +171,11 @@ the diagnostic binary hash and counts at both sizes.
 
 ## Compatibility and reproduction
 
-Twenty-six Rust tests cover the core plus token-register retention, protected
+Twenty-eight Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
-dynamic names. The native oracle compares 183 marked messages and 23 rejected
+dynamic names. The native oracle compares 193 marked messages and 23 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
 Symbol fixtures check NUL, bytes 127/128/255, empty names, and distinct ordinary
@@ -178,6 +185,10 @@ retain results in expanded definitions, and feed them into scanners and captures
 They compare generated token categories after changing digit and sign catcodes,
 include both integer extremes, and use numeric output as a parameter operand.
 Malformed conversion operands retain priority over destination-capacity errors.
+Macro-equality fixtures distinguish category codes, control-sequence identities,
+parameter marker spellings, and macro flags. Generated equality tests cross
+shifted chunk boundaries and change signature prefixes, lengths, and body words;
+pdfTeX independently agrees on their 37 comparisons.
 
 Storage tests cross 4,096-token chunks, replace active sources, exercise 5,000
 nested captures, and produce multi-chunk conversion text. New list-scan tests
@@ -186,6 +197,8 @@ those arguments, and substitute parameter words at chunk boundaries. Independent
 adversarial reviews checked semantics, source ownership, release paths, and
 workload consumers. Debug/release tests, rustfmt, and clippy pass; the portable
 library builds for `wasm32-unknown-unknown`.
+The arena-window test also passes Miri, covering neighboring-cell access, disjoint
+appends, overlapping chunk comparisons, and empty ranges.
 
 Measured on 2026-10-07, Linux x86-64, AMD EPYC 7642, pinned to CPU 0:
 

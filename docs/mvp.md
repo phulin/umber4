@@ -119,6 +119,11 @@ ownership and makes the buffers immutable. A child retains that backing before
 the parent source can retire. Source pointers remain valid through those semantic
 owners. Checked name and storage indices preserve the compact token layout.
 
+Macro equality keeps the meaning, command, flag, and length shortcuts, then
+compares signature ranges by immutable chunk windows. Tokens have a transparent
+32-bit word layout, allowing direct word-slice equality. Each step compares the
+shorter current window and advances both ranges, without copying or allocating.
+
 Start with ordinary Rust storage. If direct cursor access needs a small unsafe
 primitive, document its initialized bounds, stable backing owner, and source
 retirement rules. Keep that mechanism independent of TeX dispatch.
