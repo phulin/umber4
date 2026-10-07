@@ -165,7 +165,15 @@ impl<'a> Engine<'a> {
     }
     pub fn run(mut self) -> Result<Outcome> {
         loop {
-            let read = self.next_expanded()?;
+            let read = self.next_token()?;
+            if read.meaning.expandable() {
+                if read.meaning.is_macro() {
+                    self.begin_macro(read.meaning.value as u32)?;
+                } else {
+                    self.expand(read)?;
+                }
+                continue;
+            }
             if read.meaning.command == cmd::END {
                 if self.level != 0 {
                     return Err(Error::Group);

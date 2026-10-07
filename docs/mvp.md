@@ -50,10 +50,12 @@ this slice. Those limits apply equally while optimizing the implementation.
 
 ## Execution and storage
 
-The Rust driver reads an already-resolved unexpandable command, executes it, and
-continues. `next_expanded` iterates ordinary macro chains. Operand scans,
-conditional evaluation, argument matching, and expansion-order operations are
-Rust calls with local progress. Pending sources contain tokens and cursors.
+The Rust driver reads a token and its current meaning, expands it when needed,
+and executes each unexpandable command before continuing. This fused loop keeps
+main-loop reads and dispatch in one Rust function. `next_expanded` provides the
+same iterative macro expansion to operand scanners. Operand scans, conditional
+evaluation, argument matching, and expansion-order operations are Rust calls
+with local progress. Pending sources contain tokens and cursors.
 
 Use 32-bit token words and a dense meaning table with assignment levels. An
 append-only byte interner supplies stable names for a run. Definition tokens are
