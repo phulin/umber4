@@ -81,13 +81,17 @@ identifies its slot directly; assignment uses that slot for the read, save, and
 write. Token registers and meanings retain their own representations. Generated
 conversion and decimal output append directly to a uniquely owned reusable buffer
 and publish one range at completion. Decimal digits are generated with division
-by ten and reversed in place before publication. Empty and singleton output stay
-inline in their packet.
+by ten and reversed in place before publication. Numbers that fit in the existing
+two-token inline source use it directly. Other empty and singleton generated
+output stays inline in its packet.
 
 Token-arena chunks have their fixed size in the Rust type. Per-word appending
 uses a small inline gate; allocation remains in a separate growth helper. Common
 control-sequence name assembly uses stack scratch space, spilling once for long
-names. Interned spellings retain their existing session lifetime.
+names. Fixed single-byte control names derive their spelling from their IDs and
+use a static byte table. Spelling handles and hashes use arrays indexed directly
+by control-sequence ID; fixed slots have empty handles. Interned identities
+retain their existing session lifetime.
 
 Expanded definitions and token-register replacements still accumulate arena
 storage within a run. Benchmarks expose this cost through definition churn and

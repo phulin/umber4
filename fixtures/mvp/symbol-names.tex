@@ -1,0 +1,23 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\catcode0=12 \catcode127=12 \catcode128=12 \catcode255=12 \escapechar=-1\relax
+\expandafter\def\csname^^00\endcsname{Z}
+\expandafter\def\csname^^7f\endcsname{L}
+\expandafter\def\csname^^80\endcsname{H}
+\expandafter\def\csname^^ff\endcsname{F}
+\expandafter\def\csname\endcsname{EMPTY}
+\message{UMBER:\^^00/\^^7f/\^^80/\^^ff/\csname\endcsname:END}
+\edef\actual{\string\^^00\string\^^7f\string\^^80\string\^^ff}
+\def\wanted{^^00^^7f^^80^^ff}
+\message{UMBER:\ifx\actual\wanted SYMBOLS\else BAD\fi:END}
+\count0=0\relax
+\def\populate{\expandafter\edef\csname key\number\count0\endcsname{V\number\count0}\advance\count0by1\relax\ifnum\count0<2050\relax\expandafter\populate\fi}
+\populate
+\message{UMBER:\csname key0\endcsname/\csname key512\endcsname/\csname key1024\endcsname/\csname key2049\endcsname/\^^00/\csname\endcsname:END}
+\edef\actual{\expandafter\string\csname key0\endcsname/\expandafter\string\csname key2049\endcsname}
+\edef\expected{\detokenize{key0/key2049}}
+\message{UMBER:\ifx\actual\expected GROWN\else BAD\fi:END}
+\catcode0=13 \catcode127=13 \catcode128=13 \catcode255=13\relax
+\def^^00{AZ}\def^^7f{AL}\def^^80{AH}\def^^ff{AF}
+\message{UMBER:\^^00/\^^7f/\^^80/\^^ff;^^00/^^7f/^^80/^^ff:END}
+\edef\actual{\string^^00\string^^7f\string^^80\string^^ff}
+\message{UMBER:\ifx\actual\wanted ACTIVE\else BAD\fi:END}\end

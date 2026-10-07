@@ -174,9 +174,8 @@ impl Engine<'_> {
                     &mut self.names,
                     self.par,
                 )?;
-                if self.names.spellings.len() > self.bindings.len() {
-                    self.bindings
-                        .resize(self.names.spellings.len(), Binding::default());
+                if self.names.len() > self.bindings.len() {
+                    self.bindings.resize(self.names.len(), Binding::default());
                 }
                 return Ok(Raw {
                     token,

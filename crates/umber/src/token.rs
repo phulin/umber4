@@ -320,23 +320,42 @@ impl TokenArena {
         (first, unsafe { first.add(count) }, start + count as u32)
     }
 }
+const NAMED_BASE: usize = 514;
+static BYTE_NAMES: [[u8; 1]; 256] = {
+    let mut names = [[0]; 256];
+    let mut byte = 0;
+    while byte < names.len() {
+        names[byte][0] = byte as u8;
+        byte += 1;
+    }
+    names
+};
 pub(crate) struct Names {
-    pub spellings: Vec<Box<[u8]>>,
+    spellings: Vec<Box<[u8]>>,
     buckets: Vec<u32>,
     hashes: Vec<u64>,
 }
 impl Names {
     pub fn new() -> Self {
-        let mut spellings: Vec<Box<[u8]>> = vec![b"relax".to_vec().into(), Box::default()];
-        for _ in 0..2 {
-            for b in 0..=255 {
-                spellings.push(vec![b].into());
-            }
-        }
+        let mut spellings = Vec::with_capacity(1024);
+        spellings.resize_with(NAMED_BASE, Box::default);
         Self {
             spellings,
             buckets: vec![0; 1024],
-            hashes: vec![0; 514],
+            hashes: vec![0; NAMED_BASE],
+        }
+    }
+    pub fn len(&self) -> usize {
+        self.spellings.len()
+    }
+    pub fn spelling(&self, id: usize) -> &[u8] {
+        // Both fixed symbol ranges encode their byte directly in the ID.
+        // Only multi-byte names own spelling allocations.
+        match id {
+            0 => b"relax",
+            1 => b"",
+            2..=513 => &BYTE_NAMES[(id - 2) & 255],
+            _ => &self.spellings[id],
         }
     }
     pub fn intern(&mut self, name: &[u8]) -> Result<u32> {
@@ -361,16 +380,16 @@ impl Names {
             }
             slot = (slot + 1) & (self.buckets.len() - 1);
         }
-        if self.spellings.len() >= CS as usize {
+        if self.len() >= CS as usize {
             return Err(Error::Capacity);
         }
-        let id = self.spellings.len() as u32;
+        let id = self.len() as u32;
         self.spellings.push(name.into());
         self.hashes.push(hash);
         self.buckets[slot] = id;
-        if (self.spellings.len() - 514) * 2 > self.buckets.len() {
+        if (self.spellings.len() - NAMED_BASE) * 2 > self.buckets.len() {
             let mut buckets = vec![0; self.buckets.len() * 2];
-            for id in 514..self.spellings.len() {
+            for id in NAMED_BASE..self.spellings.len() {
                 let mut slot = self.hashes[id] as usize & (buckets.len() - 1);
                 while buckets[slot] != 0 {
                     slot = (slot + 1) & (buckets.len() - 1);

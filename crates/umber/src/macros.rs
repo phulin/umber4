@@ -351,11 +351,15 @@ impl Engine<'_> {
                 self.capture_raw(packet, argument, raw, builder)?;
             }
             if depth == 0 {
-                while matched > 0 && self.arena.get(delimiter.start + matched as u32) != raw.token {
+                loop {
+                    if self.arena.get(delimiter.start + matched as u32) == raw.token {
+                        matched += 1;
+                        break;
+                    }
+                    if matched == 0 {
+                        break;
+                    }
                     matched = self.definitions[id as usize].failures[argument][matched - 1];
-                }
-                if self.arena.get(delimiter.start + matched as u32) == raw.token {
-                    matched += 1;
                 }
                 if matched == length {
                     break;

@@ -33,6 +33,14 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/list-windows.tex"),
             include_str!("../../../fixtures/mvp/list-windows.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/number-emission.tex"),
+            include_str!("../../../fixtures/mvp/number-emission.expected"),
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/symbol-names.tex"),
+            include_str!("../../../fixtures/mvp/symbol-names.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();

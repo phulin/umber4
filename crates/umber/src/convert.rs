@@ -89,14 +89,14 @@ impl Engine<'_> {
         if (0..=255).contains(&escape) {
             emit(self, escape as u8)?;
         }
-        let length = self.names.spellings[id].len();
+        let length = self.names.spelling(id).len();
         for index in 0..length {
-            let byte = self.names.spellings[id][index];
+            let byte = self.names.spelling(id)[index];
             emit(self, byte)?;
         }
         if show
             && (length != 1
-                || self.scalars[Target::catcode(self.names.spellings[id][0] as usize)].value == 11)
+                || self.scalars[Target::catcode(self.names.spelling(id)[0] as usize)].value == 11)
         {
             emit(self, b' ')?;
         }

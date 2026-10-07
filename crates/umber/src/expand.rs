@@ -77,6 +77,22 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn insert_number(&mut self, value: i32) -> Result<()> {
+        if (-9..=99).contains(&value) {
+            if self.sources.len() > 10000 {
+                return Err(Error::Capacity);
+            }
+            match value {
+                -9..=-1 => {
+                    self.insert_pair(Token::other(b'-'), Token::other(b'0' + (-value) as u8));
+                }
+                0..=9 => self.back(Token::other(b'0' + value as u8)),
+                _ => self.insert_pair(
+                    Token::other(b'0' + (value / 10) as u8),
+                    Token::other(b'0' + (value % 10) as u8),
+                ),
+            }
+            return Ok(());
+        }
         let packet = self.take_packet(1)?;
         let mut builder = None;
         if value < 0 {
@@ -93,8 +109,8 @@ impl Engine<'_> {
         }
         if let Some(id) = builder {
             // The unpublished buffer has one writer. Reverse its digit suffix
-            // in place; the optional sign stays at the front. Singleton positive
-            // output is already in order and remains inline in the packet.
+            // in place; the optional sign stays at the front. Publish only after
+            // the complete digit suffix is in reading order.
             std::rc::Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap()
                 [usize::from(value < 0)..]
                 .reverse();

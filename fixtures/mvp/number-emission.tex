@@ -1,0 +1,7 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\values{\number-10/\number-9/\number-1/\number0/\number9/\number10/\number99/\number100}
+\message{UMBER:\values:END}
+\edef\saved{\values}\message{UMBER:\saved:END}
+\count0=\number-9\relax\advance\count0by\number99\relax
+\message{UMBER:\the\count0:END}
+\def\take#1{[#1/#1]}\message{UMBER:\expandafter\take\expandafter{\number99}:END}\end
