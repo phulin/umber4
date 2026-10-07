@@ -359,8 +359,11 @@ impl Engine<'_> {
         self.push_span(sequence, span, owns_packet, macro_packet)
     }
     #[inline]
-    pub(crate) fn push_body(&mut self, id: u32, body: Span) -> Result<()> {
+    pub(crate) fn push_body(&mut self, id: u32, body: Span, packet: Option<u32>) -> Result<()> {
         if body.empty() {
+            if let Some(packet) = packet {
+                self.release_packet(packet);
+            }
             return Ok(());
         }
         if self.sources.len() > 10000 {
@@ -375,8 +378,8 @@ impl Engine<'_> {
             window_end_position,
             next,
             end,
-            owns_packet: None,
-            macro_packet: None,
+            owns_packet: packet,
+            macro_packet: packet,
         }));
         Ok(())
     }

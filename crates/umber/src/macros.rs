@@ -178,7 +178,7 @@ impl Engine<'_> {
         if definition.prefix.empty() && definition.delimiters.is_empty() {
             let body = definition.body;
             self.retire_exhausted();
-            return self.push_body(id, body);
+            return self.push_body(id, body, None);
         }
         if definition.uses_parameters {
             self.begin_macro_with_arguments::<true>(id)
@@ -469,7 +469,7 @@ impl Engine<'_> {
         let count = self.definitions[id as usize].delimiters.len();
         if count == 0 {
             self.retire_exhausted();
-            return self.push_sequence(SequenceRef::Body(id), None, None);
+            return self.push_body(id, self.definitions[id as usize].body, None);
         }
         let packet = if RETAIN { self.take_packet(count)? } else { 0 };
         let mut builder = None;
@@ -503,9 +503,9 @@ impl Engine<'_> {
         }
         self.retire_exhausted();
         if RETAIN {
-            self.push_sequence(SequenceRef::Body(id), Some(packet), Some(packet))
+            self.push_body(id, self.definitions[id as usize].body, Some(packet))
         } else {
-            self.push_body(id, self.definitions[id as usize].body)
+            self.push_body(id, self.definitions[id as usize].body, None)
         }
     }
     pub(crate) fn same_meaning(&self, a: Meaning, b: Meaning) -> bool {
