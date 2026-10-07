@@ -45,6 +45,10 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/macro-equality.tex"),
             include_str!("../../../fixtures/mvp/macro-equality.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/file-arguments.tex"),
+            include_str!("../../../fixtures/mvp/file-arguments.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();

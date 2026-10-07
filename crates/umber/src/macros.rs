@@ -288,8 +288,11 @@ impl Engine<'_> {
                 }
                 continue;
             }
-            // File input and short insertions use the ordinary reader. Token
-            // source transitions above resume directly at the next window.
+            if self.sources.is_empty() {
+                self.capture_file_characters::<RETAIN>(packet, argument, builder)?;
+            }
+            // Special file categories and short insertions use the ordinary
+            // reader. Source transitions resume directly at the next window.
             let raw = self.next_raw()?;
             if self
                 .capture_group_token::<RETAIN>(packet, argument, long, builder, &mut depth, raw)?
@@ -297,6 +300,63 @@ impl Engine<'_> {
                 return Ok(());
             }
         }
+    }
+    #[inline(never)]
+    fn capture_file_characters<const RETAIN: bool>(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        builder: &mut Option<u32>,
+    ) -> Result<()> {
+        if !RETAIN {
+            while self.file.read_character(self.scalars.catcodes()).is_some() {}
+            return Ok(());
+        }
+        let Some(first) = self.file.read_character(self.scalars.catcodes()) else {
+            return Ok(());
+        };
+        self.capture_raw(
+            packet,
+            argument,
+            Raw {
+                token: first,
+                origin: None,
+                suppress: false,
+            },
+            builder,
+        )?;
+        let Some(mut token) = self.file.read_character(self.scalars.catcodes()) else {
+            return Ok(());
+        };
+        if self.packets[packet as usize].arguments[argument]
+            .first
+            .store
+            == SINGLE
+        {
+            self.promote_single(packet, argument, builder)?;
+        }
+        // capture_raw acquired a builder for a non-inline first word; promotion
+        // acquired one for an inline word. It remains uniquely owned until the
+        // invocation publishes it, so Vec growth cannot move published tokens.
+        let id = builder.unwrap();
+        let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
+        let start = tokens.len() as u32;
+        loop {
+            if tokens.len() >= u32::MAX as usize {
+                return Err(Error::Capacity);
+            }
+            tokens.push(token);
+            let Some(next) = self.file.read_character(self.scalars.catcodes()) else {
+                break;
+            };
+            token = next;
+        }
+        self.packets[packet as usize].arguments[argument].append(Span {
+            store: id,
+            start,
+            end: tokens.len() as u32,
+        });
+        Ok(())
     }
     #[inline(always)]
     fn capture_group_token<const RETAIN: bool>(

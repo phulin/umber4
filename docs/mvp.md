@@ -95,6 +95,12 @@ keep that word directly in the packet as well. The source window already supplie
 its value; repeated substitution then reads the packet's value. Larger and mixed
 captures continue retaining their immutable ranges.
 
+Grouped arguments from source bytes append ordinary character runs directly into
+the uniquely owned capture buffer, recording one contiguous range per run.
+Buffer lookup and range bookkeeping happen at run boundaries. A first word stays
+inline until more content follows; discarded arguments scan runs without storage.
+Special categories and line changes retain the ordinary reader's scanning rules.
+
 File bytes are already resident in the native adapter. Ordinary bytes are
 classified inline using the live category table. The rare superscript translation
 path rewrites the prepared line, including committed control-word lookahead;

@@ -1,0 +1,17 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\twice#1{#1/#1}\def\mix#1#2#3{#3/#1/#2/#1#2#3}
+\message{UMBER:\mix{A}{BC}{D{E}F}:END}
+\message{UMBER:\twice{A}/\twice{}/\twice{A{B}C}:END}
+\message{UMBER:\twice{Ab % discarded
+Cd
+Ef}:END}
+\message{UMBER:\twice{abc^^7bDEF^^7dghi}:END}
+\catcode64=13\def@{ACTIVE}\message{UMBER:\twice{A@B}:END}
+\def\expected{AB}\def\freeze#1{\catcode65=12\relax\def\actual{#1}}
+\freeze{AB}\message{UMBER:\ifx\actual\expected Y\else N\fi:END}
+\def\expected{AB}\message{UMBER:\ifx\actual\expected Y\else N\fi:END}
+\catcode94=12\relax\message{UMBER:\twice{^^2b}:END}
+\catcode32=12\relax
+\message{UMBER:\twice{A
+B}:END}
+\end
