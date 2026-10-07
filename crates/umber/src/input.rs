@@ -202,7 +202,7 @@ impl Engine<'_> {
                     self.par,
                 )?;
                 if self.names.len() > self.bindings.len() {
-                    self.bindings.resize(self.names.len(), Binding::default());
+                    self.grow_bindings(self.names.len());
                 }
                 return Ok(Raw {
                     token,

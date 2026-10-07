@@ -2,6 +2,76 @@ use crate::{Engine, Error, Result, token::*};
 
 impl Engine<'_> {
     #[inline(never)]
+    fn capture_delimited_tokens(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        builder: &mut Option<u32>,
+        delimiter_start: u32,
+        depth: i32,
+    ) -> Result<u32> {
+        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+            return Ok(0);
+        };
+        // Promote an existing inline word through the scalar path before any
+        // lookahead, preserving consumption if promotion fails at the next word.
+        if self.packets[packet as usize].arguments[argument]
+            .first
+            .store
+            == SINGLE
+        {
+            return Ok(0);
+        }
+        let (first, end) = (cursor.next, cursor.end);
+        let mut next = first;
+        if next == end {
+            return Ok(0);
+        }
+        // SAFETY: next is inside an initialized immutable source window. Its
+        // owner retains the allocation throughout this scan.
+        let mut token = unsafe { next.read() };
+        if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2) {
+            return Ok(0);
+        }
+        let except = if depth == 0 {
+            self.arena.get(delimiter_start)
+        } else {
+            Token(u32::MAX)
+        };
+        loop {
+            if token == except {
+                break;
+            }
+            // SAFETY: next advances at most to this allocation's end.
+            next = unsafe { next.add(1) };
+            if next == end {
+                break;
+            }
+            // SAFETY: next is inside the same retained immutable window. Neither
+            // matching nor capture installs or retires a source during the scan.
+            token = unsafe { next.read() };
+            if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2) {
+                break;
+            }
+        }
+        cursor.next = next;
+        if next == first {
+            return Ok(0);
+        }
+        // SAFETY: all three pointers belong to this installed source window.
+        let count = unsafe { next.offset_from(first) } as u32;
+        let start = cursor.window_end_position - unsafe { end.offset_from(first) } as u32;
+        let span = Span {
+            store: cursor.span.store,
+            start,
+            end: start + count,
+        };
+        // Retain before the ordinary reader can retire this source. With no
+        // inline word to promote, capturing this immutable range cannot fail.
+        self.capture_span(packet, argument, span, builder)?;
+        Ok(count)
+    }
+    #[inline(never)]
     fn capture_delimited_file<const RETAIN: bool>(
         &mut self,
         packet: u32,
@@ -48,6 +118,14 @@ impl Engine<'_> {
                     // so only the count used to recognize one outer group changes.
                     seen += self.file.position() - position;
                 }
+            } else if RETAIN && (matched == 0 || depth > 0) {
+                seen += self.capture_delimited_tokens(
+                    packet,
+                    argument,
+                    builder,
+                    delimiter.start,
+                    depth,
+                )? as usize;
             }
             let raw = self.next_raw()?;
             if RETAIN {

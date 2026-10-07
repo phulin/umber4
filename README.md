@@ -14,7 +14,7 @@ implement a parsing/expansion interpreter with 63 primitive names in
 design proposals.
 
 [Native measurements](docs/mvp-results.md) compare eight core workloads and
-seven broader macro workloads, including selected kernels from Gentle.
+eight broader macro workloads, including selected kernels from Gentle.
 The implementation builds new data in place and reuses captured token ranges,
 token-register values, and invocation storage.
 

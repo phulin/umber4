@@ -1,7 +1,7 @@
 # Native expansion benchmarks
 
 `mvp.py` retains the original eight core workloads. `expansion.py` exercises
-seven larger macro workloads, including excerpts from Michael Doob's
+eight larger macro workloads, including excerpts from Michael Doob's
 [gentle.tex](https://ctan.net/info/gentle/gentle.tex). Both runners execute the
 same complete input in Umber and native `pdftex -ini -etex`, validate every run,
 alternate engine order, pin a CPU on Linux, and retain raw timings and identities.
@@ -26,6 +26,7 @@ suite's baseline must support its primitive set. Default reports live under
 | `gentle-calendar`    | Original `\today`, all twelve month branches, varied days and years.                                                                                             |
 | `gentle-contents`    | Original contents write payload evaluated in `\edef`; positive and negative page numbers, varied expanded titles, string/roman conversion and detokenization.    |
 | `gentle-records`     | Original bracketed-title and paragraph-delimited signature; adapted consumer retains and expands both full payloads, including nested groups.                    |
+| `stored-records`     | The same Gentle record consumer, alternating input from immutable macro bodies and forwarded captured arguments.                                                 |
 | `token-pipeline`     | Shared token-register values, group restoration, a deferred assignment hook, opaque list insertion into `\edef`, and later expansion after a field redefinition. |
 | `name-table`         | 64–4,096 dynamically defined names, defined/missing tests, lookups, and periodic definition replacement.                                                         |
 | `optional-arguments` | `\futurelet`/`\unless` dispatch between optional and default arguments, delimiter matching, integer expressions, and source/stored argument routes.              |

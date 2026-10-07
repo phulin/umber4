@@ -1,0 +1,34 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\overlap#1aaba{[#1]}\def\stop#1x{[#1]}
+\def\record[#1]#2\par{[#1]|[#2]}
+\def\paragraph#1\par!{[#1]}
+\long\def\ending#1!\relax{[#1]}
+\def\stored{\overlap XXaaaba/\overlap{aaba}aaba/\overlap{}aaba}
+\message{UMBER:\stored:END}
+\def\stored{\stop{AB}x/\stop{AB}TAILx/\stop AB{CD}x}
+\message{UMBER:\stored:END}
+\def\stored{\record[ABC]{DE{F}GH}\par/\record[DEF]prefix {GH} suffix\par}
+\message{UMBER:\stored:END}
+\def\stored{\paragraph ABC\par X\par!}
+\message{UMBER:\stored:END}
+\def\stored{\ending aaa!\relax/\ending{a!\relax b}!\relax}
+\message{UMBER:\stored:END}
+\def\across#1#2{\overlap#1#2}
+\message{UMBER:\across{XXaa}{aba}/\across{XX}{aaaba}:END}
+\def\substitute#1{\stop#1x}
+\message{UMBER:\substitute{{AB}}/\substitute{A{BC}D}/\substitute{}:END}
+\def\submit#1#2{\record[#1]#2\par}
+\message{UMBER:\submit{AB}{{CD}}/\submit{}{DE{F}GH}:END}
+\def\mixed#1{\overlap Q#1aaaba}
+\message{UMBER:\mixed{X}/\mixed{{X}}/\mixed{}:END}
+\def\retire#1{\stop#1x}\def\pass#1{\retire{#1}}
+\def\stored{\pass{A{B}C}\pass{DE}}\message{UMBER:\stored:END}
+\def\open#1#{[#1]}\def\stored{\open ABC{XYZ}}
+\message{UMBER:\stored:END}
+\long\def\discard#1!{K}\def\stored{\discard A{B\par C}D!}
+\message{UMBER:\stored:END}
+\def\stored{\stop A##Bx}\message{UMBER:\stored:END}
+\def\finish#1{\stop#1x}\catcode120=12
+\def\stored{\finish{ABxCD}}\message{UMBER:\stored:END}
+\catcode120=11
+\end

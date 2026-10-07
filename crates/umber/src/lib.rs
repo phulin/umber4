@@ -193,9 +193,14 @@ impl<'a> Engine<'a> {
     pub(crate) fn intern(&mut self, name: &[u8]) -> Result<u32> {
         let id = self.names.intern(name)?;
         if id as usize >= self.bindings.len() {
-            self.bindings.resize(id as usize + 1, Binding::default());
+            self.grow_bindings(id as usize + 1);
         }
         Ok(id)
+    }
+    #[cold]
+    #[inline(never)]
+    pub(crate) fn grow_bindings(&mut self, len: usize) {
+        self.bindings.resize(len, Binding::default());
     }
     #[inline(always)]
     pub(crate) fn resolve(&self, token: Token) -> Meaning {

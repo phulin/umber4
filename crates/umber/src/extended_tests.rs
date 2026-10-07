@@ -53,6 +53,10 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/delimited-runs.tex"),
             include_str!("../../../fixtures/mvp/delimited-runs.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/delimited-windows.tex"),
+            include_str!("../../../fixtures/mvp/delimited-windows.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();
@@ -301,6 +305,62 @@ fn stored_parameter_substitution_crosses_window_edges() {
         assert_eq!(actual.len(), 1);
         assert_eq!(actual[0].len(), expected.len(), "prefix length {length}");
         assert!(actual[0] == expected.as_bytes(), "prefix length {length}");
+    }
+}
+
+#[test]
+fn delimited_windows_cross_chunks_and_argument_sources() {
+    for length in [1, 4093, 4094, 4095, 4096, 4097, 8191, 8192, 8193] {
+        let text = "X".repeat(length);
+        // The padding also places aaba across the delimiter arena's chunk end
+        // in two alignments, exercising matching through a delimiter chunk end.
+        let padding = "P".repeat(4092 + length % 4);
+        let source = format!(
+            r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\padding{{{padding}}}
+\def\grab#1aaba{{\edef\held{{#1/#1}}\message{{\held}}}}
+\def\stored{{\grab {text}aaaba}}\stored
+\def\forward#1{{\grab#1}}\forward{{{text}aaaba}}
+\def\across#1#2{{\grab#1#2}}\across{{{text}aa}}{{aba}}
+\def\stored{{\grab{{{text}}}aaba}}\stored\end"
+        );
+        let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+        let overlapping = format!("{text}a/{text}a").into_bytes();
+        let grouped = format!("{text}/{text}").into_bytes();
+        assert_eq!(actual.len(), 4);
+        for (index, message) in actual.iter().enumerate() {
+            let expected = if index < 3 { &overlapping } else { &grouped };
+            assert_eq!(
+                message.len(),
+                expected.len(),
+                "length {length}, message {index}"
+            );
+            assert!(message == expected, "length {length}, message {index}");
+        }
+    }
+}
+
+#[test]
+fn delimited_window_errors_consume_through_the_failing_token() {
+    for source in [
+        include_bytes!("../../../fixtures/mvp/failures/paragraph-delimited-window.tex").as_slice(),
+        include_bytes!("../../../fixtures/mvp/failures/group-paragraph-delimited-window.tex")
+            .as_slice(),
+        include_bytes!("../../../fixtures/mvp/failures/end-group-delimited-window.tex").as_slice(),
+    ] {
+        let mut engine = Engine::new(source);
+        let error = loop {
+            let read = match engine.next_expanded() {
+                Ok(read) => read,
+                Err(error) => break error,
+            };
+            engine.execute(read).unwrap();
+        };
+        assert_eq!(error, Error::Argument);
+        assert_eq!(
+            engine.next_raw().unwrap().token,
+            crate::token::Token::character(11, b'C')
+        );
     }
 }
 

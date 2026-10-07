@@ -82,6 +82,12 @@ possible first delimiter word. Inside a group, the run follows the group's
 ordinary character rules. Runs append into the existing capture buffer; their
 consumed length updates group-trimming counters at the boundary. Partial matches,
 braces, control sequences, and source transitions use the surrounding matcher.
+Retained stored input scans ordinary token runs within an immutable window,
+recording one range at each boundary. A run stops before a possible first
+delimiter word, a brace, a control sequence, or parameter substitution. An inline
+word is promoted through the ordinary capture path before looking ahead, so
+promotion precedes later matching errors. Partial prefixes and window transitions
+return to the ordinary reader and matcher.
 
 Grouped arguments scan an immutable source window directly, retaining one range
 at its boundary. Parameter substitution and source advancement resume this scan
@@ -110,6 +116,8 @@ File bytes are already resident in the native adapter. Ordinary bytes are
 classified inline using the live category table. The rare superscript translation
 path rewrites the prepared line, including committed control-word lookahead;
 token construction remains lazy across executed assignments.
+A newly interned name extends the dense meaning table through a separate growth
+helper, keeping allocation and initialization out of ordinary reader loops.
 List scanners consume ordinary letter and other-character runs directly from the
 current source line and emit into their destination. Special categories and line
 transitions return to the complete reader. Each emitted byte advances the cursor

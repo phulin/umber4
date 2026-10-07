@@ -19,7 +19,7 @@ from mvp import BOOT, ROOT, measure, reference
 CORPUS = Path(__file__).resolve().parent / "corpus"
 KERNELS = (CORPUS / "gentle-kernels.tex").read_text()
 CASES = ("gentle-text", "gentle-calendar", "gentle-contents", "gentle-records",
-         "token-pipeline", "name-table", "optional-arguments")
+         "stored-records", "token-pipeline", "name-table", "optional-arguments")
 MONTHS = ("January February March April May June July August September October "
           "November December").split()
 SPELLINGS = (("analogue", "analog"), ("cancelled", "canceled"),
@@ -74,6 +74,8 @@ def program(case, size):
     if case == "token-pipeline":
         lines.append(r"\toksdef\left=0\toksdef\right=1\toksdef\joined=2"
                      r"\def\wrap#1{(#1)}\def\setflag{\count9=1\relax}" + "\n")
+    if case == "stored-records":
+        lines.append(r"\long\def\forward#1{\maketable#1}" + "\n")
     if case == "optional-arguments":
         lines.append(r"\let\open=[\def\parse{\futurelet\next\dispatch}"
                      r"\def\dispatch{\unless\ifx\next\open\let\handler=\without"
@@ -119,14 +121,20 @@ def program(case, size):
             lines.append(actual(r"\contentsentry{" + alias + r"\space" + f" chapter {index % 53} "
                                 + payload(index)[:128] + "}"))
             lines.append(actual(r"\expandafter\detokenize\expandafter{\actual}"))
-        elif case == "gentle-records":
+        elif case in ("gentle-records", "stored-records"):
             title = f"{spelling} table {index % 71}"
             body = payload(index) + " {" + payload(index + 1)[:32] + "} " + spelling
             text = f"[{title}]|[{body}]"
             lines.append(wanted(text))
-            lines.append(r"\maketable[" + alias + r"\space" + f" table {index % 71}]"
-                         + payload(index) + " {" + payload(index + 1)[:32]
-                         + "} " + alias + r"\par" + "\n")
+            arguments = "[" + alias + r"\space" + f" table {index % 71}]" \
+                + payload(index) + " {" + payload(index + 1)[:32] \
+                + "} " + alias + r"\par"
+            if case == "gentle-records":
+                lines.append(r"\maketable" + arguments + "\n")
+            elif index % 2:
+                lines.append(r"\def\call{\maketable" + arguments + r"}\call" + "\n")
+            else:
+                lines.append(r"\forward{" + arguments + "}\n")
         elif case == "token-pipeline":
             field = payload(index)
             later_field = payload(index + 5)

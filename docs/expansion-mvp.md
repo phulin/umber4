@@ -119,7 +119,9 @@ excerpts and adaptations:
 - Contents-entry serialization, moving its token-building expression from a
   write into an expanded definition; its layout control names are stringified.
 - Paragraph-delimited records using the document's argument signature, with an
-  explicitly adapted consumer retaining and expanding both payloads.
+  explicitly adapted consumer retaining and expanding both payloads. Measure
+  source input and a stored variant that alternates between macro bodies and
+  forwarded captured arguments; the consumers and expected text are identical.
 
 Also exercise token-register pipelines, a larger dynamically populated name
 table, and an optional-argument parser using `\futurelet`, `\unless`, and integer

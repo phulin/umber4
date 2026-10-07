@@ -92,7 +92,7 @@ impl Engine<'_> {
         Ok(())
     }
     #[inline(always)]
-    fn capture_span(
+    pub(crate) fn capture_span(
         &mut self,
         packet: u32,
         argument: usize,
