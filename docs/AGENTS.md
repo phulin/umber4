@@ -32,6 +32,8 @@ Read the root `AGENTS.md` first.
   primitives, compatibility fixtures, and same-source performance comparison.
 - `mvp-results.md` records the implemented slice, native measurements, allocation
   evidence, and reproduction commands.
+- `expansion-mvp.md` specifies the broader parsing/expansion slice and corpus
+  benchmark contracts.
 - Distinguish requirements, proposed choices, measured results, and open questions.
   Do not describe planned facilities as implemented.
 - Keep detailed subsystem contracts in focused documents when those designs are

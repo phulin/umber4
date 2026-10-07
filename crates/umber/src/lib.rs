@@ -1,10 +1,16 @@
+mod condition;
+mod convert;
 mod define;
 mod execute;
 mod expand;
+mod expression;
 mod input;
+mod lists;
 mod macros;
+mod scalars;
 mod scan;
 mod token;
+use scalars::{Scalars, Target};
 use token::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -35,9 +41,9 @@ pub struct Engine<'a> {
     pub(crate) file: input::FileInput<'a>,
     pub(crate) names: Names,
     pub(crate) bindings: Vec<Binding>,
-    pub(crate) counts: [Integer; 256],
-    pub(crate) catcodes: [Integer; 256],
-    pub(crate) endline: Integer,
+    pub(crate) scalars: Scalars,
+    pub(crate) token_registers: [TokenValue; 256],
+    pub(crate) after_assignment: Option<Token>,
     pub(crate) arena: TokenArena,
     pub(crate) definitions: Vec<Definition>,
     pub(crate) sources: Vec<Source>,
@@ -46,7 +52,7 @@ pub struct Engine<'a> {
     pub(crate) free_packets: Vec<u32>,
     pub(crate) save: Vec<execute::Save>,
     pub(crate) level: u16,
-    pub(crate) conditions: Vec<expand::Condition>,
+    pub(crate) conditions: Vec<condition::Condition>,
     pub(crate) messages: Vec<Vec<u8>>,
     pub(crate) par: Token,
     pub(crate) expansion_depth: u16,
@@ -57,15 +63,9 @@ impl<'a> Engine<'a> {
             file: input::FileInput::new(source),
             names: Names::new(),
             bindings: vec![Binding::default(); 514],
-            counts: [Integer::default(); 256],
-            catcodes: [Integer {
-                value: 12,
-                level: 0,
-            }; 256],
-            endline: Integer {
-                value: 13,
-                level: 0,
-            },
+            scalars: Scalars::default(),
+            token_registers: [TokenValue::default(); 256],
+            after_assignment: None,
             arena: TokenArena::default(),
             definitions: Vec::new(),
             sources: Vec::with_capacity(16),
@@ -79,22 +79,6 @@ impl<'a> Engine<'a> {
             par: Token(0),
             expansion_depth: 0,
         };
-        for b in b'a'..=b'z' {
-            engine.catcodes[b as usize].value = 11;
-        }
-        for b in b'A'..=b'Z' {
-            engine.catcodes[b as usize].value = 11;
-        }
-        for (b, cat) in [
-            (b'\\', 0),
-            (b' ', 10),
-            (13, 5),
-            (b'%', 14),
-            (0, 9),
-            (127, 15),
-        ] {
-            engine.catcodes[b as usize].value = cat;
-        }
         let primitives: &[(&[u8], u8, i32)] = &[
             (b"relax", cmd::RELAX, 0),
             (b"def", cmd::DEF, 0),
@@ -128,6 +112,37 @@ impl<'a> Engine<'a> {
             (b"fi", cmd::FI, 0),
             (b"end", cmd::END, 0),
             (b"par", cmd::PAR, 0),
+            (b"toks", cmd::TOKS, 0),
+            (b"toksdef", cmd::TOKS_DEF, 0),
+            (b"chardef", cmd::CHAR_DEF, 0),
+            (b"futurelet", cmd::FUTURELET, 0),
+            (b"afterassignment", cmd::AFTER_ASSIGN, 0),
+            (b"aftergroup", cmd::AFTER_GROUP, 0),
+            (b"globaldefs", cmd::INTEGER_PARAM, 0),
+            (b"escapechar", cmd::INTEGER_PARAM, 1),
+            (b"time", cmd::INTEGER_PARAM, 2),
+            (b"day", cmd::INTEGER_PARAM, 3),
+            (b"month", cmd::INTEGER_PARAM, 4),
+            (b"year", cmd::INTEGER_PARAM, 5),
+            (b"lccode", cmd::CASE_CODE, 0),
+            (b"uccode", cmd::CASE_CODE, 1),
+            (b"lowercase", cmd::CHANGE_CASE, 0),
+            (b"uppercase", cmd::CHANGE_CASE, 1),
+            (b"protected", cmd::PROTECTED, 0),
+            (b"numexpr", cmd::NUMEXPR, 0),
+            (b"string", cmd::STRING, 0),
+            (b"meaning", cmd::MEANING, 0),
+            (b"romannumeral", cmd::ROMAN, 0),
+            (b"detokenize", cmd::DETOKENIZE, 0),
+            (b"unexpanded", cmd::UNEXPANDED, 0),
+            (b"if", cmd::IF, 0),
+            (b"ifcat", cmd::IFCAT, 0),
+            (b"ifodd", cmd::IFODD, 0),
+            (b"ifcase", cmd::IFCASE, 0),
+            (b"or", cmd::OR, 0),
+            (b"ifdefined", cmd::IFDEFINED, 0),
+            (b"ifcsname", cmd::IFCSNAME, 0),
+            (b"unless", cmd::UNLESS, 0),
         ];
         engine.bindings[0] = Binding::new(Meaning::RELAX, 0);
         for &(name, command, value) in primitives {
@@ -141,6 +156,13 @@ impl<'a> Engine<'a> {
         }
         engine
     }
+    /// Supply the host's clock parameters before execution. The portable MVP
+    /// starts with 00:00, January 1, 1970 until the host sets these values.
+    pub fn set_calendar(&mut self, minutes: i32, day: i32, month: i32, year: i32) {
+        for (index, value) in [minutes, day, month, year].into_iter().enumerate() {
+            self.scalars[Target::parameter(index + 2)] = Integer { value, level: 0 };
+        }
+    }
     pub fn run(mut self) -> Result<Outcome> {
         loop {
             let read = self.next_expanded()?;
@@ -152,7 +174,7 @@ impl<'a> Engine<'a> {
                     return Err(Error::Conditional);
                 }
                 return Ok(Outcome {
-                    counts: self.counts.map(|i| i.value),
+                    counts: self.scalars.counts().map(|i| i.value),
                     messages: self.messages,
                 });
             }
@@ -201,7 +223,7 @@ impl<'a> Engine<'a> {
             if !read.meaning.expandable() {
                 return Ok(read);
             }
-            if read.meaning.command == cmd::MACRO {
+            if read.meaning.is_macro() {
                 self.begin_macro(read.meaning.value as u32)?;
             } else {
                 self.expand(read)?;
@@ -209,5 +231,7 @@ impl<'a> Engine<'a> {
         }
     }
 }
+#[cfg(test)]
+mod extended_tests;
 #[cfg(test)]
 mod tests;

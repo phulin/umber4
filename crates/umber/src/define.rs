@@ -1,7 +1,13 @@
 use crate::{Engine, Error, Result, token::*};
 
 impl Engine<'_> {
-    pub(crate) fn define(&mut self, expanded: bool, long: bool, global: bool) -> Result<()> {
+    pub(crate) fn define(
+        &mut self,
+        expanded: bool,
+        long: bool,
+        global: bool,
+        protected: bool,
+    ) -> Result<()> {
         let cs = self.scan_cs()?;
         let signature_start = self.arena.len;
         let mut prefix_end = None;
@@ -57,45 +63,11 @@ impl Engine<'_> {
         };
         self.arena.push(Token(PARAM | 255))?;
         let body_start = self.arena.len;
-        let mut depth = 1usize;
-        let mut uses_parameters = false;
-        loop {
-            let read = if expanded {
-                self.next_expanded()?
-            } else {
-                self.next_token()?
-            };
-            if read.token.is_begin() {
-                depth += 1;
-            }
-            if read.token.is_end() {
-                depth -= 1;
-                if depth == 0 {
-                    break;
-                }
-            }
-            if read.meaning.command == 6 {
-                let next = if expanded {
-                    self.next_expanded()?
-                } else {
-                    self.next_token()?
-                };
-                if next.meaning.command == 6 {
-                    self.arena.push(next.token)?;
-                } else if !next.token.is_cs()
-                    && next.token.cat() == 12
-                    && (b'1'..b'1' + parameters).contains(&next.token.byte())
-                {
-                    self.arena
-                        .push(Token(PARAM | u32::from(next.token.byte() - b'0')))?;
-                    uses_parameters = true;
-                } else {
-                    return Err(Error::Syntax);
-                }
-            } else {
-                self.arena.push(read.token)?;
-            }
-        }
+        let uses_parameters = if expanded {
+            self.scan_body::<true>(Some(parameters), |engine, token| engine.arena.push(token))?
+        } else {
+            self.scan_body::<false>(Some(parameters), |engine, token| engine.arena.push(token))?
+        };
         if let Some(token) = brace_tail {
             self.arena.push(token)?;
         }
@@ -144,7 +116,11 @@ impl Engine<'_> {
         self.assign_meaning(
             cs,
             Meaning {
-                command: cmd::MACRO,
+                command: if protected {
+                    cmd::PROTECTED_MACRO
+                } else {
+                    cmd::MACRO
+                },
                 value: id as i32,
             },
             global,

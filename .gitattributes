@@ -1,0 +1,2 @@
+# Preserve the copied upstream lines, including their original trailing spaces.
+benchmarks/corpus/gentle-kernels.tex whitespace=-blank-at-eol

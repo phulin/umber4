@@ -1,0 +1,34 @@
+{
+  "title": "A Gentle Introduction to TeX",
+  "author": "Michael Doob",
+  "version": "1.1",
+  "url": "https://ctan.net/info/gentle/gentle.tex",
+  "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+  "kernels": [
+    {
+      "name": "spelling",
+      "lines": [98, 112],
+      "adaptation": "Definitions unchanged. Bootstrap ifcanspell with let instead of loading plain newif. The preceding aesthetic macro needs an accent and is omitted."
+    },
+    {
+      "name": "today",
+      "lines": [305, 307],
+      "adaptation": "Definition unchanged. Define plain's space macro and assign calendar parameters explicitly."
+    },
+    {
+      "name": "talks",
+      "lines": [3756, 3756],
+      "adaptation": "Definition unchanged. Consume expanded sentences in definitions rather than typesetting them."
+    },
+    {
+      "name": "contentsentry",
+      "lines": [197, 201],
+      "adaptation": "Retain the complete write payload in a parameterized macro invoked in edef. Stringified line/dotfill names and braces are never executed. Bootstrap pageno with countdef."
+    },
+    {
+      "name": "maketable",
+      "lines": [261, 269],
+      "adaptation": "Retain the bracketed-title and paragraph-delimited signature; replace the box/display body with edef of both complete payloads."
+    }
+  ]
+}

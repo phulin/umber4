@@ -1,0 +1,12 @@
+UMBER:\word/macro:#1->X#1#1/#:END
+UMBER:\word {##1} A B:END
+UMBER:mcmxciv//:END
+UMBER:!word/!count/!word :END
+UMBER:word/csname:END
+UMBER:\char"41/\count7/\toks3/the letter A/undefined:END
+UMBER:AZA/azA:END
+UMBER:BANG:END
+UMBER:x:END
+UMBER:21/6/1993/745:END
+UMBER:Y/N/Y/Y:END
+UMBER:Y/Y:END

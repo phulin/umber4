@@ -1,0 +1,9 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\message{UMBER:\the\numexpr1+2*3\relax/\number\numexpr(1+2)*3\relax:END}
+\message{UMBER:\number\numexpr5/2\relax/\number\numexpr-5/2\relax/\number\numexpr5/-2\relax:END}
+\message{UMBER:\number\numexpr2000000000*2/2\relax/\number\numexpr10/3*3\relax:END}
+\count0=7\countdef\n=0\relax\def\factor{3}
+\message{UMBER:\number\numexpr(0-(-\n+2))*\factor\relax/\the\numexpr1+\numexpr2+3\relax*4\relax:END}
+\let\stop=\relax\message{UMBER:\number\numexpr1+2\stop X/\number\numexpr2+3 Z:END}
+\ifnum\numexpr(7+5)/2\relax=6 \message{UMBER:YES:END}\else\message{UMBER:NO:END}\fi
+\end

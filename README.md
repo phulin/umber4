@@ -8,19 +8,22 @@ Start with the [high-level architecture proposal](docs/architecture.md).
 Its [subsystem index](docs/architecture.md#11-detailed-subsystem-proposals) links
 the deep dives. The [expansion](docs/expansion.md) and
 [storage](docs/storage.md) designs are the foundation for the execution path.
-The [MVP](docs/mvp.md) implements a small expansion/register interpreter in
+The [MVP](docs/mvp.md) and its [expanded primitive set](docs/expansion-mvp.md)
+implement a parsing/expansion interpreter with 63 primitive names in
 [crates/umber](crates/umber/). Layout, shipout, formats, and checkpoints remain
 design proposals.
 
-[Native measurements](docs/mvp-results.md) reach pdfTeX-comparable throughput
-across eight core workloads. The implementation builds new data in place and
-reuses captured token ranges and invocation storage.
+[Native measurements](docs/mvp-results.md) compare eight core workloads and
+seven broader macro workloads, including selected kernels from Gentle.
+The implementation builds new data in place and reuses captured token ranges,
+token-register values, and invocation storage.
 
 ```bash
 cargo build --release
 target/release/umber fixtures/mvp/macros.tex
 python3 scripts/oracle.py
 python3 benchmarks/mvp.py
+python3 benchmarks/expansion.py
 cargo build --release --lib --target wasm32-unknown-unknown
 ```
 

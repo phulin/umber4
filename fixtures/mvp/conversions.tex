@@ -1,0 +1,23 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\word#1{X#1#1}\message{UMBER:\string\word/\meaning\word/\string#:END}
+\message{UMBER:\detokenize{\word{#1} A B}:END}
+\message{UMBER:\romannumeral1994/\romannumeral0/\romannumeral-7:END}
+\escapechar=33\relax\message{UMBER:\string\word/\meaning\count/\detokenize{\word}:END}
+\escapechar=-1\relax\message{UMBER:\string\word/\string\csname:END}\escapechar=92\relax
+\chardef\c=65\countdef\n=7\toksdef\t=3
+\message{UMBER:\meaning\c/\meaning\n/\meaning\t/\meaning A/\meaning\missing:END}
+\def\a{A}\uppercase{\def\u{az\a}}\lowercase{\def\l{AZ\a}}
+\message{UMBER:\u/\l:END}
+\catcode64=13\catcode33=13\def@{AT}\def!{BANG}\uccode64=33\relax
+\uppercase{\def\changed{@}}\message{UMBER:\changed:END}
+\lccode65=120{\lccode65=121}\lowercase{\def\changed{A}}\message{UMBER:\changed:END}
+\day=21\month=6\year=1993\time=745\relax
+\message{UMBER:\the\day/\the\month/\the\year/\the\time:END}
+\edef\raw{\detokenize{a}}\def\letter{a}\edef\other{\string a}
+\edef\rawspace{\detokenize{ }}\def\spacevalue{ }
+\edef\rawhash{\detokenize{#}}\edef\hashvalue{\string#\string#}
+\message{UMBER:\ifx\raw\other Y\else N\fi/\ifx\raw\letter Y\else N\fi/\ifx\rawspace\spacevalue Y\else N\fi/\ifx\rawhash\hashvalue Y\else N\fi:END}
+\edef\rawroman{\romannumeral14}\edef\romanvalue{\detokenize{xiv}}
+\edef\rawmeaning{\meaning A}\edef\meaningvalue{\detokenize{the letter A}}
+\message{UMBER:\ifx\rawroman\romanvalue Y\else N\fi/\ifx\rawmeaning\meaningvalue Y\else N\fi:END}
+\end

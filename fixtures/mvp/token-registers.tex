@@ -1,0 +1,16 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\word{OLD}\toks0={\word}\edef\held{\the\toks0}\def\word{NEW}
+\message{UMBER:\the\toks0/\held:END}
+\toksdef\saved=1 \saved=\toks0 \toks0={X}\message{UMBER:\the\saved/\the\toks0:END}
+\toks0={A}{\toks0={B}\global\toks0={C}\toks0={D}}\message{UMBER:\the\toks0:END}
+\toks0=\toks0\message{UMBER:\the\toks0:END}
+\toks0={\toks0={X}\message{UMBER:OLD:END}}\the\toks0\message{UMBER:\the\toks0:END}
+\toks0={#1}\edef\hash{\the\toks0}\message{UMBER:\meaning\hash:END}
+\edef\literal{\unexpanded{\word#}}\def\word{LATEST}
+\message{UMBER:\meaning\literal/\unexpanded{\word#}:END}
+\message{UMBER:\literal:END}
+\protected\long\def\protect#1{[#1]}\edef\keep{\protect{A}}
+\message{UMBER:\meaning\protect/\meaning\keep/\keep:END}
+\def\snapshot#1{\edef\held{\unexpanded{#1}}}\snapshot{\word{B}}
+\message{UMBER:\meaning\held/\held:END}
+\end

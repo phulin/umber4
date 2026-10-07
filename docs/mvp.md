@@ -8,7 +8,9 @@ is no paragraph handoff yet, so this slice has no scheduler yield point.
 
 The slice is implemented in [crates/umber](../crates/umber/). Its
 [native measurements](mvp-results.md) record the tested behavior, optimization
-results, and reproduction commands.
+results, and reproduction commands. The [broader expansion slice](expansion-mvp.md)
+adds token registers, conversions, further conditionals, deferred tokens, case
+changes, and integer expressions. The table below records the original baseline.
 
 ## Scope
 

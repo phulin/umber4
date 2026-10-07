@@ -1,0 +1,35 @@
+% Macro excerpts from Michael Doob, A Gentle Introduction to TeX, version 1.1.
+% Original source and adaptation details: gentle.json.
+% Original lines 98-112; definitions unchanged.
+\def\analogue{\ifcanspell analogue\else analog\fi} 
+     \let\analog=\analogue 
+\def\cancelled{\ifcanspell cancelled\else canceled\fi} 
+     \let\canceled=\cancelled 
+\def\centimetre{\ifcanspell centimetre\else centimeter\fi} 
+     \let\centimeter=\centimetre 
+\def\centre{\ifcanspell centre\else center\fi} 
+     \let\center=\centre 
+\def\centred{\ifcanspell centred\else centered\fi} 
+     \let\centered=\centred 
+\def\our{\ifcanspell our\else or\fi} 
+\def\postcode{\ifcanspell postalcode\else zipcode\fi} 
+\def\province{\ifcanspell province\else state\fi} 
+\def\theatre{\ifcanspell theatre\else theater\fi} 
+     \let\theater=\theatre 
+% Original lines 305-307; definitions unchanged.
+\def\today{\ifcase\month\or January\or February\or March\or April\or 
+May\or June\or July\or August\or September\or October\or November\or 
+December\fi \space\number\day, \number\year} 
+% Original lines 3756-3756; definitions unchanged.
+\def\talks#1#2{#1 talks to #2.} 
+
+% Adapted from the write payload at original lines 197-201. The consumer
+% invokes this in an edef; line/dotfill/braces are serialized, never executed.
+\def\contentsentry#1{\string\line\string{#1
+                   \string\dotfill{}
+                   \ifnum \pageno < 0 \romannumeral-\pageno
+                   \else \the\pageno \fi
+                   \string}}
+% Original signature from lines 261-269; replace the typesetting body with
+% a consumer that expands and retains the complete title and paragraph.
+\def\maketable[#1]#2\par{\edef\actual{[#1]|[#2]}}

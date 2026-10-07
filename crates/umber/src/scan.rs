@@ -1,4 +1,4 @@
-use crate::{Engine, Error, Result, token::*};
+use crate::{Engine, Error, Result, scalars::Target, token::*};
 
 impl Engine<'_> {
     #[inline(always)]
@@ -94,14 +94,23 @@ impl Engine<'_> {
         match read.meaning.command {
             cmd::COUNT => {
                 let index = self.scan_index()?;
-                Ok(self.counts[index].value)
+                Ok(self.scalars[Target::count(index)].value)
             }
-            cmd::COUNT_REF => Ok(self.counts[read.meaning.value as usize].value),
+            cmd::COUNT_REF => Ok(self.scalars[Target::count(read.meaning.value as usize)].value),
             cmd::CATCODE => {
                 let index = self.scan_index()?;
-                Ok(self.catcodes[index].value)
+                Ok(self.scalars[Target::catcode(index)].value)
             }
-            cmd::ENDLINE => Ok(self.endline.value),
+            cmd::ENDLINE => Ok(self.scalars[Target::ENDLINE].value),
+            cmd::INTEGER_PARAM => {
+                Ok(self.scalars[Target::parameter(read.meaning.value as usize)].value)
+            }
+            cmd::CASE_CODE => {
+                let index = self.scan_index()?;
+                Ok(self.scalars[Target::casecode(read.meaning.value as usize, index)].value)
+            }
+            cmd::CHAR_GIVEN => Ok(read.meaning.value),
+            cmd::NUMEXPR => self.scan_expression(),
             _ => Err(Error::Number),
         }
     }
@@ -133,7 +142,14 @@ impl Engine<'_> {
             value
         } else if matches!(
             read.meaning.command,
-            cmd::COUNT | cmd::COUNT_REF | cmd::CATCODE | cmd::ENDLINE
+            cmd::COUNT
+                | cmd::COUNT_REF
+                | cmd::CATCODE
+                | cmd::ENDLINE
+                | cmd::INTEGER_PARAM
+                | cmd::CASE_CODE
+                | cmd::CHAR_GIVEN
+                | cmd::NUMEXPR
         ) {
             self.internal_int(read)?
         } else {

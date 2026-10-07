@@ -64,24 +64,52 @@ pub(crate) mod cmd {
     pub const CATCODE: u8 = 29;
     pub const ENDLINE: u8 = 30;
     pub const MESSAGE: u8 = 31;
-    pub const MACRO: u8 = 32;
-    pub const UNDEFINED: u8 = 33;
-    pub const NUMBER: u8 = 34;
-    pub const THE: u8 = 35;
-    pub const EXPANDAFTER: u8 = 36;
-    pub const NOEXPAND: u8 = 37;
-    pub const CSNAME: u8 = 38;
-    pub const IFNUM: u8 = 40;
-    pub const IFX: u8 = 41;
-    pub const IFTRUE: u8 = 42;
-    pub const IFFALSE: u8 = 43;
-    pub const ELSE: u8 = 44;
-    pub const FI: u8 = 45;
-    pub const END: u8 = 48;
-    pub const PAR: u8 = 49;
-    pub const COUNT_REF: u8 = 50;
-    pub const ENDCSNAME: u8 = 51;
+    pub const COUNT_REF: u8 = 32;
+    pub const ENDCSNAME: u8 = 33;
+    pub const END: u8 = 34;
+    pub const PAR: u8 = 35;
+    pub const TOKS: u8 = 36;
+    pub const TOKS_REF: u8 = 37;
+    pub const CHAR_GIVEN: u8 = 38;
+    pub const CHAR_DEF: u8 = 39;
+    pub const FUTURELET: u8 = 40;
+    pub const TOKS_DEF: u8 = 41;
+    pub const AFTER_ASSIGN: u8 = 42;
+    pub const AFTER_GROUP: u8 = 43;
+    pub const INTEGER_PARAM: u8 = 44;
+    pub const CASE_CODE: u8 = 45;
+    pub const CHANGE_CASE: u8 = 46;
+    pub const PROTECTED: u8 = 47;
+    pub const NUMEXPR: u8 = 48;
+    pub const MACRO: u8 = 64;
+    pub const PROTECTED_MACRO: u8 = 65;
+    pub const UNDEFINED: u8 = 66;
+    pub const NUMBER: u8 = 67;
+    pub const THE: u8 = 68;
+    pub const EXPANDAFTER: u8 = 69;
+    pub const NOEXPAND: u8 = 70;
+    pub const CSNAME: u8 = 71;
+    pub const IFNUM: u8 = 72;
+    pub const IFX: u8 = 73;
+    pub const IFTRUE: u8 = 74;
+    pub const IFFALSE: u8 = 75;
+    pub const ELSE: u8 = 76;
+    pub const FI: u8 = 77;
+    pub const STRING: u8 = 78;
+    pub const ROMAN: u8 = 79;
+    pub const MEANING: u8 = 80;
+    pub const IF: u8 = 81;
+    pub const IFCAT: u8 = 82;
+    pub const IFODD: u8 = 83;
+    pub const IFCASE: u8 = 84;
+    pub const OR: u8 = 85;
+    pub const IFDEFINED: u8 = 86;
+    pub const IFCSNAME: u8 = 87;
+    pub const UNEXPANDED: u8 = 88;
+    pub const DETOKENIZE: u8 = 89;
+    pub const UNLESS: u8 = 90;
 }
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) struct Meaning {
     pub command: u8,
@@ -96,8 +124,26 @@ impl Meaning {
         command: cmd::RELAX,
         value: 0,
     };
+    pub fn is_macro(self) -> bool {
+        matches!(self.command, cmd::MACRO | cmd::PROTECTED_MACRO)
+    }
+    pub fn is_conditional(self) -> bool {
+        matches!(
+            self.command,
+            cmd::IFNUM
+                | cmd::IFX
+                | cmd::IFTRUE
+                | cmd::IFFALSE
+                | cmd::IF
+                | cmd::IFCAT
+                | cmd::IFODD
+                | cmd::IFCASE
+                | cmd::IFDEFINED
+                | cmd::IFCSNAME
+        )
+    }
     pub fn expandable(self) -> bool {
-        (cmd::MACRO..=cmd::FI).contains(&self.command)
+        self.command >= cmd::MACRO
     }
 }
 #[derive(Clone, Copy)]
@@ -192,6 +238,11 @@ impl Sequence {
         self.first = Span::default();
         self.rest.clear();
     }
+}
+#[derive(Clone, Copy, Default)]
+pub(crate) struct TokenValue {
+    pub span: Span,
+    pub level: u16,
 }
 pub(crate) struct Definition {
     pub prefix: Span,
@@ -326,6 +377,7 @@ impl Names {
 }
 #[derive(Clone, Copy)]
 pub(crate) enum SequenceRef {
+    List,
     Body(u32),
     Argument(u32, u8),
 }

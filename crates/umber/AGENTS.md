@@ -4,10 +4,14 @@ Read the root guidance. `src/lib.rs` owns the driver and document state;
 `token.rs` owns compact tokens, immutable definition storage, names, and source
 descriptors; `input.rs` supplies lazy character input and token cursors;
 `define.rs` builds macro definitions; `macros.rs` scans arguments and builds
-invocation packets; `scan.rs` scans integers;
-`expand.rs` implements expansion and conditionals; `execute.rs` handles
-assignments and groups; `tests.rs` contains semantic fixtures; `main.rs` is the
-native file/message adapter. Keep host access out of the portable library.
+invocation packets; `scan.rs` scans integers; `expression.rs` evaluates integer
+expressions; `scalars.rs` stores integer tables and their group levels;
+`lists.rs` scans raw/expanded lists into their destinations; `convert.rs` builds
+conversion and case-change output; `expand.rs` dispatches expansion;
+`condition.rs` handles conditional selection/skipping; `execute.rs` handles
+assignments, groups, and deferred tokens; `tests.rs` and `extended_tests.rs`
+contain semantic fixtures; `main.rs` is the native file/message adapter. Keep
+host access out of the portable library.
 
 `examples/allocations.rs` is a separate native diagnostic adapter. Its allocator
 counters cover engine construction and execution, excluding the host input buffer.

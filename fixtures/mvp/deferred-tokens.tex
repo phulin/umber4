@@ -1,0 +1,14 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\word{W}\def\inspect#1{\message{UMBER:\ifx\peek\word Y\else N\fi/#1:END}}
+\futurelet\peek\inspect\word
+\def\hook{\def\word{N}}\afterassignment\hook\futurelet\peek\inspect\word
+\def\a{A}\def\b{B}\def\c{C}
+\def\out#1#2#3{\message{UMBER:#1#2#3:END}}
+{\def\a{X}\aftergroup\out\aftergroup\a\aftergroup\b\aftergroup\c}
+\def\a{}\def\b{}\def\c{}
+\aftergroup\undefinedIgnored
+\def\hook{\message{UMBER:\the\count0:END}}\afterassignment\hook\count0=17\relax
+\def\oldhook{\count0=100}\afterassignment\oldhook\afterassignment\hook\count0=9\relax
+{\globaldefs=1 \def\globalword{G}}\message{UMBER:\globalword/\the\globaldefs:END}
+{\globaldefs=-1 \gdef\localword{L}}\message{UMBER:\ifdefined\localword BAD\else LOCAL\fi:END}
+\end

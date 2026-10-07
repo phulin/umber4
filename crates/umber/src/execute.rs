@@ -1,35 +1,27 @@
-use crate::{Engine, Error, Result, token::*};
-
-#[derive(Clone, Copy)]
-pub(crate) enum Target {
-    Count(usize),
-    Catcode(usize),
-    Endline,
-}
+use crate::{Engine, Error, Result, scalars::Target, token::*};
 pub(crate) enum Save {
     Boundary(bool),
     Meaning(usize, Binding),
     Integer(Target, Integer),
+    Tokens(usize, TokenValue),
+    After(Token),
 }
 
 impl Engine<'_> {
-    pub(crate) fn execute(&mut self, mut read: Read) -> Result<()> {
-        let mut global = false;
-        let mut long = false;
-        while matches!(read.meaning.command, cmd::GLOBAL | cmd::LONG) {
-            if read.meaning.command == cmd::GLOBAL {
-                global = true;
-            } else {
-                long = true;
-            }
-            loop {
-                read = self.next_expanded()?;
-                if !matches!(read.meaning.command, cmd::SPACE | cmd::RELAX) {
-                    break;
-                }
-            }
+    pub(crate) fn execute(&mut self, read: Read) -> Result<()> {
+        if matches!(read.meaning.command, cmd::RELAX | cmd::SPACE | cmd::PAR) {
+            return Ok(());
         }
-        if long
+        let (read, prefix) = if matches!(
+            read.meaning.command,
+            cmd::GLOBAL | cmd::LONG | cmd::PROTECTED
+        ) {
+            self.assignment_prefixes(read)?
+        } else {
+            (read, 0)
+        };
+        let global = prefix & 1 != 0;
+        if prefix & 6 != 0
             && !matches!(
                 read.meaning.command,
                 cmd::DEF | cmd::GDEF | cmd::EDEF | cmd::XDEF
@@ -37,7 +29,12 @@ impl Engine<'_> {
         {
             return Err(Error::Syntax);
         }
-        match read.meaning.command {
+        let assignment_global = match self.scalars[Target::GLOBALDEFS].value {
+            n if n > 0 => true,
+            n if n < 0 => false,
+            _ => global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
+        };
+        let result = match read.meaning.command {
             cmd::RELAX | cmd::SPACE | cmd::PAR if !global => Ok(()),
             cmd::BEGIN | cmd::BEGIN_GROUP if !global => {
                 self.level = self.level.checked_add(1).ok_or(Error::Capacity)?;
@@ -50,8 +47,9 @@ impl Engine<'_> {
             }
             cmd::DEF | cmd::GDEF | cmd::EDEF | cmd::XDEF => self.define(
                 matches!(read.meaning.command, cmd::EDEF | cmd::XDEF),
-                long,
-                global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
+                prefix & 2 != 0,
+                assignment_global,
+                prefix & 4 != 0,
             ),
             cmd::LET => {
                 let id = self.scan_cs()?;
@@ -62,125 +60,203 @@ impl Engine<'_> {
                         right = self.next_token()?;
                     }
                 }
-                self.assign_meaning(id, right.meaning, global);
+                self.assign_meaning(id, right.meaning, assignment_global);
                 Ok(())
             }
-            cmd::COUNT_DEF => {
+            cmd::FUTURELET => {
                 let id = self.scan_cs()?;
-                // TeX makes the destination relax before scanning its number;
-                // an immediate occurrence of this name then stops lookahead.
-                self.assign_meaning(id, Meaning::RELAX, global);
-                self.scan_equals()?;
-                let register = self.scan_index()?;
-                self.assign_meaning(
-                    id,
-                    Meaning {
-                        command: cmd::COUNT_REF,
-                        value: register as i32,
-                    },
-                    global,
-                );
+                let first = self.next_token()?;
+                let second = self.next_token()?;
+                self.assign_meaning(id, second.meaning, assignment_global);
+                self.back(second.token);
+                self.back(first.token);
                 Ok(())
             }
-            cmd::COUNT | cmd::COUNT_REF | cmd::CATCODE | cmd::ENDLINE => {
+            cmd::COUNT_DEF | cmd::CHAR_DEF | cmd::TOKS_DEF => {
+                let id = self.scan_cs()?;
+                self.assign_meaning(id, Meaning::RELAX, assignment_global);
+                self.scan_equals()?;
+                let value = self.scan_index()? as i32;
+                let command = match read.meaning.command {
+                    cmd::COUNT_DEF => cmd::COUNT_REF,
+                    cmd::TOKS_DEF => cmd::TOKS_REF,
+                    _ => cmd::CHAR_GIVEN,
+                };
+                self.assign_meaning(id, Meaning { command, value }, assignment_global);
+                Ok(())
+            }
+            cmd::TOKS | cmd::TOKS_REF => {
+                let index = self.toks_index(read)?;
+                self.scan_equals()?;
+                let first = loop {
+                    let read = self.nonspace(true)?;
+                    if read.meaning.command != cmd::RELAX {
+                        break read;
+                    }
+                };
+                let span = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
+                    let from = self.toks_index(first)?;
+                    self.token_registers[from].span
+                } else if first.meaning.command == cmd::BEGIN {
+                    self.store_body()?
+                } else {
+                    return Err(Error::Syntax);
+                };
+                self.assign_tokens(index, span, assignment_global);
+                Ok(())
+            }
+            cmd::COUNT
+            | cmd::COUNT_REF
+            | cmd::CATCODE
+            | cmd::ENDLINE
+            | cmd::INTEGER_PARAM
+            | cmd::CASE_CODE => {
                 let target = self.assignment_target(read)?;
                 self.scan_equals()?;
                 let value = self.scan_int()?;
-                if matches!(target, Target::Catcode(_)) && !(0..=15).contains(&value) {
+                if read.meaning.command == cmd::CATCODE && !(0..=15).contains(&value) {
                     return Err(Error::Number);
                 }
-                self.assign_integer(target, value, global);
-                Ok(())
+                if read.meaning.command == cmd::CASE_CODE && !(0..=255).contains(&value) {
+                    return Err(Error::Number);
+                }
+                self.update_integer(target, assignment_global, |_| Ok(value))
             }
             cmd::ARITH => {
                 let operation = read.meaning.value;
                 let register = self.nonspace(true)?;
                 if !matches!(
                     register.meaning.command,
-                    cmd::COUNT | cmd::COUNT_REF | cmd::ENDLINE
+                    cmd::COUNT | cmd::COUNT_REF | cmd::ENDLINE | cmd::INTEGER_PARAM
                 ) {
                     return Err(Error::Unsupported);
                 }
                 let target = self.assignment_target(register)?;
                 self.scan_keyword(b"by")?;
                 let operand = self.scan_int()?;
-                let old = self.integer(target).value;
-                let value = match operation {
-                    0 => old.wrapping_add(operand),
-                    1 => {
-                        let product = i64::from(old) * i64::from(operand);
-                        if product.abs() > i64::from(i32::MAX) {
-                            return Err(Error::Overflow);
+                self.update_integer(target, assignment_global, |old| {
+                    Ok(match operation {
+                        0 => old.wrapping_add(operand),
+                        1 => {
+                            let product = i64::from(old) * i64::from(operand);
+                            if product.abs() > i64::from(i32::MAX) {
+                                return Err(Error::Overflow);
+                            }
+                            product as i32
                         }
-                        product as i32
-                    }
-                    2 => old.checked_div(operand).ok_or(Error::Overflow)?,
-                    _ => unreachable!(),
-                };
-                self.assign_integer(target, value, global);
+                        2 => old.checked_div(operand).ok_or(Error::Overflow)?,
+                        _ => unreachable!(),
+                    })
+                })
+            }
+            cmd::AFTER_ASSIGN if !global => {
+                self.after_assignment = Some(self.next_raw()?.token);
                 Ok(())
             }
+            cmd::AFTER_GROUP if !global => {
+                let token = self.next_raw()?.token;
+                if self.level > 0 {
+                    self.save.push(Save::After(token));
+                }
+                Ok(())
+            }
+            cmd::CHANGE_CASE if !global => self.change_case(read.meaning.value as usize),
             cmd::MESSAGE if !global => {
                 self.opening_brace()?;
-                let mut depth = 1;
                 let mut bytes = Vec::new();
-                loop {
-                    let token = self.next_expanded()?.token;
-                    if token.is_begin() {
-                        depth += 1;
-                    }
-                    if token.is_end() {
-                        depth -= 1;
-                        if depth == 0 {
-                            break;
-                        }
-                    }
-                    self.print_token(token, &mut bytes);
-                }
+                self.scan_body::<true>(None, |engine, token| {
+                    engine.print_token(token, &mut bytes);
+                    Ok(())
+                })?;
                 self.messages.push(bytes);
                 Ok(())
             }
             _ => Err(Error::Unsupported),
+        };
+        if result.is_ok()
+            && let Some(token) = self.after_assignment
+            && matches!(
+                read.meaning.command,
+                cmd::DEF
+                    | cmd::GDEF
+                    | cmd::EDEF
+                    | cmd::XDEF
+                    | cmd::LET
+                    | cmd::FUTURELET
+                    | cmd::COUNT_DEF
+                    | cmd::CHAR_DEF
+                    | cmd::TOKS_DEF
+                    | cmd::COUNT
+                    | cmd::COUNT_REF
+                    | cmd::CATCODE
+                    | cmd::ENDLINE
+                    | cmd::INTEGER_PARAM
+                    | cmd::CASE_CODE
+                    | cmd::ARITH
+                    | cmd::TOKS
+                    | cmd::TOKS_REF
+            )
+        {
+            self.after_assignment = None;
+            self.back(token);
+        }
+        result
+    }
+    #[inline(never)]
+    fn assignment_prefixes(&mut self, mut read: Read) -> Result<(Read, u8)> {
+        let mut prefix = 0;
+        loop {
+            prefix |= match read.meaning.command {
+                cmd::GLOBAL => 1,
+                cmd::LONG => 2,
+                cmd::PROTECTED => 4,
+                _ => return Ok((read, prefix)),
+            };
+            loop {
+                read = self.next_expanded()?;
+                if !matches!(read.meaning.command, cmd::SPACE | cmd::RELAX) {
+                    break;
+                }
+            }
         }
     }
+    #[inline]
     fn assignment_target(&mut self, read: Read) -> Result<Target> {
         Ok(match read.meaning.command {
-            cmd::COUNT => Target::Count(self.scan_index()?),
-            cmd::COUNT_REF => Target::Count(read.meaning.value as usize),
-            cmd::CATCODE => Target::Catcode(self.scan_index()?),
-            cmd::ENDLINE => Target::Endline,
+            cmd::COUNT => Target::count(self.scan_index()?),
+            cmd::COUNT_REF => Target::count(read.meaning.value as usize),
+            cmd::CATCODE => Target::catcode(self.scan_index()?),
+            cmd::ENDLINE => Target::ENDLINE,
+            cmd::INTEGER_PARAM => Target::parameter(read.meaning.value as usize),
+            cmd::CASE_CODE => Target::casecode(read.meaning.value as usize, self.scan_index()?),
             _ => return Err(Error::Syntax),
         })
     }
-    fn integer(&self, target: Target) -> Integer {
-        match target {
-            Target::Count(i) => self.counts[i],
-            Target::Catcode(i) => self.catcodes[i],
-            Target::Endline => self.endline,
-        }
-    }
-    fn set_integer(&mut self, target: Target, value: Integer) {
-        match target {
-            Target::Count(i) => self.counts[i] = value,
-            Target::Catcode(i) => self.catcodes[i] = value,
-            Target::Endline => self.endline = value,
-        }
-    }
-    pub(crate) fn assign_integer(&mut self, target: Target, value: i32, global: bool) {
-        let old = self.integer(target);
+    #[inline]
+    fn update_integer(
+        &mut self,
+        target: Target,
+        global: bool,
+        update: impl FnOnce(i32) -> Result<i32>,
+    ) -> Result<()> {
+        // Resolve the slot once. Split the mutable save stack from the scalar
+        // tables so the same slot handles the read, saved value, and write.
+        let level = self.level;
+        let save = &mut self.save;
+        let slot = &mut self.scalars[target];
+        let old = *slot;
+        let value = update(old.value)?;
         if !global && old.value == value {
-            return;
+            return Ok(());
         }
-        if !global && self.level > 0 && old.level != self.level {
-            self.save.push(Save::Integer(target, old));
+        if !global && level > 0 && old.level != level {
+            save.push(Save::Integer(target, old));
         }
-        self.set_integer(
-            target,
-            Integer {
-                value,
-                level: if global { 0 } else { self.level },
-            },
-        );
+        *slot = Integer {
+            value,
+            level: if global { 0 } else { level },
+        };
+        Ok(())
     }
     pub(crate) fn assign_meaning(&mut self, id: usize, meaning: Meaning, global: bool) {
         let old = self.bindings[id];
@@ -191,6 +267,19 @@ impl Engine<'_> {
             self.save.push(Save::Meaning(id, old));
         }
         self.bindings[id] = Binding::new(meaning, if global { 0 } else { self.level });
+    }
+    fn assign_tokens(&mut self, index: usize, span: Span, global: bool) {
+        let old = self.token_registers[index];
+        if !global && old.span == span {
+            return;
+        }
+        if !global && self.level > 0 && old.level != self.level {
+            self.save.push(Save::Tokens(index, old));
+        }
+        self.token_registers[index] = TokenValue {
+            span,
+            level: if global { 0 } else { self.level },
+        };
     }
     fn close_group(&mut self, kind: bool) -> Result<()> {
         if self.level == 0 {
@@ -205,44 +294,32 @@ impl Engine<'_> {
                     self.level -= 1;
                     return Ok(());
                 }
+                Save::After(token) => self.back(token),
+                Save::Tokens(index, old) => {
+                    if self.token_registers[index].level != 0 {
+                        self.token_registers[index] = old;
+                    }
+                }
                 Save::Meaning(id, old) => {
                     if self.bindings[id].level != 0 {
                         self.bindings[id] = old;
                     }
                 }
                 Save::Integer(target, old) => {
-                    if self.integer(target).level != 0 {
-                        self.set_integer(target, old);
+                    let slot = &mut self.scalars[target];
+                    if slot.level != 0 {
+                        *slot = old;
                     }
                 }
             }
         }
     }
-    fn print_token(&self, token: Token, output: &mut Vec<u8>) {
-        if !token.is_cs() {
-            Self::print_byte(token.byte(), output);
-            if token.cat() == 6 {
-                Self::print_byte(token.byte(), output);
-            }
-            return;
-        }
-        let id = token.id();
-        if (258..514).contains(&id) {
-            Self::print_byte((id - 258) as u8, output);
-            return;
-        }
-        if id == 1 {
-            output.extend_from_slice(br"\csname\endcsname ");
-            return;
-        }
-        output.push(b'\\');
-        let name = &self.names.spellings[id];
-        for &byte in name {
+    fn print_token(&mut self, token: Token, output: &mut Vec<u8>) {
+        self.token_text(token, true, |_, byte| {
             Self::print_byte(byte, output);
-        }
-        if name.len() != 1 || self.catcodes[name[0] as usize].value == 11 {
-            output.push(b' ');
-        }
+            Ok(())
+        })
+        .unwrap();
     }
     fn print_byte(byte: u8, output: &mut Vec<u8>) {
         if (32..=126).contains(&byte) {

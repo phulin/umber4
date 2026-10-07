@@ -1,0 +1,15 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\let\a=A\chardef\c=65
+\message{UMBER:\if\a AYES\else NO\fi/\ifcat\a BYES\else NO\fi/\if\c\relax YES\else NO\fi:END}
+\message{UMBER:\ifodd-3 ODD\else EVEN\fi/\unless\ifodd4 EVEN\else ODD\fi:END}
+\message{UMBER:\ifcase0 ZERO\or ONE\or TWO\else OTHER\fi/\ifcase2 ZERO\or ONE\or TWO\else OTHER\fi:END}
+\message{UMBER:\ifcase-1 Z\or O\else NEG\fi/\ifcase9 Z\or O\else LARGE\fi:END}
+\message{UMBER:\ifcase1 \ifdefined XBAD\else BAD\fi\or\ifcat ABOK\else BAD\fi\or BAD\fi:END}
+\message{UMBER:\ifdefined\missing BAD\else UNDEF\fi/\ifdefined aCHAR\else BAD\fi:END}
+\message{UMBER:\ifcsname missing\endcsname BAD\else ABSENT\fi/\ifdefined\missing BAD\else STILL\fi:END}
+\expandafter\let\csname missing\endcsname=\relax
+\message{UMBER:\ifcsname missing\endcsname PRESENT\else BAD\fi:END}
+\catcode64=13\def@{X}
+\message{UMBER:\ifcat\noexpand@\noexpand@ACTIVE\else BAD\fi/\if\noexpand@\noexpand@YES\else BAD\fi:END}
+\message{UMBER:\iffalse\unless\ifdefined\missing BAD\else BAD\fi\else OK\fi:END}
+\end

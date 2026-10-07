@@ -33,7 +33,7 @@ impl Engine<'_> {
         self.packets[id as usize].clear();
         self.free_packets.push(id);
     }
-    fn capture_buffer(&mut self) -> Result<u32> {
+    pub(crate) fn capture_buffer(&mut self) -> Result<u32> {
         if let Some((id, capture)) = self
             .captures
             .iter_mut()
@@ -444,7 +444,7 @@ impl Engine<'_> {
         if a == b {
             return true;
         }
-        if a.command != b.command || a.command != cmd::MACRO {
+        if a.command != b.command || !a.is_macro() {
             return false;
         }
         let a = &self.definitions[a.value as usize];

@@ -169,8 +169,8 @@ impl Engine<'_> {
         loop {
             let Some(source) = self.sources.last_mut() else {
                 let token = self.file.read(
-                    &self.catcodes,
-                    self.endline.value,
+                    self.scalars.catcodes(),
+                    self.scalars[crate::scalars::Target::ENDLINE].value,
                     &mut self.names,
                     self.par,
                 )?;
@@ -276,6 +276,7 @@ impl Engine<'_> {
     }
     pub(crate) fn span_for(&self, sequence: SequenceRef, index: usize) -> Option<Span> {
         match sequence {
+            SequenceRef::List => None,
             SequenceRef::Body(id) => (index == 0)
                 .then_some(self.definitions[id as usize].body)
                 .filter(|s| !s.empty()),
@@ -345,6 +346,12 @@ impl Engine<'_> {
             macro_packet: None,
         }));
         Ok(())
+    }
+    pub(crate) fn push_tokens(&mut self, span: Span) -> Result<()> {
+        if span.empty() {
+            return Ok(());
+        }
+        self.push_span(SequenceRef::List, span, None, None)
     }
     #[inline]
     fn push_span(
