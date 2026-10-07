@@ -99,6 +99,10 @@ File bytes are already resident in the native adapter. Ordinary bytes are
 classified inline using the live category table. The rare superscript translation
 path rewrites the prepared line, including committed control-word lookahead;
 token construction remains lazy across executed assignments.
+List scanners consume ordinary letter and other-character runs directly from the
+current source line and emit into their destination. Special categories and line
+transitions return to the complete reader. Each emitted byte advances the cursor
+and sets the lexical state before emission, preserving consumption on failure.
 
 Keep grouping in a reused save stack, preserving local/global/local restoration
 and the extended profile's identical-local-assignment behavior. Character tokens

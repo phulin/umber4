@@ -171,6 +171,12 @@ impl Engine<'_> {
         &mut self,
         emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
     ) -> Result<()> {
+        if self.sources.is_empty() {
+            while let Some(token) = self.file.read_character(self.scalars.catcodes()) {
+                emit(self, token)?;
+            }
+            return Ok(());
+        }
         let Some(Source::Tokens(cursor)) = self.sources.last() else {
             return Ok(());
         };

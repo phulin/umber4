@@ -89,6 +89,18 @@ impl<'a> FileInput<'a> {
             self.line.drain(p + 1..end);
         }
     }
+    #[inline]
+    pub fn read_character(&mut self, cats: &[Integer; 256]) -> Option<Token> {
+        if let Some(&byte) = self.line.get(self.position) {
+            let cat = cats[byte as usize].value as u8;
+            if matches!(cat, 11 | 12) {
+                self.position += 1;
+                self.state = 1;
+                return Some(Token::character(cat, byte));
+            }
+        }
+        None
+    }
     pub fn read(
         &mut self,
         cats: &[Integer; 256],
