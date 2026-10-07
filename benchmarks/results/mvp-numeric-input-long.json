@@ -1,0 +1,62 @@
+{
+  "date": "2026-10-07T00:19:03.803306+00:00",
+  "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "rustflags": "",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "umber_binary_sha256": "16a8e8a00beef9098ab581468d9257b7771cde748e857e339ef0ab4940090420",
+  "generator_sha256": "ecf7c10618f0b29e45854347d343778914d493e75fc242dba1ee3ea0a6b909b6",
+  "repeats": 7,
+  "baseline_binary_sha256": "c4735cbc32eb681c01198c6889eedf5f7a9e7e3f5ada164ae2213ff00f1fc81e",
+  "baseline_revision": "b781f6a",
+  "source_recipe": {
+    "bootstrap": "\\catcode123=1 \\catcode125=2 \\catcode35=6 \\catcode94=7\\relax\n",
+    "setup": "\\def\\take#1{\\advance\\count0by1\\relax}\\def\\twice#1{\\take{#1}\\take{#1}}",
+    "body": "\\twice{abcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefghabcdefgh}",
+    "separator": "\n",
+    "iterations": 100000,
+    "tail": "\\message{UMBER:200000,0:END}\\end\n"
+  },
+  "bytes": 26500163,
+  "sha256": "5a38fd990f9bdbc9e42a21d39c83ec52c24f8c5e832e41c47643ce455143b663",
+  "case": "long arguments tokenized from bytes",
+  "seconds": {
+    "umber": [
+      0.72113743,
+      0.856114751,
+      0.724741822,
+      0.795867208,
+      0.724316532,
+      0.724083491,
+      0.717111348
+    ],
+    "pdftex": [
+      1.123752258,
+      1.180881918,
+      1.125125657,
+      1.144147619,
+      1.199074395,
+      1.118827783,
+      1.10892807
+    ],
+    "baseline": [
+      0.767873205,
+      0.767796532,
+      0.75263804,
+      0.742057078,
+      0.726346158,
+      0.793546806,
+      0.72727984
+    ]
+  },
+  "median": {
+    "umber": 0.724316532,
+    "pdftex": 1.125125657,
+    "baseline": 0.75263804
+  },
+  "ratio": 0.6437650119287965,
+  "ratio_to_baseline": 0.9623703473717592,
+  "complete": true
+}

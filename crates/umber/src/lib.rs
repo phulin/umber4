@@ -1,3 +1,4 @@
+mod define;
 mod execute;
 mod expand;
 mod input;

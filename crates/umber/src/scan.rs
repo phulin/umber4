@@ -1,6 +1,69 @@
 use crate::{Engine, Error, Result, token::*};
 
 impl Engine<'_> {
+    #[inline(always)]
+    fn digit(token: Token, radix: i32) -> i32 {
+        let digit = token.0.wrapping_sub(Token::other(b'0').0);
+        if digit < 10 {
+            return digit as i32;
+        }
+        if radix == 16 {
+            let letter = token.0.wrapping_sub(Token::character(11, b'A').0);
+            if letter < 6 {
+                return letter as i32 + 10;
+            }
+            let other = token.0.wrapping_sub(Token::other(b'A').0);
+            if other < 6 {
+                return other as i32 + 10;
+            }
+        }
+        radix
+    }
+    #[inline(always)]
+    fn scan_digit_window(&mut self, radix: i32, value: &mut i32) -> Result<bool> {
+        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+            return Ok(false);
+        };
+        while cursor.next != cursor.end {
+            // SAFETY: the source retains this initialized immutable window.
+            // This scan neither replaces sources nor changes backing storage.
+            let token = unsafe { cursor.next.read() };
+            let digit = Self::digit(token, radix);
+            if digit < radix {
+                // SAFETY: next is before end in the same allocation.
+                cursor.next = unsafe { cursor.next.add(1) };
+                *value = value
+                    .checked_mul(radix)
+                    .and_then(|v| v.checked_add(digit))
+                    .ok_or(Error::Overflow)?;
+                continue;
+            }
+            if token.0 & PARAM != 0 && !token.is_cs() {
+                return Ok(false);
+            }
+            let meaning = if token.is_cs() {
+                self.bindings[token.id()].meaning()
+            } else {
+                Meaning {
+                    command: token.cat(),
+                    value: i32::from(token.byte()),
+                }
+            };
+            if meaning.expandable() {
+                return Ok(false);
+            }
+            // A nonspace terminator already has its original token identity at
+            // the cursor. Its next read resolves its meaning afresh, just as a
+            // backed token would. Inline sources retain the ordinary reader's
+            // one-read suppression handling.
+            if meaning.command == cmd::SPACE {
+                // SAFETY: the terminating token is inside this source window.
+                cursor.next = unsafe { cursor.next.add(1) };
+            }
+            return Ok(true);
+        }
+        Ok(false)
+    }
     pub(crate) fn nonspace(&mut self, expanded: bool) -> Result<Read> {
         loop {
             let read = if expanded {
@@ -86,20 +149,9 @@ impl Engine<'_> {
             }
             let mut value = 0i32;
             let mut digits = 0;
+            let mut stopped_at_cursor = false;
             loop {
-                let token = read.token;
-                let digit = if !token.is_cs() && token.cat() == 12 && token.byte().is_ascii_digit()
-                {
-                    i32::from(token.byte() - b'0')
-                } else if radix == 16
-                    && !token.is_cs()
-                    && matches!(token.cat(), 11 | 12)
-                    && (b'A'..=b'F').contains(&token.byte())
-                {
-                    i32::from(token.byte() - b'A' + 10)
-                } else {
-                    radix
-                };
+                let digit = Self::digit(read.token, radix);
                 if digit >= radix {
                     break;
                 }
@@ -108,9 +160,13 @@ impl Engine<'_> {
                     .and_then(|v| v.checked_add(digit))
                     .ok_or(Error::Overflow)?;
                 digits += 1;
+                if self.scan_digit_window(radix, &mut value)? {
+                    stopped_at_cursor = true;
+                    break;
+                }
                 read = self.next_expanded()?;
             }
-            if read.meaning.command != cmd::SPACE {
+            if !stopped_at_cursor && read.meaning.command != cmd::SPACE {
                 self.back(read.token);
             }
             if digits == 0 {

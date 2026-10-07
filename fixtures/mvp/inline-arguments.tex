@@ -2,6 +2,10 @@
 \def\id#1{#1}\def\pass#1{\id{#1}}\def\twice#1{\pass{#1}\pass{#1}}
 \message{UMBER:\twice{X}/\twice{Y}/\twice{}:END}
 \def\word{W}\message{UMBER:\twice{\word}:END}
+\def\run#1{#1}\def\repeat#1{#1#1}
+\message{UMBER:\run{\repeat{X}}/\run{\repeat{Y}}:END}
+\def\many#1#2#3#4#5#6#7#8#9{#9#1#8#2#7#3#6#4#5}
+\message{UMBER:\many{a}{b}{c}{d}{e}{f}{g}{h}{i}/\repeat{X}/\many123456789:END}
 \def\grow#1{\id{#1A}\id{B#1}}\message{UMBER:\grow{X}:END}
 \def\swap#1#2{\id{#2A#1}\id{#1B#2}}\message{UMBER:\swap{X}{Y}:END}
 \def\bracket#1{[#1]}\message{UMBER:\bracket{AB}/\bracket{{C}}:END}

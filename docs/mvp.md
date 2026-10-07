@@ -60,15 +60,19 @@ contiguous span; source changes do the ownership work.
 
 Invocation packets own argument sequences and their backing capture chunks.
 Existing token ranges are retained; newly scanned source tokens are built in
-the packet's inline slot or capture buffer. A captured range retains its backing directly,
-so retiring a parent does not invalidate it. Reuse packet and capture-buffer
-capacity. Parameter-free invocation installs the existing body without allocation
-or reference counting. Retire exhausted sources before installing a successor.
+the packet's inline slot or capture buffer. A captured range retains its backing
+directly, so retiring a parent does not invalidate it. Reuse packet and capture-buffer
+capacity. Reusing a packet with the same argument count takes a small inline
+path; resizing and allocation use a separate helper. Parameter-free invocation
+installs the existing body without allocation or reference counting. Retire
+exhausted sources before installing a successor.
 
 Definitions record whether their replacement tokens substitute any parameter.
 Calls always scan and validate all arguments. A body using no parameters can
 consume the arguments without retaining a packet or capture storage. Select this
 scanning mode once per invocation; the token loops use the same matching rules.
+Delimited matching runs in a separate Rust function, keeping its local matching
+state and group trimming out of the common undelimited scanner.
 
 Grouped arguments scan an immutable source window directly, retaining one range
 at its boundary. Parameter substitution and source advancement resume this scan
@@ -82,6 +86,11 @@ or range follows, move the first value into capture storage and continue buildin
 there; borrowed ranges retain their existing backing. This keeps single-token
 arguments small without changing the construction path for larger arguments.
 
+When grouped capture finishes with exactly one token and an empty destination,
+keep that word directly in the packet as well. The source window already supplies
+its value; repeated substitution then reads the packet's value. Larger and mixed
+captures continue retaining their immutable ranges.
+
 File bytes are already resident in the native adapter. Ordinary bytes are
 classified inline using the live category table. The rare superscript translation
 path rewrites the prepared line, including committed control-word lookahead;
@@ -91,6 +100,12 @@ Keep grouping in a reused save stack, preserving local/global/local restoration
 and the extended profile's identical-local-assignment behavior. Character tokens
 keep their captured category codes. Backing up a token preserves identity, while
 its next read resolves its current meaning and any one-read suppression is spent.
+
+After the first digit, integer scans can walk literal digits in a stored-token
+window. They resolve the following token's current command: a terminating space
+is consumed, while an unexpandable nonspace token remains at its cursor for the
+next operation. Expansion, parameter substitution, suppression, and source
+transitions use the ordinary reader. Numeric progress stays on the Rust stack.
 
 The implemented arena uses 4,096-token boxed chunks. Published tokens are
 immutable; fresh suffix writes use `UnsafeCell` and chunk addresses remain stable

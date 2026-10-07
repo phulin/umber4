@@ -211,6 +211,8 @@ fn inline_argument_values_and_promotion() {
     let expected: &[&[u8]] = &[
         b"UMBER:XX/YY/:END",
         b"UMBER:WW:END",
+        b"UMBER:XX/YY:END",
+        b"UMBER:iahbgcfde/XX/918273645:END",
         b"UMBER:XABX:END",
         b"UMBER:YAXXBY:END",
         b"UMBER:[AB]/[{C}]:END",
@@ -223,6 +225,37 @@ fn inline_argument_values_and_promotion() {
         b"UMBER:+:END",
     ];
     assert_eq!(result.messages, expected);
+}
+
+#[test]
+fn stored_integer_windows_and_terminators() {
+    let result = Engine::new(include_bytes!("../../../fixtures/mvp/numeric-windows.tex"))
+        .run()
+        .unwrap();
+    let expected: &[&[u8]] = &[
+        b"UMBER:12345/11259375/2054353:END",
+        b"UMBER:15f:END",
+        b"UMBER:123X:END",
+        b"UMBER:12345Z:END",
+        b"UMBER:9:END",
+        b"UMBER:Y:END",
+        b"UMBER:7:END",
+        b"UMBER:123:END",
+        b"UMBER:12T:END",
+        b"UMBER:1234Z:END",
+        b"UMBER:12T:END",
+        b"UMBER:159:END",
+    ];
+    assert_eq!(result.messages, expected);
+
+    let zeros = "0".repeat(8197);
+    let source = format!(r"\def\digits{{{zeros}17}}\count0=\digits\relax");
+    assert_eq!(run(&source).counts[0], 17);
+    let source = format!(r"{BOOT}\def\digits{{{zeros}2147483648}}\count0=\digits\relax\end");
+    assert_eq!(
+        Engine::new(source.as_bytes()).run().err(),
+        Some(Error::Overflow)
+    );
 }
 
 #[test]
@@ -251,6 +284,14 @@ fn discarded_arguments_still_follow_scanning_rules() {
 #[test]
 fn supported_failure_boundaries() {
     let cases: &[(&[u8], Error)] = &[
+        (
+            include_bytes!("../../../fixtures/mvp/failures/stored-integer-overflow.tex"),
+            Error::Overflow,
+        ),
+        (
+            include_bytes!("../../../fixtures/mvp/failures/letter-digit.tex"),
+            Error::Number,
+        ),
         (
             include_bytes!("../../../fixtures/mvp/failures/paragraph-argument.tex"),
             Error::Argument,

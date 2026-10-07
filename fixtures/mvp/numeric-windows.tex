@@ -1,0 +1,18 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\nums{\number12345/\number"ABCDEF/\number'7654321}
+\message{UMBER:\nums:END}
+\catcode70=12\relax\def\hex{\number"Ff}\message{UMBER:\hex:END}
+\def\makespace#1{\let\sp=#1#1}\makespace{ }
+\def\spaced{\number123\sp X}\message{UMBER:\spaced:END}
+\def\parts#1#2{\number1#1#2 Z}\message{UMBER:\parts{23}{45}:END}
+\def\init{\countdef\r=5\r=9\relax}\init\message{UMBER:\the\r:END}
+\def\choice{\ifnum12=12 Y\else N\fi}\message{UMBER:\choice:END}
+\def\conditional{\iftrue7\else8\fi}\message{UMBER:\number\conditional:END}
+\def\digits{123}\edef\out{\number\digits}\message{UMBER:\out:END}
+\def\term{T}\def\suppressed{\number12\noexpand\term}
+\message{UMBER:\suppressed:END}
+\catcode64=13\relax\def@{34}\def\active{\number12@ Z}
+\message{UMBER:\active:END}\catcode64=12\relax
+\def\shield#1{\number12\noexpand#1}\message{UMBER:\shield{\term}:END}
+\def\octal{\number'179}\message{UMBER:\octal:END}
+\end
