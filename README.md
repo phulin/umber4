@@ -17,6 +17,8 @@ design proposals.
 eight broader macro workloads, including selected kernels from Gentle.
 The implementation builds new data in place and reuses captured token ranges,
 token-register values, and invocation storage.
+The [benchmark guide](benchmarks/README.md) also provides an optional native
+profile build; its measurements are recorded separately from ordinary release.
 
 ```bash
 cargo build --release

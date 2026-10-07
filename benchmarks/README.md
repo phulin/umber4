@@ -21,6 +21,23 @@ Use `--cases`, `--sizes`, and `--repeats` for focused runs. Both accept
 suite's baseline must support its primitive set. Default reports live under
 `target/`. Reviewed measurements live in `results/`.
 
+An optional native profile build uses the same generators for compiler training:
+
+```bash
+rustup component add llvm-tools
+python3 benchmarks/pgo.py
+python3 benchmarks/mvp.py --umber target/pgo/use/release/umber
+python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
+```
+
+Training checks every workload's result at 75,031 core iterations and 7,003
+expanded records, then runs the native oracle. The final build passes the oracle
+again. Artifacts and input/compiler identities stay under `target/pgo`; the
+ordinary release and Wasm builds use their existing paths. The profile builder
+also produces `target/pgo/use/release/examples/allocations` for diagnostics.
+Its LLVM inlining settings are measured choices for the recorded compiler;
+compare both suites when changing them or updating Rust.
+
 | Expanded workload    | Measured behavior                                                                                                                                                |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `gentle-text`        | Original spelling switches/aliases and `\talks` template, varied names and both branches of every spelling definition.                                           |

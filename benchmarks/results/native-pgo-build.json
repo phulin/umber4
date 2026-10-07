@@ -1,0 +1,255 @@
+{
+  "engine_source_commit": "4c0f54a",
+  "timed_training": {
+    "umber_binary_sha256": "d0033234662e79e0af898f671b2828467b10270a3f2dca4ec3f923e083089531",
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "flags": "-C profile-generate=/home/phulin/umber4/target/pgo-native/raw",
+    "sources": [
+      {
+        "case": "raw",
+        "size": 75031,
+        "bytes": 1875884,
+        "sha256": "8210581caee71a7b068b85029828785d03525929d733cb222d87379cbed0aaed"
+      },
+      {
+        "case": "bodies",
+        "size": 75031,
+        "bytes": 563,
+        "sha256": "e174c138ad2f1c8b7707809ec0c664fe3f7a2d81e96a230f0ae1087b3cabd5f0"
+      },
+      {
+        "case": "integers",
+        "size": 75031,
+        "bytes": 544,
+        "sha256": "aa9230157e94bbd09acc3b5715e6ba0a650bf9409670459fbb03c58cdcdf74ca"
+      },
+      {
+        "case": "parameters",
+        "size": 75031,
+        "bytes": 578,
+        "sha256": "9b1da982e0de4b9e0300bc38a5afebecc1706752712d86129c930f7ab164f786"
+      },
+      {
+        "case": "file-parameters",
+        "size": 75031,
+        "bytes": 750489,
+        "sha256": "664d72d8e0d740e086b144654d75a452153357da1f27fec25ad88829c4431ede"
+      },
+      {
+        "case": "long-parameters",
+        "size": 75031,
+        "bytes": 832,
+        "sha256": "78265e7eacd7567f00c31dca81b17981a62411f4381b86bc3bdc9050557ac9ac"
+      },
+      {
+        "case": "delimiters",
+        "size": 75031,
+        "bytes": 549,
+        "sha256": "9179158e3382c573d4528a62b1d786441653fb73fa7ef2f4c203ff19680b8191"
+      },
+      {
+        "case": "groups",
+        "size": 75031,
+        "bytes": 571,
+        "sha256": "e7eaa2b2d431962caff88d03e50c949835e7ba9c7c32b731c46bd3dbf6da2fc2"
+      },
+      {
+        "case": "gentle-text",
+        "size": 7003,
+        "bytes": 1646386,
+        "sha256": "6bb39bf1787dbd06a16a9e0e34a9d23899e8d88b980f9e25bd5bfcc41d92f17a"
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 7003,
+        "bytes": 1341330,
+        "sha256": "d39a6c883220ebbd6098c9787c54add9468e44c36a3b7d43663a9db06ed5370e"
+      },
+      {
+        "case": "gentle-contents",
+        "size": 7003,
+        "bytes": 3242731,
+        "sha256": "d437bb09faa905ae2ac2013c2223bfd8e0812ea674e6879373197ec062d89000"
+      },
+      {
+        "case": "gentle-records",
+        "size": 7003,
+        "bytes": 5877051,
+        "sha256": "20f8ace46f45a47bf1819becd2d8cb9065586d4137fb4c9fba506cb40304734b"
+      },
+      {
+        "case": "stored-records",
+        "size": 7003,
+        "bytes": 5933101,
+        "sha256": "0e62efb86d029ac17bda074c20257a7f031ef761949506e187cf257fd267ccc5"
+      },
+      {
+        "case": "token-pipeline",
+        "size": 7003,
+        "bytes": 10707198,
+        "sha256": "fa2328db1cf10e2940d502e115547d10bd87bf9b294ffc59321e68fc64d50d9e"
+      },
+      {
+        "case": "name-table",
+        "size": 7003,
+        "bytes": 1704234,
+        "sha256": "abda60ec5ff68f2683cfb6c6627d38561fd262adb5b3f857767c9ff1d8a8b983"
+      },
+      {
+        "case": "optional-arguments",
+        "size": 7003,
+        "bytes": 5595815,
+        "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
+      }
+    ]
+  },
+  "timed_profile_sha256": "70f7aaa75480219b5ab207e9849b33786fdd4cf0bbffce818240c7a55a4da2b2",
+  "reproduced_build": {
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "profdata_version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
+    "builder_sha256": "c271868b89b5ec9f467fea187eb3cc49181aa921205564ea661eacda3562b59b",
+    "source_files": {
+      "Cargo.lock": "75cecf264ea51da5bd4d2f7ff65dd094a2b4b79e34e9981233b943092187c4db",
+      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+      "crates/umber/Cargo.toml": "6ed89e622d5a8d994a7a695250a1f1ef5f0a6f39064d373e01a7f89c2327fb46",
+      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+      "crates/umber/src/condition.rs": "2ac97afbe284010ce022f84b95986efc5bdb9a951d0b4da3ee19754c82aed67c",
+      "crates/umber/src/convert.rs": "c29a242cb72f83ceec726d4f84ae9401cbf848ff3a4852f2a50b6889108f3ca8",
+      "crates/umber/src/define.rs": "77048adbef96b352a95450a24fee49b66c430500de662fd9cdf461c073d11fca",
+      "crates/umber/src/delimit.rs": "6fc56dba6ffadab7832d1d306f32fcaaa8fafe5c033da26191f871bc4c4473a5",
+      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
+      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
+      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+      "crates/umber/src/extended_tests.rs": "7723dac3fb74e4b81272f4a04375e83f99553ef9c975762766f9b1c20c01ff34",
+      "crates/umber/src/input.rs": "0bf92ef375c227bb951460494cde713ed1494e55a6bb2b88695977d4b89c11c3",
+      "crates/umber/src/lib.rs": "7874f8ceeaed8020afdde6c468dbf857badadc304c99e1a0bd575733b240dbe9",
+      "crates/umber/src/lists.rs": "fa2d4af0c8ff6b2dfce4d48f692604b6eb627f2111073b3b114582da46592721",
+      "crates/umber/src/macros.rs": "979f88f602504c4a21f77c005c88b79922313ef62d29bdf0ea39abcba28b30b0",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/scan.rs": "7bfd4741cc1a8087a677642d1b4d5a5da6c42fd60d697c87877f1fd10a8dfa5e",
+      "crates/umber/src/tests.rs": "fabf9a92f3938069c8fa144b631af6578afe7ecd774acc0a4f1eea3df3f2a2bc",
+      "crates/umber/src/token.rs": "74644171385abd4003a2ad86cb03547f4f49cf7078c04aa712200782747def9f"
+    },
+    "training_binary_sha256": "8592ddc9cff06fe08d125c1cc3dd46a5d7955be421d94e08df89dd7ce17f54e6",
+    "generators": {
+      "mvp": "c3cdafbdb683f8a457356bc5776e8b7916ae64c400561cad9927674bc8169956",
+      "expansion": "ebff0d53c33f20fdd0c53ae7f2c8c1241d9cbf585d6b7c75057fa069f0d060cd"
+    },
+    "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+    "sources": [
+      {
+        "case": "raw",
+        "size": 75031,
+        "bytes": 1875884,
+        "sha256": "8210581caee71a7b068b85029828785d03525929d733cb222d87379cbed0aaed"
+      },
+      {
+        "case": "bodies",
+        "size": 75031,
+        "bytes": 563,
+        "sha256": "e174c138ad2f1c8b7707809ec0c664fe3f7a2d81e96a230f0ae1087b3cabd5f0"
+      },
+      {
+        "case": "integers",
+        "size": 75031,
+        "bytes": 544,
+        "sha256": "aa9230157e94bbd09acc3b5715e6ba0a650bf9409670459fbb03c58cdcdf74ca"
+      },
+      {
+        "case": "parameters",
+        "size": 75031,
+        "bytes": 578,
+        "sha256": "9b1da982e0de4b9e0300bc38a5afebecc1706752712d86129c930f7ab164f786"
+      },
+      {
+        "case": "file-parameters",
+        "size": 75031,
+        "bytes": 750489,
+        "sha256": "664d72d8e0d740e086b144654d75a452153357da1f27fec25ad88829c4431ede"
+      },
+      {
+        "case": "long-parameters",
+        "size": 75031,
+        "bytes": 832,
+        "sha256": "78265e7eacd7567f00c31dca81b17981a62411f4381b86bc3bdc9050557ac9ac"
+      },
+      {
+        "case": "delimiters",
+        "size": 75031,
+        "bytes": 549,
+        "sha256": "9179158e3382c573d4528a62b1d786441653fb73fa7ef2f4c203ff19680b8191"
+      },
+      {
+        "case": "groups",
+        "size": 75031,
+        "bytes": 571,
+        "sha256": "e7eaa2b2d431962caff88d03e50c949835e7ba9c7c32b731c46bd3dbf6da2fc2"
+      },
+      {
+        "case": "gentle-text",
+        "size": 7003,
+        "bytes": 1646386,
+        "sha256": "6bb39bf1787dbd06a16a9e0e34a9d23899e8d88b980f9e25bd5bfcc41d92f17a"
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 7003,
+        "bytes": 1341330,
+        "sha256": "d39a6c883220ebbd6098c9787c54add9468e44c36a3b7d43663a9db06ed5370e"
+      },
+      {
+        "case": "gentle-contents",
+        "size": 7003,
+        "bytes": 3242731,
+        "sha256": "d437bb09faa905ae2ac2013c2223bfd8e0812ea674e6879373197ec062d89000"
+      },
+      {
+        "case": "gentle-records",
+        "size": 7003,
+        "bytes": 5877051,
+        "sha256": "20f8ace46f45a47bf1819becd2d8cb9065586d4137fb4c9fba506cb40304734b"
+      },
+      {
+        "case": "stored-records",
+        "size": 7003,
+        "bytes": 5933101,
+        "sha256": "0e62efb86d029ac17bda074c20257a7f031ef761949506e187cf257fd267ccc5"
+      },
+      {
+        "case": "token-pipeline",
+        "size": 7003,
+        "bytes": 10707198,
+        "sha256": "fa2328db1cf10e2940d502e115547d10bd87bf9b294ffc59321e68fc64d50d9e"
+      },
+      {
+        "case": "name-table",
+        "size": 7003,
+        "bytes": 1704234,
+        "sha256": "abda60ec5ff68f2683cfb6c6627d38561fd262adb5b3f857767c9ff1d8a8b983"
+      },
+      {
+        "case": "optional-arguments",
+        "size": 7003,
+        "bytes": 5595815,
+        "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
+      }
+    ],
+    "profile_path": "target/pgo/f0c4a9f7de61154b1b8ae9829eeeb53d0d37035aba56f6553911b95cfe0ecc1e.profdata",
+    "profile_sha256": "f0c4a9f7de61154b1b8ae9829eeeb53d0d37035aba56f6553911b95cfe0ecc1e",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/f0c4a9f7de61154b1b8ae9829eeeb53d0d37035aba56f6553911b95cfe0ecc1e.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000",
+    "rustflags_args": [
+      "-C",
+      "profile-use=/home/phulin/umber4/target/pgo/f0c4a9f7de61154b1b8ae9829eeeb53d0d37035aba56f6553911b95cfe0ecc1e.profdata",
+      "-C",
+      "llvm-args=-pgo-warn-missing-function",
+      "-C",
+      "llvm-args=--inline-enable-cost-benefit-analysis=false",
+      "-C",
+      "llvm-args=--hot-callsite-threshold=1000"
+    ],
+    "umber_binary_sha256": "b51ac48b34f0b815663a8e0324fdf3466e76e382248d12ba40df6bb39c2b728f",
+    "allocation_binary_sha256": "7897733d5044659d490b5be38268e1eb3d9be8cc8c3960d280939328fabe78d8"
+  },
+  "identity": "The reproduced interpreter and allocation diagnostic are byte-identical to the timed binaries."
+}

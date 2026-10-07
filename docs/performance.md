@@ -30,6 +30,19 @@ Change their representation or call boundary when that extra work dominates.
 An elaborate specialization is useful only when it improves the execution path
 we actually run.
 
+The [native profile builder](../benchmarks/pgo.py) uses the core and Gentle-derived
+workloads to guide compiler inlining and code placement. Build the instrumented interpreter
+in its own checkout-local target directory, validate every training checksum and
+the native oracle fixtures, then rebuild with the merged profile. The resulting
+interpreter executes ordinary compiled Rust without profiling counters. Keep
+the source and Wasm build shared; the profile is a compiler build artifact.
+
+Compare that native build with the ordinary release build at sizes outside the
+training set. Record the training inputs, compiler options, profile identity,
+executable identities, and both suites' samples. Compiler inlining choices need
+the same full-workload evidence as source changes; a faster character path can
+otherwise enlarge unrelated scanners and slow their stored-token loops.
+
 ## 2. Allocation is part of the experiment
 
 Construct new tokens and nodes in destination storage. Retain immutable ranges

@@ -18,7 +18,7 @@ proposal until reviewed with the user.
 - `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.
 - `fixtures/mvp/`: same-source INITEX compatibility fixtures.
 - `scripts/`: native oracle setup and compatibility comparison.
-- `benchmarks/`: source generators, comparable native timing, and retained results;
+- `benchmarks/`: source generators, native profile builds, timing, and retained results;
   `corpus/` retains selected Gentle macros and source provenance.
 - `.gitattributes`: preserves upstream whitespace in the selected corpus excerpts.
 - `.agents/skills/coordinate/`: GitHub Issues coordination and agent dispatch.

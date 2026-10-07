@@ -1,7 +1,7 @@
 # Native expansion measurements
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
-implemented, with 63 primitive names. At the largest sizes, Umber uses about
+implemented, with 63 primitive names. At the largest sizes, ordinary release Umber uses about
 0.10–0.62 times native pdfTeX's CPU time on the original eight workloads and
 0.41–0.56 times on eight broader macro workloads. Source control words now compute
 their hash during lexical scanning. Stored-body expansion uses 10.0% less CPU
@@ -10,6 +10,10 @@ from resident source bytes 4.4% less. Broader changes range from 0.6% to 4.6% le
 CPU time; the smaller differences need the variation context below.
 These measurements cover parsing, expansion, and macro/scalar execution. Layout,
 shipout, formats, checkpoints, and Wasm runtime timing come later.
+
+An [optional native profile build](#optional-native-profile-build) uses 0.40–0.49
+times pdfTeX's CPU time on the broader suite, saving 4–15% against the ordinary
+release build in the same run. The tables below retain ordinary release results.
 
 The tables use child user-plus-system CPU medians for the complete engine process.
 Reports also retain wall time and all samples. Wall time includes scheduling
@@ -235,6 +239,60 @@ establish bounded memory for a long editing session. Checkpoint-aware store
 reclamation remains with the [storage design](storage.md). Both reports retain
 the diagnostic binary hash and counts at both sizes.
 
+## Optional native profile build
+
+The [profile builder](../benchmarks/pgo.py) trains the compiler with all sixteen
+workloads at 75,031 core iterations and 7,003 expanded records. Each training
+result is checked. Native oracle fixtures run against both the instrumented
+interpreter and the final build. The final binaries reproduce the measured
+interpreter and allocation diagnostic byte for byte; they contain no profiling
+counters. The ordinary release and Wasm builds retain their existing settings.
+
+This experiment uses Rust 1.98.1 and LLVM 22.1.8. LLVM uses recorded branch
+frequencies with its inlining cost-benefit model disabled and the hot-callsite
+threshold set to 1,000. These are compiler choices for this measured native
+build. They leave Rust's source-level call boundaries and ownership unchanged.
+The default profile-guided model enlarged the main loop and slowed long argument
+scanning; the selected settings improve that case too. Updating the compiler or
+expanding the interpreter warrants another comparison.
+
+The full comparison uses the same seven-run, three-size protocol as ordinary
+release measurements, with `4c0f54a` as the ordinary comparison binary. Training
+sizes are outside the timing sweep. CPU medians at 50,000 records:
+
+| Workload                           | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
+| ---------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
+| Gentle spelling and text templates |             0.151 |              0.173 |      0.308 |          0.489 |             -13.1% |
+| Gentle calendar formatter          |             0.125 |              0.147 |      0.276 |          0.454 |             -14.5% |
+| Gentle contents serialization      |             0.456 |              0.476 |      1.021 |          0.447 |              -4.3% |
+| Gentle paragraph-delimited records |             0.578 |              0.602 |      1.267 |          0.456 |              -3.9% |
+| Gentle records from stored tokens  |             0.638 |              0.672 |      1.537 |          0.415 |              -5.0% |
+| Token-register pipeline            |             1.080 |              1.123 |      2.347 |          0.460 |              -3.8% |
+| Dynamic name table                 |             0.146 |              0.169 |      0.323 |          0.454 |             -13.4% |
+| Optional-argument parser           |             0.611 |              0.636 |      1.542 |          0.396 |              -4.1% |
+
+At one million core iterations, raw input uses 20.9% less CPU time, repeated/
+nested parameters 24.8% less, source arguments 22.0% less, and long arguments
+16.5% less. Delimiters and grouped writes improve by 10.5% and 9.6%; integer
+assignments by 2.9%. Stored-body dispatch is 4.3% slower (0.131 versus 0.125 s),
+so this remains an optional native build. Core ratios range from 0.08 to 0.53
+times pdfTeX's CPU time. All twenty-six sampled allocation counts, requested
+bytes, and heap peaks match the ordinary build.
+
+[Core samples](../benchmarks/results/mvp-native-pgo.json),
+[broader samples](../benchmarks/results/expansion-native-pgo.json), and the
+[build record](../benchmarks/results/native-pgo-build.json) retain input and
+executable hashes, both timing clocks, training provenance, compiler options,
+profile identities, and the byte-identical reproduction.
+The smaller improvements still need the control-run variation context above.
+
+```bash
+rustup component add llvm-tools
+python3 benchmarks/pgo.py
+python3 benchmarks/mvp.py --umber target/pgo/use/release/umber
+python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
+```
+
 ## Compatibility and reproduction
 
 Thirty-one Rust tests cover the core plus token-register retention, protected
@@ -292,7 +350,7 @@ Measured on 2026-10-07, Linux x86-64, AMD EPYC 7642, pinned to CPU 0:
 
 - pdfTeX 3.141592653-2.6-1.40.25, TeX Live 2023/Debian, with
   `-ini -etex -no-shell-escape -interaction=nonstopmode -halt-on-error`.
-- Rust 1.98.1, release profile with thin LTO, one codegen unit, debug info,
+- Ordinary release: Rust 1.98.1, thin LTO, one codegen unit, debug info,
   and no additional `RUSTFLAGS`.
 - One warmup and seven measured runs per engine at each size: 10,000, 100,000,
   and 1,000,000 core iterations; 1,000, 10,000, and 50,000 expanded records.
