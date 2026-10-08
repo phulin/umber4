@@ -46,6 +46,9 @@ Wasm builds keep that loader in a separate function. The feature also allows
 compiler-selected argument-reset inlining and keeps name lookup behind a measured
 Rust call boundary. It reads published spelling entries directly; ordinary
 builds retain the measured reset call and checked spelling reads.
+Stored-list scans in profile builds classify spaces, letters, and other
+characters through one contiguous token range, with the existing checks for
+all remaining words. Ordinary builds retain their previous classification path.
 Compare both suites when changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |

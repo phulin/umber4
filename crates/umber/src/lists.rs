@@ -185,6 +185,15 @@ impl Engine<'_> {
             // SAFETY: this installed window contains initialized immutable
             // tokens; its source retains the backing throughout emission.
             let token = unsafe { next.read() };
+            #[cfg(feature = "native-profile")]
+            // Space, letter, and other-character words form one common range.
+            // The remaining categories retain the structural/parameter check.
+            if !(10 << 8..13 << 8).contains(&token.0)
+                && (token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2 | 6))
+            {
+                break;
+            }
+            #[cfg(not(feature = "native-profile"))]
             if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2 | 6) {
                 break;
             }
