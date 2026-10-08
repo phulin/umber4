@@ -78,6 +78,32 @@ fn lazy_character_input() {
     message("\\endlinechar=33\\relax\n\\message{X\nY}", b"X!Y");
 }
 #[test]
+fn prepared_line_tail_semantics() {
+    let cases: &[(&str, &[u8])] = &[
+        (
+            "\\endlinechar=97\\relax\n\\def\\za{OK}\\message{\\z\n}",
+            b"OK",
+        ),
+        ("\\message{X^^\nY}", b"XMY"),
+        ("\\endlinechar=97\\relax\n\\message{X^^4\nY}", b"XJY"),
+        ("\\endlinechar=97\\relax\n\\message{X^^\nY}", b"X!Y"),
+        ("\\endlinechar=-1\\relax\n\\message{X\n\nY}", b"XY"),
+        ("\\endlinechar=256\\relax\n\\message{X\n\nY}", b"XY"),
+        (r"\message{^^5e^41/^^2b}", b"A/+"),
+        (
+            "\\def\\m{\\catcode94=12\\relax}\\m^^25 ignored\n\\message{OK}",
+            b"OK",
+        ),
+        ("\\endlinechar=33\\relax\\message{X\nY}", b"X Y"),
+    ];
+    for ending in ["\n", "\r", "\r\n"] {
+        for &(source, expected) in cases {
+            let source = source.replace('\n', ending);
+            message(&format!("{source}\\end\\relax"), expected);
+        }
+    }
+}
+#[test]
 fn failure_and_tail_calls() {
     let source = format!("{BOOT}{{\\endgroup\\end");
     assert_eq!(

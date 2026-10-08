@@ -72,6 +72,26 @@ def group_run_boundaries(folder):
             yield path, [expected]
 
 
+def prepared_line_tails(folder):
+    cases = [
+        ('word', '\\endlinechar=97\\relax\n\\def\\za{OK}\\message{UMBER:\\z\n:END}', b'OK'),
+        ('superscript', '\\message{UMBER:X^^\nY:END}', b'XMY'),
+        ('hex', '\\endlinechar=97\\relax\n\\message{UMBER:X^^4\nY:END}', b'XJY'),
+        ('ascii', '\\endlinechar=97\\relax\n\\message{UMBER:X^^\nY:END}', b'X!Y'),
+        ('inactive', '\\endlinechar=-1\\relax\n\\message{UMBER:X\n\nY:END}', b'XY'),
+        ('out-of-range', '\\endlinechar=256\\relax\n\\message{UMBER:X\n\nY:END}', b'XY'),
+        ('repeated', r'\message{UMBER:^^5e^41/^^2b:END}', b'A/+'),
+        ('lookahead', '\\def\\m{\\catcode94=12\\relax}\\m^^25 ignored\n\\message{UMBER:OK:END}', b'OK'),
+        ('frozen', '\\endlinechar=33\\relax\\message{UMBER:X\nY:END}', b'X Y'),
+    ]
+    boot = r'\catcode123=1 \catcode125=2 \catcode94=7\relax' + '\n'
+    for kind, ending in [('lf', '\n'), ('cr', '\r'), ('crlf', '\r\n')]:
+        for name, source, expected in cases:
+            path = folder / f'prepared-line-{name}-{kind}.tex'
+            path.write_bytes((boot + source + '\\end\\relax\n').replace('\n', ending).encode())
+            yield path, [expected]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
@@ -94,6 +114,9 @@ def main():
             sources.append(path)
             generated_expected[path] = [b"X/X/Y/Z"]
         for path, expected in group_run_boundaries(ROOT / "target/oracle"):
+            sources.append(path)
+            generated_expected[path] = expected
+        for path, expected in prepared_line_tails(ROOT / "target/oracle"):
             sources.append(path)
             generated_expected[path] = expected
     for source in sources:

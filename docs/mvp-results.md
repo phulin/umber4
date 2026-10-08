@@ -353,11 +353,11 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-Thirty-six Rust tests cover the core plus token-register retention, protected
+Thirty-seven Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
-dynamic names. The native oracle compares 381 marked messages and 26 rejected
+dynamic names. The native oracle compares 408 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
 Short-number fixtures compare singleton windows, spaces and spacer aliases,
@@ -392,6 +392,11 @@ the beginning/middle/end, recursive translation, case distinctions, long
 spellings, and NUL/high bytes classified as letters. A translated terminator
 remains committed when its macro changes the superscript category. Character
 input and scanner-edge tests have also passed Miri.
+Prepared-line tests compare LF, CR, and CRLF input, including a control word and
+`^^` translation reaching the synthetic end-line character, recursive rewrites,
+an inactive end-line character, and an assignment that leaves the loaded line's
+end-line character intact. The oracle checks all 27 results against independently
+specified expectations as well as native pdfTeX.
 Macro-equality fixtures distinguish category codes, control-sequence identities,
 parameter marker spellings, and macro flags. Generated equality tests cross
 shifted chunk boundaries and change signature prefixes, lengths, and body words;
