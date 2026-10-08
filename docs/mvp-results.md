@@ -2,16 +2,16 @@
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
 implemented, with 63 primitive names. At the largest sizes, ordinary release
-Umber uses 0.10–0.53 times native pdfTeX's CPU time on the original eight
-workloads and 0.30–0.52 times on eight broader macro workloads. Integer scans
-read the first literal decimal digit directly from the loaded source line.
-Raw dispatch uses 6.6% less CPU time than the preceding build;
-the broader suite differs by -5.5% to +3.7%. The full comparison appears below.
+Umber uses 0.09–0.52 times native pdfTeX's CPU time on the original eight
+workloads and 0.30–0.51 times on eight broader macro workloads. Separating literal
+integer entry from the general recursive scanner reduces raw dispatch CPU time
+by 6.0% against the preceding build. The broader suite differs by -7.0% to -0.3%.
+The full comparison appears below.
 These measurements cover parsing, expansion, and macro/scalar execution. Layout,
 shipout, formats, checkpoints, and Wasm runtime timing come later.
 
 An [optional native profile build](#optional-native-profile-build) uses
-0.32–0.43 times pdfTeX's CPU time on the broader suite. The tables below
+0.31–0.44 times pdfTeX's CPU time on the broader suite. The tables below
 retain ordinary release results; the profile comparison appears later.
 
 The tables use child user-plus-system CPU medians for the complete engine process.
@@ -42,20 +42,20 @@ CPU medians at 50,000 records; ratios below 1 favor Umber:
 
 | Workload                           | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ---------------------------------- | --------: | ---------: | -------------: | -----------------------: |
-| Gentle spelling and text templates |     0.165 |      0.319 |          0.516 |                    +3.1% |
-| Gentle calendar formatter          |     0.136 |      0.272 |          0.501 |                    -2.1% |
-| Gentle contents serialization      |     0.430 |      1.007 |          0.427 |                    +2.5% |
-| Gentle paragraph-delimited records |     0.462 |      1.322 |          0.349 |                    -5.5% |
-| Gentle records from stored tokens  |     0.507 |      1.546 |          0.328 |                    +2.9% |
-| Token-register pipeline            |     0.810 |      2.367 |          0.342 |                    +3.7% |
-| Dynamic name table                 |     0.144 |      0.334 |          0.432 |                    +3.2% |
-| Optional-argument parser           |     0.492 |      1.624 |          0.303 |                    -0.2% |
+| Gentle spelling and text templates |     0.154 |      0.304 |          0.506 |                    -3.4% |
+| Gentle calendar formatter          |     0.129 |      0.276 |          0.468 |                    -3.5% |
+| Gentle contents serialization      |     0.413 |      0.993 |          0.416 |                    -0.3% |
+| Gentle paragraph-delimited records |     0.451 |      1.228 |          0.368 |                    -2.6% |
+| Gentle records from stored tokens  |     0.478 |      1.523 |          0.314 |                    -2.2% |
+| Token-register pipeline            |     0.749 |      2.334 |          0.321 |                    -4.1% |
+| Dynamic name table                 |     0.138 |      0.319 |          0.431 |                    -7.0% |
+| Optional-argument parser           |     0.463 |      1.527 |          0.303 |                    -2.5% |
 
-The broader workloads differ by -5.5% to +3.7% from the preceding build.
-Stored Gentle records differ by +2.9% CPU time and the token
-pipeline by +3.7%. Whole-binary comparisons include changes in code placement
-alongside the first source digit avoiding general token dispatch. Small
-differences need the control-run variation context above.
+The broader workloads use 0.3–7.0% less CPU time than the preceding build.
+Stored Gentle records use 2.2% less and the token pipeline 4.1% less. Whole-binary
+comparisons include changes in code placement alongside literal entry avoiding
+the general scanner's stack frame; small differences need the control-run
+variation context above.
 
 The stored variant alternates between immutable macro bodies and forwarded
 captured arguments, while retaining the same consumer and expected text as the
@@ -63,7 +63,7 @@ source-input variant.
 
 The growth ratios between 10,000 and 50,000 records range from 0.30 to 0.52,
 so the advantage over pdfTeX holds after removing small-case startup advantage.
-The comparison binary is the preceding 63-primitive interpreter at `a788c03`,
+The comparison binary is the preceding 63-primitive interpreter at `8023c8a`,
 timed in the same run. Full samples, source hashes, corpus provenance, compiler
 identity, and executable hashes are retained in
 [expansion-native.json](../benchmarks/results/expansion-native.json).
@@ -76,20 +76,20 @@ CPU medians at one million work iterations, with the same comparison binary:
 
 | Workload                       | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ------------------------------ | --------: | ---------: | -------------: | -----------------------: |
-| Raw byte dispatch              |     0.220 |      0.578 |          0.381 |                    -6.6% |
-| Stored macro bodies            |     0.102 |      0.264 |          0.388 |                    +1.6% |
-| Integer assignments            |     0.119 |      0.368 |          0.324 |                    -2.7% |
-| Repeated/nested parameters     |     0.333 |      0.624 |          0.535 |                    +2.2% |
-| Arguments tokenized from bytes |     0.415 |      0.801 |          0.517 |                    +2.6% |
-| Repeated 256-token arguments   |     0.806 |      8.460 |          0.095 |                    +3.4% |
-| Overlapping delimiters         |     0.120 |      0.264 |          0.454 |                    -2.3% |
-| Local/global grouped writes    |     0.211 |      0.520 |          0.406 |                    -6.2% |
+| Raw byte dispatch              |     0.208 |      0.564 |          0.369 |                    -6.0% |
+| Stored macro bodies            |     0.105 |      0.273 |          0.385 |                    -4.1% |
+| Integer assignments            |     0.117 |      0.366 |          0.319 |                    -0.1% |
+| Repeated/nested parameters     |     0.324 |      0.627 |          0.516 |                    -3.4% |
+| Arguments tokenized from bytes |     0.409 |      0.790 |          0.518 |                    +0.0% |
+| Repeated 256-token arguments   |     0.734 |      8.396 |          0.087 |                    -7.9% |
+| Overlapping delimiters         |     0.120 |      0.264 |          0.455 |                    -1.8% |
+| Local/global grouped writes    |     0.222 |      0.517 |          0.430 |                    +4.4% |
 
-The largest core cases differ by -6.6% to +3.4%. Repeated/nested parameters use
-2.2% more CPU time, source arguments 2.6% more, and long arguments 3.4% more.
-These core workloads allocate little arena storage after their setup. Core
-timings also reflect code and heap placement and need the control-run variation
-context above.
+The largest core cases differ by -7.9% to +4.4%. Repeated/nested parameters use
+3.4% less CPU time; source arguments are effectively unchanged. Grouped writes
+use 4.4% more. These core workloads allocate little arena storage after setup.
+Core timings also reflect code and heap placement and need the control-run
+variation context above.
 Earlier optimization and follow-up reports remain in `benchmarks/results/` and
 Git history, including the
 [fifteen-sample parameter follow-up](../benchmarks/results/short-parameter-followup.json).
@@ -101,10 +101,9 @@ The CLI reads the source into memory before execution. The historical
 `file-parameters` key measures tokenization over resident bytes, with full-process
 input reading still included in timing.
 
-The growth ratios from 100,000 to one million iterations range from 0.09 to 0.54.
-Startup probes in the two runs use 1.05–1.09 ms CPU time in Umber and
-4.34–4.55 ms
-in pdfTeX. Current samples are retained in
+The growth ratios from 100,000 to one million iterations range from 0.09 to 0.52.
+Startup probes in the two runs use about 1.02 ms CPU time in Umber and
+4.24–4.47 ms in pdfTeX. Current samples are retained in
 [mvp-native.json](../benchmarks/results/mvp-native.json).
 Earlier reports in `benchmarks/results/` retain the original optimization passes,
 including [mvp-before-expansion.json](../benchmarks/results/mvp-before-expansion.json).
@@ -129,8 +128,11 @@ retained token window, then share the existing digit-window scanner for the
 suffix. Window changes and expandable continuations use the ordinary reader;
 spaces are consumed and other terminators retain their token identities. Signs,
 radix prefixes, internal quantities, and leading spaces enter the general scan.
-The suffix loop has its own Rust call boundary, keeping the recursive general
-scanner's stack frame small. The existing numeric recursion limits still pass.
+The suffix loop and general scanner have separate Rust call boundaries. A small
+integer entry selects them without setting up the general scanner's saved
+registers and temporary reads for literal operands. In the inspected ordinary
+binary, both choices use tail jumps; the trained native build inlines entry.
+The existing numeric recursion limits still pass.
 When no token source is installed, the same entry gate reads a first decimal
 digit directly from the loaded file line if its current category is 12.
 It advances that cursor and sets the middle-of-line lexical state. The existing
@@ -144,11 +146,11 @@ live endline/category behavior. The byte search adds no token materialization or
 buffer copy. Ordinary builds keep line loading behind a Rust call boundary;
 profile builds let the trained compiler choose inlining.
 
-Callgrind counts 19,220,743 instructions for 10,000 raw iterations,
-compared with 21,641,422 in the preceding build: 11.2% fewer.
-The nested-parameter probe uses 31,902,944 versus 31,903,675 instructions.
-For 1,000 Gentle records, counts are 52,164,498 versus 52,407,174;
-for the token pipeline, 72,832,713 versus 73,316,752.
+Callgrind counts 18,678,729 instructions for 10,000 raw iterations,
+compared with 19,220,743 in the preceding build: 2.8% fewer.
+The nested-parameter probe uses 31,340,489 versus 31,902,944 instructions.
+For 1,000 Gentle records, counts are 52,106,448 versus 52,164,498;
+for the token pipeline, 72,804,166 versus 72,832,713.
 The reports retain these diagnostics with input hashes and binary identities.
 Simulated instruction counts describe work; the CPU tables measure execution
 performance. All twenty-six sampled allocation counts, requested bytes, and
@@ -295,7 +297,8 @@ The [profile builder](../benchmarks/pgo.py) trains the compiler with all sixteen
 workloads at 75,031 core iterations and 7,003 expanded records. Each training
 result is checked. Native oracle fixtures run against both the instrumented
 interpreter and the final build. The build record identifies the exact measured
-interpreter and allocation diagnostic; they contain no profiling counters. The ordinary release and Wasm builds retain their existing settings.
+interpreter and allocation diagnostic; they contain no profiling counters.
+The ordinary release and Wasm builds retain their existing settings.
 
 This experiment uses Rust 1.98.1 and LLVM 22.1.8. LLVM uses recorded branch
 frequencies with its inlining cost-benefit model disabled and the hot-callsite
@@ -316,33 +319,35 @@ binary. Training sizes are outside the timing sweep. CPU medians at 50,000 recor
 
 | Workload                           | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | ---------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Gentle spelling and text templates |             0.134 |              0.158 |      0.312 |          0.429 |             -15.4% |
-| Gentle calendar formatter          |             0.114 |              0.144 |      0.284 |          0.402 |             -20.9% |
-| Gentle contents serialization      |             0.394 |              0.424 |      1.013 |          0.389 |              -7.1% |
-| Gentle paragraph-delimited records |             0.466 |              0.469 |      1.292 |          0.361 |              -0.7% |
-| Gentle records from stored tokens  |             0.509 |              0.495 |      1.579 |          0.323 |              +2.8% |
-| Token-register pipeline            |             0.821 |              0.776 |      2.423 |          0.339 |              +5.7% |
-| Dynamic name table                 |             0.133 |              0.144 |      0.322 |          0.414 |              -7.4% |
-| Optional-argument parser           |             0.503 |              0.502 |      1.586 |          0.317 |              +0.3% |
+| Gentle spelling and text templates |             0.132 |              0.147 |      0.300 |          0.441 |             -10.0% |
+| Gentle calendar formatter          |             0.116 |              0.131 |      0.270 |          0.428 |             -11.8% |
+| Gentle contents serialization      |             0.393 |              0.406 |      0.997 |          0.394 |              -3.2% |
+| Gentle paragraph-delimited records |             0.457 |              0.456 |      1.234 |          0.370 |              +0.3% |
+| Gentle records from stored tokens  |             0.501 |              0.470 |      1.495 |          0.335 |              +6.5% |
+| Token-register pipeline            |             0.831 |              0.768 |      2.349 |          0.354 |              +8.1% |
+| Dynamic name table                 |             0.124 |              0.141 |      0.325 |          0.381 |             -12.0% |
+| Optional-argument parser           |             0.481 |              0.463 |      1.552 |          0.310 |              +3.8% |
 
 At one million core iterations, profile ratios span 0.08–0.40 times
 pdfTeX's CPU time. The paired comparison with ordinary release is:
 
 | Workload                       | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | ------------------------------ | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Raw byte dispatch              |             0.169 |              0.221 |      0.564 |          0.299 |             -23.8% |
-| Stored macro bodies            |             0.103 |              0.104 |      0.265 |          0.387 |              -0.9% |
-| Integer assignments            |             0.115 |              0.121 |      0.364 |          0.316 |              -4.4% |
-| Repeated/nested parameters     |             0.246 |              0.340 |      0.627 |          0.393 |             -27.7% |
-| Arguments tokenized from bytes |             0.311 |              0.414 |      0.790 |          0.393 |             -25.0% |
-| Repeated 256-token arguments   |             0.685 |              0.808 |      8.619 |          0.079 |             -15.2% |
-| Overlapping delimiters         |             0.108 |              0.124 |      0.276 |          0.390 |             -13.0% |
-| Local/global grouped writes    |             0.207 |              0.215 |      0.524 |          0.395 |              -3.5% |
+| Raw byte dispatch              |             0.164 |              0.202 |      0.557 |          0.294 |             -19.1% |
+| Stored macro bodies            |             0.097 |              0.101 |      0.259 |          0.373 |              -4.0% |
+| Integer assignments            |             0.104 |              0.119 |      0.356 |          0.291 |             -12.5% |
+| Repeated/nested parameters     |             0.249 |              0.326 |      0.615 |          0.404 |             -23.7% |
+| Arguments tokenized from bytes |             0.282 |              0.400 |      0.773 |          0.365 |             -29.4% |
+| Repeated 256-token arguments   |             0.640 |              0.740 |      8.383 |          0.076 |             -13.5% |
+| Overlapping delimiters         |             0.108 |              0.124 |      0.266 |          0.405 |             -13.4% |
+| Local/global grouped writes    |             0.196 |              0.221 |      0.507 |          0.386 |             -11.5% |
 
 The profile build remains optional: its workload tradeoffs appear in these tables.
-Seven-sample paired follow-ups against the preceding profile build at `a788c03`
-show 10.2% less CPU time on raw dispatch and 5.7% less on the dynamic name table.
-Repeated parameters use 0.7% more and source arguments 3.0% more. The
+Seven-sample paired follow-ups against the preceding profile build at `8023c8a`
+show 11.7% less CPU time on integer assignments and 8.6% less on source arguments.
+Raw dispatch uses 1.1% more, repeated parameters 1.0% more, and grouped writes
+3.3% less. Gentle text templates use 3.3% more, the calendar formatter 2.3% more,
+and dynamic names 3.4% less. The
 [build record](../benchmarks/results/native-pgo-build.json) retains these focused
 comparisons separately from the full profile-versus-ordinary sweep.
 All twenty-six sampled allocation counts, requested bytes, and heap peaks match

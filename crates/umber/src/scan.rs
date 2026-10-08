@@ -157,10 +157,15 @@ impl Engine<'_> {
                 .ok_or(Error::Overflow)?;
         }
     }
+    #[inline]
     pub(crate) fn scan_int(&mut self) -> Result<i32> {
         if let Some(value) = self.literal_digit() {
             return self.decimal_suffix(value);
         }
+        self.scan_int_slow()
+    }
+    #[inline(never)]
+    fn scan_int_slow(&mut self) -> Result<i32> {
         let mut negative = false;
         let mut read = loop {
             let read = self.nonspace(true)?;

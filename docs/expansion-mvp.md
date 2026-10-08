@@ -108,6 +108,11 @@ character and enters the middle-of-line state. The existing suffix scanner then
 reads further digits and the expanded terminator; signs, other radices, and
 expandable operands retain the general scanner.
 
+Integer entry uses a small Rust function to select the literal decimal suffix
+scanner or the general recursive scanner for signs, other radices, and internal
+quantities. Literal operands avoid setting up the general scanner's saved
+registers and temporary reads. Both scanners continue on the Rust stack.
+
 Expanded definitions and token-register replacements still accumulate arena
 storage within a run. Benchmarks expose this cost through definition churn and
 larger working sets, with bounded total materialized tokens. The first MVP's
