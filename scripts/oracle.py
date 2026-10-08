@@ -54,6 +54,24 @@ def single_group_windows(folder):
     return sources
 
 
+def group_run_boundaries(folder):
+    for padding in range(4):
+        for length in (*range(13), 255, 256, 257):
+            payload = "A" * length
+            source = (r"\catcode123=1 \catcode125=2 \catcode35=6\relax" + "\n"
+                      + r"\def\padding{" + "P" * padding + "}"
+                      + r"\def\id#1{#1}\def\ignore#1{I}" + "\n"
+                      + r"\def\forward#1{\id{#1}/\ignore{#1}}" + "\n"
+                      + r"\def\invoke{\id{" + payload + r"}B/\ignore{" + payload
+                      + r"}D/\forward{" + payload + "}E}" + "\n"
+                      + r"\message{UMBER:\invoke/\id{" + payload + r"}F/\ignore{"
+                      + payload + r"}G:END}\end" + "\n")
+            expected = f"{payload}B/ID/{payload}/IE/{payload}F/IG".encode()
+            path = folder / f"group-run-{padding}-{length}.tex"
+            path.write_text(source)
+            yield path, [expected]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
@@ -75,6 +93,9 @@ def main():
         for path in single_group_windows(ROOT / "target/oracle"):
             sources.append(path)
             generated_expected[path] = [b"X/X/Y/Z"]
+        for path, expected in group_run_boundaries(ROOT / "target/oracle"):
+            sources.append(path)
+            generated_expected[path] = expected
     for source in sources:
         native = execute(command, source, env)
         umber = execute([str(args.umber.resolve())], source)

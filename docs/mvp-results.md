@@ -353,11 +353,11 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-Thirty-five Rust tests cover the core plus token-register retention, protected
+Thirty-six Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
-dynamic names. The native oracle compares 317 marked messages and 26 rejected
+dynamic names. The native oracle compares 381 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
 Short-number fixtures compare singleton windows, spaces and spacer aliases,
@@ -413,6 +413,12 @@ One-word group cases move the opener, word, and closing brace through a chunk
 boundary, substitute an inline parameter, and retire captured backing at the end
 of its source. Native pdfTeX agrees on their nine generated comparisons. These
 cases, inline-word promotion, and discarded-argument scanning also pass Miri.
+Grouped character-run fixtures check lengths 0–12 and 255–257 at four shifted
+arena positions. Their 64 native comparisons cover retained and discarded
+arguments from source bytes and stored tokens, nested forwarding, and the tokens
+following each closing brace. They verify that structural and following tokens
+stay available when a character run ends at a batch boundary. The Rust test also
+passes Miri.
 
 Storage tests cross 4,096-token chunks, replace active sources, exercise 5,000
 nested captures, and produce multi-chunk conversion text. List-scan tests

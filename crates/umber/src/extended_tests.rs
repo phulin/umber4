@@ -464,3 +464,26 @@ fn extended_failure_boundaries() {
         assert_eq!(Engine::new(source).run().err(), Some(expected));
     }
 }
+#[test]
+fn grouped_character_runs_preserve_following_tokens() {
+    for padding in 0..4 {
+        for length in (0..=12).chain([255, 256, 257]) {
+            let payload = "A".repeat(length);
+            let source = format!(
+                r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\padding{{{}}}\def\id#1{{#1}}\def\ignore#1{{I}}
+\def\forward#1{{\id{{#1}}/\ignore{{#1}}}}
+\def\invoke{{\id{{{payload}}}B/\ignore{{{payload}}}D/\forward{{{payload}}}E}}
+\message{{\invoke/\id{{{payload}}}F/\ignore{{{payload}}}G}}\end",
+                "P".repeat(padding)
+            );
+            let expected = format!("{payload}B/ID/{payload}/IE/{payload}F/IG");
+            let outcome = Engine::new(source.as_bytes()).run().unwrap();
+            assert_eq!(
+                outcome.messages,
+                [expected.as_bytes()],
+                "{padding}/{length}"
+            );
+        }
+    }
+}
