@@ -154,6 +154,13 @@ from three to ten digits. This exercises generated numeric input consumed by a
 name scanner alongside direct numeric emission into a destination. Generate the
 expected reference text independently and compare every result with `\ifx`.
 
+A supplemental register-meaning workload rotates count and token-register alias
+indices through 0–255, with normal, changed, and disabled escape characters.
+Serialize each pair through `\meaning` into an expanded definition. Compare its
+tokens against a separately generated literal built with `\string` and decimal
+source digits. Keep this focused conversion case separate from the default nine
+workloads and compiler training so their input identities remain comparable.
+
 Use identical complete sources with native pdfTeX INITEX. Retain raw samples at
 several sizes, warmup and process overhead, result validation, allocation counts,
 and native/Wasm build identities. Wasm runtime timing remains separate. Preserve

@@ -84,6 +84,32 @@ tokens. Its earlier coverage-only measurements at `157e7be` remain in the
 and [profile supplemental report](../benchmarks/results/numeric-references-native-pgo.json).
 The current tables include this case in the complete nine-workload suite.
 
+## Supplemental register meanings
+
+The register-meaning workload varies all 256 count and token-register alias
+indices, with normal, changed, and disabled escape characters. Each record
+compares `\meaning` output with independently constructed `\string` and decimal
+tokens. At 50,000 records, ordinary release uses 0.116 seconds of CPU time
+against pdfTeX's 0.291 seconds: a ratio of 0.398. The separately trained profile
+build uses 0.095 seconds against pdfTeX's 0.290 seconds: a ratio of 0.328.
+
+The [ordinary samples](../benchmarks/results/register-meanings-native.json) and
+[profile samples](../benchmarks/results/register-meanings-native-pgo.json) retain
+seven repetitions at 1,000, 10,000, and 50,000 records. Both allocation adapters
+count 100,564 allocations and 10.7 MiB of peak requested engine heap at the
+largest size. This includes two temporary decimal strings per record in register
+meaning serialization; it provides a baseline for optimizing that conversion.
+
+This coverage addition keeps runtime sources and the ordinary executable
+identical to `c9e64e2`. The default eighteen benchmark training inputs are also
+unchanged. The profile builder incorporates instrumented oracle runs, so adding
+the all-index fixture changes its profile frequencies. A
+[separate nine-repetition comparison](../benchmarks/results/register-meaning-coverage-followup.json)
+retains that profile's exact build and input identities. Its core changes range
+from -6.6% to +6.7%; broader changes range from -1.4% to +3.2% against the
+preceding profile build. The canonical tables below retain their original
+measurement identities.
+
 ## Core regression set
 
 CPU medians at one million work iterations, with the same comparison binary:
@@ -455,7 +481,7 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-43 Rust tests cover the core plus token-register retention, protected
+44 Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
@@ -469,8 +495,10 @@ Serialization also checks one-byte, ordinary, and 4,097-byte spellings while
 its emitter interns 1,500 new names. The output retains the original spelling
 and trailing space through descriptor and bucket growth. This fixture passes
 Miri with `native-profile` enabled.
-The native oracle compares 484 marked messages and 26 rejected
+The native oracle compares 740 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
+Register-meaning coverage checks all 256 indices for both count and token-register
+aliases, including decimal spelling and generated token identities.
 
 Conditional character-run fixtures compare 72 generated messages across four
 shifted arena positions and lengths 0, 1, 4,093, 4,095, 4,096, and 8,193. They

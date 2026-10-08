@@ -1,5 +1,18 @@
 use crate::{Engine, Error};
 
+#[test]
+fn register_meanings_cover_every_index_and_token_identity() {
+    let outcome = Engine::new(include_bytes!(
+        "../../../fixtures/mvp/register-meanings.tex"
+    ))
+    .run()
+    .unwrap();
+    let expected: Vec<_> = (0..=255)
+        .map(|index| format!("UMBER:\\count{index}/\\toks{index}/Y:END").into_bytes())
+        .collect();
+    assert_eq!(outcome.messages, expected);
+}
+
 const BOOT: &str = "\\catcode123=1 \\catcode125=2 \\catcode35=6 \\catcode94=7\\relax\n";
 fn run(program: &str) -> crate::Outcome {
     let source = format!("{BOOT}{program}\\end\n");

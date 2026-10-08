@@ -74,6 +74,19 @@ Compare both suites when changing these settings or updating Rust.
 | `optional-arguments` | `\futurelet`/`\unless` dispatch between optional and default arguments, delimiter matching, integer expressions, and source/stored argument routes.              |
 | `numeric-references` | 256 numbered names, generated decimal input in `\ifcsname` and `\csname`, and direct decimal emission in `\edef`.                                                |
 
+`--cases register-meanings` selects a supplemental conversion workload. It varies
+count and token-register alias indices across 0–255 and uses normal, changed,
+and disabled escape characters. Every `\meaning` serialization is compared with
+an independently generated token literal. This case is separate from the default
+nine-workload sweep and profile training.
+
+The [ordinary report](results/register-meanings-native.json),
+[profile report](results/register-meanings-native-pgo.json), and
+[profile coverage comparison](results/register-meaning-coverage-followup.json)
+retain this baseline. Instrumented oracle runs also feed the profile builder;
+the added all-index fixture changes those frequencies without changing runtime
+sources or the default eighteen benchmark training inputs.
+
 `numeric-references` uses 256 numbered names with positive and negative register
 values from three to ten digits. Each record forms a name in `\ifcsname` and
 `\csname`, expands its definition, and appends decimal text. The name scanners

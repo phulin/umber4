@@ -21,6 +21,7 @@ KERNELS = (CORPUS / "gentle-kernels.tex").read_text()
 CASES = ("gentle-text", "gentle-calendar", "gentle-contents", "gentle-records",
          "stored-records", "token-pipeline", "name-table", "optional-arguments",
          "numeric-references")
+SUPPLEMENTAL_CASES = ("register-meanings",)
 MONTHS = ("January February March April May June July August September October "
           "November December").split()
 SPELLINGS = (("analogue", "analog"), ("cancelled", "canceled"),
@@ -106,7 +107,7 @@ def program(case, size):
         spelling_index = (index * 7) % len(SPELLINGS)
         spelling = SPELLINGS[spelling_index][0 if canadian else 1]
         alias = "\\" + ALIASES[spelling_index]
-        if case not in ("name-table", "numeric-references"):
+        if case not in ("name-table", "numeric-references", "register-meanings"):
             lines.append(r"\let\ifcanspell=" + (r"\iftrue" if canadian else r"\iffalse")
                          + "\n")
         if case == "gentle-text":
@@ -178,6 +179,16 @@ def program(case, size):
                 r"\ifcsname ref\number\count1\endcsname"
                 r"\csname ref\number\count1\endcsname\else missing\fi/"
                 r"\number\count1")])
+        elif case == "register-meanings":
+            count_index, token_index = (index * 61 + 17) % 256, (index * 103 + 29) % 256
+            escape = (92, 33, -1)[index % 3]
+            prefix = chr(escape) if escape >= 0 else ""
+            text = f"{prefix}count{count_index}/{prefix}toks{token_index}"
+            lines.append(f"\\escapechar={escape} \\countdef\\reg={count_index} "
+                         f"\\toksdef\\treg={token_index}\\relax\n")
+            lines.extend([actual(r"\meaning\reg/\meaning\treg"),
+                          r"\edef\wanted{\string\count" + str(count_index)
+                          + r"/\string\toks" + str(token_index) + "}\n"])
         elif case == "optional-arguments":
             option = spelling if index % 4 else "normal"
             body = payload(index) + " {" + payload(index + 1)[:32] + "}"
@@ -208,7 +219,8 @@ def main():
     parser.add_argument("--pdftex")
     parser.add_argument("--baseline", type=Path,
                         help="previous expanded-MVP binary to time in the same run")
-    parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
+    parser.add_argument("--cases", nargs="+", choices=CASES + SUPPLEMENTAL_CASES,
+                        default=list(CASES))
     parser.add_argument("--sizes", nargs="+", type=int, default=[1000, 10000, 50000])
     parser.add_argument("--repeats", type=int, default=7)
     parser.add_argument("--cpu", type=int)

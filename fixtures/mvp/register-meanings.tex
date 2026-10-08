@@ -1,0 +1,11 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\show{%
+  \countdef\reg=\count0\relax
+  \toksdef\treg=\count0\relax
+  \edef\actual{\meaning\reg/\meaning\treg}%
+  \edef\wanted{\string\count\number\count0/\string\toks\number\count0}%
+  \message{UMBER:\actual/\ifx\actual\wanted Y\else N\fi:END}%
+  \advance\count0by1\relax
+  \ifnum\count0<256\relax\expandafter\show\fi}
+\show
+\end
