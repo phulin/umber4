@@ -487,3 +487,35 @@ fn grouped_character_runs_preserve_following_tokens() {
         }
     }
 }
+
+#[test]
+fn skipped_runs_preserve_aliases_parameters_and_line_state() {
+    for padding in 0..4 {
+        for length in [0, 1, 4093, 4095, 4096, 8193] {
+            let text = "A".repeat(length);
+            let source = format!(
+                r"\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\def\padding{{{}}}\let\finish=\fi\let\otherwise=\else
+\catcode64=13\let@=\else
+\def\skip#1{{\iffalse{{{text}}}#1{text}\finish STORED}}
+\message{{UMBER:\skip{{\iftrue {text}\fi}}:END}}
+\message{{UMBER:\iffalse {text}^^40FILE\finish:END}}
+\let\par=\otherwise
+\message{{UMBER:\iffalse{{{text}}}
+
+PAR\finish:END}}\end",
+                "P".repeat(padding)
+            );
+            let result = Engine::new(source.as_bytes()).run().unwrap();
+            assert_eq!(
+                result.messages,
+                [
+                    b"UMBER:STORED:END".to_vec(),
+                    b"UMBER:FILE:END".to_vec(),
+                    b"UMBER:PAR:END".to_vec()
+                ],
+                "padding {padding}, length {length}"
+            );
+        }
+    }
+}

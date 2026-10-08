@@ -121,6 +121,7 @@ impl Engine<'_> {
     fn skip_boundary(&mut self) -> Result<u8> {
         let mut depth = 0;
         loop {
+            self.skip_characters();
             let meaning = self.next_token()?.meaning;
             if meaning.is_conditional() {
                 depth += 1;
@@ -132,6 +133,27 @@ impl Engine<'_> {
             } else if matches!(meaning.command, cmd::ELSE | cmd::OR) && depth == 0 {
                 return Ok(meaning.command);
             }
+        }
+    }
+    #[inline]
+    fn skip_characters(&mut self) {
+        if self.sources.is_empty() {
+            while self.file.read_character(self.scalars.catcodes()).is_some() {}
+            return;
+        }
+        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+            return;
+        };
+        while cursor.next != cursor.end {
+            // SAFETY: the cursor retains its initialized immutable window.
+            // This loop advances only; it neither allocates nor retires input.
+            let token = unsafe { cursor.next.read() };
+            if token.0 >= 16 << 8 {
+                break;
+            }
+            // Ordinary characters cannot be conditional commands. Parameter
+            // markers and control sequences keep the ordinary read path.
+            cursor.next = unsafe { cursor.next.add(1) };
         }
     }
     pub(crate) fn scan_name(&mut self) -> Result<u32> {

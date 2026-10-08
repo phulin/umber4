@@ -33,6 +33,12 @@ meaning and leaves skipped macro bodies unexpanded. Case selection and boolean
 selection share the existing conditional stack; their operand progress remains
 in ordinary Rust calls. `\unless` reads an unexpanded boolean conditional.
 
+Conditional skipping advances over ordinary character runs without constructing
+resolved reads. Control-sequence identities and internal parameter markers
+return to the ordinary reader for aliases and substitution. File runs use the
+current category table and stop before escapes, active characters, translations,
+spaces, and line transitions; skipped text still leaves the correct lexer state.
+
 Add `\lccode`, `\uccode`, `\lowercase`, and `\uppercase`. Case changes scan
 unexpanded balanced lists, preserve categories, transform active-character
 identities, and retain other control-sequence identities. Initialize the ASCII

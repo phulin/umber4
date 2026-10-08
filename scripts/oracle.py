@@ -92,6 +92,24 @@ def prepared_line_tails(folder):
             yield path, [expected]
 
 
+def skipped_character_runs(folder):
+    for padding in range(4):
+        for length in (0, 1, 4093, 4095, 4096, 8193):
+            text = wrapped("A" * length)
+            source = (r"\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax" + "\n"
+                      + r"\def\padding{" + "P" * padding + r"}\let\finish=\fi\let\otherwise=\else" + "\n"
+                      + r"\catcode64=13\let@=\else" + "\n"
+                      + r"\def\skip#1{\iffalse{" + text + "}#1" + text + r"\finish STORED}" + "\n"
+                      + r"\message{UMBER:\skip{\iftrue " + text + r"\fi}:END}" + "\n"
+                      + r"\message{UMBER:\iffalse " + text + r"^^40FILE\finish:END}" + "\n"
+                      + r"\let\par=\otherwise" + "\n"
+                      + r"\message{UMBER:\iffalse{" + text + "}\n\n"
+                      + r"PAR\finish:END}\end" + "\n")
+            path = folder / f"skipped-run-{padding}-{length}.tex"
+            path.write_text(source)
+            yield path, [b"STORED", b"FILE", b"PAR"]
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
@@ -117,6 +135,9 @@ def main():
             sources.append(path)
             generated_expected[path] = expected
         for path, expected in prepared_line_tails(ROOT / "target/oracle"):
+            sources.append(path)
+            generated_expected[path] = expected
+        for path, expected in skipped_character_runs(ROOT / "target/oracle"):
             sources.append(path)
             generated_expected[path] = expected
     for source in sources:
