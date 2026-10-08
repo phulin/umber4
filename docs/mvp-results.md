@@ -404,6 +404,9 @@ check digit categories, signs, multiple digits, and failed-scan progress. This
 integer boundary and progress test also passes Miri. File-operand tests start
 with loaded and unread lines, retain terminating tokens, check overflow progress,
 and exercise changed digit categories and inactive or digit end-line characters.
+They also check signed multi-digit fields, category changes inside a field,
+superscript-translated digits, and a terminating character whose category changes
+after the scan. Its already-read token keeps its original category.
 
 Additional native fixtures cover source-space normalization across tabs,
 comments, line changes, delimiters, and live category changes. Expression

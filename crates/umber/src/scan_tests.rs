@@ -7,6 +7,9 @@ fn file_integer_prefix_preserves_categories_and_progress() {
     let cases = [
         ("7X", Ok(7), letter(b'X')),
         ("007X", Ok(7), letter(b'X')),
+        ("0001234567X", Ok(1234567), letter(b'X')),
+        ("-1234567X", Ok(-1234567), letter(b'X')),
+        ("+1234567X", Ok(1234567), letter(b'X')),
         ("2147483647X", Ok(i32::MAX), letter(b'X')),
         ("2147483648X", Err(Error::Overflow), letter(b'X')),
         ("21474836470X", Err(Error::Overflow), letter(b'X')),
@@ -25,6 +28,14 @@ fn file_integer_prefix_preserves_categories_and_progress() {
             assert_eq!(engine.scan_int(), expected, "{operand:?}, loaded={loaded}");
             assert_eq!(engine.next_raw().unwrap().token, next);
         }
+        let source = if loaded { "!123X" } else { "123X" };
+        let mut engine = Engine::new(source.as_bytes());
+        if loaded {
+            engine.next_raw().unwrap();
+        }
+        assert_eq!(engine.scan_int(), Ok(123));
+        engine.scalars[Target::catcode(b'X' as usize)].value = 12;
+        assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));
     }
     for (category, expected, next) in [
         (12, Ok(123), letter(b'X')),
@@ -44,6 +55,22 @@ fn file_integer_prefix_preserves_categories_and_progress() {
         assert_eq!(engine.scan_int(), Ok(expected));
         assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));
     }
+    for (category, expected, next) in [
+        (11, 1, letter(b'2')),
+        (10, 1, Token::other(b'3')),
+        (9, 13, letter(b'X')),
+    ] {
+        let mut engine = Engine::new(b"!123X");
+        engine.scalars[Target::catcode(b'2' as usize)].value = category;
+        engine.next_raw().unwrap();
+        assert_eq!(engine.scan_int(), Ok(expected));
+        assert_eq!(engine.next_raw().unwrap().token, next);
+    }
+    let mut engine = Engine::new(b"!123^^34X");
+    engine.scalars[Target::catcode(b'^' as usize)].value = 7;
+    engine.next_raw().unwrap();
+    assert_eq!(engine.scan_int(), Ok(1234));
+    assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));
 }
 
 #[test]
