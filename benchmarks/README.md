@@ -42,8 +42,10 @@ also produces `target/pgo/use/release/examples/allocations` for diagnostics.
 Its LLVM inlining settings and 64-byte function alignment are measured choices
 for the recorded compiler. The builder enables `native-profile`, which lets the
 trained compiler choose whether to inline physical-line loading. Ordinary and
-Wasm builds keep that loader in a separate function. Compare both suites when
-changing these settings or updating Rust.
+Wasm builds keep that loader in a separate function. The feature also allows
+compiler-selected argument-reset inlining and direct reads of published name
+entries. Ordinary builds retain the measured reset call and checked entry reads.
+Compare both suites when changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,5 +1,5 @@
 {
-  "engine_source_base_commit": "ae97736",
+  "engine_source_base_commit": "d152679",
   "build": {
     "features": [
       "native-profile"
@@ -29,9 +29,9 @@
       "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
       "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
       "crates/umber/src/tests.rs": "23273d47c881dc1a04ad74509e4eb38eac7fe7342b020c38a1da81d6f78dd909",
-      "crates/umber/src/token.rs": "29e395861175d77412f535d1e7c3a075e7947bbf18e9b86144f7c0359e237a24"
+      "crates/umber/src/token.rs": "0c1d19864a7c903c2962212722b46e4d42ff91dc0fc2514808ae963b8cf1c0ad"
     },
-    "training_binary_sha256": "c70f2275f2fe6ea9612efb03560b91d500d28037f47771d3eac4bd9c99416f2f",
+    "training_binary_sha256": "cd468823091165fa216ce40bb9d6dea5341b87c9a54379e6de5dcd3f8e0b482d",
     "generators": {
       "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
       "expansion": "ebff0d53c33f20fdd0c53ae7f2c8c1241d9cbf585d6b7c75057fa069f0d060cd"
@@ -141,12 +141,12 @@
         "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
       }
     ],
-    "profile_path": "target/pgo/f61986a5e6799e481a921e0d8aa6082f1002600e2c9648679cb09003aac4432f.profdata",
-    "profile_sha256": "f61986a5e6799e481a921e0d8aa6082f1002600e2c9648679cb09003aac4432f",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/f61986a5e6799e481a921e0d8aa6082f1002600e2c9648679cb09003aac4432f.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "profile_path": "target/pgo/7f723f53a19c24be0e2b7585a52a8498b0bbced9f67ef9d25ac223c3ea40e16e.profdata",
+    "profile_sha256": "7f723f53a19c24be0e2b7585a52a8498b0bbced9f67ef9d25ac223c3ea40e16e",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/7f723f53a19c24be0e2b7585a52a8498b0bbced9f67ef9d25ac223c3ea40e16e.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
     "rustflags_args": [
       "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/f61986a5e6799e481a921e0d8aa6082f1002600e2c9648679cb09003aac4432f.profdata",
+      "profile-use=/home/phulin/umber4/target/pgo/7f723f53a19c24be0e2b7585a52a8498b0bbced9f67ef9d25ac223c3ea40e16e.profdata",
       "-C",
       "llvm-args=-pgo-warn-missing-function",
       "-C",
@@ -156,16 +156,21 @@
       "-C",
       "llvm-args=--align-all-functions=6"
     ],
-    "umber_binary_sha256": "80eee1031ab059522229ad5200e368ae2de3df9c41f7375f89a8d63dbcc1fe06",
-    "allocation_binary_sha256": "080d826161a0c0caca5c57bde970d4dd34da7f1c5fbfc2dc13e661ad972da1f0"
+    "umber_binary_sha256": "eb1b4484f71f95f94b9f7471a3ce325fc9ced1587385b246803e2266dc231d5e",
+    "allocation_binary_sha256": "101bd34445ca4db1dadbdbd5697c8ccf880e55a3d55727e4493a9e955a1f3467"
   },
   "identity": "The build record identifies the exact interpreter and allocation diagnostic used in the timing and allocation reports.",
-  "profile_code_identity": {
-    "scope": "The native profile build lets the compiler choose reset-loop inlining. Its executable .text section is byte-identical to the preceding retained profile build.",
-    "umber_binary_sha256": "80eee1031ab059522229ad5200e368ae2de3df9c41f7375f89a8d63dbcc1fe06",
-    "preceding_binary_sha256": "353dcff52b910318aca8aeb5526fb9d9d18d011c3e84a30250a5c4a48e636b8d",
-    "umber_text_sha256": "e5130badefd8899b20389fbf4f0b24b09e685dd17e1425cfd9ae4448153b20dd",
-    "preceding_text_sha256": "e5130badefd8899b20389fbf4f0b24b09e685dd17e1425cfd9ae4448153b20dd",
-    "preceding_engine_source_commit": "ae97736"
+  "ordinary_code_identity": {
+    "scope": "The ordinary lookup retains checked reads. Its executable .text section is byte-identical to the preceding ordinary build, whose retained timing reports remain unchanged.",
+    "umber_binary_sha256": "3bd67220aa712a35d3fc604303feef503b737d41ee329c795587f2abd9d9cc05",
+    "preceding_binary_sha256": "1aea1d51d1d3cf69c5c2031fa1d73960b0878756cf0264aae9eec828cfca652c",
+    "umber_text_sha256": "c5d3bd7cbbcdb9d101bdee696df76cae288c3e4a0140341989df93a0de488366",
+    "preceding_text_sha256": "c5d3bd7cbbcdb9d101bdee696df76cae288c3e4a0140341989df93a0de488366",
+    "preceding_engine_source_commit": "d152679"
+  },
+  "previous_profile_comparison": {
+    "provenance": "published-name-lookup-followup.json",
+    "provenance_sha256": "338516166a71e98811c77406a8ea5f463020474b53b8a974952728785feebdb0",
+    "baseline_engine_source_commit": "d152679"
   }
 }

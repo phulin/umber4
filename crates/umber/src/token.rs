@@ -439,7 +439,19 @@ impl Names {
             if id == 0 {
                 break;
             }
-            if self.hashes[id as usize] == hash && self.spellings[id as usize].as_ref() == name {
+            #[cfg(feature = "native-profile")]
+            // SAFETY: every nonzero bucket ID is published only after both
+            // entries are appended. Rehashing uses the same initialized IDs;
+            // neither table removes entries. These shared reads finish before
+            // insertion can grow either vector.
+            let matches = unsafe {
+                *self.hashes.get_unchecked(id as usize) == hash
+                    && self.spellings.get_unchecked(id as usize).as_ref() == name
+            };
+            #[cfg(not(feature = "native-profile"))]
+            let matches =
+                self.hashes[id as usize] == hash && self.spellings[id as usize].as_ref() == name;
+            if matches {
                 return Ok(id);
             }
             slot = (slot + 1) & (self.buckets.len() - 1);
