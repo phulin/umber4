@@ -143,7 +143,7 @@ impl Engine<'_> {
                 emit(self, b' ')?;
             }
             self.emit_text(b"macro:", emit)?;
-            let signature = self.definitions[id].signature;
+            let signature = self.definitions[id].signature();
             let body_start = self.definitions[id].body.start;
             let mut marker = b'#';
             let mut parameter = 0;

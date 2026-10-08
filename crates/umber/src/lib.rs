@@ -165,6 +165,14 @@ impl<'a> Engine<'a> {
         }
     }
     pub fn run(mut self) -> Result<Outcome> {
+        self.run_input()?;
+        Ok(Outcome {
+            counts: self.scalars.counts().map(|i| i.value),
+            messages: self.messages,
+        })
+    }
+    #[inline(never)]
+    fn run_input(&mut self) -> Result<()> {
         loop {
             let read = self.next_token()?;
             if read.meaning.expandable() {
@@ -182,10 +190,7 @@ impl<'a> Engine<'a> {
                 if !self.conditions.is_empty() {
                     return Err(Error::Conditional);
                 }
-                return Ok(Outcome {
-                    counts: self.scalars.counts().map(|i| i.value),
-                    messages: self.messages,
-                });
+                return Ok(());
             }
             self.execute(read)?;
         }

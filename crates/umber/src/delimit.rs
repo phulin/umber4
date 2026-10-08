@@ -95,7 +95,11 @@ impl Engine<'_> {
         argument: usize,
         builder: &mut Option<u32>,
     ) -> Result<()> {
-        let delimiter = self.definitions[id as usize].delimiters[argument];
+        let delimiter = self.definitions[id as usize]
+            .parameters
+            .as_ref()
+            .unwrap()
+            .delimiters[argument];
         let long = self.definitions[id as usize].long;
         let length = (delimiter.end - delimiter.start) as usize;
         let mut matched = 0;
@@ -144,7 +148,11 @@ impl Engine<'_> {
                     if matched == 0 {
                         break;
                     }
-                    matched = self.definitions[id as usize].failures[argument][matched - 1];
+                    matched = self.definitions[id as usize]
+                        .parameters
+                        .as_ref()
+                        .unwrap()
+                        .failures[argument][matched - 1];
                 }
                 if matched == length {
                     break;

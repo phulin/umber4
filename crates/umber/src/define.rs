@@ -37,8 +37,7 @@ impl Engine<'_> {
                 if parameters == 0 {
                     prefix_end = Some(self.arena.len);
                 } else {
-                    delimiters.push(Span {
-                        store: DEFS,
+                    delimiters.push(ArenaRange {
                         start: delimiter_start,
                         end: self.arena.len,
                     });
@@ -51,14 +50,12 @@ impl Engine<'_> {
             }
         }
         if parameters > 0 {
-            delimiters.push(Span {
-                store: DEFS,
+            delimiters.push(ArenaRange {
                 start: delimiter_start,
                 end: self.arena.len,
             });
         }
-        let prefix = Span {
-            store: DEFS,
+        let prefix = ArenaRange {
             start: signature_start,
             end: prefix_end.unwrap_or(self.arena.len),
         };
@@ -72,14 +69,8 @@ impl Engine<'_> {
         if let Some(token) = brace_tail {
             self.arena.push(token)?;
         }
-        let body = Span {
-            store: DEFS,
+        let body = ArenaRange {
             start: body_start,
-            end: self.arena.len,
-        };
-        let signature = Span {
-            store: DEFS,
-            start: signature_start,
             end: self.arena.len,
         };
         let failures = delimiters
@@ -105,14 +96,19 @@ impl Engine<'_> {
             return Err(Error::Capacity);
         }
         let id = self.definitions.len() as u32;
+        let parameter_data = (parameters != 0).then(|| {
+            Box::new(Parameters {
+                delimiters,
+                failures,
+            })
+        });
         self.definitions.push(Definition {
             prefix,
-            delimiters,
             body,
-            signature,
+            parameters: parameter_data,
+            parameter_count: parameters,
             long,
             uses_parameters,
-            failures,
         });
         self.assign_meaning(
             cs,

@@ -1,6 +1,36 @@
 use crate::{Engine, Error, Result, token::*};
 use std::rc::Rc;
 
+// The source retains an immutable initialized window in one allocation, with
+// next at or before end. Four-word reads only peek within that window; advance
+// together when all are characters, otherwise find the first structural word
+// with the scalar tail. The caller handles that word at the returned cursor.
+// Equal endpoints may be empty and are never dereferenced.
+#[inline(never)]
+unsafe fn group_character_end(mut next: *const Token, end: *const Token) -> *const Token {
+    // SAFETY: unequal endpoints belong to the same retained allocation.
+    while next != end && unsafe { end.offset_from(next) } >= 4 {
+        // SAFETY: four initialized immutable words remain in this window.
+        let words = unsafe { next.cast::<[Token; 4]>().read() };
+        let structural = words.map(|token| u32::from(!(3 << 8..PARAM).contains(&token.0)));
+        if structural[0] | structural[1] | structural[2] | structural[3] != 0 {
+            break;
+        }
+        // SAFETY: all four words precede end in the same retained window.
+        next = unsafe { next.add(4) };
+    }
+    while next != end {
+        // SAFETY: the caller supplied this retained immutable window.
+        let token = unsafe { next.read() };
+        if !(3 << 8..PARAM).contains(&token.0) {
+            break;
+        }
+        // SAFETY: advance at most one past the same initialized window.
+        next = unsafe { next.add(1) };
+    }
+    next
+}
+
 impl Engine<'_> {
     #[inline]
     pub(crate) fn take_packet(&mut self, count: usize) -> Result<u32> {
@@ -175,7 +205,7 @@ impl Engine<'_> {
     #[inline(always)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
         let definition = &self.definitions[id as usize];
-        if definition.prefix.empty() && definition.delimiters.is_empty() {
+        if definition.prefix.empty() && definition.parameter_count == 0 {
             let body = definition.body;
             self.retire_exhausted();
             return self.push_body(id, body, None);
@@ -251,15 +281,14 @@ impl Engine<'_> {
                     if next == cursor.end {
                         break None;
                     }
-                    // SAFETY: this window consists of initialized immutable
-                    // tokens in one allocation, retained by the source. No
-                    // source or backing storage changes during this scan.
-                    let token = unsafe { next.read() };
-                    if (3 << 8..PARAM).contains(&token.0) {
-                        // SAFETY: next precedes end in this retained window.
-                        next = unsafe { next.add(1) };
-                        continue;
+                    // SAFETY: this source retains the immutable window;
+                    // the helper only reads and returns a cursor within it.
+                    next = unsafe { group_character_end(next, cursor.end) };
+                    if next == cursor.end {
+                        break None;
                     }
+                    // SAFETY: next precedes end in this retained window.
+                    let token = unsafe { next.read() };
                     if token.0 & PARAM != 0 && !token.is_cs() {
                         break Some(token.byte() - 1);
                     }
@@ -466,7 +495,7 @@ impl Engine<'_> {
                 return Err(Error::Argument);
             }
         }
-        let count = self.definitions[id as usize].delimiters.len();
+        let count = self.definitions[id as usize].parameter_count as usize;
         if count == 0 {
             self.retire_exhausted();
             return self.push_body(id, self.definitions[id as usize].body, None);
@@ -475,7 +504,11 @@ impl Engine<'_> {
         let mut builder = None;
         let long = self.definitions[id as usize].long;
         for argument in 0..count {
-            let delimiter = self.definitions[id as usize].delimiters[argument];
+            let delimiter = self.definitions[id as usize]
+                .parameters
+                .as_ref()
+                .unwrap()
+                .delimiters[argument];
             if delimiter.empty() {
                 let first = loop {
                     let raw = self.next_raw()?;
@@ -517,12 +550,14 @@ impl Engine<'_> {
         }
         let a = &self.definitions[a.value as usize];
         let b = &self.definitions[b.value as usize];
+        let a_signature = a.signature();
+        let b_signature = b.signature();
         a.long == b.long
-            && a.signature.end - a.signature.start == b.signature.end - b.signature.start
+            && a_signature.end - a_signature.start == b_signature.end - b_signature.start
             && self.arena.equal_ranges(
-                a.signature.start,
-                b.signature.start,
-                a.signature.end - a.signature.start,
+                a_signature.start,
+                b_signature.start,
+                a_signature.end - a_signature.start,
             )
     }
 }

@@ -180,6 +180,23 @@ pub(crate) struct Integer {
     pub level: u16,
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct ArenaRange {
+    pub start: u32,
+    pub end: u32,
+}
+impl ArenaRange {
+    pub fn empty(self) -> bool {
+        self.start == self.end
+    }
+    pub fn span(self) -> Span {
+        Span {
+            store: DEFS,
+            start: self.start,
+            end: self.end,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Span {
     // SINGLE encodes an inline token in start with end = start + 1. It is
     // confined to a one-token sequence and promoted before another range joins.
@@ -250,13 +267,28 @@ pub(crate) struct TokenValue {
     pub level: u16,
 }
 pub(crate) struct Definition {
-    pub prefix: Span,
-    pub delimiters: Vec<Span>,
-    pub body: Span,
-    pub signature: Span,
+    pub prefix: ArenaRange,
+    pub body: ArenaRange,
+    pub parameters: Option<Box<Parameters>>,
+    // Set together with parameters at construction: 0 means None, otherwise
+    // both matching vectors contain exactly this many entries (at most nine).
+    pub parameter_count: u8,
     pub long: bool,
     pub uses_parameters: bool,
+}
+pub(crate) struct Parameters {
+    pub delimiters: Vec<ArenaRange>,
     pub failures: Vec<Vec<usize>>,
+}
+impl Definition {
+    pub fn signature(&self) -> ArenaRange {
+        // The writer emits prefix, parameter markers, the body separator, and
+        // body in arena order. Any final #{ brace is part of the body's end.
+        ArenaRange {
+            start: self.prefix.start,
+            end: self.body.end,
+        }
+    }
 }
 #[derive(Default)]
 pub(crate) struct Packet {

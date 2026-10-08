@@ -62,6 +62,26 @@ append-only byte interner supplies stable names for a run. Definition tokens are
 built directly in session-owned stable chunks. Common token sources read one
 contiguous span; source changes do the ownership work.
 
+Definition prefixes, delimiters, and bodies use pairs of arena coordinates.
+Their storage is fixed by the definition's lifetime; a general input span adds
+the arena store ID only when installing a source. The complete signature runs
+from the prefix's start through the body's end, including its parameter marker
+and any brace-tail token. Derive those bounds when comparing or serializing a
+definition instead of retaining another range in every definition record. Each
+definition keeps its coordinates, flags, parameter count, and an optional owned
+parameter record. The count is at most nine and is set with that record at
+construction; invocation reads it without accessing the matching vectors.
+Only definitions with parameters allocate that record; delimiter and
+failure-table vectors move into it after construction. Parameter-free invocation
+reads only the small definition record. These records and their optional metadata
+remain live with the token arena. Stored argument scans pass their retained
+windows to a small character-run leaf. It tests four initialized words together
+and advances only when all are ordinary characters; a scalar tail stops at the
+first structural word or window end. The surrounding Rust frame keeps brace
+depth and parameter handling local. The execution loop borrows the engine;
+its owning caller constructs the outcome and releases the engine after that
+loop returns.
+
 Invocation packets own argument sequences and their backing capture chunks.
 Existing token ranges are retained; newly scanned source tokens are built in
 the packet's inline slot or capture buffer. A captured range retains its backing

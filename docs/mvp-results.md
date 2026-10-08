@@ -2,15 +2,16 @@
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
 implemented, with 63 primitive names. At the largest sizes, ordinary release
-Umber uses 0.09–0.52 times native pdfTeX's CPU time on nine core
-workloads and 0.30–0.46 times on nine broader macro workloads.
-Packed name buckets remove the separate hash vector and one dependent lookup.
-The tables retain the resulting gains and regressions against the preceding build.
+Umber uses 0.07–0.49 times native pdfTeX's CPU time on nine core
+workloads and 0.30–0.44 times on nine broader macro workloads.
+Definition headers shrink from 88 to 32 native bytes, saving 7–14 MiB of peak
+requested engine heap across the expanded workloads at 50,000 records.
+The tables retain CPU gains and regressions against the preceding build.
 These measurements cover parsing, expansion, and macro/scalar execution. Layout,
 shipout, formats, checkpoints, and Wasm runtime timing come later.
 
 An [optional native profile build](#optional-native-profile-build) uses
-0.31–0.43 times pdfTeX's CPU time on the broader suite. The tables below
+0.30–0.39 times pdfTeX's CPU time on the broader suite. The tables below
 retain ordinary release results; the profile comparison appears later.
 
 The tables use child user-plus-system CPU medians for the complete engine process.
@@ -26,8 +27,9 @@ matching executable hashes and samples; small changes need that context.
 The [expanded generator](../benchmarks/expansion.py) uses four workloads drawn
 from Michael Doob's [gentle.tex](https://ctan.net/info/gentle/gentle.tex), a stored
 variant of the record workload, and four synthetic workloads for token lists, a
-larger name table, optional arguments, and numbered references. The original
-eight cases retain their existing input identities and measurements.
+larger name table, optional arguments, and numbered references. All nine cases
+retain their input identities; each appears at three sizes in the current
+ordinary and profile sweeps.
 The [benchmark guide](../benchmarks/README.md) describes every consumer and
 adaptation. The full manual needs the later typesetting subsystems.
 
@@ -42,51 +44,42 @@ CPU medians at 50,000 records; ratios below 1 favor Umber:
 
 | Workload                           | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ---------------------------------- | --------: | ---------: | -------------: | -----------------------: |
-| Gentle spelling and text templates |     0.141 |      0.308 |          0.459 |                    -6.5% |
-| Gentle calendar formatter          |     0.118 |      0.271 |          0.433 |                    -5.8% |
-| Gentle contents serialization      |     0.405 |      0.999 |          0.405 |                    -3.1% |
-| Gentle paragraph-delimited records |     0.446 |      1.269 |          0.351 |                    -1.7% |
-| Gentle records from stored tokens  |     0.466 |      1.490 |          0.313 |                    -0.1% |
-| Token-register pipeline            |     0.779 |      2.335 |          0.333 |                    +0.6% |
-| Dynamic name table                 |     0.136 |      0.322 |          0.421 |                    +0.1% |
-| Optional-argument parser           |     0.459 |      1.529 |          0.300 |                    +0.3% |
+| Gentle spelling and text templates |     0.143 |      0.325 |          0.439 |                    -5.0% |
+| Gentle calendar formatter          |     0.123 |      0.293 |          0.420 |                    +0.5% |
+| Gentle contents serialization      |     0.417 |      1.054 |          0.395 |                    -1.9% |
+| Gentle paragraph-delimited records |     0.450 |      1.289 |          0.349 |                    -3.6% |
+| Gentle records from stored tokens  |     0.480 |      1.512 |          0.317 |                    +3.1% |
+| Token-register pipeline            |     0.778 |      2.422 |          0.321 |                    -1.1% |
+| Dynamic name table                 |     0.132 |      0.331 |          0.400 |                    -6.6% |
+| Optional-argument parser           |     0.471 |      1.597 |          0.295 |                    -1.7% |
+| Numbered references                |     0.146 |      0.338 |          0.433 |                    -1.3% |
 
-The broader workloads differ by -6.5% to +0.6% from the preceding build.
-Lookup tests the hash fragment stored beside the name ID, then compares the full
-spelling. Whole-binary comparisons also include code placement; small differences
-need the control-run variation context above.
+The broader workloads differ by -6.6% to +3.1% from the preceding build.
+Their smaller definition headers retain parameter metadata only when a macro
+needs it. Whole-binary comparisons include compiler code placement; small
+differences need the control-run variation context above.
 
 The stored variant alternates between immutable macro bodies and forwarded
 captured arguments, while retaining the same consumer and expected text as the
 source-input variant.
 
-The growth ratios between 10,000 and 50,000 records range from 0.30 to 0.46,
+The growth ratios between 10,000 and 50,000 records range from 0.30 to 0.44,
 so the advantage over pdfTeX holds after removing small-case startup advantage.
-The comparison binary is the preceding 63-primitive interpreter at `a99dfad`,
+The comparison binary is the preceding interpreter at `e2ee588`,
 timed in the same run. Full samples, source hashes, corpus provenance, compiler
 identity, and executable hashes are retained in
 [expansion-native.json](../benchmarks/results/expansion-native.json).
 The earlier report at `087205e` is preserved in
 [expansion-before-token-windows.json](../benchmarks/results/expansion-before-token-windows.json).
 
-The added numbered-reference workload forms 256 control names from signed
-three- to ten-digit register values. `\ifcsname` and `\csname` consume decimal
+The numbered-reference workload forms 256 control names from signed three- to
+ten-digit register values. `\ifcsname` and `\csname` consume generated decimal
 input sources; trailing decimal text is emitted directly into `\edef`.
-Every expanded reference and number is compared with independently generated
-expected tokens. Seven repetitions at 1,000, 10,000, and 50,000 records use the
-retained interpreter code. At 50,000:
-
-| Build            | Umber (s) | pdfTeX (s) | CPU time ratio |
-| ---------------- | --------: | ---------: | -------------: |
-| Ordinary release |     0.148 |      0.329 |          0.452 |
-| Native profile   |     0.128 |      0.331 |          0.386 |
-
-[Ordinary samples](../benchmarks/results/numeric-references-native.json) and
-[profile samples](../benchmarks/results/numeric-references-native-pgo.json)
-retain the raw timings and source, generator, and binary identities. The ordinary
-executable has the same machine-code section as the earlier measured build;
-its complete hash differs because of build metadata. These are additional
-coverage measurements; the runtime implementation is unchanged.
+Every reference and number is compared with independently generated expected
+tokens. Its earlier coverage-only measurements at `157e7be` remain in the
+[ordinary supplemental report](../benchmarks/results/numeric-references-native.json)
+and [profile supplemental report](../benchmarks/results/numeric-references-native-pgo.json).
+The current tables include this case in the complete nine-workload suite.
 
 ## Core regression set
 
@@ -94,19 +87,23 @@ CPU medians at one million work iterations, with the same comparison binary:
 
 | Workload                          | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | --------------------------------- | --------: | ---------: | -------------: | -----------------------: |
-| Raw byte dispatch                 |     0.208 |      0.557 |          0.374 |                    -6.3% |
-| Stored macro bodies               |     0.103 |      0.262 |          0.396 |                    +2.8% |
-| Integer assignments               |     0.116 |      0.354 |          0.327 |                    +1.4% |
-| Repeated/nested parameters        |     0.320 |      0.618 |          0.518 |                    +5.9% |
-| Arguments tokenized from bytes    |     0.402 |      0.784 |          0.513 |                    +1.1% |
-| Repeated 256-token arguments      |     0.746 |      8.394 |          0.089 |                    +3.2% |
-| Overlapping delimiters            |     0.129 |      0.265 |          0.486 |                    +3.6% |
-| Local/global grouped writes       |     0.217 |      0.520 |          0.418 |                    +1.3% |
-| Varied integers from source bytes |     0.708 |      1.698 |          0.417 |                    -5.9% |
+| Raw byte dispatch                 |     0.229 |      0.584 |          0.393 |                    +4.3% |
+| Stored macro bodies               |     0.103 |      0.275 |          0.375 |                    -3.4% |
+| Integer assignments               |     0.120 |      0.377 |          0.318 |                    -2.4% |
+| Repeated/nested parameters        |     0.321 |      0.665 |          0.483 |                    -5.2% |
+| Arguments tokenized from bytes    |     0.409 |      0.840 |          0.486 |                    -3.7% |
+| Repeated 256-token arguments      |     0.564 |      8.638 |          0.065 |                   -24.8% |
+| Overlapping delimiters            |     0.117 |      0.271 |          0.432 |                   -11.3% |
+| Local/global grouped writes       |     0.219 |      0.534 |          0.410 |                    -7.1% |
+| Varied integers from source bytes |     0.733 |      1.743 |          0.420 |                    -1.2% |
 
-The largest core cases differ by -6.3% to +5.9%.
-Whole-binary timings include changes in code placement and need the control-run
-variation context above. The comparison build is `a99dfad`.
+The largest core cases differ by -24.8% to +4.3%.
+The driver keeps token reading, expansion, and primitive dispatch together in a
+borrowed engine loop; outcome construction and engine release stay in its owning
+caller. Grouped stored-character scans test four immutable words together before
+advancing, with a scalar tail for structural words and window ends. These
+whole-binary timings include compiler code placement. The comparison build is
+`e2ee588`.
 
 The `source-integers` workload scans varied one- to ten-digit fields directly
 from loaded source bytes and checks each against a stored macro operand.
@@ -119,7 +116,7 @@ An earlier [fifteen-sample grouped-write follow-up](../benchmarks/results/groupe
 recorded a 4.4% slowdown at `0cf14d8` against `8023c8a` despite 7.0% fewer
 simulated instructions. That report retains the historical timing samples and
 instruction diagnostic with input and executable hashes. The current table
-compares the packed-name build against `a99dfad`.
+compares the compact-definition build against `e2ee588`.
 
 Earlier optimization and follow-up reports remain in `benchmarks/results/` and
 Git history, including the
@@ -132,9 +129,9 @@ The CLI reads the source into memory before execution. The historical
 `file-parameters` key measures tokenization over resident bytes, with full-process
 input reading still included in timing.
 
-The growth ratios from 100,000 to one million iterations range from 0.09 to 0.52.
-Startup probes use 1.03–1.07 ms CPU time in Umber and
-4.44–4.48 ms in pdfTeX. Current samples are retained in
+The growth ratios from 100,000 to one million iterations range from 0.07 to 0.49.
+Startup probes use 1.05–1.07 ms CPU time in Umber and
+4.51–4.62 ms in pdfTeX. Current samples are retained in
 [mvp-native.json](../benchmarks/results/mvp-native.json).
 Earlier reports in `benchmarks/results/` retain the original optimization passes,
 including [mvp-before-expansion.json](../benchmarks/results/mvp-before-expansion.json).
@@ -189,14 +186,11 @@ bytes, avoiding the unrolled loop's count/setup work for common one-argument
 packets. Definition and argument ownership, retained capacities, and release
 order stay the same. The profile build lets the trained compiler choose inlining.
 
-For 10,000 nested-parameter iterations, Callgrind counts 30,943,215
-instructions against 30,950,489 in the preceding build.
-Raw dispatch uses 18,376,443 versus 18,678,809 instructions.
-For 10,000 Gentle text records, counts are 166,018,034 versus
-168,291,457; for 1,000 token-pipeline records, 70,893,302 versus
-71,402,154. The reports retain these diagnostics with input hashes
-and binary identities. Simulated instruction counts describe work; the CPU tables
-measure execution performance.
+The earlier packed-bucket build's instruction diagnostics remain in Git
+history. The current profile instruction counts and paired comparison are
+recorded below and in
+[definition-storage-followup.json](../benchmarks/results/definition-storage-followup.json).
+Simulated instruction counts describe work; CPU medians measure performance.
 
 Token registers share immutable arena spans, including copies and local saves.
 Their active sources keep reading the original span after replacement. Expanded
@@ -243,14 +237,15 @@ sequence bookkeeping sit outside the inspected release character loop. One range
 records the run, coalescing with adjacent capture storage. Publication retains
 the buffer once per invocation. Discarded arguments scan runs without storage.
 
-Stored grouped arguments likewise keep progress in Rust pointer locals. An
-ordinary character word advances after one unsigned range comparison; braces,
-control sequences, paragraph checks, and parameter substitution use the structural
-path. An initial character followed by a closing brace in the same window writes
-directly into the retained argument's inline slot. An inline parent word can
-supply that character as well. Discarded arguments use the window loop directly,
-keeping parent-packet lookup out of their initial scan. The inspected native loop
-keeps both pointers in registers and performs no per-word capture bookkeeping.
+Stored grouped arguments keep progress in Rust pointer locals. A small Rust
+leaf tests four initialized immutable words together and advances only when all
+are ordinary characters. The inspected native loop compares all four with SIMD
+instructions and combines their result through an integer mask. Its scalar tail
+stops at the first structural word or window end. Peeking reads only the retained
+window and changes no interpreter state; brace depth, paragraph checks and
+parameter substitution remain in the caller. The initial one-word argument
+optimization and discard path keep their existing ownership behavior. This read
+adds no token destination or allocation.
 
 Delimited arguments share this append loop. With no partial match at top level,
 it stops before a token identical to the first delimiter word. Inside groups,
@@ -268,9 +263,22 @@ Newly interned names grow the dense meaning table through a separate cold helper
 ordinary reader loops keep that allocation and initialization out of line.
 
 The main driver fuses token reading, expansion dispatch, and execution in one
-Rust loop. Operand scanners retain `next_expanded`. The inspected release loop
-reads sources directly, avoiding the expanded-reader call and return on each
-main-loop token while keeping the same macro and primitive helpers.
+Rust loop borrowed from the owning engine. Operand scanners retain
+`next_expanded`. The inspected release loop reads sources directly, avoiding the
+expanded-reader call and return on each main-loop token. Its owner constructs
+the outcome and drops the engine after the loop returns, keeping cleanup outside
+the hot function.
+
+Definition prefixes, delimiters, and bodies use eight-byte arena coordinate pairs.
+Their general input span adds the definition store ID when installing a source.
+The signature is derived from the prefix start through the body end, including
+parameter markers, the body separator, and any final `#{` brace. A definition
+keeps these bounds, flags, a parameter count, and an optional owned parameter
+record: 32 native bytes in place of 88. Only parameterized definitions allocate
+that record; the existing delimiter and failure vectors move into it. The count
+and matching record are set together at construction. All definitions retain
+their session lifetime with the token arena, so active sources and restored
+meanings keep their stable IDs and backing.
 
 Arena windows derive their pointers from the whole chunk with
 [`UnsafeCell::raw_get`](https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html#method.raw_get).
@@ -290,25 +298,31 @@ with `objdump`; this host denies hardware performance counters.
 
 The separate allocation diagnostic counts engine construction and execution,
 excluding host input bytes, Rust stack, allocator overhead, and pdfTeX memory.
-Packed buckets remove the hash vector's allocation and growth. The retained
-allocation reports include the preceding counts for comparison. At one million
-iterations, the five sampled original capture/body workloads use
-86–97 allocations and 51,636–53,289 peak requested heap bytes.
+Packed buckets remove the hash vector's allocation and growth; compact
+definitions reduce header storage. At one million iterations, the five original
+capture/body workloads use 86–99 allocations and
+51,188–52,457 peak requested heap bytes.
 Invocation storage follows maximum live nesting and argument size.
 
 The broader suite deliberately replaces definitions and token-register values.
 Their arena storage and definition headers accumulate until the run ends:
 
-| Expanded workload                  | Allocations at 50,000 | Peak requested engine heap (MiB) |
-| ---------------------------------- | --------------------: | -------------------------------: |
-| Gentle spelling and text templates |                 1,172 |                             38.1 |
-| Gentle calendar formatter          |                   519 |                             17.1 |
-| Gentle contents serialization      |                 4,794 |                             94.6 |
-| Gentle paragraph-delimited records |                 8,695 |                            144.6 |
-| Gentle records from stored tokens  |                10,756 |                            176.7 |
-| Token-register pipeline            |                22,164 |                            366.1 |
-| Dynamic name table                 |                 5,471 |                             29.6 |
-| Optional-argument parser           |                10,343 |                            170.1 |
+| Expanded workload                  | Allocations at 50,000 | Peak engine heap (MiB) | Previous heap (MiB) |
+| ---------------------------------- | --------------------: | ---------------------: | ------------------: |
+| Gentle spelling and text templates |                 1,175 |                   24.1 |                38.1 |
+| Gentle calendar formatter          |                   522 |                   10.1 |                17.1 |
+| Gentle contents serialization      |                 4,798 |                   80.6 |                94.6 |
+| Gentle paragraph-delimited records |                 8,698 |                  137.6 |               144.6 |
+| Gentle records from stored tokens  |                10,760 |                  169.7 |               176.7 |
+| Token-register pipeline            |                22,168 |                  352.1 |               366.1 |
+| Dynamic name table                 |                 5,474 |                   22.6 |                29.6 |
+| Optional-argument parser           |                10,349 |                  163.1 |               170.1 |
+| Numbered references                |                   798 |                   10.3 |                17.3 |
+
+The 50,000-record cases save 7 or 14 MiB of peak requested heap. Moving
+parameter metadata into its own record adds 3–6 allocation calls per document
+in these workloads. The vectors move by ownership and argument ranges keep
+sharing their existing backing.
 
 Common dynamic names use 64 bytes of stack scratch space, spilling once for
 longer names. Fixed symbol spellings use a static byte table, eliminating their
@@ -319,7 +333,7 @@ comparison. With 24-bit IDs and a half-full table, growth needs at most 25 hash
 bits, all retained in the fragment. Rehashing moves bucket words and preserves
 IDs and spelling ownership. Name assembly, static spellings and packed buckets
 reduce allocation calls in the largest name-table case from 187,563 to
-5,471. Interned spellings retain their session lifetime.
+5,474. Interned spellings retain their session lifetime.
 
 Source control words compute their hash while consuming classified letters,
 then enter that shared lookup. Superscript translation rewrites the consumed
@@ -329,7 +343,7 @@ their fixed IDs. The inspected release letter loop contains the hash XOR and
 multiply followed by one lookup call, eliminating the second hashing walk.
 
 These are requested heap peaks, not process RSS. The token pipeline grows from
-74.4 MiB at 10,000 records to 366.1 MiB at 50,000. Replaced field, expected,
+70.9 MiB at 10,000 records to 352.1 MiB at 50,000. Replaced field, expected,
 pipeline, and result definitions remain in the arena. Fast timings do not
 establish bounded memory for a long editing session. Checkpoint-aware store
 reclamation remains with the [storage design](storage.md). Both reports retain
@@ -337,15 +351,13 @@ the diagnostic binary hash and counts at both sizes.
 
 ## Optional native profile build
 
-The recorded [profile build](../benchmarks/results/native-pgo-build.json) trained
-the compiler with all seventeen workloads at 75,031 core iterations and
-7,003 expanded records. The [builder](../benchmarks/pgo.py) checks every training
-result. Native oracle fixtures run against both the instrumented interpreter
-and the final build. The current builder includes numbered references as an
-eighteenth training workload; the recorded seventeen-workload build remains
-the executable used for these retained measurements. The build record identifies the exact measured interpreter
-and allocation diagnostic; they contain no profiling counters.
-The ordinary release and Wasm builds retain their existing settings.
+The recorded [profile build](../benchmarks/results/native-pgo-build.json) trains
+the compiler with all eighteen workloads at 75,031 core iterations and 7,003
+expanded records. The [builder](../benchmarks/pgo.py) checks every training result.
+Native oracle fixtures run against both the instrumented interpreter and the
+final build. The build record identifies the exact measured interpreter and
+allocation diagnostic; they contain no profiling counters. Ordinary release
+and Wasm builds retain their existing settings.
 
 This experiment uses Rust 1.98.1 and LLVM 22.1.8. LLVM uses recorded branch
 frequencies with its inlining cost-benefit model disabled and the hot-callsite
@@ -376,49 +388,48 @@ binary. Training sizes are outside the timing sweep. CPU medians at 50,000 recor
 
 | Workload                           | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | ---------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Gentle spelling and text templates |             0.132 |              0.143 |      0.308 |          0.428 |              -8.0% |
-| Gentle calendar formatter          |             0.100 |              0.117 |      0.271 |          0.367 |             -14.7% |
-| Gentle contents serialization      |             0.391 |              0.402 |      1.009 |          0.387 |              -2.8% |
-| Gentle paragraph-delimited records |             0.448 |              0.440 |      1.238 |          0.362 |              +2.0% |
-| Gentle records from stored tokens  |             0.490 |              0.471 |      1.519 |          0.322 |              +3.9% |
-| Token-register pipeline            |             0.816 |              0.752 |      2.376 |          0.344 |              +8.5% |
-| Dynamic name table                 |             0.124 |              0.128 |      0.327 |          0.379 |              -3.5% |
-| Optional-argument parser           |             0.479 |              0.455 |      1.565 |          0.306 |              +5.5% |
+| Gentle spelling and text templates |             0.124 |              0.138 |      0.319 |          0.388 |             -10.3% |
+| Gentle calendar formatter          |             0.095 |              0.113 |      0.272 |          0.348 |             -16.3% |
+| Gentle contents serialization      |             0.395 |              0.420 |      1.020 |          0.387 |              -6.1% |
+| Gentle paragraph-delimited records |             0.452 |              0.455 |      1.282 |          0.353 |              -0.5% |
+| Gentle records from stored tokens  |             0.502 |              0.486 |      1.541 |          0.326 |              +3.4% |
+| Token-register pipeline            |             0.815 |              0.772 |      2.436 |          0.335 |              +5.5% |
+| Dynamic name table                 |             0.111 |              0.127 |      0.322 |          0.345 |             -12.7% |
+| Optional-argument parser           |             0.484 |              0.473 |      1.629 |          0.297 |              +2.3% |
+| Numbered references                |             0.123 |              0.143 |      0.332 |          0.370 |             -14.4% |
 
-At one million core iterations, profile ratios span 0.08–0.40 times
+At one million core iterations, profile ratios span 0.06–0.42 times
 pdfTeX's CPU time. The paired comparison with ordinary release is:
 
 | Workload                          | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | --------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Raw byte dispatch                 |             0.165 |              0.210 |      0.552 |          0.298 |             -21.8% |
-| Stored macro bodies               |             0.096 |              0.103 |      0.258 |          0.374 |              -6.0% |
-| Integer assignments               |             0.109 |              0.120 |      0.364 |          0.298 |              -9.6% |
-| Repeated/nested parameters        |             0.241 |              0.319 |      0.616 |          0.391 |             -24.6% |
-| Arguments tokenized from bytes    |             0.299 |              0.406 |      0.784 |          0.382 |             -26.3% |
-| Repeated 256-token arguments      |             0.646 |              0.740 |      8.480 |          0.076 |             -12.7% |
-| Overlapping delimiters            |             0.106 |              0.132 |      0.265 |          0.398 |             -20.3% |
-| Local/global grouped writes       |             0.191 |              0.218 |      0.525 |          0.363 |             -12.3% |
-| Varied integers from source bytes |             0.598 |              0.719 |      1.704 |          0.351 |             -16.8% |
+| Raw byte dispatch                 |             0.164 |              0.215 |      0.563 |          0.292 |             -23.6% |
+| Stored macro bodies               |             0.099 |              0.102 |      0.272 |          0.365 |              -3.2% |
+| Integer assignments               |             0.110 |              0.119 |      0.377 |          0.293 |              -7.4% |
+| Repeated/nested parameters        |             0.271 |              0.318 |      0.642 |          0.422 |             -14.7% |
+| Arguments tokenized from bytes    |             0.312 |              0.402 |      0.807 |          0.387 |             -22.3% |
+| Repeated 256-token arguments      |             0.526 |              0.567 |      8.670 |          0.061 |              -7.3% |
+| Overlapping delimiters            |             0.114 |              0.118 |      0.283 |          0.402 |              -3.2% |
+| Local/global grouped writes       |             0.208 |              0.222 |      0.528 |          0.393 |              -6.5% |
+| Varied integers from source bytes |             0.592 |              0.726 |      1.712 |          0.346 |             -18.6% |
 
 The profile build remains optional: its workload tradeoffs appear in these tables.
-The [paired prior-profile comparison](../benchmarks/results/stored-list-range-followup.json)
-retains the preceding build at `4a1be40` at the largest sizes. Source arguments
-use 6.0% less CPU time, source integers 6.0% less, grouped writes 4.7% less,
-and calendar formatting 5.7% less. Core changes range from -6.0% to -0.1%
-across its five selected cases; broader changes range
-from -5.7% to +2.1% across all eight cases. Whole-binary comparisons include
-code placement; small differences need the control-run variation context above.
-The ordinary executable's `.text` section is byte-identical to `4a1be40`, so its
-retained timing reports remain unchanged. The build record retains both binary
-and section identities. All twenty-eight sampled profile allocation counts,
-requested bytes, and heap peaks match the preceding interpreter.
+The [nine-repetition paired comparison](../benchmarks/results/definition-storage-followup.json)
+uses the retained profile interpreter at `e2ee588` at the largest sizes. Core
+changes range from -20.8% to +5.9% across all nine cases; broader changes range
+from -11.5% to +0.7% across all nine cases. This comparison includes the
+smaller definition headers, borrowed driver, four-word argument scan, and
+training coverage expanding from seventeen to eighteen workloads. Whole-binary
+comparisons include code placement; small differences need the control-run
+variation context above.
 
-For 10,000 Gentle text records, the profile build uses 147,367,153
-simulated instructions against 148,230,368 in the preceding profile build.
-For 1,000 token-pipeline records, counts are 69,381,752 against
-71,155,264. These diagnostics and their input/binary hashes are retained
-with the timing reports. Instruction counts describe work; CPU medians measure
-performance.
+For 10,000 Gentle text records, the profile build uses 146,932,305
+simulated instructions against 147,367,153 in the preceding profile build.
+For 1,000 token-pipeline records, counts are 69,627,769 against
+69,381,752. For 10,000 long-argument iterations, counts are
+54,013,672 against 81,156,248. These diagnostics and their input/binary
+hashes are retained with the timing reports. Instruction counts describe work;
+CPU medians measure performance.
 
 [Core samples](../benchmarks/results/mvp-native-pgo.json),
 [broader samples](../benchmarks/results/expansion-native-pgo.json), and the
@@ -528,7 +539,8 @@ arena positions. Their 64 native comparisons cover retained and discarded
 arguments from source bytes and stored tokens, nested forwarding, and the tokens
 following each closing brace. They verify that structural and following tokens
 stay available when a character run ends at a batch boundary. The Rust test also
-passes Miri.
+passes Miri with the four-word window reads, including scalar tails and
+structural words within the peeked window.
 
 A decimal-source test covers both signs, every power-of-ten boundary, and the
 full signed 32-bit range. It stacks sources before reading them and repeats the

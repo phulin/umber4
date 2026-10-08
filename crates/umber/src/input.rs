@@ -322,7 +322,7 @@ impl Engine<'_> {
         match sequence {
             SequenceRef::List => None,
             SequenceRef::Body(id) => (index == 0)
-                .then_some(self.definitions[id as usize].body)
+                .then_some(self.definitions[id as usize].body.span())
                 .filter(|s| !s.empty()),
             SequenceRef::Argument(packet, arg) => {
                 self.packets[packet as usize].arguments[arg as usize].span(index)
@@ -370,7 +370,12 @@ impl Engine<'_> {
         self.push_span(sequence, span, owns_packet, macro_packet)
     }
     #[inline]
-    pub(crate) fn push_body(&mut self, id: u32, body: Span, packet: Option<u32>) -> Result<()> {
+    pub(crate) fn push_body(
+        &mut self,
+        id: u32,
+        body: ArenaRange,
+        packet: Option<u32>,
+    ) -> Result<()> {
         if body.empty() {
             if let Some(packet) = packet {
                 self.release_packet(packet);
@@ -385,7 +390,7 @@ impl Engine<'_> {
         self.sources.push(Source::Tokens(Cursor {
             sequence: SequenceRef::Body(id),
             span_index: 0,
-            span: body,
+            span: body.span(),
             window_end_position,
             next,
             end,

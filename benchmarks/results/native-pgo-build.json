@@ -1,5 +1,5 @@
 {
-  "engine_source_base_commit": "4a1be40",
+  "engine_source_base_commit": "157e7be",
   "build": {
     "features": [
       "native-profile"
@@ -13,28 +13,28 @@
       "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
       "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
       "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
-      "crates/umber/src/convert.rs": "c29a242cb72f83ceec726d4f84ae9401cbf848ff3a4852f2a50b6889108f3ca8",
-      "crates/umber/src/define.rs": "77048adbef96b352a95450a24fee49b66c430500de662fd9cdf461c073d11fca",
-      "crates/umber/src/delimit.rs": "6fc56dba6ffadab7832d1d306f32fcaaa8fafe5c033da26191f871bc4c4473a5",
+      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
+      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
+      "crates/umber/src/delimit.rs": "26a55ce855ab8371e6acbfa0845b9f188dd32be6166578d7aef4a2486b6f9817",
       "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
       "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
       "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
-      "crates/umber/src/extended_tests.rs": "0cea8a5b434e8489c8928f467ce43b5074a0f475ec7d2ee68b78d6049a3c0652",
-      "crates/umber/src/input.rs": "fed64cc6850149cdc2a0590fc1de057f0501cac62c4f35efc38a15da791f1ad1",
-      "crates/umber/src/lib.rs": "dd5765a031bd66eb8dd768601ce5bf512ead995c8feccacf7b363e59b34d9b03",
+      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
+      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
+      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
       "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
-      "crates/umber/src/macros.rs": "978900409595062e9204d31ad25aa5b3eb1b7341f4220c86bc551cde9eb0e8a0",
+      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
       "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
       "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
       "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
       "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
       "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
-      "crates/umber/src/token.rs": "5eb0e6f0e4a024becf1c79aeb9e8aa1dafacaad3f1eab5f17e3c48598686b81b"
+      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
     },
-    "training_binary_sha256": "564cacfdb0c2ac28b16813959c971c8ea6da68d555142e59d43c34ded5a6a6b7",
+    "training_binary_sha256": "a84f1199989a032a6d5a17bd0dff623a9b367e14725a99bddd7b300c38928f2f",
     "generators": {
       "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
-      "expansion": "ebff0d53c33f20fdd0c53ae7f2c8c1241d9cbf585d6b7c75057fa069f0d060cd"
+      "expansion": "7f788e7b1a26c0528690e41f45f53d70cd4379754e43dc89018177f07c9d56b3"
     },
     "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
     "sources": [
@@ -139,14 +139,20 @@
         "size": 7003,
         "bytes": 5595815,
         "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
+      },
+      {
+        "case": "numeric-references",
+        "size": 7003,
+        "bytes": 1781001,
+        "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
       }
     ],
-    "profile_path": "target/pgo/91e7b9dc9d8957799467b24cdaa915eeca4f6ec211bdbaebb5c15a1b94b654c5.profdata",
-    "profile_sha256": "91e7b9dc9d8957799467b24cdaa915eeca4f6ec211bdbaebb5c15a1b94b654c5",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/91e7b9dc9d8957799467b24cdaa915eeca4f6ec211bdbaebb5c15a1b94b654c5.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "profile_path": "target/pgo/8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f.profdata",
+    "profile_sha256": "8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
     "rustflags_args": [
       "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/91e7b9dc9d8957799467b24cdaa915eeca4f6ec211bdbaebb5c15a1b94b654c5.profdata",
+      "profile-use=/home/phulin/umber4/target/pgo/8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f.profdata",
       "-C",
       "llvm-args=-pgo-warn-missing-function",
       "-C",
@@ -156,21 +162,44 @@
       "-C",
       "llvm-args=--align-all-functions=6"
     ],
-    "umber_binary_sha256": "5090e2b6757d7702a50492c7b59dee05e8a0418b4d320f710f3069fcf832efba",
-    "allocation_binary_sha256": "58567e6c339019ec8ef72d6006617f2160f7ac27172fa1ec42d7b3c425a8e3c3"
+    "umber_binary_sha256": "7b6d4ce430e3213878c0349198499843c017e6abd55a85a679ef160910379a08",
+    "allocation_binary_sha256": "c47af79f9da94736bfba3d7166634d1e32ec4a24fec64f9c7380f9c0e30af304"
   },
-  "identity": "The build record identifies the exact interpreter and allocation diagnostic used in the timing and allocation reports.",
-  "ordinary_code_identity": {
-    "scope": "The ordinary stored-character classifier retains its original branch. Its executable .text section is byte-identical to the preceding ordinary build, whose retained timing reports remain unchanged.",
-    "umber_binary_sha256": "53fa4c4135f145e273471f9009d87a6a3f082f44562b7df53baf67f19c796fbd",
-    "preceding_binary_sha256": "1d9fe03c4735ffc5dc4588f53f92d08a55fc0ca5296e72b388f976cee3f9ae51",
-    "umber_text_sha256": "2897eafcb9818e2598846e704e139ac5007399be8c087c1a8a38ee346edc2de5",
-    "preceding_text_sha256": "2897eafcb9818e2598846e704e139ac5007399be8c087c1a8a38ee346edc2de5",
-    "preceding_engine_source_commit": "4a1be40"
+  "identity": "Exact interpreter and allocation diagnostic identities, source hashes, compiler options and all 18 training workloads for the retained native profile results.",
+  "ordinary_build": {
+    "umber_binary_sha256": "21ee4357fc8c3090b5953c76d52d0df4d127cc8a32f7ae5df59a247d07640db9",
+    "allocation_binary_sha256": "e97ce48d2f7dd6633df07019b6e8ff67686e722808994ebeeda511074fabfbbe",
+    "rustflags": "",
+    "features": [],
+    "source_files": {
+      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
+      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
+      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
+      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
+      "crates/umber/src/delimit.rs": "26a55ce855ab8371e6acbfa0845b9f188dd32be6166578d7aef4a2486b6f9817",
+      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
+      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
+      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
+      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
+      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
+      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
+      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
+      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
+      "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
+      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
+    },
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n"
   },
   "previous_profile_comparison": {
-    "provenance": "stored-list-range-followup.json",
-    "provenance_sha256": "a5709e8963ca9dc45b6cd0e8ab04c01d289f7f1e0114237edb5090e27a32c9f9",
-    "baseline_engine_source_commit": "4a1be40"
+    "provenance": "definition-storage-followup.json",
+    "provenance_sha256": "f63190bc1f39e0154695a7f891c350b7fe63e042dda80426a88bce8805b4fc84",
+    "baseline_engine_source_commit": "e2ee588"
   }
 }

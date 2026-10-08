@@ -49,6 +49,12 @@ builds retain the measured reset call and checked spelling reads.
 Stored-list scans in profile builds classify spaces, letters, and other
 characters through one contiguous token range, with the existing checks for
 all remaining words. Ordinary builds retain their previous classification path.
+Grouped stored-argument scans test four immutable words together before
+advancing, falling back to their scalar tail for structural words and window
+ends. Native release code uses SIMD comparisons for that read. The retained
+[definition-storage comparison](results/definition-storage-followup.json) includes
+allocation diagnostics and nine paired repetitions against the preceding profile
+build, including its CPU regressions.
 Compare both suites when changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |
