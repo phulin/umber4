@@ -1,5 +1,5 @@
 {
-  "engine_source_base_commit": "157e7be",
+  "engine_source_base_commit": "b8d6991",
   "build": {
     "features": [
       "native-profile"
@@ -15,7 +15,7 @@
       "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
       "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
       "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
-      "crates/umber/src/delimit.rs": "26a55ce855ab8371e6acbfa0845b9f188dd32be6166578d7aef4a2486b6f9817",
+      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
       "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
       "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
       "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
@@ -31,7 +31,7 @@
       "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
       "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
     },
-    "training_binary_sha256": "a84f1199989a032a6d5a17bd0dff623a9b367e14725a99bddd7b300c38928f2f",
+    "training_binary_sha256": "5f76d08161ce9f062e75befa3e3e1278a917a6f625e12ccb223518a8f29bdaf5",
     "generators": {
       "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
       "expansion": "7f788e7b1a26c0528690e41f45f53d70cd4379754e43dc89018177f07c9d56b3"
@@ -147,12 +147,12 @@
         "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
       }
     ],
-    "profile_path": "target/pgo/8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f.profdata",
-    "profile_sha256": "8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "profile_path": "target/pgo/a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6.profdata",
+    "profile_sha256": "a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
     "rustflags_args": [
       "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/8233d1572e2d354443fac749e7ba605aa92d3c82c467f19cdd38819414bafe7f.profdata",
+      "profile-use=/home/phulin/umber4/target/pgo/a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6.profdata",
       "-C",
       "llvm-args=-pgo-warn-missing-function",
       "-C",
@@ -162,10 +162,10 @@
       "-C",
       "llvm-args=--align-all-functions=6"
     ],
-    "umber_binary_sha256": "7b6d4ce430e3213878c0349198499843c017e6abd55a85a679ef160910379a08",
-    "allocation_binary_sha256": "c47af79f9da94736bfba3d7166634d1e32ec4a24fec64f9c7380f9c0e30af304"
+    "umber_binary_sha256": "b4e0b604f3b62bc2ab9efb70746b5767424c91a8ff1537cb356990f8528af3f4",
+    "allocation_binary_sha256": "88a320613b5173d2c17dcd1ebe50fb61f6a8eba9f25e7695a3f15de0bebf5ff0"
   },
-  "identity": "Exact interpreter and allocation diagnostic identities, source hashes, compiler options and all 18 training workloads for the retained native profile results.",
+  "identity": "Exact final native-profile interpreter, allocation diagnostic, source hashes, compiler options and eighteen training workloads. Ordinary timing reports retain the preceding binary whose execution text matches the current ordinary rebuild.",
   "ordinary_build": {
     "umber_binary_sha256": "21ee4357fc8c3090b5953c76d52d0df4d127cc8a32f7ae5df59a247d07640db9",
     "allocation_binary_sha256": "e97ce48d2f7dd6633df07019b6e8ff67686e722808994ebeeda511074fabfbbe",
@@ -197,9 +197,45 @@
     },
     "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n"
   },
+  "ordinary_rebuild": {
+    "umber_binary_sha256": "3314ba8bc0c688c8ca0c73689575ddf90a66e04aa2259aff001cf9ff31264397",
+    "allocation_binary_sha256": "60f9d3f93f86e3ab0dbf534fd07aa8d68135075c70ff772bf657ed772907811e",
+    "features": [],
+    "rustflags": "",
+    "source_files": {
+      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
+      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
+      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
+      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
+      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
+      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
+      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
+      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
+      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
+      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
+      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
+      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
+      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
+      "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
+      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
+    },
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "execution_text": {
+      "baseline_text_sha256": "58eecde59a4032db4af37bab6b1a3e5c563b41b9f7cd241bf50138310925b045",
+      "current_text_sha256": "58eecde59a4032db4af37bab6b1a3e5c563b41b9f7cd241bf50138310925b045",
+      "identical": true
+    }
+  },
   "previous_profile_comparison": {
-    "provenance": "definition-storage-followup.json",
-    "provenance_sha256": "f63190bc1f39e0154695a7f891c350b7fe63e042dda80426a88bce8805b4fc84",
-    "baseline_engine_source_commit": "e2ee588"
+    "provenance": "profile-delimiter-cursor-followup.json",
+    "provenance_sha256": "843c148934a6bf518e59e8d61c88977721c02f277248e9542ea17b1776c62473",
+    "baseline_engine_source_commit": "b8d6991"
   }
 }

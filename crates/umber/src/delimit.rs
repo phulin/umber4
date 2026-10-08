@@ -102,6 +102,19 @@ impl Engine<'_> {
             .delimiters[argument];
         let long = self.definitions[id as usize].long;
         let length = (delimiter.end - delimiter.start) as usize;
+        #[cfg(feature = "native-profile")]
+        let (failure_words, failure_len) = {
+            let failures = &self.definitions[id as usize]
+                .parameters
+                .as_ref()
+                .unwrap()
+                .failures[argument];
+            // Each table is built once with its immutable definition and retained
+            // until the engine is released. Reader/capture calls mutate other
+            // stores; definition-vector growth leaves this allocation intact.
+            // Keep raw parts across those calls and borrow only for a lookup.
+            (failures.as_ptr(), failures.len())
+        };
         let mut matched = 0;
         let mut depth = 0;
         let mut seen = 0;
@@ -148,11 +161,19 @@ impl Engine<'_> {
                     if matched == 0 {
                         break;
                     }
-                    matched = self.definitions[id as usize]
+                    // SAFETY: the immutable table remains allocated throughout
+                    // this call. This borrow ends before another engine call.
+                    #[cfg(feature = "native-profile")]
+                    let failure = unsafe {
+                        std::slice::from_raw_parts(failure_words, failure_len)[matched - 1]
+                    };
+                    #[cfg(not(feature = "native-profile"))]
+                    let failure = self.definitions[id as usize]
                         .parameters
                         .as_ref()
                         .unwrap()
                         .failures[argument][matched - 1];
+                    matched = failure;
                 }
                 if matched == length {
                     break;

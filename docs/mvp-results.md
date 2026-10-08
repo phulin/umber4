@@ -11,8 +11,11 @@ These measurements cover parsing, expansion, and macro/scalar execution. Layout,
 shipout, formats, checkpoints, and Wasm runtime timing come later.
 
 An [optional native profile build](#optional-native-profile-build) uses
-0.30–0.39 times pdfTeX's CPU time on the broader suite. The tables below
-retain ordinary release results; the profile comparison appears later.
+0.30–0.38 times pdfTeX's CPU time on the broader suite. Its
+immutable delimiter-table cursor reduces overlapping-delimiter CPU time by
+6.3% against the preceding profile build.
+The tables below retain ordinary release results; the profile comparison appears
+later. Ordinary release's execution text is identical to `b8d6991`.
 
 The tables use child user-plus-system CPU medians for the complete engine process.
 Reports also retain wall time and all samples. Wall time includes scheduling
@@ -377,7 +380,14 @@ Profile lookup stays behind a measured Rust call boundary. Its unchecked spellin
 read relies on bucket publication: an occupied bucket refers to an initialized
 spelling entry that remains present through table growth. The shared read ends
 before insertion can grow the spelling vector. Ordinary builds retain checked
-spelling reads. These choices come from timing the surrounding execution paths.
+spelling reads.
+Profile delimiter matching caches immutable failure-table raw parts in its Rust
+frame. Checked fallback reads take a short shared borrow; reader and capture
+calls mutate other stores. The table remains allocated with its definition,
+including when the definition vector grows. The inspected discard matcher shrinks
+from 2,923 to 2,756 native bytes and the retained matcher from 4,913 to 4,816.
+Ordinary release retains direct metadata lookup; these choices come from timing
+the surrounding execution paths.
 The default profile-guided model enlarged the main loop and slowed long argument
 scanning; the selected settings improve that case too. Updating the compiler or
 expanding the interpreter warrants another comparison.
@@ -388,48 +398,46 @@ binary. Training sizes are outside the timing sweep. CPU medians at 50,000 recor
 
 | Workload                           | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | ---------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Gentle spelling and text templates |             0.124 |              0.138 |      0.319 |          0.388 |             -10.3% |
-| Gentle calendar formatter          |             0.095 |              0.113 |      0.272 |          0.348 |             -16.3% |
-| Gentle contents serialization      |             0.395 |              0.420 |      1.020 |          0.387 |              -6.1% |
-| Gentle paragraph-delimited records |             0.452 |              0.455 |      1.282 |          0.353 |              -0.5% |
-| Gentle records from stored tokens  |             0.502 |              0.486 |      1.541 |          0.326 |              +3.4% |
-| Token-register pipeline            |             0.815 |              0.772 |      2.436 |          0.335 |              +5.5% |
-| Dynamic name table                 |             0.111 |              0.127 |      0.322 |          0.345 |             -12.7% |
-| Optional-argument parser           |             0.484 |              0.473 |      1.629 |          0.297 |              +2.3% |
-| Numbered references                |             0.123 |              0.143 |      0.332 |          0.370 |             -14.4% |
+| Gentle spelling and text templates |             0.121 |              0.141 |      0.314 |          0.384 |             -14.3% |
+| Gentle calendar formatter          |             0.097 |              0.114 |      0.276 |          0.353 |             -14.9% |
+| Gentle contents serialization      |             0.389 |              0.411 |      1.026 |          0.379 |              -5.4% |
+| Gentle paragraph-delimited records |             0.457 |              0.461 |      1.267 |          0.361 |              -0.8% |
+| Gentle records from stored tokens  |             0.495 |              0.469 |      1.539 |          0.322 |              +5.5% |
+| Token-register pipeline            |             0.804 |              0.776 |      2.407 |          0.334 |              +3.6% |
+| Dynamic name table                 |             0.117 |              0.125 |      0.326 |          0.358 |              -6.7% |
+| Optional-argument parser           |             0.482 |              0.462 |      1.598 |          0.301 |              +4.2% |
+| Numbered references                |             0.122 |              0.148 |      0.338 |          0.361 |             -17.6% |
 
-At one million core iterations, profile ratios span 0.06–0.42 times
+At one million core iterations, profile ratios span 0.06–0.40 times
 pdfTeX's CPU time. The paired comparison with ordinary release is:
 
 | Workload                          | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | --------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Raw byte dispatch                 |             0.164 |              0.215 |      0.563 |          0.292 |             -23.6% |
-| Stored macro bodies               |             0.099 |              0.102 |      0.272 |          0.365 |              -3.2% |
-| Integer assignments               |             0.110 |              0.119 |      0.377 |          0.293 |              -7.4% |
-| Repeated/nested parameters        |             0.271 |              0.318 |      0.642 |          0.422 |             -14.7% |
-| Arguments tokenized from bytes    |             0.312 |              0.402 |      0.807 |          0.387 |             -22.3% |
-| Repeated 256-token arguments      |             0.526 |              0.567 |      8.670 |          0.061 |              -7.3% |
-| Overlapping delimiters            |             0.114 |              0.118 |      0.283 |          0.402 |              -3.2% |
-| Local/global grouped writes       |             0.208 |              0.222 |      0.528 |          0.393 |              -6.5% |
-| Varied integers from source bytes |             0.592 |              0.726 |      1.712 |          0.346 |             -18.6% |
+| Raw byte dispatch                 |             0.170 |              0.218 |      0.576 |          0.296 |             -21.9% |
+| Stored macro bodies               |             0.098 |              0.106 |      0.266 |          0.370 |              -7.5% |
+| Integer assignments               |             0.107 |              0.116 |      0.362 |          0.295 |              -8.0% |
+| Repeated/nested parameters        |             0.251 |              0.307 |      0.633 |          0.397 |             -18.1% |
+| Arguments tokenized from bytes    |             0.302 |              0.389 |      0.801 |          0.377 |             -22.3% |
+| Repeated 256-token arguments      |             0.547 |              0.557 |      8.543 |          0.064 |              -1.7% |
+| Overlapping delimiters            |             0.108 |              0.121 |      0.270 |          0.398 |             -11.1% |
+| Local/global grouped writes       |             0.209 |              0.220 |      0.536 |          0.391 |              -4.7% |
+| Varied integers from source bytes |             0.576 |              0.717 |      1.743 |          0.330 |             -19.6% |
 
 The profile build remains optional: its workload tradeoffs appear in these tables.
-The [nine-repetition paired comparison](../benchmarks/results/definition-storage-followup.json)
-uses the retained profile interpreter at `e2ee588` at the largest sizes. Core
-changes range from -20.8% to +5.9% across all nine cases; broader changes range
-from -11.5% to +0.7% across all nine cases. This comparison includes the
-smaller definition headers, borrowed driver, four-word argument scan, and
-training coverage expanding from seventeen to eighteen workloads. Whole-binary
-comparisons include code placement; small differences need the control-run
-variation context above.
+The [nine-repetition paired comparison](../benchmarks/results/profile-delimiter-cursor-followup.json)
+uses the retained profile interpreter at `b8d6991` at the largest sizes. Core
+changes range from -6.3% to +2.0% across all nine cases; broader changes
+range from -2.7% to +2.0% across all nine cases. Overlapping delimiters
+use 6.3% less CPU time. All 36 allocation
+samples match the preceding build in both ordinary and profile adapters.
+Whole-binary comparisons include code placement; small differences need the
+control-run variation context above.
 
-For 10,000 Gentle text records, the profile build uses 146,932,305
-simulated instructions against 147,367,153 in the preceding profile build.
-For 1,000 token-pipeline records, counts are 69,627,769 against
-69,381,752. For 10,000 long-argument iterations, counts are
-54,013,672 against 81,156,248. These diagnostics and their input/binary
-hashes are retained with the timing reports. Instruction counts describe work;
-CPU medians measure performance.
+The timed comparison's profile execution text matches the final profile build;
+ordinary execution text matches the preceding ordinary binary. Both identities
+and each measured binary's source hashes are retained with the results. The
+[definition-storage comparison](../benchmarks/results/definition-storage-followup.json)
+retains the earlier header-size change, paired timings, and instruction counts.
 
 [Core samples](../benchmarks/results/mvp-native-pgo.json),
 [broader samples](../benchmarks/results/expansion-native-pgo.json), and the
@@ -529,7 +537,8 @@ The oracle generates 36 comparisons across source and delimiter chunk boundaries
 checking complete retained payloads with independently constructed definitions.
 Failure tests check paragraph and closing-brace errors in stored runs, including
 the reader position after the offending token.
-The stored chunk/capture test and failure-position test also pass Miri.
+The stored chunk/capture test and failure-position test also pass Miri,
+including the profile failure-table cursor and its short fallback borrows.
 One-word group cases move the opener, word, and closing brace through a chunk
 boundary, substitute an inline parameter, and retire captured backing at the end
 of its source. Native pdfTeX agrees on their nine generated comparisons. These

@@ -55,6 +55,11 @@ ends. Native release code uses SIMD comparisons for that read. The retained
 [definition-storage comparison](results/definition-storage-followup.json) includes
 allocation diagnostics and nine paired repetitions against the preceding profile
 build, including its CPU regressions.
+Profile delimiter matching caches the immutable failure-table cursor in its Rust
+frame, retaining checked fallback reads. The
+[delimiter comparison](results/profile-delimiter-cursor-followup.json) records
+nine paired repetitions, unchanged allocation samples, and execution-text
+identities for the profile change and ordinary rebuild.
 Compare both suites when changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |

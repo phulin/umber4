@@ -97,6 +97,12 @@ consume the arguments without retaining a packet or capture storage. Select this
 scanning mode once per invocation; the token loops use the same matching rules.
 Delimited matching runs in a separate Rust function, keeping its local matching
 state and group trimming out of the common undelimited scanner.
+The native profile build caches the immutable delimiter failure table's raw
+parts in this Rust frame. Its allocation remains live with the definition;
+matching borrows it only for each checked fallback lookup. Reader and capture
+calls change other stores, and growing the definition vector preserves the
+table's allocation. Ordinary release retains direct metadata lookup, selected
+by measurements of the surrounding execution paths.
 When no delimiter prefix is pending, file input scans character runs up to a
 possible first delimiter word. Inside a group, the run follows the group's
 ordinary character rules. Runs append into the existing capture buffer; their
