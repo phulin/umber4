@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 from reference import ROOT, execute, reference
 
 BOOT = r"\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax" + "\n"
-CASES = {
+REPEATED_CASES = {
     "raw": ("", r"\advance\count0by1\relax", 1),
     "bodies": (r"\def\leaf{\advance\count0by1\relax}",
                r"\relax\relax\relax\relax\leaf", 1),
@@ -43,10 +43,28 @@ CASES = {
     "groups": ("", r"{\count1=2\advance\count1by3\relax"
                r"\global\advance\count0by\count1\relax}", 5),
 }
+CASES = (*REPEATED_CASES, "source-integers")
+SOURCE_INTEGERS = (0, 7, 42, 1234, 1234567, 2147483647)
+
+
+def source_integer_program(size):
+    setup = "".join("\\def\\" + chr(ord("A") + index) + "{" + str(value) + "}"
+                    for index, value in enumerate(SOURCE_INTEGERS))
+    records = [r"\count1=" + str(value) + "\\relax\\ifnum\\count1=\\"
+               + chr(ord("A") + index) + r"\relax\advance\count0by1\relax\fi" + "\n"
+               for index, value in enumerate(SOURCE_INTEGERS)]
+    cycles, tail = divmod(size, len(records))
+    work = "".join(records) * cycles + "".join(records[:tail])
+    source = BOOT + setup + "\n" + work
+    source += r"\message{UMBER:\the\count0,\the\count1:END}\end" + "\n"
+    expected = f"{size},{SOURCE_INTEGERS[(size - 1) % len(records)]}".encode()
+    return source.encode(), expected
 
 
 def program(case, size):
-    setup, body, factor = CASES[case]
+    if case == "source-integers":
+        return source_integer_program(size)
+    setup, body, factor = REPEATED_CASES[case]
     if case in ("raw", "file-parameters"):
         work = (body + "\n") * size
     else:

@@ -146,6 +146,12 @@ several sizes, warmup and process overhead, result validation, allocation counts
 and native/Wasm build identities. Wasm runtime timing remains separate. Preserve
 the original eight workloads to detect regressions as the command set grows.
 
+The core suite also reads one- to ten-digit decimal fields directly from source
+bytes, cycling through six values up to the maximum TeX integer. Each field is
+compared with its independently stored macro operand before incrementing the
+checksum. This complements the original integer workload, whose repeated
+operands come from macro tokens.
+
 Compatibility references are upstream
 [tex.web](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web)
 and [etex.ch](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/etexdir/etex.ch),

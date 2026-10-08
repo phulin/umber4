@@ -91,6 +91,14 @@ use 4.4% more. These core workloads allocate little arena storage after setup.
 Core timings also reflect code and heap placement and need the control-run
 variation context above.
 
+An additional `source-integers` workload scans varied one- to ten-digit fields
+directly from loaded source bytes and checks each against a stored macro operand.
+The original integer case reads its repeated operands from macro tokens. At one
+million fields, the retained interpreter takes 0.728 s CPU time versus pdfTeX's
+1.697 s, a ratio of 0.429. The
+[baseline report](../benchmarks/results/source-integers-baseline.json) retains
+seven samples at each of three sizes, source identities, and the executable hash.
+
 A [fifteen-sample grouped-write follow-up](../benchmarks/results/grouped-write-followup.json)
 reproduces the 4.4% slowdown: 0.219 s CPU time against 0.209 s in the preceding
 build and 0.522 s in pdfTeX. For 10,000 iterations, Callgrind counts 22,205,354
@@ -301,8 +309,10 @@ the diagnostic binary hash and counts at both sizes.
 
 ## Optional native profile build
 
-The [profile builder](../benchmarks/pgo.py) trains the compiler with all sixteen
-workloads at 75,031 core iterations and 7,003 expanded records. Each training
+The recorded [profile build](../benchmarks/results/native-pgo-build.json) trained
+the compiler with the original sixteen workloads at 75,031 core iterations and
+7,003 expanded records. The [builder](../benchmarks/pgo.py) also trains the new
+source-integer workload on subsequent builds. Each training
 result is checked. Native oracle fixtures run against both the instrumented
 interpreter and the final build. The build record identifies the exact measured
 interpreter and allocation diagnostic; they contain no profiling counters.

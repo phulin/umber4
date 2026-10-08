@@ -1,6 +1,10 @@
 # Native expansion benchmarks
 
-`mvp.py` retains the original eight core workloads. `expansion.py` exercises
+`mvp.py` retains the original eight core workloads and adds `source-integers`.
+That workload reads varied one- to ten-digit decimal operands directly from
+source bytes. Each value is compared with an independently stored expected
+operand before incrementing the checksum. The original `integers` workload
+reads its repeated decimal operands from macro tokens. `expansion.py` exercises
 eight larger macro workloads, including excerpts from Michael Doob's
 [gentle.tex](https://ctan.net/info/gentle/gentle.tex). Both runners execute the
 same complete input in Umber and native `pdftex -ini -etex`, validate every run,
