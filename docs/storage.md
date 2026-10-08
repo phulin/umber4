@@ -47,6 +47,15 @@ Keep raw arena ranges as plain token/cell data where possible. Headers and
 auxiliary owners needing destruction use ordinary containers alongside the
 chunks, so truncating an abandoned tail also drops its initialized owners.
 
+Token chunks can hold `UnsafeCell<MaybeUninit<Token>>` cells. The uninitialized
+array is valid storage; appending constructs each token before publishing its
+index. Reads and cursor windows cover only the initialized prefix. These cells
+have token size and alignment through
+[MaybeUninit's layout guarantee](https://doc.rust-lang.org/std/mem/union.MaybeUninit.html#layout),
+and boxed chunks keep their addresses as the directory grows. Dropping a chunk
+releases its allocation; token words own no resources. This permits direct
+allocation without first filling the chunk.
+
 A mutable node store allocates compact cells in chunks, with bump allocation for
 new space and reusable free ranges for material TeX discards. Its snapshot roots
 retain the chunks needed by older states. It shares the arena's bulk allocation

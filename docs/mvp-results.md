@@ -2,16 +2,16 @@
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
 implemented, with 63 primitive names. At the largest sizes, ordinary release
-Umber uses 0.09–0.53 times native pdfTeX's CPU time on the original eight
-workloads and 0.30–0.51 times on eight broader macro workloads. Physical
-line endings are found with a vectorized byte search. Stored Gentle records
-use 5.5% less CPU time than the preceding build;
-the token pipeline uses 7.5% less.
+Umber uses 0.09–0.51 times native pdfTeX's CPU time on the original eight
+workloads and 0.30–0.51 times on eight broader macro workloads. Token
+chunks allocate uninitialized cells; appending constructs each word directly in
+its destination. The broader suite's CPU changes range from -5.1% to +2.9%
+relative to the preceding build; the full comparison appears below.
 These measurements cover parsing, expansion, and macro/scalar execution. Layout,
 shipout, formats, checkpoints, and Wasm runtime timing come later.
 
 An [optional native profile build](#optional-native-profile-build) uses
-0.31–0.46 times pdfTeX's CPU time on the broader suite. The tables below
+0.31–0.43 times pdfTeX's CPU time on the broader suite. The tables below
 retain ordinary release results; the profile comparison appears later.
 
 The tables use child user-plus-system CPU medians for the complete engine process.
@@ -42,30 +42,29 @@ CPU medians at 50,000 records; ratios below 1 favor Umber:
 
 | Workload                           | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ---------------------------------- | --------: | ---------: | -------------: | -----------------------: |
-| Gentle spelling and text templates |     0.157 |      0.309 |          0.508 |                    -2.4% |
-| Gentle calendar formatter          |     0.141 |      0.286 |          0.492 |                    -2.5% |
-| Gentle contents serialization      |     0.413 |      1.018 |          0.405 |                    -2.4% |
-| Gentle paragraph-delimited records |     0.467 |      1.257 |          0.372 |                    -2.6% |
-| Gentle records from stored tokens  |     0.486 |      1.550 |          0.313 |                    -5.5% |
-| Token-register pipeline            |     0.785 |      2.419 |          0.325 |                    -7.5% |
-| Dynamic name table                 |     0.149 |      0.326 |          0.458 |                    -3.0% |
-| Optional-argument parser           |     0.478 |      1.576 |          0.303 |                    -4.8% |
+| Gentle spelling and text templates |     0.156 |      0.314 |          0.497 |                    -5.1% |
+| Gentle calendar formatter          |     0.142 |      0.278 |          0.511 |                    -1.4% |
+| Gentle contents serialization      |     0.445 |      1.061 |          0.419 |                    +1.2% |
+| Gentle paragraph-delimited records |     0.480 |      1.321 |          0.363 |                    -0.9% |
+| Gentle records from stored tokens  |     0.518 |      1.664 |          0.311 |                    +0.9% |
+| Token-register pipeline            |     0.791 |      2.481 |          0.319 |                    -1.9% |
+| Dynamic name table                 |     0.160 |      0.328 |          0.487 |                    +2.9% |
+| Optional-argument parser           |     0.477 |      1.585 |          0.301 |                    +0.3% |
 
-The broader workloads differ by -7.5% to -2.4% from the preceding build.
-Stored Gentle records save 5.5% CPU time and the token
-pipeline 7.5%. Whole-binary comparisons include changes
-in code placement alongside the removed line-search work; small differences
+The broader workloads differ by -5.1% to +2.9% from the preceding build.
+Stored Gentle records differ by +0.9% CPU time and the token
+pipeline by -1.9%. Whole-binary comparisons include changes
+in code placement alongside the removed chunk initialization; small differences
 need the control-run variation context above.
 
 The stored variant alternates between immutable macro bodies and forwarded
 captured arguments, while retaining the same consumer and expected text as the
 source-input variant.
 
-The growth ratios between 10,000 and 50,000 records range from 0.31 to 0.51,
+The growth ratios between 10,000 and 50,000 records range from 0.30 to 0.52,
 so the advantage over pdfTeX holds after removing small-case startup advantage.
-The comparison binary is the preceding 63-primitive interpreter at `4252355`,
-timed in the same run. That commit added tests; the runtime code is unchanged
-from `9749e7e`. Full samples, source hashes, corpus provenance, compiler
+The comparison binary is the preceding 63-primitive interpreter at `cbc910f`,
+timed in the same run. Full samples, source hashes, corpus provenance, compiler
 identity, and executable hashes are retained in
 [expansion-native.json](../benchmarks/results/expansion-native.json).
 The earlier report at `087205e` is preserved in
@@ -77,19 +76,20 @@ CPU medians at one million work iterations, with the same comparison binary:
 
 | Workload                       | Umber (s) | pdfTeX (s) | CPU time ratio | Change vs previous Umber |
 | ------------------------------ | --------: | ---------: | -------------: | -----------------------: |
-| Raw byte dispatch              |     0.235 |      0.564 |          0.416 |                    +2.1% |
-| Stored macro bodies            |     0.104 |      0.269 |          0.385 |                    +0.5% |
-| Integer assignments            |     0.119 |      0.367 |          0.325 |                    -1.5% |
-| Repeated/nested parameters     |     0.326 |      0.614 |          0.531 |                    -4.6% |
-| Arguments tokenized from bytes |     0.403 |      0.796 |          0.507 |                    -1.8% |
-| Repeated 256-token arguments   |     0.778 |      8.548 |          0.091 |                    -2.3% |
-| Overlapping delimiters         |     0.125 |      0.271 |          0.460 |                    +0.3% |
-| Local/global grouped writes    |     0.217 |      0.531 |          0.409 |                    -0.6% |
+| Raw byte dispatch              |     0.242 |      0.580 |          0.417 |                    -2.9% |
+| Stored macro bodies            |     0.103 |      0.273 |          0.379 |                    -0.1% |
+| Integer assignments            |     0.119 |      0.379 |          0.315 |                    -5.6% |
+| Repeated/nested parameters     |     0.338 |      0.662 |          0.510 |                    -1.6% |
+| Arguments tokenized from bytes |     0.412 |      0.804 |          0.513 |                     0.0% |
+| Repeated 256-token arguments   |     0.778 |      8.701 |          0.089 |                    +0.7% |
+| Overlapping delimiters         |     0.122 |      0.263 |          0.465 |                    +0.7% |
+| Local/global grouped writes    |     0.219 |      0.528 |          0.415 |                   -13.5% |
 
-The largest core cases differ by -4.6% to +2.1%. Repeated/nested parameters
-save 4.6% CPU time, source arguments 1.8%, and long
-arguments 2.3%. The closest case to pdfTeX remains
-repeated/nested arguments, at 0.53 times its CPU time.
+The largest core cases differ by -13.5% to +0.7%. Repeated/nested parameters
+use 1.6% less CPU time; source arguments are unchanged to the displayed precision,
+and long arguments use 0.7% more. These core workloads allocate little arena
+storage after their setup. Core timings also reflect code and heap placement
+and need the control-run variation context above.
 Earlier optimization and follow-up reports remain in `benchmarks/results/` and
 Git history, including the
 [fifteen-sample parameter follow-up](../benchmarks/results/short-parameter-followup.json).
@@ -101,9 +101,9 @@ The CLI reads the source into memory before execution. The historical
 `file-parameters` key measures tokenization over resident bytes, with full-process
 input reading still included in timing.
 
-The growth ratios from 100,000 to one million iterations range from 0.09 to 0.53.
-Startup probes in the two runs use 1.00–1.12 ms CPU time in Umber and
-4.06–4.58 ms
+The growth ratios from 100,000 to one million iterations range from 0.09 to 0.51.
+Startup probes in the two runs use 1.04–1.13 ms CPU time in Umber and
+4.12–4.60 ms
 in pdfTeX. Current samples are retained in
 [mvp-native.json](../benchmarks/results/mvp-native.json).
 Earlier reports in `benchmarks/results/` retain the original optimization passes,
@@ -139,10 +139,10 @@ live endline/category behavior. The byte search adds no token materialization or
 buffer copy. Ordinary builds keep line loading behind a Rust call boundary;
 profile builds let the trained compiler choose inlining.
 
-Callgrind counts 54,956,690 instructions for 1,000 Gentle records, compared
-with 61,484,714 in the preceding build: 10.6% fewer. The token pipeline uses
-79,890,738 instead of 91,800,300: 13.0% fewer. The nested-parameter
-probe uses 31,920,157 versus 31,921,327 instructions.
+Callgrind counts 52,407,174 instructions for 1,000 Gentle records, compared
+with 54,956,690 in the preceding build: 4.6% fewer. The token pipeline uses
+73,316,752 instead of 79,890,738: 8.2% fewer. The nested-parameter
+probe uses 31,903,675 versus 31,920,157 instructions.
 The reports retain these diagnostics with input hashes and binary identities.
 Simulated instruction counts identify removed work; the CPU tables measure
 execution performance. All twenty-six sampled allocation counts, requested
@@ -175,11 +175,16 @@ complete reader. Destination emitters preserve input and category state.
 Fixed-size arena chunks allow a small inline append path with allocation in a
 separate growth helper. The arena caches the next write address. Appending writes
 one unpublished token, advances that address, and updates the published length;
-chunk growth refreshes the address. Published tokens remain immutable, and boxed
-chunk addresses stay valid as the descriptor vector grows. The existing length
-limit and chunk-boundary checks preserve capacity behavior. The cursor adds one
-pointer to arena metadata and no heap allocation. Chunk allocation has no 16 KiB
-stack temporary in the inspected native release code.
+chunk growth refreshes the address. Chunks contain `UnsafeCell<MaybeUninit<Token>>`
+cells with token size and alignment. The cell array is valid with uninitialized
+contents; reads and cursor windows cover only initialized, published words.
+The [storage design](storage.md#2-three-allocation-primitives) documents the layout
+and lifetime of these cells.
+Published tokens remain immutable, and boxed chunk addresses stay valid as the
+descriptor vector grows. The existing length limit and chunk-boundary checks
+preserve capacity behavior. Release instructions allocate the chunk with `malloc`
+in place of `calloc`, with no chunk-sized stack temporary or eager zero filling.
+The cursor adds one pointer to arena metadata and no heap allocation.
 
 Grouped arguments from source bytes likewise scan letter and other-character
 runs. The first word uses the existing inline capture path; subsequent words
@@ -305,28 +310,28 @@ binary. Training sizes are outside the timing sweep. CPU medians at 50,000 recor
 
 | Workload                           | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | ---------------------------------- | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Gentle spelling and text templates |             0.140 |              0.164 |      0.328 |          0.428 |             -14.5% |
-| Gentle calendar formatter          |             0.115 |              0.144 |      0.275 |          0.417 |             -20.1% |
-| Gentle contents serialization      |             0.406 |              0.430 |      1.028 |          0.395 |              -5.7% |
-| Gentle paragraph-delimited records |             0.469 |              0.480 |      1.284 |          0.365 |              -2.3% |
-| Gentle records from stored tokens  |             0.521 |              0.492 |      1.598 |          0.326 |              +5.9% |
-| Token-register pipeline            |             0.836 |              0.792 |      2.421 |          0.345 |              +5.6% |
-| Dynamic name table                 |             0.149 |              0.144 |      0.327 |          0.455 |              +3.3% |
-| Optional-argument parser           |             0.502 |              0.482 |      1.595 |          0.315 |              +4.3% |
+| Gentle spelling and text templates |             0.135 |              0.156 |      0.312 |          0.434 |             -13.3% |
+| Gentle calendar formatter          |             0.115 |              0.139 |      0.276 |          0.415 |             -17.3% |
+| Gentle contents serialization      |             0.405 |              0.421 |      1.018 |          0.397 |              -3.9% |
+| Gentle paragraph-delimited records |             0.464 |              0.464 |      1.272 |          0.365 |              -0.1% |
+| Gentle records from stored tokens  |             0.513 |              0.488 |      1.522 |          0.337 |              +5.1% |
+| Token-register pipeline            |             0.820 |              0.763 |      2.381 |          0.344 |              +7.5% |
+| Dynamic name table                 |             0.134 |              0.144 |      0.328 |          0.409 |              -6.9% |
+| Optional-argument parser           |             0.485 |              0.469 |      1.556 |          0.312 |              +3.6% |
 
 At one million core iterations, profile ratios span 0.08–0.41 times
 pdfTeX's CPU time. The paired comparison with ordinary release is:
 
 | Workload                       | Profile Umber (s) | Ordinary Umber (s) | pdfTeX (s) | Profile/pdfTeX | Change vs ordinary |
 | ------------------------------ | ----------------: | -----------------: | ---------: | -------------: | -----------------: |
-| Raw byte dispatch              |             0.197 |              0.244 |      0.585 |          0.337 |             -19.1% |
-| Stored macro bodies            |             0.106 |              0.104 |      0.273 |          0.389 |              +2.3% |
-| Integer assignments            |             0.117 |              0.120 |      0.364 |          0.322 |              -2.8% |
-| Repeated/nested parameters     |             0.248 |              0.331 |      0.622 |          0.400 |             -24.9% |
-| Arguments tokenized from bytes |             0.310 |              0.422 |      0.808 |          0.383 |             -26.6% |
-| Repeated 256-token arguments   |             0.661 |              0.760 |      8.566 |          0.077 |             -13.0% |
-| Overlapping delimiters         |             0.109 |              0.122 |      0.267 |          0.409 |             -10.6% |
-| Local/global grouped writes    |             0.211 |              0.213 |      0.535 |          0.394 |              -1.1% |
+| Raw byte dispatch              |             0.188 |              0.243 |      0.581 |          0.323 |             -22.7% |
+| Stored macro bodies            |             0.105 |              0.103 |      0.263 |          0.398 |              +1.7% |
+| Integer assignments            |             0.114 |              0.126 |      0.380 |          0.300 |              -9.8% |
+| Repeated/nested parameters     |             0.245 |              0.329 |      0.630 |          0.388 |             -25.7% |
+| Arguments tokenized from bytes |             0.301 |              0.407 |      0.804 |          0.375 |             -25.9% |
+| Repeated 256-token arguments   |             0.710 |              0.785 |      8.627 |          0.082 |              -9.5% |
+| Overlapping delimiters         |             0.110 |              0.122 |      0.266 |          0.414 |              -9.2% |
+| Local/global grouped writes    |             0.210 |              0.216 |      0.530 |          0.396 |              -2.6% |
 
 The profile build remains optional: its workload tradeoffs appear in these tables.
 All twenty-six sampled allocation counts, requested bytes, and heap peaks match
@@ -416,8 +421,8 @@ those arguments, and substitute parameter words at chunk boundaries. Earlier ind
 adversarial reviews checked semantics, source ownership, release paths, and
 workload consumers. Debug/release tests, rustfmt, and clippy pass; the portable
 library builds for `wasm32-unknown-unknown`.
-The arena-window and register-retention tests pass Miri with the cached write
-cursor, covering neighboring-cell access, disjoint appends, descriptor growth,
+The arena-window, register-retention, and stored-list tests pass Miri with
+uninitialized chunks and the cached write cursor, covering neighboring-cell access, disjoint appends, descriptor growth,
 active sources surviving register replacement, overlapping chunk comparisons,
 and empty ranges.
 The integer-overflow test also passes Miri: decimal, octal, and hexadecimal

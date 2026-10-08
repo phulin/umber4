@@ -1,5 +1,6 @@
 use crate::{Error, Result};
 use std::cell::UnsafeCell;
+use std::mem::MaybeUninit;
 use std::rc::Rc;
 
 pub(crate) const CS: u32 = 1 << 24;
@@ -274,8 +275,9 @@ pub(crate) struct Capture {
 // Cells use interior mutability solely for their one initialization. Published
 // cells never change; chunk addresses stay stable and Engine retains all chunks.
 // A cached cursor therefore remains valid while a disjoint suffix is initialized.
+type TokenChunk = [UnsafeCell<MaybeUninit<Token>>; CHUNK_LEN];
 pub(crate) struct TokenArena {
-    chunks: Vec<Box<[UnsafeCell<Token>; CHUNK_LEN]>>,
+    chunks: Vec<Box<TokenChunk>>,
     pub len: u32,
     next: *mut Token,
 }
@@ -309,18 +311,21 @@ impl TokenArena {
     }
     #[inline(never)]
     fn grow(&mut self) {
-        let chunk: Box<[UnsafeCell<Token>]> =
-            (0..CHUNK_LEN).map(|_| UnsafeCell::new(Token(0))).collect();
-        self.chunks
-            .push(chunk.try_into().expect("fixed token chunk length"));
+        let chunk = Box::<TokenChunk>::new_uninit();
+        // SAFETY: every array element is a transparent UnsafeCell wrapper over
+        // MaybeUninit<Token>, which permits uninitialized contents. This makes
+        // the cell array valid without asserting that any Token is initialized.
+        // push initializes each cell before advancing the published length.
+        self.chunks.push(unsafe { chunk.assume_init() });
         let chunk = self.chunks.last().expect("new arena chunk");
-        self.next = UnsafeCell::raw_get(chunk.as_ptr());
+        self.next = UnsafeCell::raw_get(chunk.as_ptr()).cast::<Token>();
     }
     pub fn get(&self, index: u32) -> Token {
         assert!(index < self.len);
         // SAFETY: the initialized prefix is immutable after publication.
         unsafe {
-            *self.chunks[index as usize >> CHUNK_BITS][index as usize & (CHUNK_LEN - 1)].get()
+            (*self.chunks[index as usize >> CHUNK_BITS][index as usize & (CHUNK_LEN - 1)].get())
+                .assume_init_read()
         }
     }
     pub fn window(&self, start: u32, end: u32) -> (*const Token, *const Token, u32) {
@@ -330,9 +335,11 @@ impl TokenArena {
         let count = ((end - start) as usize).min(CHUNK_LEN - offset);
         // Derive from the whole chunk so the pointer retains access to every
         // cell in the window, rather than borrowing just its first cell.
-        let base = UnsafeCell::raw_get(self.chunks[chunk].as_ptr()).cast_const();
-        // SAFETY: UnsafeCell has Token's layout. Offset and count remain within
-        // this chunk, and start..end is part of the initialized prefix.
+        let base = UnsafeCell::raw_get(self.chunks[chunk].as_ptr())
+            .cast::<Token>()
+            .cast_const();
+        // SAFETY: UnsafeCell and MaybeUninit preserve Token's layout. Offset
+        // and count remain within this chunk, and start..end is initialized.
         let first = unsafe { base.add(offset) };
         (first, unsafe { first.add(count) }, start + count as u32)
     }
