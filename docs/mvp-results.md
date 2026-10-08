@@ -90,6 +90,14 @@ The largest core cases differ by -7.9% to +4.4%. Repeated/nested parameters use
 use 4.4% more. These core workloads allocate little arena storage after setup.
 Core timings also reflect code and heap placement and need the control-run
 variation context above.
+
+A [fifteen-sample grouped-write follow-up](../benchmarks/results/grouped-write-followup.json)
+reproduces the 4.4% slowdown: 0.219 s CPU time against 0.209 s in the preceding
+build and 0.522 s in pdfTeX. For 10,000 iterations, Callgrind counts 22,205,354
+instructions against 23,867,664 in that preceding build, 7.0% fewer. The core
+report retains this diagnostic with input and executable hashes; the repeated
+CPU samples establish the slowdown on this host despite the reduction in work.
+
 Earlier optimization and follow-up reports remain in `benchmarks/results/` and
 Git history, including the
 [fifteen-sample parameter follow-up](../benchmarks/results/short-parameter-followup.json).

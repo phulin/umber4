@@ -2063,6 +2063,20 @@
         "umber": 18678729,
         "baseline": 19220743
       }
+    },
+    {
+      "tool": "Valgrind Callgrind 3.22.0",
+      "event": "Ir",
+      "scope": "Simulated instructions for the complete native process; these counts do not measure CPU performance.",
+      "case": "groups",
+      "size": 10000,
+      "sha256": "742dadae8a1ffe51fcecfd7775bc94f1889fdf31bc9876e06840212399df26f9",
+      "umber_binary_sha256": "123dd5d4bc1d07f032a2dae37aff58fe5a4241796078dab84ffe074c442a942b",
+      "baseline_binary_sha256": "3540e595aa11db047cd3ed1e400605239e1eec25f47f563040b3eb45241a7d3a",
+      "instructions": {
+        "umber": 22205354,
+        "baseline": 23867664
+      }
     }
   ]
 }
