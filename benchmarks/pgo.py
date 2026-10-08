@@ -36,7 +36,8 @@ def build(stage, flags, example=False):
     env["CARGO_ENCODED_RUSTFLAGS"] = "\x1f".join(flags)
     env["CARGO_TARGET_DIR"] = str(OUTPUT / stage)
     target = ["--example", "allocations"] if example else ["--bin", "umber"]
-    subprocess.run(["cargo", "build", "--release", "-p", "umber", *target],
+    subprocess.run(["cargo", "build", "--release", "-p", "umber",
+                    "--features", "native-profile", *target],
                    cwd=ROOT, env=env, check=True)
     return OUTPUT / stage / "release" / ("examples/allocations" if example else "umber")
 
@@ -79,6 +80,7 @@ def main():
     env = os.environ.copy()
     env["LLVM_PROFILE_FILE"] = str(raw / "%m-%p.profraw")
     manifest = {
+        "features": ["native-profile"],
         "compiler": compiler,
         "profdata_version": subprocess.check_output([str(profdata), "--version"]).decode(),
         "builder_sha256": digest(Path(__file__)),

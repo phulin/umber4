@@ -36,8 +36,10 @@ again. Artifacts and input/compiler identities stay under `target/pgo`; the
 ordinary release and Wasm builds use their existing paths. The profile builder
 also produces `target/pgo/use/release/examples/allocations` for diagnostics.
 Its LLVM inlining settings and 64-byte function alignment are measured choices
-for the recorded compiler;
-compare both suites when changing them or updating Rust.
+for the recorded compiler. The builder enables `native-profile`, which lets the
+trained compiler choose whether to inline physical-line loading. Ordinary and
+Wasm builds keep that loader in a separate function. Compare both suites when
+changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |

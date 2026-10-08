@@ -19,6 +19,7 @@ impl<'a> FileInput<'a> {
             loaded: false,
         }
     }
+    #[cfg_attr(not(feature = "native-profile"), inline(never))]
     fn load(&mut self, endline: i32) -> Result<()> {
         if self.loaded && self.offset == self.bytes.len() {
             return Err(Error::Eof);
@@ -26,10 +27,9 @@ impl<'a> FileInput<'a> {
         self.loaded = true;
         self.line.clear();
         let start = self.offset;
-        let mut offset = start;
-        while offset < self.bytes.len() && !matches!(self.bytes[offset], b'\n' | b'\r') {
-            offset += 1;
-        }
+        let remaining = &self.bytes[start..];
+        let mut offset =
+            start + memchr::memchr2(b'\n', b'\r', remaining).unwrap_or(remaining.len());
         let mut end = offset;
         while end > start && self.bytes[end - 1] == b' ' {
             end -= 1;
