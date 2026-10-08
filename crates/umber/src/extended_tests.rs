@@ -1,5 +1,34 @@
 use crate::{Engine, Error};
 
+#[test]
+fn serialized_spelling_survives_name_table_growth() {
+    use crate::token::Token;
+    for spelling in [
+        b"a".to_vec(),
+        b"retainedspelling".to_vec(),
+        vec![b'x'; 4097],
+    ] {
+        let mut engine = Engine::new(b"");
+        let id = engine.intern(&spelling).unwrap();
+        let mut output = Vec::new();
+        engine
+            .token_text(Token::cs(id), true, |engine, byte| {
+                output.push(byte);
+                if output.len() == 2 {
+                    for index in 0..1500 {
+                        engine.intern(format!("addedname{index}").as_bytes())?;
+                    }
+                }
+                Ok(())
+            })
+            .unwrap();
+        let mut expected = vec![b'\\'];
+        expected.extend_from_slice(&spelling);
+        expected.push(b' ');
+        assert_eq!(output, expected);
+    }
+}
+
 // Expected messages were captured from pdfTeX 1.40.25 INITEX, rather than from
 // this interpreter. scripts/oracle.py also runs these exact sources in both.
 #[test]

@@ -414,7 +414,7 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-41 Rust tests cover the core plus token-register retention, protected
+42 Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
@@ -424,6 +424,10 @@ The forced-collision fixture and real hash-fragment collision fixture both pass
 Miri with `native-profile` enabled. The real fixture retains two spellings whose
 64-bit hashes differ but share a 32-bit fragment, checking source and dynamic
 lookup, table growth, local replacement, and restoration against native pdfTeX.
+Serialization also checks one-byte, ordinary, and 4,097-byte spellings while
+its emitter interns 1,500 new names. The output retains the original spelling
+and trailing space through descriptor and bucket growth. This fixture passes
+Miri with `native-profile` enabled.
 The native oracle compares 484 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
