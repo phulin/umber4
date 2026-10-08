@@ -3,7 +3,7 @@
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) are
 implemented, with 63 primitive names. At the largest sizes, ordinary release
 Umber uses 0.09–0.52 times native pdfTeX's CPU time on nine core
-workloads and 0.30–0.46 times on eight broader macro workloads.
+workloads and 0.30–0.46 times on nine broader macro workloads.
 Packed name buckets remove the separate hash vector and one dependent lookup.
 The tables retain the resulting gains and regressions against the preceding build.
 These measurements cover parsing, expansion, and macro/scalar execution. Layout,
@@ -25,8 +25,9 @@ matching executable hashes and samples; small changes need that context.
 
 The [expanded generator](../benchmarks/expansion.py) uses four workloads drawn
 from Michael Doob's [gentle.tex](https://ctan.net/info/gentle/gentle.tex), a stored
-variant of the record workload, and three workloads for token lists, a larger
-name table, and optional arguments.
+variant of the record workload, and four synthetic workloads for token lists, a
+larger name table, optional arguments, and numbered references. The original
+eight cases retain their existing input identities and measurements.
 The [benchmark guide](../benchmarks/README.md) describes every consumer and
 adaptation. The full manual needs the later typesetting subsystems.
 
@@ -67,6 +68,25 @@ identity, and executable hashes are retained in
 [expansion-native.json](../benchmarks/results/expansion-native.json).
 The earlier report at `087205e` is preserved in
 [expansion-before-token-windows.json](../benchmarks/results/expansion-before-token-windows.json).
+
+The added numbered-reference workload forms 256 control names from signed
+three- to ten-digit register values. `\ifcsname` and `\csname` consume decimal
+input sources; trailing decimal text is emitted directly into `\edef`.
+Every expanded reference and number is compared with independently generated
+expected tokens. Seven repetitions at 1,000, 10,000, and 50,000 records use the
+retained interpreter code. At 50,000:
+
+| Build            | Umber (s) | pdfTeX (s) | CPU time ratio |
+| ---------------- | --------: | ---------: | -------------: |
+| Ordinary release |     0.148 |      0.329 |          0.452 |
+| Native profile   |     0.128 |      0.331 |          0.386 |
+
+[Ordinary samples](../benchmarks/results/numeric-references-native.json) and
+[profile samples](../benchmarks/results/numeric-references-native-pgo.json)
+retain the raw timings and source, generator, and binary identities. The ordinary
+executable has the same machine-code section as the earlier measured build;
+its complete hash differs because of build metadata. These are additional
+coverage measurements; the runtime implementation is unchanged.
 
 ## Core regression set
 
@@ -321,7 +341,9 @@ The recorded [profile build](../benchmarks/results/native-pgo-build.json) traine
 the compiler with all seventeen workloads at 75,031 core iterations and
 7,003 expanded records. The [builder](../benchmarks/pgo.py) checks every training
 result. Native oracle fixtures run against both the instrumented interpreter
-and the final build. The build record identifies the exact measured interpreter
+and the final build. The current builder includes numbered references as an
+eighteenth training workload; the recorded seventeen-workload build remains
+the executable used for these retained measurements. The build record identifies the exact measured interpreter
 and allocation diagnostic; they contain no profiling counters.
 The ordinary release and Wasm builds retain their existing settings.
 
@@ -414,7 +436,7 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-42 Rust tests cover the core plus token-register retention, protected
+43 Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
@@ -507,6 +529,12 @@ arguments from source bytes and stored tokens, nested forwarding, and the tokens
 following each closing brace. They verify that structural and following tokens
 stay available when a character run ends at a batch boundary. The Rust test also
 passes Miri.
+
+A decimal-source test covers both signs, every power-of-ten boundary, and the
+full signed 32-bit range. It stacks sources before reading them and repeats the
+sequence after retirement, checking that pending sources retain their backing
+while subsequent numbers are generated and that retired buffers can be reused.
+This test also passes Miri.
 
 Storage tests cross 4,096-token chunks, replace active sources, exercise 5,000
 nested captures, and produce multi-chunk conversion text. List-scan tests

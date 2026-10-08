@@ -1,0 +1,301 @@
+{
+  "date": "2026-10-08T14:51:52.747488+00:00",
+  "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "rustflags": "",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "umber_binary_sha256": "53fa4c4135f145e273471f9009d87a6a3f082f44562b7df53baf67f19c796fbd",
+  "generator_sha256": "7f788e7b1a26c0528690e41f45f53d70cd4379754e43dc89018177f07c9d56b3",
+  "measurement_sha256": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
+  "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+  "corpus": {
+    "title": "A Gentle Introduction to TeX",
+    "author": "Michael Doob",
+    "version": "1.1",
+    "url": "https://ctan.net/info/gentle/gentle.tex",
+    "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "kernels": [
+      {
+        "name": "spelling",
+        "lines": [
+          98,
+          112
+        ],
+        "adaptation": "Definitions unchanged. Bootstrap ifcanspell with let instead of loading plain newif. The preceding aesthetic macro needs an accent and is omitted."
+      },
+      {
+        "name": "today",
+        "lines": [
+          305,
+          307
+        ],
+        "adaptation": "Definition unchanged. Define plain's space macro and assign calendar parameters explicitly."
+      },
+      {
+        "name": "talks",
+        "lines": [
+          3756,
+          3756
+        ],
+        "adaptation": "Definition unchanged. Consume expanded sentences in definitions rather than typesetting them."
+      },
+      {
+        "name": "contentsentry",
+        "lines": [
+          197,
+          201
+        ],
+        "adaptation": "Retain the complete write payload in a parameterized macro invoked in edef. Stringified line/dotfill names and braces are never executed. Bootstrap pageno with countdef."
+      },
+      {
+        "name": "maketable",
+        "lines": [
+          261,
+          269
+        ],
+        "adaptation": "Retain the bracketed-title and paragraph-delimited signature; replace the box/display body with edef of both complete payloads."
+      }
+    ]
+  },
+  "validation": "Every record compares its expanded definition with independently generated expected tokens; comparison and expected definition construction are timed.",
+  "storage": "Definition and token-register replacements accumulate immutable arena tokens within the Umber run; total work is bounded by the selected size.",
+  "repeats": 7,
+  "complete": true,
+  "samples": [
+    {
+      "case": "numeric-references",
+      "size": 1000,
+      "bytes": 267825,
+      "expanded_text_bytes": 15318,
+      "name_table_width": null,
+      "numeric_reference_width": 256,
+      "sha256": "f5d200d64785651175fff1e9c31f5df77683cb90e7e389f778677d7826a6d14b",
+      "seconds": {
+        "umber": [
+          0.004439097,
+          0.004704606,
+          0.004584366,
+          0.004784581,
+          0.004210059,
+          0.004370651,
+          0.004692374
+        ],
+        "pdftex": [
+          0.011899338,
+          0.01233887,
+          0.012638685,
+          0.012701549,
+          0.013017878,
+          0.012475922,
+          0.014307111
+        ]
+      },
+      "median": {
+        "umber": 0.004584366,
+        "pdftex": 0.012638685
+      },
+      "ratio": 0.3627249195624387,
+      "cpu_seconds": {
+        "umber": [
+          0.004078000000000012,
+          0.0043129999999999835,
+          0.004282000000000008,
+          0.004383000000000026,
+          0.003929999999999989,
+          0.004047000000000023,
+          0.0043279999999999985
+        ],
+        "pdftex": [
+          0.01143899999999999,
+          0.01183200000000001,
+          0.012130000000000002,
+          0.012087999999999988,
+          0.012550999999999979,
+          0.011915000000000009,
+          0.013743000000000005
+        ]
+      },
+      "cpu_median": {
+        "umber": 0.004282000000000008,
+        "pdftex": 0.012087999999999988
+      },
+      "cpu_ratio": 0.35423560555923334
+    },
+    {
+      "case": "numeric-references",
+      "size": 10000,
+      "bytes": 2536450,
+      "expanded_text_bytes": 153197,
+      "name_table_width": null,
+      "numeric_reference_width": 256,
+      "sha256": "3f46bc9992549fc4de16a9c1abc9a310e59fb5800e48c6517e5caa1afe10a343",
+      "seconds": {
+        "umber": [
+          0.031794202,
+          0.032854487,
+          0.034388982,
+          0.031973198,
+          0.03018366,
+          0.030285733,
+          0.030886046
+        ],
+        "pdftex": [
+          0.071969217,
+          0.074263652,
+          0.071623069,
+          0.07023179,
+          0.069837922,
+          0.069690123,
+          0.074107003
+        ]
+      },
+      "median": {
+        "umber": 0.031794202,
+        "pdftex": 0.071623069
+      },
+      "ratio": 0.4439100759561141,
+      "cpu_seconds": {
+        "umber": [
+          0.03124600000000005,
+          0.03230299999999997,
+          0.0337900000000001,
+          0.03132299999999988,
+          0.029636000000000107,
+          0.029722999999999944,
+          0.03029700000000002
+        ],
+        "pdftex": [
+          0.07132,
+          0.07358099999999995,
+          0.07093099999999997,
+          0.069581,
+          0.06918199999999997,
+          0.06903100000000006,
+          0.0734189999999999
+        ]
+      },
+      "cpu_median": {
+        "umber": 0.03124600000000005,
+        "pdftex": 0.07093099999999997
+      },
+      "cpu_ratio": 0.44051261084716226
+    },
+    {
+      "case": "numeric-references",
+      "size": 50000,
+      "bytes": 12619279,
+      "expanded_text_bytes": 766018,
+      "name_table_width": null,
+      "numeric_reference_width": 256,
+      "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+      "seconds": {
+        "umber": [
+          0.147643957,
+          0.153536588,
+          0.147998093,
+          0.149114197,
+          0.14075313,
+          0.160128739,
+          0.155073678
+        ],
+        "pdftex": [
+          0.323323456,
+          0.34232354,
+          0.323528161,
+          0.338817113,
+          0.344595667,
+          0.32611843,
+          0.329546073
+        ]
+      },
+      "median": {
+        "umber": 0.149114197,
+        "pdftex": 0.329546073
+      },
+      "ratio": 0.45248361069075765,
+      "cpu_seconds": {
+        "umber": [
+          0.14703299999999997,
+          0.1527569999999998,
+          0.14738499999999988,
+          0.14844299999999988,
+          0.14011899999999988,
+          0.15943800000000063,
+          0.15423899999999957
+        ],
+        "pdftex": [
+          0.3226629999999999,
+          0.34162000000000026,
+          0.32262300000000055,
+          0.33814999999999973,
+          0.3438119999999998,
+          0.3253300000000001,
+          0.3287110000000002
+        ]
+      },
+      "cpu_median": {
+        "umber": 0.14844299999999988,
+        "pdftex": 0.3287110000000002
+      },
+      "cpu_ratio": 0.4515912153837255
+    }
+  ],
+  "startup": {
+    "seconds": {
+      "umber": [
+        0.001462858,
+        0.002004452,
+        0.001712974,
+        0.001420375,
+        0.001182489,
+        0.001312866,
+        0.001403659
+      ],
+      "pdftex": [
+        0.005799161,
+        0.006044672,
+        0.005825793,
+        0.004992331,
+        0.005191323,
+        0.004887605,
+        0.004953248
+      ]
+    },
+    "median": {
+      "umber": 0.001420375,
+      "pdftex": 0.005191323
+    },
+    "ratio": 0.2736055914840976,
+    "cpu_seconds": {
+      "umber": [
+        0.0011840000000000045,
+        0.0015030000000000043,
+        0.0013670000000000002,
+        0.0011469999999999952,
+        0.0009720000000000006,
+        0.0010340000000000071,
+        0.0011380000000000001
+      ],
+      "pdftex": [
+        0.005342999999999994,
+        0.005483000000000002,
+        0.005356999999999994,
+        0.004598999999999999,
+        0.0047820000000000085,
+        0.004446999999999993,
+        0.004575999999999997
+      ]
+    },
+    "cpu_median": {
+      "umber": 0.0011469999999999952,
+      "pdftex": 0.0047820000000000085
+    },
+    "cpu_ratio": 0.2398578000836456
+  },
+  "umber_text_sha256": "2897eafcb9818e2598846e704e139ac5007399be8c087c1a8a38ee346edc2de5",
+  "ordinary_code_identity_report": "benchmarks/results/native-pgo-build.json",
+  "engine_source_base_commit": "e2ee588",
+  "runtime_change": "None. This supplements the retained expansion results with one new workload."
+}

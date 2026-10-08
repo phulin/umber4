@@ -29,6 +29,38 @@ fn serialized_spelling_survives_name_table_growth() {
     }
 }
 
+#[test]
+fn decimal_sources_retain_signs_digits_and_nested_backing() {
+    use crate::token::Token;
+    let mut values = vec![0, 7, 42, -9, -10, 99, 100, i32::MIN, i32::MAX];
+    for power in 1..=9 {
+        let boundary = 10_i32.pow(power);
+        values.extend([
+            boundary - 1,
+            boundary,
+            boundary + 1,
+            -boundary + 1,
+            -boundary,
+            -boundary - 1,
+        ]);
+    }
+    let mut engine = Engine::new(b"");
+    for _ in 0..3 {
+        // Pending sources retain their original buffers while later numbers
+        // are built. The following passes then exercise reuse after retirement.
+        for &value in &values {
+            engine.insert_number(value).unwrap();
+        }
+        for &value in values.iter().rev() {
+            for byte in value.to_string().bytes() {
+                assert_eq!(engine.next_raw().unwrap().token, Token::other(byte));
+            }
+        }
+        engine.retire_exhausted();
+        assert!(engine.sources.is_empty());
+    }
+}
+
 // Expected messages were captured from pdfTeX 1.40.25 INITEX, rather than from
 // this interpreter. scripts/oracle.py also runs these exact sources in both.
 #[test]

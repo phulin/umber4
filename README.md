@@ -13,8 +13,8 @@ implement a parsing/expansion interpreter with 63 primitive names in
 [crates/umber](crates/umber/). Layout, shipout, formats, and checkpoints remain
 design proposals.
 
-[Native measurements](docs/mvp-results.md) compare eight core workloads and
-eight broader macro workloads, including selected kernels from Gentle.
+[Native measurements](docs/mvp-results.md) compare nine core workloads and
+nine broader macro workloads, including selected kernels from Gentle.
 The implementation builds new data in place and reuses captured token ranges,
 token-register values, and invocation storage.
 The [benchmark guide](benchmarks/README.md) also provides an optional native

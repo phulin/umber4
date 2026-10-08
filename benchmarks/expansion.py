@@ -19,7 +19,8 @@ from mvp import BOOT, ROOT, measure, reference
 CORPUS = Path(__file__).resolve().parent / "corpus"
 KERNELS = (CORPUS / "gentle-kernels.tex").read_text()
 CASES = ("gentle-text", "gentle-calendar", "gentle-contents", "gentle-records",
-         "stored-records", "token-pipeline", "name-table", "optional-arguments")
+         "stored-records", "token-pipeline", "name-table", "optional-arguments",
+         "numeric-references")
 MONTHS = ("January February March April May June July August September October "
           "November December").split()
 SPELLINGS = (("analogue", "analog"), ("cancelled", "canceled"),
@@ -65,6 +66,14 @@ def program(case, size):
     lines = [BOOT, r"\def\space{ }\let\ifcanspell=\iftrue\countdef\pageno=1",
              "\n", KERNELS, "\n"]
     expanded_bytes = 0
+    numeric_keys = ([100 + key for key in range(64)]
+                    + [10000 + key for key in range(64)]
+                    + [10000000 + key for key in range(64)]
+                    + [-2000000000 - key for key in range(64)])
+    if case == "numeric-references":
+        for key, value in enumerate(numeric_keys):
+            lines.append(r"\expandafter\def\csname ref" + str(value)
+                         + r"\endcsname{entry" + str(key) + "}\n")
     if case == "gentle-contents":
         # Read literal expected backslashes as characters. The macro itself is
         # already tokenized; it restores the source category after its argument.
@@ -97,7 +106,7 @@ def program(case, size):
         spelling_index = (index * 7) % len(SPELLINGS)
         spelling = SPELLINGS[spelling_index][0 if canadian else 1]
         alias = "\\" + ALIASES[spelling_index]
-        if case != "name-table":
+        if case not in ("name-table", "numeric-references"):
             lines.append(r"\let\ifcanspell=" + (r"\iftrue" if canadian else r"\iffalse")
                          + "\n")
         if case == "gentle-text":
@@ -160,6 +169,15 @@ def program(case, size):
             text = table[key] if present else "fallback"
             lines.extend([wanted(text), actual(r"\ifcsname " + name + r"\endcsname"
                           r"\csname " + name + r"\endcsname\else fallback\fi")])
+        elif case == "numeric-references":
+            key = (index * 61 + 17) % len(numeric_keys)
+            value = numeric_keys[key]
+            text = f"entry{key}/{value}"
+            lines.append(r"\count1=" + str(value) + r"\relax" + "\n")
+            lines.extend([wanted(text), actual(
+                r"\ifcsname ref\number\count1\endcsname"
+                r"\csname ref\number\count1\endcsname\else missing\fi/"
+                r"\number\count1")])
         elif case == "optional-arguments":
             option = spelling if index % 4 else "normal"
             body = payload(index) + " {" + payload(index + 1)[:32] + "}"
@@ -180,6 +198,7 @@ def program(case, size):
     return "".join(lines).encode(), str(size).encode(), {
         "expanded_text_bytes": expanded_bytes,
         "name_table_width": width if case == "name-table" else None,
+        "numeric_reference_width": len(numeric_keys) if case == "numeric-references" else None,
     }
 
 

@@ -5,7 +5,7 @@ That workload reads varied one- to ten-digit decimal operands directly from
 source bytes. Each value is compared with an independently stored expected
 operand before incrementing the checksum. The original `integers` workload
 reads its repeated decimal operands from macro tokens. `expansion.py` exercises
-eight larger macro workloads, including excerpts from Michael Doob's
+nine larger macro workloads, including excerpts from Michael Doob's
 [gentle.tex](https://ctan.net/info/gentle/gentle.tex). Both runners execute the
 same complete input in Umber and native `pdftex -ini -etex`, validate every run,
 alternate engine order, pin a CPU on Linux, and retain raw timings and identities.
@@ -61,6 +61,14 @@ Compare both suites when changing these settings or updating Rust.
 | `token-pipeline`     | Shared token-register values, group restoration, a deferred assignment hook, opaque list insertion into `\edef`, and later expansion after a field redefinition. |
 | `name-table`         | 64–4,096 dynamically defined names, defined/missing tests, lookups, and periodic definition replacement.                                                         |
 | `optional-arguments` | `\futurelet`/`\unless` dispatch between optional and default arguments, delimiter matching, integer expressions, and source/stored argument routes.              |
+| `numeric-references` | 256 numbered names, generated decimal input in `\ifcsname` and `\csname`, and direct decimal emission in `\edef`.                                                |
+
+`numeric-references` uses 256 numbered names with positive and negative register
+values from three to ten digits. Each record forms a name in `\ifcsname` and
+`\csname`, expands its definition, and appends decimal text. The name scanners
+consume generated numeric input; the trailing number is emitted directly into
+`\edef`. Both paths are checked against independently generated expected text.
+This synthetic case supplements the Gentle excerpts and other macro kernels.
 
 These kernels consume text in expanded definitions. Fonts, boxes, mathematics,
 paragraph building, and output are outside the measured slice. The full manual

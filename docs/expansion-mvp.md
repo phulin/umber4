@@ -147,6 +147,13 @@ Consume payloads, compare expanded definitions with independently generated
 expected text, and emit a final checksum. Equality validation contributes to
 timing. Record original corpus hashes, selected line ranges, and adaptations.
 
+Numbered references form control names from decimal register values inside
+`\ifcsname` and `\csname`, then append decimal text to the expanded definition.
+Use a fixed set of 256 defined references with positive and negative operands
+from three to ten digits. This exercises generated numeric input consumed by a
+name scanner alongside direct numeric emission into a destination. Generate the
+expected reference text independently and compare every result with `\ifx`.
+
 Use identical complete sources with native pdfTeX INITEX. Retain raw samples at
 several sizes, warmup and process overhead, result validation, allocation counts,
 and native/Wasm build identities. Wasm runtime timing remains separate. Preserve
