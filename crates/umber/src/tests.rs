@@ -373,6 +373,34 @@ fn supported_failure_boundaries() {
 }
 
 #[test]
+fn real_hash_fragment_collisions_keep_distinct_meanings() {
+    let hash = |name: &[u8]| {
+        name.iter()
+            .fold(crate::token::Names::HASH_START, |hash, &byte| {
+                crate::token::Names::hash_byte(hash, byte)
+            })
+    };
+    let first = hash(b"collisiongnzbie");
+    let second = hash(b"collisionsbsdql");
+    assert_ne!(first, second);
+    assert_eq!(first as u32, second as u32);
+    let result = Engine::new(include_bytes!(
+        "../../../fixtures/mvp/name-fragment-collision.tex"
+    ))
+    .run()
+    .unwrap();
+    assert_eq!(
+        result.messages,
+        [
+            b"UMBER:LEFT/RIGHT/LEFT/RIGHT:END".as_slice(),
+            b"UMBER:LEFT/RIGHT:END".as_slice(),
+            b"UMBER:LOCAL/RIGHT:END".as_slice(),
+            b"UMBER:LEFT/RIGHT:END".as_slice(),
+        ]
+        .map(<[u8]>::to_vec)
+    );
+}
+#[test]
 fn interned_names_compare_all_bytes_under_hash_collisions() {
     let mut names = crate::token::Names::new();
     let mut entries = Vec::new();

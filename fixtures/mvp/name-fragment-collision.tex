@@ -1,0 +1,11 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\collisiongnzbie{LEFT}
+\expandafter\def\csname collisionsbsdql\endcsname{RIGHT}
+\message{UMBER:\collisiongnzbie/\collisionsbsdql/\csname collisiongnzbie\endcsname/\csname collisionsbsdql\endcsname:END}
+\count0=0
+\def\fill{\expandafter\def\csname lookup\the\count0\endcsname{x}\advance\count0by1\relax\ifnum\count0<1100\relax\expandafter\fill\fi}
+\fill
+\message{UMBER:\collisiongnzbie/\collisionsbsdql:END}
+{\def\collisiongnzbie{LOCAL}\message{UMBER:\collisiongnzbie/\collisionsbsdql:END}}
+\message{UMBER:\collisiongnzbie/\collisionsbsdql:END}
+\end
