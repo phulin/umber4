@@ -236,6 +236,9 @@ impl Sequence {
             }
         }
     }
+    // Ordinary builds keep the packet loop small for common one-argument
+    // packets. The trained compiler chooses its own reset-loop inlining.
+    #[cfg_attr(not(feature = "native-profile"), inline(never))]
     pub fn clear(&mut self) {
         self.first = Span::default();
         self.rest.clear();
