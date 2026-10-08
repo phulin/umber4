@@ -6,4 +6,8 @@
 \message{UMBER:\number\numexpr(0-(-\n+2))*\factor\relax/\the\numexpr1+\numexpr2+3\relax*4\relax:END}
 \let\stop=\relax\message{UMBER:\number\numexpr1+2\stop X/\number\numexpr2+3 Z:END}
 \ifnum\numexpr(7+5)/2\relax=6 \message{UMBER:YES:END}\else\message{UMBER:NO:END}\fi
+\def\seven{7}\def\suppressed{\noexpand\seven}
+\message{UMBER:\number\numexpr\noexpand\seven+1\relax:END}
+\message{UMBER:\number\numexpr(\noexpand\seven+1)*2\relax:END}
+\message{UMBER:\number\numexpr\suppressed*3\relax:END}
 \end

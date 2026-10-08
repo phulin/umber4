@@ -9,4 +9,8 @@
 \def\digit{7\gap\relax}\count0=\digit\message{UMBER:\the\count0:END}
 \def\digit{7\count1=9\relax}\count0=\digit\message{UMBER:\the\count0/\the\count1:END}
 \def\id#1{#1}\def\digit{7\id{8}\relax}\count0=\digit\message{UMBER:\the\count0:END}
+\def\from#1#2{\count0=#1#2\relax}
+\from{7}{8}\message{UMBER:\the\count0:END}
+\from{ }{7}\message{UMBER:\the\count0:END}
+\def\seven{7}\from{\seven}{}\message{UMBER:\the\count0:END}
 \end

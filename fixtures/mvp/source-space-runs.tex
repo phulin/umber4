@@ -1,0 +1,17 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7 \catcode9=10\relax
+\def\show#1{\message{UMBER:[#1]:END}}
+\show{  A  B^^09C }
+\show{A^^20^^20B}
+\show{A% joined physical lines
+B}
+\show{A
+ B}
+\def\split#1 #2?{\message{UMBER:[#1]|[#2]:END}}
+\split A   B C?
+\def\forward#1{\show{#1}}\forward{ A  B }
+\def\raw{ A  B }\message{UMBER:[\raw]:END}
+\edef\expanded{ A  B }\message{UMBER:[\expanded]:END}
+\catcode95=10\relax\show{A__B_C}
+\catcode32=12\relax\show{A  B}
+\catcode95=12\relax\show{A__B}
+\end

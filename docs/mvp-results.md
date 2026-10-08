@@ -336,11 +336,11 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-Thirty-four Rust tests cover the core plus token-register retention, protected
+Thirty-five Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
-dynamic names. The native oracle compares 300 marked messages and 26 rejected
+dynamic names. The native oracle compares 317 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
 Short-number fixtures compare singleton windows, spaces and spacer aliases,
@@ -349,6 +349,12 @@ and an unexpandable control-sequence terminator with native pdfTeX. Operand
 cursor tests cross shifted arena-window ends, retain nonspace terminators, and
 check digit categories, signs, multiple digits, and failed-scan progress. This
 integer boundary and progress test also passes Miri.
+
+Additional native fixtures cover source-space normalization across tabs,
+comments, line changes, delimiters, and live category changes. Expression
+fixtures retain e-TeX's second expansion of a `\noexpand` operand. Macro-operand
+tests cross arena-window ends with single digits, split numbers, empty arguments,
+signs, and macro or internal-integer values.
 
 Arithmetic-keyword fixtures compare mixed case, character categories, expanded
 letters, leading expanded spaces, and parameter substitution with native pdfTeX.

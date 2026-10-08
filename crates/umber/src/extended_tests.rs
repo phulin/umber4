@@ -69,6 +69,10 @@ fn extended_upstream_fixtures() {
             include_bytes!("../../../fixtures/mvp/short-numbers.tex"),
             include_str!("../../../fixtures/mvp/short-numbers.expected"),
         ),
+        (
+            include_bytes!("../../../fixtures/mvp/source-space-runs.tex"),
+            include_str!("../../../fixtures/mvp/source-space-runs.expected"),
+        ),
     ];
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();

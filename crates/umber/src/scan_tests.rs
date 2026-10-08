@@ -1,6 +1,29 @@
 use crate::{Engine, Error};
 
 #[test]
+fn macro_integer_arguments_cross_windows() {
+    // The padding and seven definitions put take's first argument word at
+    // padding + 7. These offsets cross its two argument words and terminator.
+    for padding in [0, 4087, 4088, 4089, 4094, 4095, 4096] {
+        let source = format!(
+            "\\catcode123=1 \\catcode125=2 \\catcode35=6\\relax\n\\def\\padding{{{}}}\n\
+             \\def\\seven{{7}}\\chardef\\charseven=7\\relax\
+             \\def\\take#1#2{{\\number#1#2X}}\
+             \\message{{\\take{{7}}{{8}}/\\take{{ }}{{7}}/\\take{{}}{{7}}/\
+             \\take{{\\seven}}{{8}}/\\take{{-7}}{{}}/\\take{{+7}}{{}}/\
+             \\take{{\\charseven}}{{}}/\\take{{007}}{{8}}}}\\end\n",
+            "P".repeat(padding)
+        );
+        let outcome = Engine::new(source.as_bytes()).run().unwrap();
+        assert_eq!(
+            outcome.messages,
+            vec![b"78X/7X/7X/78X/-7X/7X/7X/78X".to_vec()],
+            "padding {padding}"
+        );
+    }
+}
+
+#[test]
 fn short_integer_terminators_and_progress_cross_windows() {
     use crate::token::{DEFS, FROZEN_RELAX, Meaning, Span, Token, cmd};
     let letter = |byte| Token::character(11, byte);
