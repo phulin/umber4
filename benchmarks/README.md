@@ -60,6 +60,11 @@ frame, retaining checked fallback reads. The
 [delimiter comparison](results/profile-delimiter-cursor-followup.json) records
 nine paired repetitions, unchanged allocation samples, and execution-text
 identities for the profile change and ordinary rebuild.
+Interned spelling bytes share stable session-owned chunks. The
+[spelling-store comparison](results/name-spelling-arena-followup.json) retains
+nine paired repetitions for all eighteen workloads, 21-repetition confirmations
+for selected gains and regressions, and ordinary/profile allocation diagnostics.
+Current full sweeps in `results/` identify this exact ordinary and profile build.
 Compare both suites when changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |

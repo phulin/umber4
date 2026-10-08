@@ -8,6 +8,7 @@ mod expression;
 mod input;
 mod lists;
 mod macros;
+mod names;
 mod scalars;
 mod scan;
 mod token;
@@ -40,7 +41,7 @@ pub struct Outcome {
 }
 pub struct Engine<'a> {
     pub(crate) file: input::FileInput<'a>,
-    pub(crate) names: Names,
+    pub(crate) names: Box<Names>,
     pub(crate) bindings: Vec<Binding>,
     pub(crate) scalars: Scalars,
     pub(crate) token_registers: [TokenValue; 256],
@@ -62,7 +63,7 @@ impl<'a> Engine<'a> {
     pub fn new(source: &'a [u8]) -> Self {
         let mut engine = Self {
             file: input::FileInput::new(source),
-            names: Names::new(),
+            names: Box::new(Names::new()),
             bindings: vec![Binding::default(); 514],
             scalars: Scalars::default(),
             token_registers: [TokenValue::default(); 256],

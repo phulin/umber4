@@ -1,5 +1,5 @@
 {
-  "engine_source_base_commit": "b8d6991",
+  "engine_source_base_commit": "abe197a",
   "build": {
     "features": [
       "native-profile"
@@ -21,20 +21,22 @@
       "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
       "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
       "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
-      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
+      "crates/umber/src/lib.rs": "2aa6fc35e8e6965c35d8cad713ef1ee593147dc7699ea8d3f2f472411c7be9d4",
       "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
       "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
       "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
+      "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
       "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
       "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
       "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
-      "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
-      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
+      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
+      "crates/umber/src/token.rs": "c256cf26ec2edecf017b3e8a580408adbf21b3f13e07ecefc4b2feb48c0f96e4"
     },
-    "training_binary_sha256": "5f76d08161ce9f062e75befa3e3e1278a917a6f625e12ccb223518a8f29bdaf5",
+    "training_binary_sha256": "d0faf0fec08479ca5265ae9181d968e79d3486677092708c86b9fd49d996253c",
     "generators": {
       "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
-      "expansion": "7f788e7b1a26c0528690e41f45f53d70cd4379754e43dc89018177f07c9d56b3"
+      "expansion": "7d1c3ec0ba6cd4126427b23c8b175f159244df068b39eb571c3796894743da84"
     },
     "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
     "sources": [
@@ -147,12 +149,12 @@
         "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
       }
     ],
-    "profile_path": "target/pgo/a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6.profdata",
-    "profile_sha256": "a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "profile_path": "target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata",
+    "profile_sha256": "93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
     "rustflags_args": [
       "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/a428cd6bb0debd9293411ace1e818a60151d9115bf8019fe5f28f6944e1076e6.profdata",
+      "profile-use=/home/phulin/umber4/target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata",
       "-C",
       "llvm-args=-pgo-warn-missing-function",
       "-C",
@@ -162,44 +164,12 @@
       "-C",
       "llvm-args=--align-all-functions=6"
     ],
-    "umber_binary_sha256": "b4e0b604f3b62bc2ab9efb70746b5767424c91a8ff1537cb356990f8528af3f4",
-    "allocation_binary_sha256": "88a320613b5173d2c17dcd1ebe50fb61f6a8eba9f25e7695a3f15de0bebf5ff0"
+    "umber_binary_sha256": "2b4548078502fbe71ec2c6eb4567846a64f6ff0048efc2cd6c529def29ff72a3",
+    "allocation_binary_sha256": "423556165e11b8b1ee117d8141fae28459591f0e4fc5078e935d3ab7395fe425"
   },
-  "identity": "Exact final native-profile interpreter, allocation diagnostic, source hashes, compiler options and eighteen training workloads. Ordinary timing reports retain the preceding binary whose execution text matches the current ordinary rebuild.",
   "ordinary_build": {
-    "umber_binary_sha256": "21ee4357fc8c3090b5953c76d52d0df4d127cc8a32f7ae5df59a247d07640db9",
-    "allocation_binary_sha256": "e97ce48d2f7dd6633df07019b6e8ff67686e722808994ebeeda511074fabfbbe",
-    "rustflags": "",
-    "features": [],
-    "source_files": {
-      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
-      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
-      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
-      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
-      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
-      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
-      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
-      "crates/umber/src/delimit.rs": "26a55ce855ab8371e6acbfa0845b9f188dd32be6166578d7aef4a2486b6f9817",
-      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
-      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
-      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
-      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
-      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
-      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
-      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
-      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
-      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
-      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
-      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
-      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
-      "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
-      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
-    },
-    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n"
-  },
-  "ordinary_rebuild": {
-    "umber_binary_sha256": "3314ba8bc0c688c8ca0c73689575ddf90a66e04aa2259aff001cf9ff31264397",
-    "allocation_binary_sha256": "60f9d3f93f86e3ab0dbf534fd07aa8d68135075c70ff772bf657ed772907811e",
+    "umber_binary_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
+    "allocation_binary_sha256": "03f3e22d924cc95de5015286445a1967a0cad75d1d4dbdedcf56829dd6d7a176",
     "features": [],
     "rustflags": "",
     "source_files": {
@@ -216,26 +186,27 @@
       "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
       "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
       "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
-      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
+      "crates/umber/src/lib.rs": "2aa6fc35e8e6965c35d8cad713ef1ee593147dc7699ea8d3f2f472411c7be9d4",
       "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
       "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
       "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
+      "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
       "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
       "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
       "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
-      "crates/umber/src/tests.rs": "43361ef8c2bedbf0eb3893e7a7aaf50045709753279db15c16dc0cb2f67c6292",
-      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
+      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
+      "crates/umber/src/token.rs": "c256cf26ec2edecf017b3e8a580408adbf21b3f13e07ecefc4b2feb48c0f96e4"
     },
     "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
-    "execution_text": {
-      "baseline_text_sha256": "58eecde59a4032db4af37bab6b1a3e5c563b41b9f7cd241bf50138310925b045",
-      "current_text_sha256": "58eecde59a4032db4af37bab6b1a3e5c563b41b9f7cd241bf50138310925b045",
-      "identical": true
-    }
+    "execution_text_sha256": "74f470b4cf5a78a3cfe0a781fe2b50779e08658ecbd6a0cd2b10766a7adaf7ad",
+    "timed_snapshot_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
+    "final_rebuild_matches_timed_snapshot": true
   },
+  "identity": "Exact final ordinary and native-profile interpreters, allocation adapters, source hashes, compiler flags and eighteen generated training inputs. Instrumented oracle executions are also part of profile training. Final ordinary rebuild is byte-identical to the paired timing snapshot.",
   "previous_profile_comparison": {
-    "provenance": "profile-delimiter-cursor-followup.json",
-    "provenance_sha256": "843c148934a6bf518e59e8d61c88977721c02f277248e9542ea17b1776c62473",
-    "baseline_engine_source_commit": "b8d6991"
+    "provenance": "name-spelling-arena-followup.json",
+    "provenance_sha256": "d9b3c9fdc438d3026a6936c67cdbc7e5c6ae1964b807bdcc49521642343fa564",
+    "baseline_engine_source_commit": "abe197a"
   }
 }

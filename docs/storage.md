@@ -56,6 +56,16 @@ and boxed chunks keep their addresses as the directory grows. Dropping a chunk
 releases its allocation; token words own no resources. This permits direct
 allocation without first filling the chunk.
 
+Interned spelling bytes use the same append-store lifetime. Pack new spellings
+into stable byte chunks, with one contiguous range per name. A spelling longer
+than the normal chunk size receives a sufficiently large chunk. Initialize its
+complete range before publishing its dense-ID descriptor; later insertions write
+only disjoint suffixes. Byte cells can use `UnsafeCell<MaybeUninit<u8>>`, so shared
+views of published prefixes coexist with construction in unused cells. The
+interner owns every chunk and releases them together. The MVP's engine owns that
+interner for its run; the full interpreter retains it across checkpoint restores.
+Symbol spellings continue to use static bytes. Mutable meanings remain separate.
+
 A mutable node store allocates compact cells in chunks, with bump allocation for
 new space and reusable free ranges for material TeX discards. Its snapshot roots
 retain the chunks needed by older states. It shares the arena's bulk allocation

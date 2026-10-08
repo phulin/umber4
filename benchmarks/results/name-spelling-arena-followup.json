@@ -1,0 +1,4197 @@
+{
+  "engine_source_base_commit": "abe197a",
+  "baseline_engine_source_commit": "abe197a",
+  "scope": "Interned multi-byte spellings occupy initialized immutable ranges in stable byte chunks owned by one boxed session interner. Insertion writes directly into the unused suffix and publishes its descriptor before its lookup bucket. Fixed symbols retain static spellings. All benchmark comparisons include full-process work and compiler code placement.",
+  "ordinary_build": {
+    "umber_binary_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
+    "allocation_binary_sha256": "03f3e22d924cc95de5015286445a1967a0cad75d1d4dbdedcf56829dd6d7a176",
+    "features": [],
+    "rustflags": "",
+    "source_files": {
+      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
+      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
+      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
+      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
+      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
+      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
+      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
+      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
+      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
+      "crates/umber/src/lib.rs": "2aa6fc35e8e6965c35d8cad713ef1ee593147dc7699ea8d3f2f472411c7be9d4",
+      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
+      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
+      "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
+      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
+      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
+      "crates/umber/src/token.rs": "c256cf26ec2edecf017b3e8a580408adbf21b3f13e07ecefc4b2feb48c0f96e4"
+    },
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "execution_text_sha256": "74f470b4cf5a78a3cfe0a781fe2b50779e08658ecbd6a0cd2b10766a7adaf7ad",
+    "timed_snapshot_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
+    "final_rebuild_matches_timed_snapshot": true
+  },
+  "measurement_build": {
+    "features": [
+      "native-profile"
+    ],
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "profdata_version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
+    "builder_sha256": "0d1b17da9e5b9355691bf63b2fb6ac51906d183e94f8e99bc71777d1cd25468b",
+    "source_files": {
+      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
+      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
+      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
+      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
+      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
+      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
+      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
+      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
+      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
+      "crates/umber/src/lib.rs": "2aa6fc35e8e6965c35d8cad713ef1ee593147dc7699ea8d3f2f472411c7be9d4",
+      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
+      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
+      "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
+      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
+      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
+      "crates/umber/src/token.rs": "c256cf26ec2edecf017b3e8a580408adbf21b3f13e07ecefc4b2feb48c0f96e4"
+    },
+    "training_binary_sha256": "d0faf0fec08479ca5265ae9181d968e79d3486677092708c86b9fd49d996253c",
+    "generators": {
+      "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
+      "expansion": "7d1c3ec0ba6cd4126427b23c8b175f159244df068b39eb571c3796894743da84"
+    },
+    "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+    "sources": [
+      {
+        "case": "raw",
+        "size": 75031,
+        "bytes": 1875884,
+        "sha256": "8210581caee71a7b068b85029828785d03525929d733cb222d87379cbed0aaed"
+      },
+      {
+        "case": "bodies",
+        "size": 75031,
+        "bytes": 563,
+        "sha256": "e174c138ad2f1c8b7707809ec0c664fe3f7a2d81e96a230f0ae1087b3cabd5f0"
+      },
+      {
+        "case": "integers",
+        "size": 75031,
+        "bytes": 544,
+        "sha256": "aa9230157e94bbd09acc3b5715e6ba0a650bf9409670459fbb03c58cdcdf74ca"
+      },
+      {
+        "case": "parameters",
+        "size": 75031,
+        "bytes": 578,
+        "sha256": "9b1da982e0de4b9e0300bc38a5afebecc1706752712d86129c930f7ab164f786"
+      },
+      {
+        "case": "file-parameters",
+        "size": 75031,
+        "bytes": 750489,
+        "sha256": "664d72d8e0d740e086b144654d75a452153357da1f27fec25ad88829c4431ede"
+      },
+      {
+        "case": "long-parameters",
+        "size": 75031,
+        "bytes": 832,
+        "sha256": "78265e7eacd7567f00c31dca81b17981a62411f4381b86bc3bdc9050557ac9ac"
+      },
+      {
+        "case": "delimiters",
+        "size": 75031,
+        "bytes": 549,
+        "sha256": "9179158e3382c573d4528a62b1d786441653fb73fa7ef2f4c203ff19680b8191"
+      },
+      {
+        "case": "groups",
+        "size": 75031,
+        "bytes": 571,
+        "sha256": "e7eaa2b2d431962caff88d03e50c949835e7ba9c7c32b731c46bd3dbf6da2fc2"
+      },
+      {
+        "case": "source-integers",
+        "size": 75031,
+        "bytes": 5114792,
+        "sha256": "eaf0e7827fce2c102abb115ea03e69123d753275ea592bfe16f589b319c84cbd"
+      },
+      {
+        "case": "gentle-text",
+        "size": 7003,
+        "bytes": 1646386,
+        "sha256": "6bb39bf1787dbd06a16a9e0e34a9d23899e8d88b980f9e25bd5bfcc41d92f17a"
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 7003,
+        "bytes": 1341330,
+        "sha256": "d39a6c883220ebbd6098c9787c54add9468e44c36a3b7d43663a9db06ed5370e"
+      },
+      {
+        "case": "gentle-contents",
+        "size": 7003,
+        "bytes": 3242731,
+        "sha256": "d437bb09faa905ae2ac2013c2223bfd8e0812ea674e6879373197ec062d89000"
+      },
+      {
+        "case": "gentle-records",
+        "size": 7003,
+        "bytes": 5877051,
+        "sha256": "20f8ace46f45a47bf1819becd2d8cb9065586d4137fb4c9fba506cb40304734b"
+      },
+      {
+        "case": "stored-records",
+        "size": 7003,
+        "bytes": 5933101,
+        "sha256": "0e62efb86d029ac17bda074c20257a7f031ef761949506e187cf257fd267ccc5"
+      },
+      {
+        "case": "token-pipeline",
+        "size": 7003,
+        "bytes": 10707198,
+        "sha256": "fa2328db1cf10e2940d502e115547d10bd87bf9b294ffc59321e68fc64d50d9e"
+      },
+      {
+        "case": "name-table",
+        "size": 7003,
+        "bytes": 1704234,
+        "sha256": "abda60ec5ff68f2683cfb6c6627d38561fd262adb5b3f857767c9ff1d8a8b983"
+      },
+      {
+        "case": "optional-arguments",
+        "size": 7003,
+        "bytes": 5595815,
+        "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
+      },
+      {
+        "case": "numeric-references",
+        "size": 7003,
+        "bytes": 1781001,
+        "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
+      }
+    ],
+    "profile_path": "target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata",
+    "profile_sha256": "93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "rustflags_args": [
+      "-C",
+      "profile-use=/home/phulin/umber4/target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata",
+      "-C",
+      "llvm-args=-pgo-warn-missing-function",
+      "-C",
+      "llvm-args=--inline-enable-cost-benefit-analysis=false",
+      "-C",
+      "llvm-args=--hot-callsite-threshold=1000",
+      "-C",
+      "llvm-args=--align-all-functions=6"
+    ],
+    "umber_binary_sha256": "2b4548078502fbe71ec2c6eb4567846a64f6ff0048efc2cd6c529def29ff72a3",
+    "allocation_binary_sha256": "423556165e11b8b1ee117d8141fae28459591f0e4fc5078e935d3ab7395fe425"
+  },
+  "baseline_profile_build": {
+    "features": [
+      "native-profile"
+    ],
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "profdata_version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
+    "builder_sha256": "0d1b17da9e5b9355691bf63b2fb6ac51906d183e94f8e99bc71777d1cd25468b",
+    "source_files": {
+      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
+      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
+      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
+      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
+      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
+      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
+      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
+      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
+      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
+      "crates/umber/src/lib.rs": "61391527251fc3a584c4016b30f7f09223987e6eaf379ff5d3203c26b6dee57f",
+      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
+      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
+      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
+      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
+      "crates/umber/src/token.rs": "187b8a293469324af8387ecd80970962ac09c7d03e53505ad3b99f2f835958a4"
+    },
+    "training_binary_sha256": "5f76d08161ce9f062e75befa3e3e1278a917a6f625e12ccb223518a8f29bdaf5",
+    "generators": {
+      "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
+      "expansion": "7d1c3ec0ba6cd4126427b23c8b175f159244df068b39eb571c3796894743da84"
+    },
+    "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+    "sources": [
+      {
+        "case": "raw",
+        "size": 75031,
+        "bytes": 1875884,
+        "sha256": "8210581caee71a7b068b85029828785d03525929d733cb222d87379cbed0aaed"
+      },
+      {
+        "case": "bodies",
+        "size": 75031,
+        "bytes": 563,
+        "sha256": "e174c138ad2f1c8b7707809ec0c664fe3f7a2d81e96a230f0ae1087b3cabd5f0"
+      },
+      {
+        "case": "integers",
+        "size": 75031,
+        "bytes": 544,
+        "sha256": "aa9230157e94bbd09acc3b5715e6ba0a650bf9409670459fbb03c58cdcdf74ca"
+      },
+      {
+        "case": "parameters",
+        "size": 75031,
+        "bytes": 578,
+        "sha256": "9b1da982e0de4b9e0300bc38a5afebecc1706752712d86129c930f7ab164f786"
+      },
+      {
+        "case": "file-parameters",
+        "size": 75031,
+        "bytes": 750489,
+        "sha256": "664d72d8e0d740e086b144654d75a452153357da1f27fec25ad88829c4431ede"
+      },
+      {
+        "case": "long-parameters",
+        "size": 75031,
+        "bytes": 832,
+        "sha256": "78265e7eacd7567f00c31dca81b17981a62411f4381b86bc3bdc9050557ac9ac"
+      },
+      {
+        "case": "delimiters",
+        "size": 75031,
+        "bytes": 549,
+        "sha256": "9179158e3382c573d4528a62b1d786441653fb73fa7ef2f4c203ff19680b8191"
+      },
+      {
+        "case": "groups",
+        "size": 75031,
+        "bytes": 571,
+        "sha256": "e7eaa2b2d431962caff88d03e50c949835e7ba9c7c32b731c46bd3dbf6da2fc2"
+      },
+      {
+        "case": "source-integers",
+        "size": 75031,
+        "bytes": 5114792,
+        "sha256": "eaf0e7827fce2c102abb115ea03e69123d753275ea592bfe16f589b319c84cbd"
+      },
+      {
+        "case": "gentle-text",
+        "size": 7003,
+        "bytes": 1646386,
+        "sha256": "6bb39bf1787dbd06a16a9e0e34a9d23899e8d88b980f9e25bd5bfcc41d92f17a"
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 7003,
+        "bytes": 1341330,
+        "sha256": "d39a6c883220ebbd6098c9787c54add9468e44c36a3b7d43663a9db06ed5370e"
+      },
+      {
+        "case": "gentle-contents",
+        "size": 7003,
+        "bytes": 3242731,
+        "sha256": "d437bb09faa905ae2ac2013c2223bfd8e0812ea674e6879373197ec062d89000"
+      },
+      {
+        "case": "gentle-records",
+        "size": 7003,
+        "bytes": 5877051,
+        "sha256": "20f8ace46f45a47bf1819becd2d8cb9065586d4137fb4c9fba506cb40304734b"
+      },
+      {
+        "case": "stored-records",
+        "size": 7003,
+        "bytes": 5933101,
+        "sha256": "0e62efb86d029ac17bda074c20257a7f031ef761949506e187cf257fd267ccc5"
+      },
+      {
+        "case": "token-pipeline",
+        "size": 7003,
+        "bytes": 10707198,
+        "sha256": "fa2328db1cf10e2940d502e115547d10bd87bf9b294ffc59321e68fc64d50d9e"
+      },
+      {
+        "case": "name-table",
+        "size": 7003,
+        "bytes": 1704234,
+        "sha256": "abda60ec5ff68f2683cfb6c6627d38561fd262adb5b3f857767c9ff1d8a8b983"
+      },
+      {
+        "case": "optional-arguments",
+        "size": 7003,
+        "bytes": 5595815,
+        "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
+      },
+      {
+        "case": "numeric-references",
+        "size": 7003,
+        "bytes": 1781001,
+        "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
+      }
+    ],
+    "profile_path": "target/pgo/89909248e72a513bc68fd3c792d3606d708ccb149b81608ea6ebed6d6a49f6a6.profdata",
+    "profile_sha256": "89909248e72a513bc68fd3c792d3606d708ccb149b81608ea6ebed6d6a49f6a6",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/89909248e72a513bc68fd3c792d3606d708ccb149b81608ea6ebed6d6a49f6a6.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "rustflags_args": [
+      "-C",
+      "profile-use=/home/phulin/umber4/target/pgo/89909248e72a513bc68fd3c792d3606d708ccb149b81608ea6ebed6d6a49f6a6.profdata",
+      "-C",
+      "llvm-args=-pgo-warn-missing-function",
+      "-C",
+      "llvm-args=--inline-enable-cost-benefit-analysis=false",
+      "-C",
+      "llvm-args=--hot-callsite-threshold=1000",
+      "-C",
+      "llvm-args=--align-all-functions=6"
+    ],
+    "umber_binary_sha256": "697065b09ea1e48fd70bdf9f97d86a5f825d6ac1ebded53ec6e79cb6dd789f54",
+    "allocation_binary_sha256": "de504f654fdc8950f4338129d76b116b1746b48095ed4c56db9c3a67d76284f3"
+  },
+  "paired_comparisons": {
+    "ordinary": {
+      "date": "2026-10-08T20:43:28.569335+00:00",
+      "cpu": 0,
+      "scope": "Alternating full-process child user-plus-system CPU comparison of session-owned spelling byte chunks against abe197a with identical compatibility and training inputs. Input reads, construction, execution and checksum output are timed. One warmup precedes 9 retained repetitions; every checksum is verified.",
+      "umber_binary_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
+      "baseline_binary_sha256": "3314ba8bc0c688c8ca0c73689575ddf90a66e04aa2259aff001cf9ff31264397",
+      "repeats": 9,
+      "complete": true,
+      "samples": [
+        {
+          "suite": "mvp",
+          "case": "raw",
+          "size": 1000000,
+          "sha256": "da1fe7e4cb29c08f024b338c7fe3d6046c1d2d76fe81b2c40e63d8fd85463719",
+          "cpu_seconds": {
+            "umber": [
+              0.2012639999999999,
+              0.19643300000000008,
+              0.19910699999999992,
+              0.20436100000000001,
+              0.2080160000000002,
+              0.19749400000000028,
+              0.19769299999999967,
+              0.21887900000000027,
+              0.2042969999999995
+            ],
+            "baseline": [
+              0.21822700000000006,
+              0.22790199999999994,
+              0.21546900000000013,
+              0.21376499999999998,
+              0.20953899999999948,
+              0.2216330000000002,
+              0.23159299999999972,
+              0.2214240000000003,
+              0.2128610000000002
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.201923951,
+              0.196988051,
+              0.199699538,
+              0.205003343,
+              0.208746697,
+              0.19826708,
+              0.198326815,
+              0.21972574,
+              0.204924397
+            ],
+            "baseline": [
+              0.218788427,
+              0.22867949,
+              0.216304714,
+              0.214506822,
+              0.210202421,
+              0.222369485,
+              0.232269475,
+              0.222209443,
+              0.213519177
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.2012639999999999,
+            "baseline": 0.21822700000000006
+          },
+          "cpu_ratio_to_baseline": 0.9222690134584622
+        },
+        {
+          "suite": "mvp",
+          "case": "bodies",
+          "size": 1000000,
+          "sha256": "3aaccb91ab7050c05d84045d35b6e468e9c782bc15188d47e4784b047bad83b6",
+          "cpu_seconds": {
+            "umber": [
+              0.09794299999999989,
+              0.10416399999999992,
+              0.09802200000000028,
+              0.09956900000000068,
+              0.10398499999999977,
+              0.1055470000000005,
+              0.10730399999999918,
+              0.10093499999999977,
+              0.09933900000000051
+            ],
+            "baseline": [
+              0.10270700000000055,
+              0.1017039999999998,
+              0.10091199999999922,
+              0.10146000000000033,
+              0.10553100000000004,
+              0.10602399999999967,
+              0.10223000000000049,
+              0.10178799999999999,
+              0.10104199999999963
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.098515834,
+              0.104949311,
+              0.098641162,
+              0.100122812,
+              0.104572534,
+              0.106209813,
+              0.107996551,
+              0.101491913,
+              0.099911157
+            ],
+            "baseline": [
+              0.103412809,
+              0.10232403,
+              0.101631703,
+              0.102092477,
+              0.106222008,
+              0.106771338,
+              0.102927658,
+              0.102388772,
+              0.101669255
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.10093499999999977,
+            "baseline": 0.10178799999999999
+          },
+          "cpu_ratio_to_baseline": 0.9916198373089145
+        },
+        {
+          "suite": "mvp",
+          "case": "integers",
+          "size": 1000000,
+          "sha256": "706e319d2c42dc2c6b167178404dfcb6e6d53d4f2b46d89ef8e6b8037d2e151a",
+          "cpu_seconds": {
+            "umber": [
+              0.1100519999999996,
+              0.11548300000000022,
+              0.11141200000000051,
+              0.11372699999999991,
+              0.11120399999999986,
+              0.10922699999999974,
+              0.11110700000000051,
+              0.11089299999999902,
+              0.1110880000000023
+            ],
+            "baseline": [
+              0.11646100000000015,
+              0.12477599999999978,
+              0.12609199999999987,
+              0.11939499999999992,
+              0.1216279999999994,
+              0.12044100000000046,
+              0.11648399999999981,
+              0.12381799999999998,
+              0.11588099999999812
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.110676239,
+              0.116035672,
+              0.112012877,
+              0.114367327,
+              0.111782849,
+              0.109766963,
+              0.111637172,
+              0.111470357,
+              0.111677038
+            ],
+            "baseline": [
+              0.117209982,
+              0.125369743,
+              0.126721146,
+              0.119956048,
+              0.122347933,
+              0.121031767,
+              0.117098828,
+              0.124472016,
+              0.116625512
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.11110700000000051,
+            "baseline": 0.12044100000000046
+          },
+          "cpu_ratio_to_baseline": 0.9225014737506337
+        },
+        {
+          "suite": "mvp",
+          "case": "parameters",
+          "size": 1000000,
+          "sha256": "469f63295fc03e6bd69e539893c287bfcb158287dbe4756ac4ca0ad8f6b9604f",
+          "cpu_seconds": {
+            "umber": [
+              0.338279,
+              0.3183159999999994,
+              0.30696299999999965,
+              0.3224160000000005,
+              0.3145099999999985,
+              0.3270759999999999,
+              0.33546999999999905,
+              0.30145900000000125,
+              0.30129299999999937
+            ],
+            "baseline": [
+              0.3079079999999994,
+              0.30822400000000094,
+              0.3174779999999995,
+              0.31183900000000087,
+              0.3074450000000013,
+              0.3154540000000008,
+              0.3018800000000006,
+              0.30565599999999904,
+              0.3111619999999995
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.338866562,
+              0.318879576,
+              0.30778777,
+              0.323407453,
+              0.31513948,
+              0.327884429,
+              0.336151908,
+              0.302058245,
+              0.301885775
+            ],
+            "baseline": [
+              0.308726883,
+              0.308830529,
+              0.318123497,
+              0.312543527,
+              0.308045304,
+              0.316191175,
+              0.302557222,
+              0.306317674,
+              0.311820733
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.3183159999999994,
+            "baseline": 0.30822400000000094
+          },
+          "cpu_ratio_to_baseline": 1.0327424210963403
+        },
+        {
+          "suite": "mvp",
+          "case": "file-parameters",
+          "size": 1000000,
+          "sha256": "9256bab9e6af6a6e49441c21b021111a0d3f483f892edda2b0cac894572bc0a1",
+          "cpu_seconds": {
+            "umber": [
+              0.4081279999999996,
+              0.3894739999999963,
+              0.37812700000000277,
+              0.38690799999999825,
+              0.38917200000000207,
+              0.4212360000000004,
+              0.38421799999999706,
+              0.38623400000000174,
+              0.382715000000001
+            ],
+            "baseline": [
+              0.40219000000000094,
+              0.38497500000000073,
+              0.3891719999999985,
+              0.3920860000000026,
+              0.38980599999999654,
+              0.3962960000000031,
+              0.38533800000000085,
+              0.3937539999999977,
+              0.389761
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.408826906,
+              0.390101188,
+              0.378793051,
+              0.387604625,
+              0.389904496,
+              0.421901783,
+              0.385028486,
+              0.387032411,
+              0.383305795
+            ],
+            "baseline": [
+              0.40292513,
+              0.385720033,
+              0.389899795,
+              0.392769621,
+              0.390508166,
+              0.397055627,
+              0.38605531,
+              0.394608846,
+              0.390418694
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.38690799999999825,
+            "baseline": 0.38980599999999654
+          },
+          "cpu_ratio_to_baseline": 0.9925655325982712
+        },
+        {
+          "suite": "mvp",
+          "case": "long-parameters",
+          "size": 1000000,
+          "sha256": "ec35dcad22794f18a7864beeed6e5eb3055eab974de3cf9d41f139e94dc77188",
+          "cpu_seconds": {
+            "umber": [
+              0.5487660000000005,
+              0.5243870000000008,
+              0.541764999999998,
+              0.5329549999999976,
+              0.6084110000000038,
+              0.6069050000000011,
+              0.5875649999999979,
+              0.5748060000000024,
+              0.5453680000000034
+            ],
+            "baseline": [
+              0.5594339999999995,
+              0.5567809999999973,
+              0.583831,
+              0.5587660000000021,
+              0.5827039999999997,
+              0.5881089999999993,
+              0.5603600000000029,
+              0.5662419999999955,
+              0.5684159999999991
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.549361077,
+              0.52513474,
+              0.542405021,
+              0.533665813,
+              0.60926167,
+              0.607758063,
+              0.588864957,
+              0.575639168,
+              0.546010019
+            ],
+            "baseline": [
+              0.560182904,
+              0.557468225,
+              0.584797918,
+              0.559503763,
+              0.583370002,
+              0.588957078,
+              0.561323667,
+              0.566794084,
+              0.569263593
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.5487660000000005,
+            "baseline": 0.5662419999999955
+          },
+          "cpu_ratio_to_baseline": 0.9691368708078965
+        },
+        {
+          "suite": "mvp",
+          "case": "delimiters",
+          "size": 1000000,
+          "sha256": "f4e77abbc56c1ce0cc4c389d340560b6f6463799b6391969e2c889433fc83d5d",
+          "cpu_seconds": {
+            "umber": [
+              0.12024799999999658,
+              0.12450400000000172,
+              0.12697000000000003,
+              0.1348649999999978,
+              0.12017099999999914,
+              0.1284390000000002,
+              0.11890600000000262,
+              0.11821499999999929,
+              0.12144800000000089
+            ],
+            "baseline": [
+              0.11552199999999857,
+              0.1239309999999989,
+              0.12174399999999963,
+              0.1438710000000043,
+              0.11624099999999515,
+              0.11477500000000163,
+              0.11656099999999725,
+              0.11388500000000334,
+              0.12233200000000011
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.120840848,
+              0.125247095,
+              0.127503387,
+              0.13552023,
+              0.120780082,
+              0.129031135,
+              0.119468261,
+              0.118798753,
+              0.122018962
+            ],
+            "baseline": [
+              0.116088753,
+              0.124687428,
+              0.122323214,
+              0.144526138,
+              0.116807766,
+              0.115359687,
+              0.117074219,
+              0.114421965,
+              0.123001613
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.12144800000000089,
+            "baseline": 0.11656099999999725
+          },
+          "cpu_ratio_to_baseline": 1.0419265448992696
+        },
+        {
+          "suite": "mvp",
+          "case": "groups",
+          "size": 1000000,
+          "sha256": "56824887485331bd046a03afd7d3670119bf9c5501af13c34aabf414ea30f37f",
+          "cpu_seconds": {
+            "umber": [
+              0.215719,
+              0.2152770000000075,
+              0.2152979999999971,
+              0.22603200000000356,
+              0.2244709999999941,
+              0.23642699999999905,
+              0.22695099999999258,
+              0.2194200000000066,
+              0.21742599999999612
+            ],
+            "baseline": [
+              0.211749999999995,
+              0.21610100000000187,
+              0.20809500000000014,
+              0.21262099999999862,
+              0.23126800000000003,
+              0.2554370000000077,
+              0.24094800000000305,
+              0.22462199999999655,
+              0.21362700000000245
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.216277392,
+              0.215950712,
+              0.215922669,
+              0.226794343,
+              0.225198125,
+              0.23711516,
+              0.227600312,
+              0.220097943,
+              0.218069718
+            ],
+            "baseline": [
+              0.212393828,
+              0.216683267,
+              0.208739583,
+              0.213177266,
+              0.232003073,
+              0.256064183,
+              0.241591207,
+              0.225441647,
+              0.214152495
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.2194200000000066,
+            "baseline": 0.21610100000000187
+          },
+          "cpu_ratio_to_baseline": 1.0153585591922514
+        },
+        {
+          "suite": "mvp",
+          "case": "source-integers",
+          "size": 1000000,
+          "sha256": "6535162523edabb99dceaebe5bb14a9ce4883271f6f50e1085e9829b092fbbc7",
+          "cpu_seconds": {
+            "umber": [
+              0.6918529999999947,
+              0.7340370000000007,
+              0.6922280000000001,
+              0.6928049999999999,
+              0.7240149999999943,
+              0.6952069999999964,
+              0.7014340000000061,
+              0.7050759999999983,
+              0.7451309999999935
+            ],
+            "baseline": [
+              0.7214269999999985,
+              0.7359390000000019,
+              0.7053480000000008,
+              0.7072470000000024,
+              0.7916329999999974,
+              0.744486000000002,
+              0.7196379999999962,
+              0.7083880000000065,
+              0.7447380000000052
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.692524197,
+              0.736060748,
+              0.692944042,
+              0.69351028,
+              0.724893161,
+              0.695985679,
+              0.702264086,
+              0.705951017,
+              0.745929376
+            ],
+            "baseline": [
+              0.722170842,
+              0.736641803,
+              0.706110074,
+              0.708022886,
+              0.792574672,
+              0.745208352,
+              0.72041205,
+              0.709047156,
+              0.745492164
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.7014340000000061,
+            "baseline": 0.7214269999999985
+          },
+          "cpu_ratio_to_baseline": 0.9722868703278469
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-text",
+          "size": 50000,
+          "sha256": "91e5e2a70541c94abd0478b7702258297cab3dc484aa6cd2699ef6e029c208b0",
+          "cpu_seconds": {
+            "umber": [
+              0.13647900000000135,
+              0.1426310000000015,
+              0.13236500000000007,
+              0.13202700000000078,
+              0.13273299999999466,
+              0.12885700000000355,
+              0.13181300000000107,
+              0.14501500000000078,
+              0.1436610000000016
+            ],
+            "baseline": [
+              0.14363199999999665,
+              0.14014399999999938,
+              0.1387280000000004,
+              0.14085599999999943,
+              0.13638200000000467,
+              0.14160299999999637,
+              0.13689199999999602,
+              0.13865100000000297,
+              0.14034099999999938
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.137147392,
+              0.143259793,
+              0.132931023,
+              0.13261207,
+              0.133330126,
+              0.129535233,
+              0.132372413,
+              0.14570748,
+              0.144270626
+            ],
+            "baseline": [
+              0.144226177,
+              0.14084506,
+              0.13926595,
+              0.141455956,
+              0.136981839,
+              0.142234035,
+              0.137531031,
+              0.139243259,
+              0.141144833
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.13273299999999466,
+            "baseline": 0.14014399999999938
+          },
+          "cpu_ratio_to_baseline": 0.9471186779312368
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-calendar",
+          "size": 50000,
+          "sha256": "fab3a9c93dbcef2225869be0a23c293465d6332c0108d408f21c5c197f2cd4c7",
+          "cpu_seconds": {
+            "umber": [
+              0.1125730000000047,
+              0.11379799999999562,
+              0.11408699999999783,
+              0.11338800000000049,
+              0.1179429999999968,
+              0.11499899999999741,
+              0.11145700000000858,
+              0.11212100000000191,
+              0.1077629999999985
+            ],
+            "baseline": [
+              0.12120099999999923,
+              0.11216300000000246,
+              0.12029900000000282,
+              0.12312400000000423,
+              0.12044099999999958,
+              0.11371499999999912,
+              0.11723899999999077,
+              0.1133039999999994,
+              0.11469500000000465
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.11318785,
+              0.114455403,
+              0.114659984,
+              0.114150412,
+              0.118693862,
+              0.115624272,
+              0.112057972,
+              0.112687839,
+              0.1083102
+            ],
+            "baseline": [
+              0.121802107,
+              0.112769931,
+              0.122444058,
+              0.123820848,
+              0.121154539,
+              0.114406656,
+              0.11785625,
+              0.113876247,
+              0.115286433
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.11338800000000049,
+            "baseline": 0.11723899999999077
+          },
+          "cpu_ratio_to_baseline": 0.9671525686845625
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-contents",
+          "size": 50000,
+          "sha256": "a97e212664cbf03e1c7fba3dacca9ee8b15c35e53d94bb9c561cfa9ffea3eb92",
+          "cpu_seconds": {
+            "umber": [
+              0.3853859999999969,
+              0.4084789999999998,
+              0.3879169999999945,
+              0.3894679999999937,
+              0.39958099999999774,
+              0.39254999999999995,
+              0.38247200000000703,
+              0.41813600000000406,
+              0.3812520000000035
+            ],
+            "baseline": [
+              0.39511800000000363,
+              0.3930790000000002,
+              0.4005650000000074,
+              0.40397899999999964,
+              0.41001100000001145,
+              0.40495899999999097,
+              0.39017199999999264,
+              0.4137460000000033,
+              0.4008229999999884
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.386101824,
+              0.409218597,
+              0.388457901,
+              0.390209317,
+              0.400253451,
+              0.393205081,
+              0.383152194,
+              0.418911536,
+              0.381879656
+            ],
+            "baseline": [
+              0.395692765,
+              0.393925077,
+              0.401319147,
+              0.404694791,
+              0.410749606,
+              0.405694038,
+              0.390805996,
+              0.414368581,
+              0.40159576
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.3894679999999937,
+            "baseline": 0.4008229999999884
+          },
+          "cpu_ratio_to_baseline": 0.9716707873550295
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-records",
+          "size": 50000,
+          "sha256": "f4555b0af99aa439743fa81944c84a0e4d6f6a04b87605ca9bfb2d5ccc99b25f",
+          "cpu_seconds": {
+            "umber": [
+              0.443333999999993,
+              0.4929910000000035,
+              0.45349600000000123,
+              0.4613599999999991,
+              0.4496479999999963,
+              0.4394460000000038,
+              0.46064900000000364,
+              0.46423499999998796,
+              0.46322400000001096
+            ],
+            "baseline": [
+              0.46691300000000524,
+              0.4770060000000029,
+              0.45636299999998187,
+              0.47042600000001755,
+              0.4598489999999913,
+              0.45884800000000325,
+              0.46707799999998656,
+              0.4481450000000109,
+              0.45575100000000646
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.44400469,
+              0.49371166,
+              0.454185132,
+              0.462039044,
+              0.450355311,
+              0.440175193,
+              0.461447162,
+              0.464906057,
+              0.463957875
+            ],
+            "baseline": [
+              0.467619741,
+              0.477750407,
+              0.457014439,
+              0.472449052,
+              0.460456616,
+              0.459558151,
+              0.467908786,
+              0.448792489,
+              0.456399526
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.46064900000000364,
+            "baseline": 0.4598489999999913
+          },
+          "cpu_ratio_to_baseline": 1.00173970151074
+        },
+        {
+          "suite": "expansion",
+          "case": "stored-records",
+          "size": 50000,
+          "sha256": "c7e23067ffd76699254e5fdd8b2684e0d2c22f9d793ae8ef3867f9298007cdd0",
+          "cpu_seconds": {
+            "umber": [
+              0.4713299999999947,
+              0.4609219999999965,
+              0.46428900000000795,
+              0.4576979999999935,
+              0.44957399999999836,
+              0.46725500000000864,
+              0.4757760000000104,
+              0.4526599999999945,
+              0.45489200000000096
+            ],
+            "baseline": [
+              0.4614040000000017,
+              0.46703999999999724,
+              0.4750879999999995,
+              0.46269000000000915,
+              0.4586040000000082,
+              0.47627699999998185,
+              0.4797919999999891,
+              0.4708800000000082,
+              0.46093199999998546
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.472091919,
+              0.461704172,
+              0.4650416,
+              0.458492634,
+              0.450195055,
+              0.467986878,
+              0.476411508,
+              0.453367299,
+              0.455628492
+            ],
+            "baseline": [
+              0.462138867,
+              0.467824015,
+              0.475906701,
+              0.463471325,
+              0.459350988,
+              0.476906872,
+              0.480695043,
+              0.47164028,
+              0.461665933
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.4609219999999965,
+            "baseline": 0.46703999999999724
+          },
+          "cpu_ratio_to_baseline": 0.9869004796163053
+        },
+        {
+          "suite": "expansion",
+          "case": "token-pipeline",
+          "size": 50000,
+          "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+          "cpu_seconds": {
+            "umber": [
+              0.7803609999999992,
+              0.7900479999999988,
+              0.7474509999999981,
+              0.7341189999999926,
+              0.7739670000000132,
+              0.7288390000000078,
+              0.7357599999999991,
+              0.7378730000000076,
+              0.7182770000000005
+            ],
+            "baseline": [
+              0.7769590000000051,
+              0.8244899999999973,
+              0.7852069999999998,
+              0.8852150000000023,
+              0.7976390000000038,
+              0.7580829999999992,
+              0.78745499999998,
+              0.7511860000000041,
+              0.7431339999999977
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.781094098,
+              0.791001508,
+              0.748296433,
+              0.735103991,
+              0.774722048,
+              0.729588531,
+              0.736568033,
+              0.738694785,
+              0.71910467
+            ],
+            "baseline": [
+              0.777774016,
+              0.825423107,
+              0.785995419,
+              0.886039928,
+              0.798391745,
+              0.758898618,
+              0.788323257,
+              0.75188196,
+              0.743927561
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.7378730000000076,
+            "baseline": 0.7852069999999998
+          },
+          "cpu_ratio_to_baseline": 0.93971780689679
+        },
+        {
+          "suite": "expansion",
+          "case": "name-table",
+          "size": 50000,
+          "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+          "cpu_seconds": {
+            "umber": [
+              0.11851799999999457,
+              0.11596099999999865,
+              0.11551400000000456,
+              0.12184000000000594,
+              0.1211229999999972,
+              0.11924799999999891,
+              0.12794300000000192,
+              0.13532599999999206,
+              0.1181580000000082
+            ],
+            "baseline": [
+              0.13540700000000072,
+              0.1354299999999995,
+              0.12196199999999635,
+              0.1258720000000011,
+              0.12305899999999781,
+              0.1290039999999948,
+              0.12524300000001176,
+              0.12831299999999146,
+              0.12700500000001114
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.119191702,
+              0.116676307,
+              0.116092378,
+              0.122484441,
+              0.121746446,
+              0.119850972,
+              0.128590752,
+              0.136146428,
+              0.118738291
+            ],
+            "baseline": [
+              0.136141384,
+              0.136592776,
+              0.122532376,
+              0.126589208,
+              0.123802274,
+              0.130115928,
+              0.125828757,
+              0.128908166,
+              0.127680149
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.11924799999999891,
+            "baseline": 0.12700500000001114
+          },
+          "cpu_ratio_to_baseline": 0.9389236644225696
+        },
+        {
+          "suite": "expansion",
+          "case": "optional-arguments",
+          "size": 50000,
+          "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+          "cpu_seconds": {
+            "umber": [
+              0.46565900000000227,
+              0.48112699999998654,
+              0.4739179999999976,
+              0.4595830000000092,
+              0.4515740000000079,
+              0.46563199999998517,
+              0.436593000000002,
+              0.44364799999999605,
+              0.4456830000000025
+            ],
+            "baseline": [
+              0.47436799999999835,
+              0.4460380000000157,
+              0.46403499999999553,
+              0.4536990000000003,
+              0.47156900000000235,
+              0.4551309999999944,
+              0.46553300000000775,
+              0.4545389999999969,
+              0.4701470000000114
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.46659765,
+              0.48199174,
+              0.47466506,
+              0.460451784,
+              0.452229749,
+              0.466378143,
+              0.437201548,
+              0.444434693,
+              0.446458826
+            ],
+            "baseline": [
+              0.475157491,
+              0.446638366,
+              0.464871371,
+              0.454370018,
+              0.472493312,
+              0.455778471,
+              0.46634914,
+              0.455236345,
+              0.470795637
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.4595830000000092,
+            "baseline": 0.46403499999999553
+          },
+          "cpu_ratio_to_baseline": 0.990405896107004
+        },
+        {
+          "suite": "expansion",
+          "case": "numeric-references",
+          "size": 50000,
+          "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+          "cpu_seconds": {
+            "umber": [
+              0.14351899999998352,
+              0.13859399999999766,
+              0.15112200000000087,
+              0.13856699999999478,
+              0.14069700000000296,
+              0.14405299999999954,
+              0.14385500000000206,
+              0.13870000000000005,
+              0.13812499999998806
+            ],
+            "baseline": [
+              0.15108700000000397,
+              0.14508800000000122,
+              0.15199499999999944,
+              0.14873599999999954,
+              0.1566930000000042,
+              0.14524699999999768,
+              0.15711900000000867,
+              0.1441080000000028,
+              0.15284400000000176
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.144235359,
+              0.139217555,
+              0.15179726,
+              0.13911537,
+              0.141397308,
+              0.144744632,
+              0.144452903,
+              0.139288675,
+              0.138746736
+            ],
+            "baseline": [
+              0.151707425,
+              0.145637415,
+              0.153141168,
+              0.149311144,
+              0.157290962,
+              0.145872749,
+              0.157700908,
+              0.144724658,
+              0.153395017
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.14069700000000296,
+            "baseline": 0.15108700000000397
+          },
+          "cpu_ratio_to_baseline": 0.9312316744657003
+        }
+      ]
+    },
+    "profile": {
+      "date": "2026-10-08T20:45:31.484718+00:00",
+      "cpu": 0,
+      "scope": "Alternating full-process child user-plus-system CPU comparison of session-owned spelling byte chunks against abe197a with identical compatibility and training inputs. Input reads, construction, execution and checksum output are timed. One warmup precedes 9 retained repetitions; every checksum is verified.",
+      "umber_binary_sha256": "2b4548078502fbe71ec2c6eb4567846a64f6ff0048efc2cd6c529def29ff72a3",
+      "baseline_binary_sha256": "697065b09ea1e48fd70bdf9f97d86a5f825d6ac1ebded53ec6e79cb6dd789f54",
+      "repeats": 9,
+      "complete": true,
+      "samples": [
+        {
+          "suite": "mvp",
+          "case": "raw",
+          "size": 1000000,
+          "sha256": "da1fe7e4cb29c08f024b338c7fe3d6046c1d2d76fe81b2c40e63d8fd85463719",
+          "cpu_seconds": {
+            "umber": [
+              0.16609600000000002,
+              0.16469699999999987,
+              0.17609300000000006,
+              0.1661299999999999,
+              0.1661370000000002,
+              0.17217100000000007,
+              0.16661500000000018,
+              0.1661889999999997,
+              0.16001800000000044
+            ],
+            "baseline": [
+              0.16674199999999995,
+              0.16780000000000006,
+              0.16616000000000009,
+              0.163659,
+              0.17382199999999992,
+              0.19598799999999983,
+              0.18392399999999975,
+              0.1673610000000001,
+              0.1618649999999997
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.166669083,
+              0.165490212,
+              0.176754511,
+              0.166739317,
+              0.166854378,
+              0.172881325,
+              0.167213295,
+              0.166995065,
+              0.16071281
+            ],
+            "baseline": [
+              0.167333623,
+              0.168408311,
+              0.166730799,
+              0.164235986,
+              0.174565481,
+              0.196877237,
+              0.184541874,
+              0.16800304,
+              0.162518134
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.1661370000000002,
+            "baseline": 0.1673610000000001
+          },
+          "cpu_ratio_to_baseline": 0.9926864681735895
+        },
+        {
+          "suite": "mvp",
+          "case": "bodies",
+          "size": 1000000,
+          "sha256": "3aaccb91ab7050c05d84045d35b6e468e9c782bc15188d47e4784b047bad83b6",
+          "cpu_seconds": {
+            "umber": [
+              0.09178599999999992,
+              0.0916450000000002,
+              0.0941930000000002,
+              0.09442599999999945,
+              0.09392900000000015,
+              0.09401300000000035,
+              0.09596299999999935,
+              0.09305500000000055,
+              0.09379899999999974
+            ],
+            "baseline": [
+              0.09320999999999957,
+              0.09414699999999998,
+              0.09617300000000029,
+              0.09721899999999994,
+              0.09396200000000032,
+              0.09414299999999987,
+              0.09329400000000021,
+              0.09468999999999994,
+              0.09121199999999963
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.092432181,
+              0.092252864,
+              0.094876713,
+              0.095085046,
+              0.094644112,
+              0.094647767,
+              0.097058577,
+              0.093706118,
+              0.094329001
+            ],
+            "baseline": [
+              0.093804281,
+              0.095019534,
+              0.096784154,
+              0.097903115,
+              0.094534893,
+              0.094818672,
+              0.093885525,
+              0.095262382,
+              0.091749101
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.09392900000000015,
+            "baseline": 0.09414299999999987
+          },
+          "cpu_ratio_to_baseline": 0.9977268623264638
+        },
+        {
+          "suite": "mvp",
+          "case": "integers",
+          "size": 1000000,
+          "sha256": "706e319d2c42dc2c6b167178404dfcb6e6d53d4f2b46d89ef8e6b8037d2e151a",
+          "cpu_seconds": {
+            "umber": [
+              0.10154599999999991,
+              0.10553399999999957,
+              0.1013850000000005,
+              0.10403000000000073,
+              0.1031019999999998,
+              0.10620999999999992,
+              0.10351500000000069,
+              0.10377600000000076,
+              0.10081000000000007
+            ],
+            "baseline": [
+              0.10272199999999998,
+              0.10421000000000014,
+              0.11611800000000017,
+              0.10435699999999937,
+              0.10578599999999927,
+              0.10348700000000033,
+              0.10354299999999927,
+              0.10549699999999973,
+              0.1021749999999999
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.102100691,
+              0.106587762,
+              0.102001995,
+              0.104697732,
+              0.103688556,
+              0.106751644,
+              0.104407291,
+              0.104316937,
+              0.101350006
+            ],
+            "baseline": [
+              0.103338507,
+              0.104819708,
+              0.116694773,
+              0.104976438,
+              0.106361732,
+              0.104038241,
+              0.104250888,
+              0.106088055,
+              0.102695446
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.10351500000000069,
+            "baseline": 0.10421000000000014
+          },
+          "cpu_ratio_to_baseline": 0.9933307743978558
+        },
+        {
+          "suite": "mvp",
+          "case": "parameters",
+          "size": 1000000,
+          "sha256": "469f63295fc03e6bd69e539893c287bfcb158287dbe4756ac4ca0ad8f6b9604f",
+          "cpu_seconds": {
+            "umber": [
+              0.23748799999999992,
+              0.23826699999999867,
+              0.24229400000000112,
+              0.23648199999999875,
+              0.23688800000000043,
+              0.3257829999999995,
+              0.2772849999999991,
+              0.2575149999999997,
+              0.3715869999999999
+            ],
+            "baseline": [
+              0.24203800000000086,
+              0.24411899999999953,
+              0.251849,
+              0.23884800000000084,
+              0.27377000000000073,
+              0.2985340000000001,
+              0.24766500000000136,
+              0.2577829999999999,
+              0.26128399999999985
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.238094948,
+              0.239410445,
+              0.24297627,
+              0.237436267,
+              0.237576227,
+              0.327081217,
+              0.278086601,
+              0.258590977,
+              0.372349349
+            ],
+            "baseline": [
+              0.242623959,
+              0.24469286,
+              0.252388709,
+              0.239529302,
+              0.274455456,
+              0.299377267,
+              0.248408032,
+              0.25845166,
+              0.26210536
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.24229400000000112,
+            "baseline": 0.251849
+          },
+          "cpu_ratio_to_baseline": 0.9620605998038552
+        },
+        {
+          "suite": "mvp",
+          "case": "file-parameters",
+          "size": 1000000,
+          "sha256": "9256bab9e6af6a6e49441c21b021111a0d3f483f892edda2b0cac894572bc0a1",
+          "cpu_seconds": {
+            "umber": [
+              0.3108139999999988,
+              0.30027000000000115,
+              0.3242989999999981,
+              0.2982390000000006,
+              0.30027000000000115,
+              0.3017419999999973,
+              0.3079640000000019,
+              0.2990920000000017,
+              0.310219
+            ],
+            "baseline": [
+              0.30264000000000024,
+              0.3001559999999994,
+              0.2938850000000013,
+              0.30209999999999937,
+              0.3000790000000002,
+              0.30238100000000045,
+              0.2970550000000003,
+              0.3054429999999968,
+              0.2921340000000008
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.311503655,
+              0.300832997,
+              0.325054324,
+              0.298917014,
+              0.300916115,
+              0.302347015,
+              0.308661313,
+              0.299745715,
+              0.31084038
+            ],
+            "baseline": [
+              0.303465018,
+              0.300877506,
+              0.294629788,
+              0.302773227,
+              0.300738394,
+              0.303037029,
+              0.297696582,
+              0.306086119,
+              0.292892103
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.3017419999999973,
+            "baseline": 0.3001559999999994
+          },
+          "cpu_ratio_to_baseline": 1.0052839190287646
+        },
+        {
+          "suite": "mvp",
+          "case": "long-parameters",
+          "size": 1000000,
+          "sha256": "ec35dcad22794f18a7864beeed6e5eb3055eab974de3cf9d41f139e94dc77188",
+          "cpu_seconds": {
+            "umber": [
+              0.512990000000002,
+              0.5767400000000009,
+              0.5476840000000003,
+              0.534080000000003,
+              0.5050230000000013,
+              0.5204160000000009,
+              0.5547129999999996,
+              0.5038499999999999,
+              0.4994179999999986
+            ],
+            "baseline": [
+              0.5230560000000004,
+              0.5084639999999965,
+              0.5617529999999995,
+              0.5944359999999982,
+              0.5081209999999992,
+              0.518737999999999,
+              0.5045189999999984,
+              0.5003070000000029,
+              0.49711399999999983
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.513650202,
+              0.577648269,
+              0.548569596,
+              0.534958252,
+              0.505683707,
+              0.521072764,
+              0.557066472,
+              0.504457854,
+              0.50013499
+            ],
+            "baseline": [
+              0.523728593,
+              0.509070767,
+              0.562632735,
+              0.595195508,
+              0.508950141,
+              0.519372933,
+              0.505262218,
+              0.500985232,
+              0.497864949
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.5204160000000009,
+            "baseline": 0.5084639999999965
+          },
+          "cpu_ratio_to_baseline": 1.0235060889266585
+        },
+        {
+          "suite": "mvp",
+          "case": "delimiters",
+          "size": 1000000,
+          "sha256": "f4e77abbc56c1ce0cc4c389d340560b6f6463799b6391969e2c889433fc83d5d",
+          "cpu_seconds": {
+            "umber": [
+              0.09486300000000014,
+              0.10920699999999783,
+              0.10546199999999928,
+              0.09568300000000107,
+              0.10671100000000067,
+              0.09640799999999672,
+              0.09930000000000305,
+              0.11172499999999985,
+              0.10828900000000274
+            ],
+            "baseline": [
+              0.09497099999999747,
+              0.09960900000000095,
+              0.10314400000000035,
+              0.09630100000000041,
+              0.09785999999999717,
+              0.09572200000000208,
+              0.10117199999999826,
+              0.09994999999999976,
+              0.0950950000000006
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.095373566,
+              0.109834111,
+              0.106158983,
+              0.096232992,
+              0.107279838,
+              0.097033395,
+              0.099976632,
+              0.112318674,
+              0.109004264
+            ],
+            "baseline": [
+              0.095450903,
+              0.100292632,
+              0.103940688,
+              0.097014612,
+              0.098474719,
+              0.096299126,
+              0.101783798,
+              0.100611139,
+              0.095695785
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.10546199999999928,
+            "baseline": 0.09785999999999717
+          },
+          "cpu_ratio_to_baseline": 1.0776824034335002
+        },
+        {
+          "suite": "mvp",
+          "case": "groups",
+          "size": 1000000,
+          "sha256": "56824887485331bd046a03afd7d3670119bf9c5501af13c34aabf414ea30f37f",
+          "cpu_seconds": {
+            "umber": [
+              0.19615499999999741,
+              0.19699599999999862,
+              0.19142700000000445,
+              0.19176000000000215,
+              0.18974800000000158,
+              0.19572900000000004,
+              0.20289599999999552,
+              0.20157599999999576,
+              0.19893400000000128
+            ],
+            "baseline": [
+              0.21657900000000296,
+              0.21639199999999903,
+              0.22299299999999533,
+              0.225127999999998,
+              0.2152229999999946,
+              0.21421100000000592,
+              0.2161130000000071,
+              0.2187020000000004,
+              0.2224119999999985
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.196787424,
+              0.197746818,
+              0.192104173,
+              0.192314412,
+              0.190344793,
+              0.196339895,
+              0.203459489,
+              0.202270735,
+              0.199578547
+            ],
+            "baseline": [
+              0.217217345,
+              0.217214181,
+              0.223752893,
+              0.225796622,
+              0.215905444,
+              0.214846841,
+              0.21668705,
+              0.2194243,
+              0.223003561
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.19615499999999741,
+            "baseline": 0.21657900000000296
+          },
+          "cpu_ratio_to_baseline": 0.9056972282631037
+        },
+        {
+          "suite": "mvp",
+          "case": "source-integers",
+          "size": 1000000,
+          "sha256": "6535162523edabb99dceaebe5bb14a9ce4883271f6f50e1085e9829b092fbbc7",
+          "cpu_seconds": {
+            "umber": [
+              0.5922089999999969,
+              0.593038,
+              0.6063829999999939,
+              0.5892700000000062,
+              0.5951019999999971,
+              0.5844330000000042,
+              0.582614999999997,
+              0.5865340000000003,
+              0.616665999999995
+            ],
+            "baseline": [
+              0.5628280000000032,
+              0.5712389999999985,
+              0.5666240000000045,
+              0.575406000000001,
+              0.5788110000000017,
+              0.5705349999999925,
+              0.5754060000000081,
+              0.5654309999999967,
+              0.5605960000000039
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.592899211,
+              0.59372944,
+              0.607144295,
+              0.589913047,
+              0.595937787,
+              0.585192398,
+              0.583532163,
+              0.587233751,
+              0.617421808
+            ],
+            "baseline": [
+              0.5637686,
+              0.572019364,
+              0.567355685,
+              0.576162162,
+              0.579624968,
+              0.571390469,
+              0.576375063,
+              0.566129841,
+              0.561323904
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.5922089999999969,
+            "baseline": 0.5705349999999925
+          },
+          "cpu_ratio_to_baseline": 1.0379889051504372
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-text",
+          "size": 50000,
+          "sha256": "91e5e2a70541c94abd0478b7702258297cab3dc484aa6cd2699ef6e029c208b0",
+          "cpu_seconds": {
+            "umber": [
+              0.1198659999999947,
+              0.1221259999999944,
+              0.14483100000000348,
+              0.12111600000000067,
+              0.12522599999999784,
+              0.1174609999999987,
+              0.12074900000000355,
+              0.12116599999999522,
+              0.12091500000001076
+            ],
+            "baseline": [
+              0.12471699999999686,
+              0.12197000000000457,
+              0.12216400000000505,
+              0.12307500000000005,
+              0.12415999999999627,
+              0.12100600000000128,
+              0.12501199999999812,
+              0.12397599999999898,
+              0.14727999999999497
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.120474248,
+              0.122973124,
+              0.145540209,
+              0.121866016,
+              0.126028108,
+              0.118073549,
+              0.121348627,
+              0.121794735,
+              0.121608819
+            ],
+            "baseline": [
+              0.125423726,
+              0.122609558,
+              0.122810079,
+              0.123760449,
+              0.124936119,
+              0.121678931,
+              0.125757233,
+              0.124688061,
+              0.147887546
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.12111600000000067,
+            "baseline": 0.12397599999999898
+          },
+          "cpu_ratio_to_baseline": 0.9769310189068987
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-calendar",
+          "size": 50000,
+          "sha256": "fab3a9c93dbcef2225869be0a23c293465d6332c0108d408f21c5c197f2cd4c7",
+          "cpu_seconds": {
+            "umber": [
+              0.09147399999999806,
+              0.09435800000000683,
+              0.09504499999999183,
+              0.09330599999999833,
+              0.09197900000000203,
+              0.09833799999999826,
+              0.10307500000000402,
+              0.09234099999999046,
+              0.0944030000000069
+            ],
+            "baseline": [
+              0.09671399999999863,
+              0.10570899999999739,
+              0.10118100000000396,
+              0.10072200000000464,
+              0.09424299999999164,
+              0.09487200000000229,
+              0.09756699999999796,
+              0.0956160000000068,
+              0.10510500000000178
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.092125606,
+              0.095109589,
+              0.095812374,
+              0.094006156,
+              0.092682551,
+              0.099074505,
+              0.103847375,
+              0.093024175,
+              0.095064783
+            ],
+            "baseline": [
+              0.097422242,
+              0.10641869,
+              0.101809704,
+              0.101431309,
+              0.094934389,
+              0.095550497,
+              0.098277751,
+              0.096267166,
+              0.105866732
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.09435800000000683,
+            "baseline": 0.09756699999999796
+          },
+          "cpu_ratio_to_baseline": 0.9671097809711152
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-contents",
+          "size": 50000,
+          "sha256": "a97e212664cbf03e1c7fba3dacca9ee8b15c35e53d94bb9c561cfa9ffea3eb92",
+          "cpu_seconds": {
+            "umber": [
+              0.3679439999999943,
+              0.3677469999999943,
+              0.39743399999999696,
+              0.3701719999999966,
+              0.37649499999999847,
+              0.36980300000000454,
+              0.37733699999999715,
+              0.3672759999999968,
+              0.3677119999999974
+            ],
+            "baseline": [
+              0.39583600000000274,
+              0.38134600000000773,
+              0.39094200000000257,
+              0.38830200000000303,
+              0.37595200000000517,
+              0.3898889999999966,
+              0.3987210000000019,
+              0.38936999999999955,
+              0.3786370000000048
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.368714076,
+              0.368650914,
+              0.398398563,
+              0.370936026,
+              0.377462857,
+              0.370617077,
+              0.378022017,
+              0.367972968,
+              0.368334196
+            ],
+            "baseline": [
+              0.396502406,
+              0.382169609,
+              0.391833231,
+              0.388961118,
+              0.376682291,
+              0.390643143,
+              0.399558303,
+              0.390014421,
+              0.379333368
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.36980300000000454,
+            "baseline": 0.38936999999999955
+          },
+          "cpu_ratio_to_baseline": 0.9497470272491588
+        },
+        {
+          "suite": "expansion",
+          "case": "gentle-records",
+          "size": 50000,
+          "sha256": "f4555b0af99aa439743fa81944c84a0e4d6f6a04b87605ca9bfb2d5ccc99b25f",
+          "cpu_seconds": {
+            "umber": [
+              0.48800800000000066,
+              0.45586900000000696,
+              0.4585079999999948,
+              0.463834999999996,
+              0.4551980000000029,
+              0.4489720000000119,
+              0.4715129999999874,
+              0.4535940000000096,
+              0.45725000000000193
+            ],
+            "baseline": [
+              0.5084340000000012,
+              0.47124899999999315,
+              0.4495059999999995,
+              0.4498530000000045,
+              0.4593629999999962,
+              0.451121999999998,
+              0.4605670000000117,
+              0.4446529999999882,
+              0.4560549999999921
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.48875913,
+              0.456582846,
+              0.459254071,
+              0.464553848,
+              0.456155011,
+              0.449664632,
+              0.472179648,
+              0.454315183,
+              0.457893748
+            ],
+            "baseline": [
+              0.509058392,
+              0.472633978,
+              0.450706476,
+              0.450617765,
+              0.460177778,
+              0.460049205,
+              0.461325691,
+              0.445300234,
+              0.456787611
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.45725000000000193,
+            "baseline": 0.4560549999999921
+          },
+          "cpu_ratio_to_baseline": 1.0026202979903955
+        },
+        {
+          "suite": "expansion",
+          "case": "stored-records",
+          "size": 50000,
+          "sha256": "c7e23067ffd76699254e5fdd8b2684e0d2c22f9d793ae8ef3867f9298007cdd0",
+          "cpu_seconds": {
+            "umber": [
+              0.5037810000000036,
+              0.5132499999999993,
+              0.4929249999999996,
+              0.5033670000000114,
+              0.5163789999999864,
+              0.4860129999999856,
+              0.48985700000000065,
+              0.5046459999999939,
+              0.509726999999998
+            ],
+            "baseline": [
+              0.4906479999999931,
+              0.4952910000000088,
+              0.5047419999999931,
+              0.5000679999999988,
+              0.4756460000000118,
+              0.5050910000000073,
+              0.4893849999999986,
+              0.48205100000001266,
+              0.5086349999999982
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.504502876,
+              0.514139535,
+              0.493728454,
+              0.504288361,
+              0.517006623,
+              0.486816519,
+              0.490540679,
+              0.505532825,
+              0.510367955
+            ],
+            "baseline": [
+              0.491521777,
+              0.49613718,
+              0.505844386,
+              0.500897163,
+              0.476574896,
+              0.505842668,
+              0.490135716,
+              0.48267961,
+              0.509397003
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.5037810000000036,
+            "baseline": 0.4952910000000088
+          },
+          "cpu_ratio_to_baseline": 1.017141438063673
+        },
+        {
+          "suite": "expansion",
+          "case": "token-pipeline",
+          "size": 50000,
+          "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+          "cpu_seconds": {
+            "umber": [
+              0.8548710000000028,
+              0.8276859999999999,
+              0.8738269999999915,
+              0.8646459999999934,
+              0.8559930000000122,
+              0.8302730000000054,
+              0.8367759999999862,
+              0.8828150000000079,
+              0.8640379999999794
+            ],
+            "baseline": [
+              0.8212639999999851,
+              0.8001470000000097,
+              0.800139999999999,
+              0.8364680000000106,
+              0.8048399999999845,
+              0.8049190000000124,
+              0.8072040000000129,
+              0.8390599999999893,
+              0.8004920000000197
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.855938627,
+              0.828376014,
+              0.87518832,
+              0.86549849,
+              0.856930701,
+              0.830977981,
+              0.837546799,
+              0.883599117,
+              0.86480042
+            ],
+            "baseline": [
+              0.82217653,
+              0.800996288,
+              0.800934142,
+              0.837189907,
+              0.805728278,
+              0.805664795,
+              0.808059582,
+              0.84127692,
+              0.801243881
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.8559930000000122,
+            "baseline": 0.8049190000000124
+          },
+          "cpu_ratio_to_baseline": 1.0634523473790518
+        },
+        {
+          "suite": "expansion",
+          "case": "name-table",
+          "size": 50000,
+          "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+          "cpu_seconds": {
+            "umber": [
+              0.12540799999999308,
+              0.11466900000000635,
+              0.1143600000000049,
+              0.12214600000000075,
+              0.11498300000000938,
+              0.12305700000001707,
+              0.12123399999998696,
+              0.1130279999999857,
+              0.11471800000001053
+            ],
+            "baseline": [
+              0.13142500000000723,
+              0.128713999999988,
+              0.11457800000000873,
+              0.11454199999998593,
+              0.12899599999998657,
+              0.1160419999999931,
+              0.11922200000000771,
+              0.11244899999999802,
+              0.12385299999999688
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.126121158,
+              0.115450879,
+              0.115348812,
+              0.122837531,
+              0.115546093,
+              0.123678063,
+              0.121898953,
+              0.113612252,
+              0.115362544
+            ],
+            "baseline": [
+              0.132212824,
+              0.129455217,
+              0.115246572,
+              0.115281943,
+              0.129616006,
+              0.116750569,
+              0.120284291,
+              0.113035113,
+              0.124533671
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.11498300000000938,
+            "baseline": 0.11922200000000771
+          },
+          "cpu_ratio_to_baseline": 0.9644444817231882
+        },
+        {
+          "suite": "expansion",
+          "case": "optional-arguments",
+          "size": 50000,
+          "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+          "cpu_seconds": {
+            "umber": [
+              0.4791709999999938,
+              0.47939200000000426,
+              0.49332200000000626,
+              0.4846299999999957,
+              0.48128900000000385,
+              0.5225630000000052,
+              0.4867970000000099,
+              0.487070000000017,
+              0.49686999999998704
+            ],
+            "baseline": [
+              0.4780460000000062,
+              0.493709999999993,
+              0.4765379999999908,
+              0.4720480000000009,
+              0.4903099999999938,
+              0.49509100000000217,
+              0.47687399999999514,
+              0.48204699999998013,
+              0.49322100000000546
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.479816703,
+              0.480107941,
+              0.49398369,
+              0.485784028,
+              0.481954695,
+              0.523457297,
+              0.487501596,
+              0.487776074,
+              0.497561179
+            ],
+            "baseline": [
+              0.479009579,
+              0.494489452,
+              0.477287979,
+              0.472805393,
+              0.491015182,
+              0.495955206,
+              0.477670511,
+              0.48278221,
+              0.493992198
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.4867970000000099,
+            "baseline": 0.48204699999998013
+          },
+          "cpu_ratio_to_baseline": 1.0098538109355104
+        },
+        {
+          "suite": "expansion",
+          "case": "numeric-references",
+          "size": 50000,
+          "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+          "cpu_seconds": {
+            "umber": [
+              0.1168389999999988,
+              0.12236099999999794,
+              0.11845300000000236,
+              0.122327999999996,
+              0.12089199999999778,
+              0.11735800000001007,
+              0.1197429999999855,
+              0.14277199999999368,
+              0.13045300000000282
+            ],
+            "baseline": [
+              0.11969299999999805,
+              0.1193930000000023,
+              0.1180959999999942,
+              0.12009300000001133,
+              0.1183200000000113,
+              0.11908899999998823,
+              0.12632600000000593,
+              0.134176999999994,
+              0.12008600000000058
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.117496084,
+              0.123025321,
+              0.119199404,
+              0.123046393,
+              0.121500919,
+              0.117999719,
+              0.120433129,
+              0.143396099,
+              0.13105576
+            ],
+            "baseline": [
+              0.120242057,
+              0.120000668,
+              0.119147114,
+              0.120724524,
+              0.118944629,
+              0.119726111,
+              0.127003832,
+              0.134804281,
+              0.120744665
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.12089199999999778,
+            "baseline": 0.11969299999999805
+          },
+          "cpu_ratio_to_baseline": 1.0100172942444399
+        }
+      ]
+    }
+  },
+  "confirmation_comparisons": {
+    "ordinary": {
+      "date": "2026-10-08T21:05:27.937909+00:00",
+      "cpu": 0,
+      "scope": "Alternating full-process child user-plus-system CPU comparison of session-owned spelling byte chunks against abe197a with identical compatibility and training inputs. Input reads, construction, execution and checksum output are timed. One warmup precedes 21 retained repetitions; every checksum is verified.",
+      "umber_binary_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
+      "baseline_binary_sha256": "3314ba8bc0c688c8ca0c73689575ddf90a66e04aa2259aff001cf9ff31264397",
+      "repeats": 21,
+      "complete": true,
+      "samples": [
+        {
+          "suite": "mvp",
+          "case": "parameters",
+          "size": 1000000,
+          "sha256": "469f63295fc03e6bd69e539893c287bfcb158287dbe4756ac4ca0ad8f6b9604f",
+          "cpu_seconds": {
+            "umber": [
+              0.304006,
+              0.31320100000000006,
+              0.3091429999999997,
+              0.32544600000000035,
+              0.3305250000000002,
+              0.32884699999999967,
+              0.31430500000000006,
+              0.3063949999999993,
+              0.31133200000000016,
+              0.30549999999999944,
+              0.2933589999999997,
+              0.31752100000000016,
+              0.3015699999999999,
+              0.3175220000000003,
+              0.301304,
+              0.3069609999999994,
+              0.3046920000000011,
+              0.2958179999999988,
+              0.30150000000000077,
+              0.30714099999999966,
+              0.29784899999999936
+            ],
+            "baseline": [
+              0.33231199999999983,
+              0.3928610000000001,
+              0.3030630000000003,
+              0.31496799999999947,
+              0.31001900000000004,
+              0.30304699999999984,
+              0.3105419999999999,
+              0.30702800000000074,
+              0.3098179999999999,
+              0.33630900000000086,
+              0.3147510000000002,
+              0.30588200000000043,
+              0.3285669999999996,
+              0.30312499999999964,
+              0.3212350000000015,
+              0.3035559999999986,
+              0.29606500000000047,
+              0.30716699999999975,
+              0.30231599999999936,
+              0.30221500000000034,
+              0.2988980000000012
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.304609129,
+              0.314001348,
+              0.309822254,
+              0.326108184,
+              0.331439523,
+              0.329490777,
+              0.314934369,
+              0.307018279,
+              0.311942383,
+              0.306100322,
+              0.293960063,
+              0.318219849,
+              0.302235303,
+              0.318204377,
+              0.301979647,
+              0.307658537,
+              0.305364813,
+              0.296447769,
+              0.302131094,
+              0.307771064,
+              0.298475501
+            ],
+            "baseline": [
+              0.333063893,
+              0.39373916,
+              0.303796878,
+              0.315596,
+              0.310660493,
+              0.303640541,
+              0.311182814,
+              0.307879042,
+              0.310487763,
+              0.336896696,
+              0.318335664,
+              0.306483952,
+              0.329173904,
+              0.303787941,
+              0.322027262,
+              0.304315694,
+              0.296657342,
+              0.307755457,
+              0.302961226,
+              0.302759038,
+              0.299570254
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.3069609999999994,
+            "baseline": 0.30716699999999975
+          },
+          "cpu_ratio_to_baseline": 0.9993293550413932
+        },
+        {
+          "suite": "mvp",
+          "case": "delimiters",
+          "size": 1000000,
+          "sha256": "f4e77abbc56c1ce0cc4c389d340560b6f6463799b6391969e2c889433fc83d5d",
+          "cpu_seconds": {
+            "umber": [
+              0.13474399999999953,
+              0.12653800000000182,
+              0.1217619999999986,
+              0.11632700000000007,
+              0.12340599999999924,
+              0.12350299999999947,
+              0.12659999999999982,
+              0.11924499999999938,
+              0.12164900000000145,
+              0.11899999999999977,
+              0.1189309999999999,
+              0.11928600000000245,
+              0.11916400000000138,
+              0.12206099999999864,
+              0.13630300000000162,
+              0.11648100000000028,
+              0.11978000000000222,
+              0.11796899999999866,
+              0.11649799999999999,
+              0.11862300000000303,
+              0.11909399999999692
+            ],
+            "baseline": [
+              0.12093199999999982,
+              0.11621300000000012,
+              0.12035099999999943,
+              0.12239800000000045,
+              0.11780200000000107,
+              0.11671700000000129,
+              0.11642499999999956,
+              0.11962199999999967,
+              0.11429099999999792,
+              0.11549400000000176,
+              0.118780000000001,
+              0.11612799999999623,
+              0.11824400000000068,
+              0.11925899999999956,
+              0.13961399999999813,
+              0.11623399999999862,
+              0.11293600000000126,
+              0.11359500000000011,
+              0.12141099999999838,
+              0.12227299999999985,
+              0.11466700000000074
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.135455834,
+              0.127255541,
+              0.122498679,
+              0.116873492,
+              0.123925457,
+              0.124189883,
+              0.127149796,
+              0.119778169,
+              0.122191765,
+              0.119680659,
+              0.119570504,
+              0.119922356,
+              0.119805019,
+              0.122897884,
+              0.136962118,
+              0.117070847,
+              0.120377373,
+              0.118534952,
+              0.117122835,
+              0.11928442,
+              0.119674217
+            ],
+            "baseline": [
+              0.121724716,
+              0.116972796,
+              0.120940342,
+              0.123026325,
+              0.118601284,
+              0.117324554,
+              0.117023449,
+              0.120253014,
+              0.114860526,
+              0.116024632,
+              0.119416546,
+              0.11676572,
+              0.118881162,
+              0.119948639,
+              0.140400449,
+              0.11682378,
+              0.113466441,
+              0.114138397,
+              0.12199301,
+              0.12296274,
+              0.115222941
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.11928600000000245,
+            "baseline": 0.11780200000000107
+          },
+          "cpu_ratio_to_baseline": 1.0125974092120793
+        },
+        {
+          "suite": "expansion",
+          "case": "name-table",
+          "size": 50000,
+          "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+          "cpu_seconds": {
+            "umber": [
+              0.11825500000000133,
+              0.11731499999999784,
+              0.11875500000000017,
+              0.11863600000000218,
+              0.13205399999999656,
+              0.1494189999999982,
+              0.12809600000000287,
+              0.11883799999999667,
+              0.12052000000000263,
+              0.1370330000000024,
+              0.14129799999999548,
+              0.1191539999999982,
+              0.12046700000000143,
+              0.12674900000000378,
+              0.12265000000000015,
+              0.15426800000000185,
+              0.13419899999999885,
+              0.13084700000000282,
+              0.12809899999999885,
+              0.1660119999999985,
+              0.1629560000000012
+            ],
+            "baseline": [
+              0.12670299999999912,
+              0.11976700000000307,
+              0.12024100000000004,
+              0.12172299999999936,
+              0.16244600000000275,
+              0.13913900000000012,
+              0.13329499999999683,
+              0.13312500000000327,
+              0.12629499999999538,
+              0.13989700000000127,
+              0.13247000000000497,
+              0.1242769999999993,
+              0.1636160000000011,
+              0.13432499999999692,
+              0.15779699999999863,
+              0.16625299999999754,
+              0.1350110000000022,
+              0.13602199999999698,
+              0.12231200000000086,
+              0.13118300000000005,
+              0.15260299999999916
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.118880935,
+              0.117994181,
+              0.119394552,
+              0.119413141,
+              0.132731957,
+              0.1502518,
+              0.128921677,
+              0.11954465,
+              0.121118515,
+              0.137664432,
+              0.142104719,
+              0.119764125,
+              0.121098804,
+              0.127358055,
+              0.123347068,
+              0.154873109,
+              0.134910787,
+              0.13146406,
+              0.128906966,
+              0.166978312,
+              0.16370571
+            ],
+            "baseline": [
+              0.127299207,
+              0.12038044,
+              0.120823103,
+              0.122320435,
+              0.16313858,
+              0.13984322,
+              0.133990616,
+              0.133901288,
+              0.126922537,
+              0.140562575,
+              0.133219516,
+              0.124849806,
+              0.164237499,
+              0.134983847,
+              0.16462062,
+              0.167115499,
+              0.135708034,
+              0.136678049,
+              0.122991531,
+              0.131936977,
+              0.153349705
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.12809600000000287,
+            "baseline": 0.13329499999999683
+          },
+          "cpu_ratio_to_baseline": 0.9609962864323937
+        },
+        {
+          "suite": "expansion",
+          "case": "numeric-references",
+          "size": 50000,
+          "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+          "cpu_seconds": {
+            "umber": [
+              0.1432530000000014,
+              0.1394250000000028,
+              0.13415999999999784,
+              0.1353420000000014,
+              0.13599400000000017,
+              0.13466299999999976,
+              0.13547599999999704,
+              0.1382829999999977,
+              0.14884599999999892,
+              0.13866400000000212,
+              0.13583500000000015,
+              0.13493099999999814,
+              0.13757100000000122,
+              0.13353599999999943,
+              0.14040800000000075,
+              0.13944199999999896,
+              0.1436320000000002,
+              0.14173699999999556,
+              0.1373330000000017,
+              0.13832500000000536,
+              0.13946299999999567
+            ],
+            "baseline": [
+              0.1592629999999957,
+              0.15006699999999995,
+              0.14479900000000256,
+              0.14066399999999746,
+              0.14144999999999897,
+              0.14696200000000204,
+              0.14808599999999927,
+              0.14799100000000465,
+              0.14768500000000273,
+              0.14360799999999685,
+              0.14394400000000118,
+              0.1427189999999996,
+              0.1463759999999965,
+              0.15124000000000137,
+              0.14205199999999962,
+              0.14360000000000284,
+              0.14243100000000197,
+              0.1449549999999995,
+              0.14553000000000083,
+              0.1454079999999962,
+              0.15082200000000512
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.143848814,
+              0.140106877,
+              0.134750743,
+              0.135985647,
+              0.136562424,
+              0.135229293,
+              0.136117002,
+              0.138910104,
+              0.149481296,
+              0.139343953,
+              0.136452378,
+              0.135484676,
+              0.138153885,
+              0.134116456,
+              0.140940824,
+              0.140039701,
+              0.144252735,
+              0.142483677,
+              0.138130957,
+              0.139530226,
+              0.140090917
+            ],
+            "baseline": [
+              0.159919637,
+              0.150786,
+              0.145366062,
+              0.1413334,
+              0.142022246,
+              0.147593021,
+              0.148735998,
+              0.148652343,
+              0.148356857,
+              0.144215989,
+              0.144590101,
+              0.143434398,
+              0.147041195,
+              0.15183127,
+              0.142727705,
+              0.144231196,
+              0.143149616,
+              0.145588232,
+              0.146195357,
+              0.146120492,
+              0.151521715
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.1382829999999977,
+            "baseline": 0.1454079999999962
+          },
+          "cpu_ratio_to_baseline": 0.9509999449824035
+        }
+      ]
+    },
+    "profile": {
+      "date": "2026-10-08T21:05:59.833066+00:00",
+      "cpu": 0,
+      "scope": "Alternating full-process child user-plus-system CPU comparison of session-owned spelling byte chunks against abe197a with identical compatibility and training inputs. Input reads, construction, execution and checksum output are timed. One warmup precedes 21 retained repetitions; every checksum is verified.",
+      "umber_binary_sha256": "2b4548078502fbe71ec2c6eb4567846a64f6ff0048efc2cd6c529def29ff72a3",
+      "baseline_binary_sha256": "697065b09ea1e48fd70bdf9f97d86a5f825d6ac1ebded53ec6e79cb6dd789f54",
+      "repeats": 21,
+      "complete": true,
+      "samples": [
+        {
+          "suite": "mvp",
+          "case": "delimiters",
+          "size": 1000000,
+          "sha256": "f4e77abbc56c1ce0cc4c389d340560b6f6463799b6391969e2c889433fc83d5d",
+          "cpu_seconds": {
+            "umber": [
+              0.10469599999999996,
+              0.09705200000000003,
+              0.10013499999999997,
+              0.10182800000000003,
+              0.10041299999999986,
+              0.10119699999999998,
+              0.11137599999999992,
+              0.10530000000000017,
+              0.11158199999999985,
+              0.10195199999999982,
+              0.11718000000000028,
+              0.10098600000000069,
+              0.1005720000000001,
+              0.09825399999999984,
+              0.10174100000000008,
+              0.09976900000000022,
+              0.1003639999999999,
+              0.10272499999999996,
+              0.1065400000000003,
+              0.09758099999999992,
+              0.09855699999999956
+            ],
+            "baseline": [
+              0.09694100000000005,
+              0.11430599999999991,
+              0.10161699999999996,
+              0.10592500000000016,
+              0.10063200000000005,
+              0.10305600000000004,
+              0.11590100000000025,
+              0.09535399999999972,
+              0.10475100000000026,
+              0.09708199999999989,
+              0.10159199999999968,
+              0.10222499999999979,
+              0.1025819999999995,
+              0.10578000000000021,
+              0.10251900000000003,
+              0.10446,
+              0.10493099999999966,
+              0.10729699999999998,
+              0.09945100000000018,
+              0.09741,
+              0.09651999999999994
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.105334239,
+              0.097746204,
+              0.100750566,
+              0.102443931,
+              0.101043397,
+              0.101907321,
+              0.112131599,
+              0.105902075,
+              0.112250131,
+              0.102717553,
+              0.118048004,
+              0.101688964,
+              0.101191206,
+              0.098926748,
+              0.102350706,
+              0.100410147,
+              0.101031246,
+              0.103315354,
+              0.10717292,
+              0.09814262,
+              0.099145053
+            ],
+            "baseline": [
+              0.097679081,
+              0.114963618,
+              0.102198242,
+              0.106523795,
+              0.101253381,
+              0.103651868,
+              0.116649601,
+              0.09593928,
+              0.105419333,
+              0.097805193,
+              0.102225317,
+              0.102854548,
+              0.103200256,
+              0.106467486,
+              0.103084101,
+              0.105081387,
+              0.105544767,
+              0.107895927,
+              0.10000061,
+              0.098037017,
+              0.097123924
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.10119699999999998,
+            "baseline": 0.10251900000000003
+          },
+          "cpu_ratio_to_baseline": 0.9871048293487057
+        },
+        {
+          "suite": "mvp",
+          "case": "source-integers",
+          "size": 1000000,
+          "sha256": "6535162523edabb99dceaebe5bb14a9ce4883271f6f50e1085e9829b092fbbc7",
+          "cpu_seconds": {
+            "umber": [
+              0.6018740000000005,
+              0.6198780000000008,
+              0.6124609999999979,
+              0.6394579999999994,
+              0.641687000000001,
+              0.6177099999999989,
+              0.6296220000000012,
+              0.6171959999999981,
+              0.6072199999999999,
+              0.670931999999997,
+              0.6583250000000014,
+              0.6017700000000019,
+              0.6539709999999985,
+              0.6462849999999989,
+              0.6168520000000015,
+              0.6855200000000004,
+              0.6262979999999985,
+              0.6724439999999987,
+              0.6230049999999991,
+              0.6429819999999999,
+              0.6300099999999986
+            ],
+            "baseline": [
+              0.5685289999999998,
+              0.5579229999999997,
+              0.5776570000000003,
+              0.590879000000001,
+              0.6138389999999987,
+              0.6426510000000007,
+              0.5690980000000003,
+              0.5581150000000008,
+              0.5690830000000027,
+              0.7998319999999985,
+              0.5606650000000002,
+              0.5756289999999993,
+              0.6170830000000009,
+              0.7046330000000012,
+              0.6679579999999987,
+              0.5916959999999989,
+              0.7439310000000035,
+              0.6291380000000011,
+              0.6281859999999995,
+              0.6017510000000001,
+              0.6054649999999988
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.602622293,
+              0.620545688,
+              0.613270541,
+              0.640213618,
+              0.642413234,
+              0.618456966,
+              0.63027842,
+              0.61795109,
+              0.607869516,
+              0.671787664,
+              0.659165864,
+              0.602447254,
+              0.6546482,
+              0.797597916,
+              0.965606787,
+              0.689214715,
+              0.646529941,
+              0.673123413,
+              0.623764636,
+              0.643698131,
+              0.630817142
+            ],
+            "baseline": [
+              0.569227837,
+              0.558613124,
+              0.578401574,
+              0.591440284,
+              0.61465714,
+              0.643433753,
+              0.569848635,
+              0.584511157,
+              0.569917601,
+              0.800682701,
+              0.561331296,
+              0.576364667,
+              0.617894955,
+              0.878700983,
+              0.790811271,
+              0.671336623,
+              0.937251479,
+              0.630094557,
+              0.629086231,
+              0.602604349,
+              0.606331591
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.6296220000000012,
+            "baseline": 0.6017510000000001
+          },
+          "cpu_ratio_to_baseline": 1.0463164996817638
+        },
+        {
+          "suite": "expansion",
+          "case": "token-pipeline",
+          "size": 50000,
+          "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+          "cpu_seconds": {
+            "umber": [
+              0.8374759999999952,
+              0.8617770000000036,
+              0.8335429999999988,
+              0.8392099999999942,
+              0.8962399999999988,
+              0.8440510000000074,
+              0.8436859999999982,
+              0.8687490000000011,
+              0.8447169999999957,
+              0.8716079999999948,
+              0.8844139999999996,
+              0.9115800000000007,
+              0.8911600000000064,
+              0.8415200000000027,
+              0.8463670000000008,
+              0.8133659999999949,
+              0.8200070000000039,
+              0.8700600000000023,
+              0.8157210000000035,
+              0.8597619999999893,
+              0.8856099999999998
+            ],
+            "baseline": [
+              0.8090410000000006,
+              0.821984999999998,
+              0.8442310000000006,
+              0.8057550000000049,
+              0.8127480000000062,
+              0.8169349999999937,
+              0.8189279999999926,
+              0.839102000000004,
+              0.8548370000000034,
+              0.8289900000000046,
+              0.846032000000001,
+              0.8495629999999963,
+              0.8738699999999966,
+              0.8093369999999993,
+              0.7941359999999946,
+              0.8002880000000019,
+              0.7940110000000047,
+              0.8083269999999985,
+              0.7900459999999896,
+              0.7861090000000104,
+              0.9035820000000143
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.869077415,
+              0.862481195,
+              0.834213357,
+              0.840010341,
+              0.902115512,
+              0.844896285,
+              0.876815952,
+              0.869515305,
+              0.845396336,
+              0.880779767,
+              0.88527389,
+              0.912406716,
+              1.182688679,
+              0.842267657,
+              0.847092768,
+              0.814175116,
+              0.820658914,
+              1.032577087,
+              0.843849741,
+              0.921195,
+              0.991404972
+            ],
+            "baseline": [
+              0.818168738,
+              0.837935382,
+              0.84502383,
+              0.806636832,
+              0.813373707,
+              0.817738156,
+              0.844636067,
+              0.840102569,
+              0.855735084,
+              0.829685347,
+              0.846655776,
+              0.850447494,
+              0.87463538,
+              0.810117548,
+              0.794867227,
+              0.801032561,
+              0.836108423,
+              0.845886806,
+              0.89269796,
+              0.852449971,
+              1.002098473
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.8463670000000008,
+            "baseline": 0.8169349999999937
+          },
+          "cpu_ratio_to_baseline": 1.036027346116897
+        },
+        {
+          "suite": "expansion",
+          "case": "name-table",
+          "size": 50000,
+          "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+          "cpu_seconds": {
+            "umber": [
+              0.13408300000000395,
+              0.12413300000000049,
+              0.1276979999999952,
+              0.12615800000000377,
+              0.12790699999999333,
+              0.1331949999999864,
+              0.13424600000000453,
+              0.12811700000000315,
+              0.147396999999998,
+              0.12409200000000453,
+              0.12290099999999882,
+              0.12051800000000412,
+              0.12956199999999285,
+              0.1323679999999996,
+              0.13581700000000296,
+              0.12234499999999571,
+              0.12012099999999748,
+              0.11313000000001239,
+              0.13900200000000495,
+              0.12054899999999691,
+              0.1372909999999905
+            ],
+            "baseline": [
+              0.14096299999998507,
+              0.12749100000000624,
+              0.12600899999999626,
+              0.12586400000000708,
+              0.14247000000000298,
+              0.13964,
+              0.12946200000000374,
+              0.13551599999999553,
+              0.12403200000001391,
+              0.13105499999998926,
+              0.12768799999999203,
+              0.1336600000000061,
+              0.13329000000000235,
+              0.13187600000000543,
+              0.124149999999986,
+              0.12935800000001052,
+              0.13059900000000368,
+              0.11731499999999073,
+              0.120049999999992,
+              0.12808200000000625,
+              0.1356580000000065
+            ]
+          },
+          "seconds": {
+            "umber": [
+              0.136363224,
+              0.126084238,
+              0.130142168,
+              0.128401048,
+              0.129896645,
+              0.13589126,
+              0.136333329,
+              0.130892308,
+              0.150013487,
+              0.125950771,
+              0.12427195,
+              0.121213437,
+              0.130342764,
+              0.162032374,
+              0.234040106,
+              0.202800356,
+              0.143586925,
+              0.114985627,
+              0.187917756,
+              0.155692718,
+              0.158971342
+            ],
+            "baseline": [
+              0.144474989,
+              0.130640298,
+              0.128940737,
+              0.128738524,
+              0.146890662,
+              0.142035473,
+              0.132343235,
+              0.137650013,
+              0.126276889,
+              0.133505988,
+              0.241521094,
+              0.248149336,
+              0.14943523,
+              0.14733577,
+              0.167869251,
+              0.228177288,
+              0.175879194,
+              0.140286219,
+              0.166532831,
+              0.139584468,
+              0.172572467
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.12790699999999333,
+            "baseline": 0.12946200000000374
+          },
+          "cpu_ratio_to_baseline": 0.9879887534565327
+        }
+      ]
+    }
+  },
+  "paired_cpu_geometric_means": {
+    "ordinary": {
+      "mvp": 0.9836479380684172,
+      "expansion": 0.9635690263548852
+    },
+    "profile": {
+      "mvp": 0.9985084739893612,
+      "expansion": 0.9951630147340937
+    }
+  },
+  "allocation_diagnostic": {
+    "scope": "Engine construction and execution; excludes host source buffers, Rust stack, allocator overhead and pdfTeX memory. Counts are diagnostic requests, not process RSS.",
+    "binaries": {
+      "ordinary": "03f3e22d924cc95de5015286445a1967a0cad75d1d4dbdedcf56829dd6d7a176",
+      "profile": "423556165e11b8b1ee117d8141fae28459591f0e4fc5078e935d3ab7395fe425",
+      "baseline": "60f9d3f93f86e3ab0dbf534fd07aa8d68135075c70ff772bf657ed772907811e"
+    },
+    "samples": [
+      {
+        "case": "raw",
+        "size": 1000000,
+        "sha256": "da1fe7e4cb29c08f024b338c7fe3d6046c1d2d76fe81b2c40e63d8fd85463719",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 14,
+          "requested_bytes": 42513,
+          "peak_bytes": 38318
+        },
+        "profile": {
+          "allocations": 14,
+          "requested_bytes": 42513,
+          "peak_bytes": 38318
+        },
+        "baseline": {
+          "allocations": 74,
+          "requested_bytes": 38673,
+          "peak_bytes": 34478
+        }
+      },
+      {
+        "case": "bodies",
+        "size": 1000000,
+        "sha256": "3aaccb91ab7050c05d84045d35b6e468e9c782bc15188d47e4784b047bad83b6",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 18,
+          "requested_bytes": 59313,
+          "peak_bytes": 54990
+        },
+        "profile": {
+          "allocations": 18,
+          "requested_bytes": 59313,
+          "peak_bytes": 54990
+        },
+        "baseline": {
+          "allocations": 86,
+          "requested_bytes": 55511,
+          "peak_bytes": 51188
+        }
+      },
+      {
+        "case": "integers",
+        "size": 1000000,
+        "sha256": "706e319d2c42dc2c6b167178404dfcb6e6d53d4f2b46d89ef8e6b8037d2e151a",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 18,
+          "requested_bytes": 59313,
+          "peak_bytes": 54990
+        },
+        "profile": {
+          "allocations": 18,
+          "requested_bytes": 59313,
+          "peak_bytes": 54990
+        },
+        "baseline": {
+          "allocations": 85,
+          "requested_bytes": 55507,
+          "peak_bytes": 51184
+        }
+      },
+      {
+        "case": "parameters",
+        "size": 1000000,
+        "sha256": "469f63295fc03e6bd69e539893c287bfcb158287dbe4756ac4ca0ad8f6b9604f",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 29,
+          "requested_bytes": 60561,
+          "peak_bytes": 55982
+        },
+        "profile": {
+          "allocations": 29,
+          "requested_bytes": 60561,
+          "peak_bytes": 55982
+        },
+        "baseline": {
+          "allocations": 98,
+          "requested_bytes": 56764,
+          "peak_bytes": 52185
+        }
+      },
+      {
+        "case": "file-parameters",
+        "size": 1000000,
+        "sha256": "9256bab9e6af6a6e49441c21b021111a0d3f483f892edda2b0cac894572bc0a1",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 27,
+          "requested_bytes": 59793,
+          "peak_bytes": 55598
+        },
+        "profile": {
+          "allocations": 27,
+          "requested_bytes": 59793,
+          "peak_bytes": 55598
+        },
+        "baseline": {
+          "allocations": 89,
+          "requested_bytes": 55962,
+          "peak_bytes": 51767
+        }
+      },
+      {
+        "case": "long-parameters",
+        "size": 1000000,
+        "sha256": "ec35dcad22794f18a7864beeed6e5eb3055eab974de3cf9d41f139e94dc77188",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 30,
+          "requested_bytes": 61226,
+          "peak_bytes": 56254
+        },
+        "profile": {
+          "allocations": 30,
+          "requested_bytes": 61226,
+          "peak_bytes": 56254
+        },
+        "baseline": {
+          "allocations": 99,
+          "requested_bytes": 57429,
+          "peak_bytes": 52457
+        }
+      },
+      {
+        "case": "delimiters",
+        "size": 1000000,
+        "sha256": "f4e77abbc56c1ce0cc4c389d340560b6f6463799b6391969e2c889433fc83d5d",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 22,
+          "requested_bytes": 59441,
+          "peak_bytes": 55118
+        },
+        "profile": {
+          "allocations": 22,
+          "requested_bytes": 59441,
+          "peak_bytes": 55118
+        },
+        "baseline": {
+          "allocations": 90,
+          "requested_bytes": 55639,
+          "peak_bytes": 51316
+        }
+      },
+      {
+        "case": "groups",
+        "size": 1000000,
+        "sha256": "56824887485331bd046a03afd7d3670119bf9c5501af13c34aabf414ea30f37f",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 19,
+          "requested_bytes": 59441,
+          "peak_bytes": 55118
+        },
+        "profile": {
+          "allocations": 19,
+          "requested_bytes": 59441,
+          "peak_bytes": 55118
+        },
+        "baseline": {
+          "allocations": 86,
+          "requested_bytes": 55635,
+          "peak_bytes": 51312
+        }
+      },
+      {
+        "case": "source-integers",
+        "size": 1000000,
+        "sha256": "6535162523edabb99dceaebe5bb14a9ce4883271f6f50e1085e9829b092fbbc7",
+        "suite": "mvp",
+        "ordinary": {
+          "allocations": 19,
+          "requested_bytes": 59321,
+          "peak_bytes": 54998
+        },
+        "profile": {
+          "allocations": 19,
+          "requested_bytes": 59321,
+          "peak_bytes": 54998
+        },
+        "baseline": {
+          "allocations": 79,
+          "requested_bytes": 55481,
+          "peak_bytes": 51158
+        }
+      },
+      {
+        "case": "gentle-text",
+        "size": 1000,
+        "sha256": "fce2e4169a7ad74d3d355c483fff6ef062e5c0040c19ce69d3b3a4c99a3a49bf",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 68,
+          "requested_bytes": 650025,
+          "peak_bytes": 514678
+        },
+        "profile": {
+          "allocations": 68,
+          "requested_bytes": 650025,
+          "peak_bytes": 514678
+        },
+        "baseline": {
+          "allocations": 155,
+          "requested_bytes": 646378,
+          "peak_bytes": 511031
+        }
+      },
+      {
+        "case": "gentle-text",
+        "size": 10000,
+        "sha256": "2fa4cce87042c5fd23614ed51d45cf4ef0a92ddb20a203acc7acff9f13d4cafa",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 259,
+          "requested_bytes": 5519657,
+          "peak_bytes": 4465014
+        },
+        "profile": {
+          "allocations": 259,
+          "requested_bytes": 5519657,
+          "peak_bytes": 4465014
+        },
+        "baseline": {
+          "allocations": 346,
+          "requested_bytes": 5516010,
+          "peak_bytes": 4461367
+        }
+      },
+      {
+        "case": "gentle-text",
+        "size": 50000,
+        "sha256": "91e5e2a70541c94abd0478b7702258297cab3dc484aa6cd2699ef6e029c208b0",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 1088,
+          "requested_bytes": 33712425,
+          "peak_bytes": 25303414
+        },
+        "profile": {
+          "allocations": 1088,
+          "requested_bytes": 33712425,
+          "peak_bytes": 25303414
+        },
+        "baseline": {
+          "allocations": 1175,
+          "requested_bytes": 33708778,
+          "peak_bytes": 25299767
+        }
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 1000,
+        "sha256": "dc9688d58f4a35ca4d5ae84e04183f5f18531b336dfea4559e92e316f9074880",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 45,
+          "requested_bytes": 304977,
+          "peak_bytes": 235358
+        },
+        "profile": {
+          "allocations": 45,
+          "requested_bytes": 304977,
+          "peak_bytes": 235358
+        },
+        "baseline": {
+          "allocations": 131,
+          "requested_bytes": 301324,
+          "peak_bytes": 231705
+        }
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 10000,
+        "sha256": "9a60d241ee061549ac6e534e2ef77029022b9f33c09667f6c2a50538a49dfc1e",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 123,
+          "requested_bytes": 3419857,
+          "peak_bytes": 2366238
+        },
+        "profile": {
+          "allocations": 123,
+          "requested_bytes": 3419857,
+          "peak_bytes": 2366238
+        },
+        "baseline": {
+          "allocations": 209,
+          "requested_bytes": 3416204,
+          "peak_bytes": 2362585
+        }
+      },
+      {
+        "case": "gentle-calendar",
+        "size": 50000,
+        "sha256": "fab3a9c93dbcef2225869be0a23c293465d6332c0108d408f21c5c197f2cd4c7",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 436,
+          "requested_bytes": 14780113,
+          "peak_bytes": 10577694
+        },
+        "profile": {
+          "allocations": 436,
+          "requested_bytes": 14780113,
+          "peak_bytes": 10577694
+        },
+        "baseline": {
+          "allocations": 522,
+          "requested_bytes": 14776460,
+          "peak_bytes": 10574041
+        }
+      },
+      {
+        "case": "gentle-contents",
+        "size": 1000,
+        "sha256": "fba791be743190c3b246e034d664f1e4f8351ed9448b3ec7d7408cf5db494a75",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 150,
+          "requested_bytes": 1833469,
+          "peak_bytes": 1696276
+        },
+        "profile": {
+          "allocations": 150,
+          "requested_bytes": 1833469,
+          "peak_bytes": 1696276
+        },
+        "baseline": {
+          "allocations": 238,
+          "requested_bytes": 1829831,
+          "peak_bytes": 1692638
+        }
+      },
+      {
+        "case": "gentle-contents",
+        "size": 10000,
+        "sha256": "dc98d4a8920abdcd02453a500c999a1759361cecd99960ac5fc120968cb9dee2",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 992,
+          "requested_bytes": 17379837,
+          "peak_bytes": 16317972
+        },
+        "profile": {
+          "allocations": 992,
+          "requested_bytes": 17379837,
+          "peak_bytes": 16317972
+        },
+        "baseline": {
+          "allocations": 1080,
+          "requested_bytes": 17376199,
+          "peak_bytes": 16314334
+        }
+      },
+      {
+        "case": "gentle-contents",
+        "size": 50000,
+        "sha256": "a97e212664cbf03e1c7fba3dacca9ee8b15c35e53d94bb9c561cfa9ffea3eb92",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 4710,
+          "requested_bytes": 92991997,
+          "peak_bytes": 84532756
+        },
+        "profile": {
+          "allocations": 4710,
+          "requested_bytes": 92991997,
+          "peak_bytes": 84532756
+        },
+        "baseline": {
+          "allocations": 4798,
+          "requested_bytes": 92988359,
+          "peak_bytes": 84529118
+        }
+      },
+      {
+        "case": "gentle-records",
+        "size": 1000,
+        "sha256": "eaaeea792d1aa2802b348b50dcbd2c78f87e0b969f181189685368ae6d96eb95",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 231,
+          "requested_bytes": 3000341,
+          "peak_bytes": 2918704
+        },
+        "profile": {
+          "allocations": 231,
+          "requested_bytes": 3000341,
+          "peak_bytes": 2918704
+        },
+        "baseline": {
+          "allocations": 317,
+          "requested_bytes": 2996688,
+          "peak_bytes": 2915051
+        }
+      },
+      {
+        "case": "gentle-records",
+        "size": 10000,
+        "sha256": "b2b051e964b7c79f9d9b47e4b9a041272b663e8eca4dd9969364924a30e66c49",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 1775,
+          "requested_bytes": 30177301,
+          "peak_bytes": 29098288
+        },
+        "profile": {
+          "allocations": 1775,
+          "requested_bytes": 30177301,
+          "peak_bytes": 29098288
+        },
+        "baseline": {
+          "allocations": 1861,
+          "requested_bytes": 30173648,
+          "peak_bytes": 29094635
+        }
+      },
+      {
+        "case": "gentle-records",
+        "size": 50000,
+        "sha256": "f4555b0af99aa439743fa81944c84a0e4d6f6a04b87605ca9bfb2d5ccc99b25f",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 8612,
+          "requested_bytes": 148633621,
+          "peak_bytes": 144294192
+        },
+        "profile": {
+          "allocations": 8612,
+          "requested_bytes": 148633621,
+          "peak_bytes": 144294192
+        },
+        "baseline": {
+          "allocations": 8698,
+          "requested_bytes": 148629968,
+          "peak_bytes": 144290539
+        }
+      },
+      {
+        "case": "stored-records",
+        "size": 1000,
+        "sha256": "c168a660adb70c5eee3380b4fafdb48419c27b321486710fa48b60256542a306",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 278,
+          "requested_bytes": 3803485,
+          "peak_bytes": 3656312
+        },
+        "profile": {
+          "allocations": 278,
+          "requested_bytes": 3803485,
+          "peak_bytes": 3656312
+        },
+        "baseline": {
+          "allocations": 366,
+          "requested_bytes": 3799843,
+          "peak_bytes": 3652670
+        }
+      },
+      {
+        "case": "stored-records",
+        "size": 10000,
+        "sha256": "8e7e835856cba9d943458bdbc05046bebd3d9df8e4cbf05d6277424cb33cb077",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 2192,
+          "requested_bytes": 36944221,
+          "peak_bytes": 35848824
+        },
+        "profile": {
+          "allocations": 2192,
+          "requested_bytes": 36944221,
+          "peak_bytes": 35848824
+        },
+        "baseline": {
+          "allocations": 2280,
+          "requested_bytes": 36940579,
+          "peak_bytes": 35845182
+        }
+      },
+      {
+        "case": "stored-records",
+        "size": 50000,
+        "sha256": "c7e23067ffd76699254e5fdd8b2684e0d2c22f9d793ae8ef3867f9298007cdd0",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 10672,
+          "requested_bytes": 182303069,
+          "peak_bytes": 177963640
+        },
+        "profile": {
+          "allocations": 10672,
+          "requested_bytes": 182303069,
+          "peak_bytes": 177963640
+        },
+        "baseline": {
+          "allocations": 10760,
+          "requested_bytes": 182299427,
+          "peak_bytes": 177959998
+        }
+      },
+      {
+        "case": "token-pipeline",
+        "size": 1000,
+        "sha256": "388c26e20fd91e47c4aac2c08af97853d6d9908e94cd0180c4991caa69a5b6e0",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 498,
+          "requested_bytes": 7808445,
+          "peak_bytes": 7534528
+        },
+        "profile": {
+          "allocations": 498,
+          "requested_bytes": 7808445,
+          "peak_bytes": 7534528
+        },
+        "baseline": {
+          "allocations": 591,
+          "requested_bytes": 7804831,
+          "peak_bytes": 7530914
+        }
+      },
+      {
+        "case": "token-pipeline",
+        "size": 10000,
+        "sha256": "20fdb1c9c3393190230db9d59d60447a3493b49706d6a6076686dfc2efc6ba4b",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 4466,
+          "requested_bytes": 76498365,
+          "peak_bytes": 74328000
+        },
+        "profile": {
+          "allocations": 4466,
+          "requested_bytes": 76498365,
+          "peak_bytes": 74328000
+        },
+        "baseline": {
+          "allocations": 4559,
+          "requested_bytes": 76494751,
+          "peak_bytes": 74324386
+        }
+      },
+      {
+        "case": "token-pipeline",
+        "size": 50000,
+        "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 22075,
+          "requested_bytes": 377914813,
+          "peak_bytes": 369256384
+        },
+        "profile": {
+          "allocations": 22075,
+          "requested_bytes": 377914813,
+          "peak_bytes": 369256384
+        },
+        "baseline": {
+          "allocations": 22168,
+          "requested_bytes": 377911199,
+          "peak_bytes": 369252770
+        }
+      },
+      {
+        "case": "name-table",
+        "size": 1000,
+        "sha256": "3123407e89bd90dc93fde3788a361b0e34f618438d94234563b17c5b1dd2fb63",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 64,
+          "requested_bytes": 698577,
+          "peak_bytes": 563230
+        },
+        "profile": {
+          "allocations": 64,
+          "requested_bytes": 698577,
+          "peak_bytes": 563230
+        },
+        "baseline": {
+          "allocations": 339,
+          "requested_bytes": 696380,
+          "peak_bytes": 561033
+        }
+      },
+      {
+        "case": "name-table",
+        "size": 10000,
+        "sha256": "4897ca4af7537db822ab45ff673764bc21de05c0f0cc2d54327e04ef6a4d77bc",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 291,
+          "requested_bytes": 6166289,
+          "peak_bytes": 5062462
+        },
+        "profile": {
+          "allocations": 291,
+          "requested_bytes": 6166289,
+          "peak_bytes": 5062462
+        },
+        "baseline": {
+          "allocations": 1689,
+          "requested_bytes": 6165150,
+          "peak_bytes": 5061323
+        }
+      },
+      {
+        "case": "name-table",
+        "size": 50000,
+        "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 1239,
+          "requested_bytes": 28211729,
+          "peak_bytes": 23701694
+        },
+        "profile": {
+          "allocations": 1239,
+          "requested_bytes": 28211729,
+          "peak_bytes": 23701694
+        },
+        "baseline": {
+          "allocations": 5474,
+          "requested_bytes": 28207148,
+          "peak_bytes": 23697305
+        }
+      },
+      {
+        "case": "optional-arguments",
+        "size": 1000,
+        "sha256": "029485fd09af3f5d38b6aaa600c553c8c9cb1d08afbcc0d477f4f527b688b812",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 275,
+          "requested_bytes": 3654291,
+          "peak_bytes": 3508072
+        },
+        "profile": {
+          "allocations": 275,
+          "requested_bytes": 3654291,
+          "peak_bytes": 3508072
+        },
+        "baseline": {
+          "allocations": 370,
+          "requested_bytes": 3650687,
+          "peak_bytes": 3504468
+        }
+      },
+      {
+        "case": "optional-arguments",
+        "size": 10000,
+        "sha256": "d24a2ef5ce58db196cd615a96a2874b3e4d6a6c5e6f172f3f207fb3f418bd7dc",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 2109,
+          "requested_bytes": 35467923,
+          "peak_bytes": 34389864
+        },
+        "profile": {
+          "allocations": 2109,
+          "requested_bytes": 35467923,
+          "peak_bytes": 34389864
+        },
+        "baseline": {
+          "allocations": 2204,
+          "requested_bytes": 35464319,
+          "peak_bytes": 34386260
+        }
+      },
+      {
+        "case": "optional-arguments",
+        "size": 50000,
+        "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 10254,
+          "requested_bytes": 175354515,
+          "peak_bytes": 171016040
+        },
+        "profile": {
+          "allocations": 10254,
+          "requested_bytes": 175354515,
+          "peak_bytes": 171016040
+        },
+        "baseline": {
+          "allocations": 10349,
+          "requested_bytes": 175350911,
+          "peak_bytes": 171012436
+        }
+      },
+      {
+        "case": "numeric-references",
+        "size": 1000,
+        "sha256": "f5d200d64785651175fff1e9c31f5df77683cb90e7e389f778677d7826a6d14b",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 55,
+          "requested_bytes": 453161,
+          "peak_bytes": 317942
+        },
+        "profile": {
+          "allocations": 55,
+          "requested_bytes": 453161,
+          "peak_bytes": 317942
+        },
+        "baseline": {
+          "allocations": 397,
+          "requested_bytes": 452004,
+          "peak_bytes": 316785
+        }
+      },
+      {
+        "case": "numeric-references",
+        "size": 10000,
+        "sha256": "3f46bc9992549fc4de16a9c1abc9a310e59fb5800e48c6517e5caa1afe10a343",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 133,
+          "requested_bytes": 3469609,
+          "peak_bytes": 2415990
+        },
+        "profile": {
+          "allocations": 133,
+          "requested_bytes": 3469609,
+          "peak_bytes": 2415990
+        },
+        "baseline": {
+          "allocations": 475,
+          "requested_bytes": 3468452,
+          "peak_bytes": 2414833
+        }
+      },
+      {
+        "case": "numeric-references",
+        "size": 50000,
+        "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+        "suite": "expansion",
+        "ordinary": {
+          "allocations": 456,
+          "requested_bytes": 14993705,
+          "peak_bytes": 10791286
+        },
+        "profile": {
+          "allocations": 456,
+          "requested_bytes": 14993705,
+          "peak_bytes": 10791286
+        },
+        "baseline": {
+          "allocations": 798,
+          "requested_bytes": 14992548,
+          "peak_bytes": 10790129
+        }
+      }
+    ]
+  },
+  "validation": {
+    "debug_tests": 45,
+    "native_profile_release_tests": 45,
+    "native_oracle_messages": 740,
+    "native_oracle_rejections": 26,
+    "rustfmt": true,
+    "clippy_all_targets_all_features": true,
+    "wasm_release_library": true,
+    "miri": {
+      "published_spellings_survive_suffix_writes_and_chunk_growth": "Pass with final primitive and native-profile enabled.",
+      "serialized_spelling_survives_name_table_growth": "Pass with selected boxed owner and native-profile enabled.",
+      "collision_checks": "Forced collisions passed the initial byte-store implementation. The real hash-fragment collision fixture passed with the selected boxed interner and NonNull descriptors; that run also contained a subsequently discarded reader-growth predicate."
+    }
+  },
+  "instruction_inspection": {
+    "ordinary_growth_native_bytes": 158,
+    "ordinary_intern_hashed_native_bytes": 838,
+    "growth": "Calls malloc for uninitialized byte storage; updates a cached suffix pointer and capacity after owning the stable boxed chunk. No eager chunk zero fill.",
+    "insertion": "Checks remaining suffix space; initializes the spelling with one memcpy before publishing its dense descriptor and bucket."
+  }
+}

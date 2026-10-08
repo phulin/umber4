@@ -108,6 +108,13 @@ use a static byte table. Spelling handles and hashes use arrays indexed directly
 by control-sequence ID; fixed slots have empty handles. Interned identities
 retain their existing session lifetime.
 
+Store newly interned multi-byte spellings in stable byte chunks owned by the
+interner. A dense spelling descriptor points directly to its initialized immutable
+range. Reuse the unused suffix for subsequent names; large spellings receive
+larger chunks. Construct each new spelling once in that final storage, then
+publish its ID into the lookup table. Chunk and descriptor growth preserve
+earlier spellings, including during serialization that interns more names.
+
 An integer scan can read its first literal decimal digit directly from the
 loaded file line using the current category table. The cursor consumes that
 character and enters the middle-of-line state. The existing suffix scanner then

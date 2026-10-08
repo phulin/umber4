@@ -1,6 +1,8 @@
+use crate::names::SpellingStore;
 use crate::{Error, Result};
 use std::cell::UnsafeCell;
 use std::mem::MaybeUninit;
+use std::ptr::NonNull;
 use std::rc::Rc;
 
 pub(crate) const CS: u32 = 1 << 24;
@@ -417,9 +419,10 @@ static BYTE_NAMES: [[u8; 1]; 256] = {
     names
 };
 pub(crate) struct Names {
-    spellings: Vec<Box<[u8]>>,
+    spellings: Vec<NonNull<[u8]>>,
     // Each bucket packs a 32-bit hash fragment above its stable name ID.
     buckets: Vec<u64>,
+    bytes: SpellingStore,
 }
 impl Names {
     pub const HASH_START: u64 = 0xcbf29ce484222325;
@@ -429,10 +432,11 @@ impl Names {
     }
     pub fn new() -> Self {
         let mut spellings = Vec::with_capacity(1024);
-        spellings.resize_with(NAMED_BASE, Box::default);
+        spellings.resize(NAMED_BASE, NonNull::from(b"".as_slice()));
         Self {
             spellings,
             buckets: vec![0; 1024],
+            bytes: SpellingStore::default(),
         }
     }
     pub fn len(&self) -> usize {
@@ -440,12 +444,15 @@ impl Names {
     }
     pub fn spelling(&self, id: usize) -> &[u8] {
         // Both fixed symbol ranges encode their byte directly in the ID.
-        // Only multi-byte names own spelling allocations.
+        // Multi-byte spellings are initialized immutable ranges in bytes.
         match id {
             0 => b"relax",
             1 => b"",
             2..=513 => &BYTE_NAMES[(id - 2) & 255],
-            _ => &self.spellings[id],
+            // SAFETY: every named entry is published after its complete range
+            // is initialized. bytes owns that stable chunk for Names' lifetime;
+            // this view's borrow ends before Names can be dropped.
+            _ => unsafe { self.spellings[id].as_ref() },
         }
     }
     pub fn intern(&mut self, name: &[u8]) -> Result<u32> {
@@ -482,7 +489,9 @@ impl Names {
                 let spelling = unsafe { self.spellings.get_unchecked(id as usize) };
                 #[cfg(not(feature = "native-profile"))]
                 let spelling = &self.spellings[id as usize];
-                if spelling.as_ref() == name {
+                // SAFETY: occupied buckets refer to initialized immutable
+                // ranges retained by bytes. This view ends before insertion.
+                if unsafe { spelling.as_ref() } == name {
                     return Ok(id);
                 }
             }
@@ -492,7 +501,8 @@ impl Names {
             return Err(Error::Capacity);
         }
         let id = self.len() as u32;
-        self.spellings.push(name.into());
+        let spelling = self.bytes.append(name);
+        self.spellings.push(spelling);
         self.buckets[slot] = (fragment << 32) | u64::from(id);
         if (self.spellings.len() - NAMED_BASE) * 2 > self.buckets.len() {
             let mut buckets = vec![0; self.buckets.len() * 2];
