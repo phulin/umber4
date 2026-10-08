@@ -377,11 +377,13 @@ python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
 
 ## Compatibility and reproduction
 
-Thirty-eight Rust tests cover the core plus token-register retention, protected
+Thirty-nine Rust tests cover the core plus token-register retention, protected
 and opaque insertion, conditional selection, deferred token order, case changes,
 conversion categories, expression rounding/scaling/error order, generated-buffer
 reuse, numeric and expansion-depth boundaries, fixed symbol names, and long/nested
-dynamic names. The native oracle compares 408 marked messages and 26 rejected
+dynamic names. Forced hash collisions also check distinct spellings at lengths
+2–33, every differing byte, first-bucket matches, and lookup after table growth.
+The native oracle compares 408 marked messages and 26 rejected
 programs. Expected extended-fixture messages were captured from native pdfTeX.
 
 Short-number fixtures compare singleton windows, spaces and spacer aliases,

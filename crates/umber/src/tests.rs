@@ -371,3 +371,36 @@ fn supported_failure_boundaries() {
         assert_eq!(Engine::new(source).run().err(), Some(expected));
     }
 }
+
+#[test]
+fn interned_names_compare_all_bytes_under_hash_collisions() {
+    let mut names = crate::token::Names::new();
+    let mut entries = Vec::new();
+    // Force every spelling into the same probe chain. Different lengths and
+    // each differing byte must remain distinct through comparison and growth.
+    for length in 2..=33 {
+        let original = vec![b'a'; length];
+        let original_id = names.intern_hashed(&original, 0).unwrap();
+        let mut first_bucket = crate::token::Names::new();
+        let first_id = first_bucket.intern_hashed(&original, 0).unwrap();
+        entries.push((original.clone(), original_id));
+        for position in 0..length {
+            let mut changed = original.clone();
+            changed[position] = b'b';
+            assert_ne!(first_bucket.intern_hashed(&changed, 0).unwrap(), first_id);
+            let id = names.intern_hashed(&changed, 0).unwrap();
+            assert_ne!(id, original_id);
+            assert_eq!(names.spelling(id as usize), changed);
+            entries.push((changed, id));
+        }
+        assert_eq!(names.intern_hashed(&original, 0).unwrap(), original_id);
+    }
+    let mut ids: Vec<_> = entries.iter().map(|(_, id)| *id).collect();
+    ids.sort_unstable();
+    ids.dedup();
+    assert_eq!(ids.len(), entries.len());
+    for (spelling, id) in entries {
+        assert_eq!(names.intern_hashed(&spelling, 0).unwrap(), id);
+        assert_eq!(names.spelling(id as usize), spelling);
+    }
+}
