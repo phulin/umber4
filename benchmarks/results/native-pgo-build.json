@@ -1,5 +1,5 @@
 {
-  "engine_source_base_commit": "cbc910f",
+  "engine_source_base_commit": "6081686",
   "build": {
     "features": [
       "native-profile"
@@ -19,19 +19,19 @@
       "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
       "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
       "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
-      "crates/umber/src/extended_tests.rs": "228a8a06611e84d1435c0273c6bc6793835fca85f202c5da5cfef564074500eb",
-      "crates/umber/src/input.rs": "419a9504aa386c2fcbe6bd0198e01f367cf8514680d5a07b5d91c8052e551799",
+      "crates/umber/src/extended_tests.rs": "3e3f9f70555c8cdbdae47daddb111fff270a8d3c2a7f2cc90cea2d987450b015",
+      "crates/umber/src/input.rs": "fed64cc6850149cdc2a0590fc1de057f0501cac62c4f35efc38a15da791f1ad1",
       "crates/umber/src/lib.rs": "dd5765a031bd66eb8dd768601ce5bf512ead995c8feccacf7b363e59b34d9b03",
       "crates/umber/src/lists.rs": "fa2d4af0c8ff6b2dfce4d48f692604b6eb627f2111073b3b114582da46592721",
       "crates/umber/src/macros.rs": "978900409595062e9204d31ad25aa5b3eb1b7341f4220c86bc551cde9eb0e8a0",
       "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
       "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
-      "crates/umber/src/scan.rs": "1a55caf0cf54b573b8fd6f88b990392163e8da4598764f2feb09a9377716ea05",
-      "crates/umber/src/scan_tests.rs": "5f93b9430c1f52f52bbbf32a313031630fbd18c84915a8c2dc92116c95d0d839",
-      "crates/umber/src/tests.rs": "fabf9a92f3938069c8fa144b631af6578afe7ecd774acc0a4f1eea3df3f2a2bc",
+      "crates/umber/src/scan.rs": "8982ba2bae1701227b7a85871d08e5c997c1b2818338ba831ebec9bbce9b3ec8",
+      "crates/umber/src/scan_tests.rs": "5746a58f3c4c21c5f66fb2552c22a3c3202e7952f8eaf3c4f7c80c73f3522b13",
+      "crates/umber/src/tests.rs": "424bc377a988f725c3115a449bf1fcd8ffe6cd2d7d3034d7d52eefca5f26465c",
       "crates/umber/src/token.rs": "fb16f78fc8c603fc70eb14a10bc122913bb9eaf6c5ae4b7327c3e8046274e848"
     },
-    "training_binary_sha256": "c29b19a3d30d96e62e5ef69cdbe12d23c04407c098d61f0edc2ee1cca03fef96",
+    "training_binary_sha256": "f712524247a4f47a26d4319dfb99526312967d300a0cacd7f6427bdd6d4c4f04",
     "generators": {
       "mvp": "c3cdafbdb683f8a457356bc5776e8b7916ae64c400561cad9927674bc8169956",
       "expansion": "ebff0d53c33f20fdd0c53ae7f2c8c1241d9cbf585d6b7c75057fa069f0d060cd"
@@ -135,12 +135,12 @@
         "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
       }
     ],
-    "profile_path": "target/pgo/fab699244849069f0814d806b5b31cf8949d35d512eedf5ce17633d992d6a7d2.profdata",
-    "profile_sha256": "fab699244849069f0814d806b5b31cf8949d35d512eedf5ce17633d992d6a7d2",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/fab699244849069f0814d806b5b31cf8949d35d512eedf5ce17633d992d6a7d2.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+    "profile_path": "target/pgo/737cb8691f3a01f3955fe6361c5ce832bfec40f1b1f6d259006af8ea36dbbcda.profdata",
+    "profile_sha256": "737cb8691f3a01f3955fe6361c5ce832bfec40f1b1f6d259006af8ea36dbbcda",
+    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/737cb8691f3a01f3955fe6361c5ce832bfec40f1b1f6d259006af8ea36dbbcda.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
     "rustflags_args": [
       "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/fab699244849069f0814d806b5b31cf8949d35d512eedf5ce17633d992d6a7d2.profdata",
+      "profile-use=/home/phulin/umber4/target/pgo/737cb8691f3a01f3955fe6361c5ce832bfec40f1b1f6d259006af8ea36dbbcda.profdata",
       "-C",
       "llvm-args=-pgo-warn-missing-function",
       "-C",
@@ -150,8 +150,559 @@
       "-C",
       "llvm-args=--align-all-functions=6"
     ],
-    "umber_binary_sha256": "45a1f67864efd6f811503441f948a8a142bbb3a6f68d2efc78acf70172d1e826",
-    "allocation_binary_sha256": "4ad114c28c3a33f4b2cbe50ff21d373288c6ff0e70be24683eb57767080c1d55"
+    "umber_binary_sha256": "bd354893f6a0beb84055f159201c6d323ddd7126d9b8b5d8ccc158f1a58bee32",
+    "allocation_binary_sha256": "87e19ca9b7597bed1dea778a33b02b5af86ceaf1d98988a6d01e9891e744d32c"
   },
-  "identity": "The build record identifies the exact interpreter and allocation diagnostic used in the timing and allocation reports."
+  "identity": "The build record identifies the exact interpreter and allocation diagnostic used in the timing and allocation reports.",
+  "previous_profile_comparison": [
+    {
+      "date": "2026-10-08T04:01:53.189681+00:00",
+      "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+      "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+      "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/737cb8691f3a01f3955fe6361c5ce832bfec40f1b1f6d259006af8ea36dbbcda.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+      "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+      "cpu": 0,
+      "cpu_model": "AMD EPYC 7642 48-Core Processor",
+      "umber_binary_sha256": "bd354893f6a0beb84055f159201c6d323ddd7126d9b8b5d8ccc158f1a58bee32",
+      "generator_sha256": "c3cdafbdb683f8a457356bc5776e8b7916ae64c400561cad9927674bc8169956",
+      "repeats": 7,
+      "complete": true,
+      "samples": [
+        {
+          "case": "raw",
+          "size": 1000000,
+          "bytes": 25000109,
+          "sha256": "da1fe7e4cb29c08f024b338c7fe3d6046c1d2d76fe81b2c40e63d8fd85463719",
+          "seconds": {
+            "umber": [
+              0.173128797,
+              0.198774104,
+              0.16941368,
+              0.175411704,
+              0.172566401,
+              0.177844643,
+              0.165806888
+            ],
+            "pdftex": [
+              0.55768794,
+              0.585580724,
+              0.583095848,
+              0.582253371,
+              0.565942496,
+              0.575881665,
+              0.571123035
+            ],
+            "baseline": [
+              0.192600726,
+              0.193378787,
+              0.195915287,
+              0.194872408,
+              0.185004313,
+              0.179191755,
+              0.185284759
+            ]
+          },
+          "median": {
+            "umber": 0.173128797,
+            "pdftex": 0.575881665,
+            "baseline": 0.192600726
+          },
+          "ratio": 0.3006325908986875,
+          "ratio_to_baseline": 0.8989000228379201,
+          "cpu_seconds": {
+            "umber": [
+              0.17235500000000004,
+              0.19800800000000018,
+              0.1687249999999998,
+              0.1747529999999995,
+              0.17196000000000033,
+              0.17724899999999888,
+              0.16522799999999993
+            ],
+            "pdftex": [
+              0.55673,
+              0.584654,
+              0.5823139999999998,
+              0.5814979999999998,
+              0.5652569999999999,
+              0.5750580000000012,
+              0.5701860000000005
+            ],
+            "baseline": [
+              0.19188399999999994,
+              0.19256099999999998,
+              0.19533700000000032,
+              0.19427700000000048,
+              0.18436399999999953,
+              0.17861700000000003,
+              0.18467199999999995
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.17235500000000004,
+            "pdftex": 0.5750580000000012,
+            "baseline": 0.19188399999999994
+          },
+          "cpu_ratio": 0.2997175937035911,
+          "cpu_ratio_to_baseline": 0.898224969252257
+        },
+        {
+          "case": "parameters",
+          "size": 1000000,
+          "bytes": 635,
+          "sha256": "469f63295fc03e6bd69e539893c287bfcb158287dbe4756ac4ca0ad8f6b9604f",
+          "seconds": {
+            "umber": [
+              0.244077225,
+              0.246679901,
+              0.244498115,
+              0.257674845,
+              0.251514959,
+              0.253371251,
+              0.26144028
+            ],
+            "pdftex": [
+              0.627435478,
+              0.653825097,
+              0.614895052,
+              0.670117814,
+              0.665298716,
+              0.607024364,
+              0.687376181
+            ],
+            "baseline": [
+              0.254217306,
+              0.240799184,
+              0.261947824,
+              0.248231922,
+              0.242016002,
+              0.256058216,
+              0.249834936
+            ]
+          },
+          "median": {
+            "umber": 0.251514959,
+            "pdftex": 0.653825097,
+            "baseline": 0.249834936
+          },
+          "ratio": 0.3846823258300224,
+          "ratio_to_baseline": 1.0067245319125424,
+          "cpu_seconds": {
+            "umber": [
+              0.2434460000000005,
+              0.2460129999999996,
+              0.2435969999999994,
+              0.25711199999999934,
+              0.2508580000000009,
+              0.2527499999999989,
+              0.26080400000000026
+            ],
+            "pdftex": [
+              0.626421999999998,
+              0.6528410000000004,
+              0.6141230000000011,
+              0.6690540000000009,
+              0.6644519999999989,
+              0.6061300000000003,
+              0.6864900000000027
+            ],
+            "baseline": [
+              0.2535670000000003,
+              0.24008399999999952,
+              0.26109000000000115,
+              0.24757899999999822,
+              0.24138899999999985,
+              0.2554040000000004,
+              0.24906199999999856
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.2508580000000009,
+            "pdftex": 0.6528410000000004,
+            "baseline": 0.24906199999999856
+          },
+          "cpu_ratio": 0.3842558907911739,
+          "cpu_ratio_to_baseline": 1.0072110558816776
+        },
+        {
+          "case": "file-parameters",
+          "size": 1000000,
+          "bytes": 10000179,
+          "sha256": "9256bab9e6af6a6e49441c21b021111a0d3f483f892edda2b0cac894572bc0a1",
+          "seconds": {
+            "umber": [
+              0.310256641,
+              0.333530891,
+              0.312105935,
+              0.311511674,
+              0.324550124,
+              0.336089247,
+              0.312047089
+            ],
+            "pdftex": [
+              0.802154117,
+              0.7988142,
+              0.824446788,
+              0.795489624,
+              0.809420498,
+              0.818505764,
+              0.824194249
+            ],
+            "baseline": [
+              0.304134255,
+              0.328256158,
+              0.303359136,
+              0.303060768,
+              0.300243067,
+              0.299219964,
+              0.301756882
+            ]
+          },
+          "median": {
+            "umber": 0.312105935,
+            "pdftex": 0.809420498,
+            "baseline": 0.303060768
+          },
+          "ratio": 0.3855918348635643,
+          "ratio_to_baseline": 1.029846050545216,
+          "cpu_seconds": {
+            "umber": [
+              0.30957099999999826,
+              0.33292300000000097,
+              0.31146400000000085,
+              0.31080400000000097,
+              0.3238549999999982,
+              0.33544399999999897,
+              0.3112040000000036
+            ],
+            "pdftex": [
+              0.801321999999999,
+              0.7978249999999996,
+              0.8236589999999993,
+              0.7947810000000004,
+              0.8085329999999971,
+              0.8176069999999989,
+              0.8231500000000018
+            ],
+            "baseline": [
+              0.303408000000001,
+              0.3275030000000001,
+              0.30272099999999824,
+              0.3022759999999991,
+              0.2994760000000021,
+              0.29862800000000433,
+              0.301129999999997
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.31146400000000085,
+            "pdftex": 0.8085329999999971,
+            "baseline": 0.3022759999999991
+          },
+          "cpu_ratio": 0.38522113506808253,
+          "cpu_ratio_to_baseline": 1.0303960618772308
+        }
+      ],
+      "baseline_binary_sha256": "45a1f67864efd6f811503441f948a8a142bbb3a6f68d2efc78acf70172d1e826",
+      "startup": {
+        "seconds": {
+          "umber": [
+            0.001189603,
+            0.00141535,
+            0.001468902,
+            0.001349425,
+            0.001292618,
+            0.001322022,
+            0.00145419
+          ],
+          "pdftex": [
+            0.005692859,
+            0.004820896,
+            0.006271632,
+            0.004803611,
+            0.004702059,
+            0.004711486,
+            0.005202587
+          ],
+          "baseline": [
+            0.001347163,
+            0.001487477,
+            0.001389247,
+            0.00116129,
+            0.001312455,
+            0.001265325,
+            0.001556394
+          ]
+        },
+        "median": {
+          "umber": 0.001349425,
+          "pdftex": 0.004820896,
+          "baseline": 0.001347163
+        },
+        "ratio": 0.2799116595753155,
+        "ratio_to_baseline": 1.0016790841197392,
+        "cpu_seconds": {
+          "umber": [
+            0.0009839999999999988,
+            0.0011599999999999944,
+            0.0012209999999999999,
+            0.0010900000000000076,
+            0.001010999999999998,
+            0.0010470000000000063,
+            0.0011489999999999972
+          ],
+          "pdftex": [
+            0.005136000000000002,
+            0.0044319999999999984,
+            0.005741999999999997,
+            0.004464999999999997,
+            0.004368999999999998,
+            0.004263000000000003,
+            0.004754999999999995
+          ],
+          "baseline": [
+            0.001112999999999996,
+            0.001246000000000011,
+            0.0010869999999999908,
+            0.0009590000000000015,
+            0.0010570000000000024,
+            0.001013,
+            0.0012179999999999969
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.0010900000000000076,
+          "pdftex": 0.004464999999999997,
+          "baseline": 0.0010869999999999908
+        },
+        "cpu_ratio": 0.24412094064949796,
+        "cpu_ratio_to_baseline": 1.0027598896044314
+      },
+      "scope": "Focused paired follow-up against the preceding native-profile interpreter; this supplements the full profile-versus-ordinary sweep."
+    },
+    {
+      "date": "2026-10-08T04:02:21.812319+00:00",
+      "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+      "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+      "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/737cb8691f3a01f3955fe6361c5ce832bfec40f1b1f6d259006af8ea36dbbcda.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+      "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+      "cpu": 0,
+      "cpu_model": "AMD EPYC 7642 48-Core Processor",
+      "umber_binary_sha256": "bd354893f6a0beb84055f159201c6d323ddd7126d9b8b5d8ccc158f1a58bee32",
+      "generator_sha256": "ebff0d53c33f20fdd0c53ae7f2c8c1241d9cbf585d6b7c75057fa069f0d060cd",
+      "measurement_sha256": "c3cdafbdb683f8a457356bc5776e8b7916ae64c400561cad9927674bc8169956",
+      "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+      "corpus": {
+        "title": "A Gentle Introduction to TeX",
+        "author": "Michael Doob",
+        "version": "1.1",
+        "url": "https://ctan.net/info/gentle/gentle.tex",
+        "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+        "kernels": [
+          {
+            "name": "spelling",
+            "lines": [
+              98,
+              112
+            ],
+            "adaptation": "Definitions unchanged. Bootstrap ifcanspell with let instead of loading plain newif. The preceding aesthetic macro needs an accent and is omitted."
+          },
+          {
+            "name": "today",
+            "lines": [
+              305,
+              307
+            ],
+            "adaptation": "Definition unchanged. Define plain's space macro and assign calendar parameters explicitly."
+          },
+          {
+            "name": "talks",
+            "lines": [
+              3756,
+              3756
+            ],
+            "adaptation": "Definition unchanged. Consume expanded sentences in definitions rather than typesetting them."
+          },
+          {
+            "name": "contentsentry",
+            "lines": [
+              197,
+              201
+            ],
+            "adaptation": "Retain the complete write payload in a parameterized macro invoked in edef. Stringified line/dotfill names and braces are never executed. Bootstrap pageno with countdef."
+          },
+          {
+            "name": "maketable",
+            "lines": [
+              261,
+              269
+            ],
+            "adaptation": "Retain the bracketed-title and paragraph-delimited signature; replace the box/display body with edef of both complete payloads."
+          }
+        ]
+      },
+      "validation": "Every record compares its expanded definition with independently generated expected tokens; comparison and expected definition construction are timed.",
+      "storage": "Definition and token-register replacements accumulate immutable arena tokens within the Umber run; total work is bounded by the selected size.",
+      "repeats": 7,
+      "complete": true,
+      "samples": [
+        {
+          "case": "name-table",
+          "size": 50000,
+          "bytes": 12045473,
+          "expanded_text_bytes": 2171472,
+          "name_table_width": 4096,
+          "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+          "seconds": {
+            "umber": [
+              0.127511656,
+              0.130215913,
+              0.136763564,
+              0.129076202,
+              0.137726121,
+              0.127437599,
+              0.132143633
+            ],
+            "pdftex": [
+              0.329980696,
+              0.341970518,
+              0.324906101,
+              0.324730227,
+              0.315921385,
+              0.310201279,
+              0.34124678
+            ],
+            "baseline": [
+              0.138135388,
+              0.151549358,
+              0.133031204,
+              0.134604156,
+              0.157772843,
+              0.134739876,
+              0.147925463
+            ]
+          },
+          "median": {
+            "umber": 0.130215913,
+            "pdftex": 0.324906101,
+            "baseline": 0.138135388
+          },
+          "ratio": 0.40078014109067156,
+          "ratio_to_baseline": 0.9426687461145002,
+          "cpu_seconds": {
+            "umber": [
+              0.12689200000000023,
+              0.12952699999999995,
+              0.13603499999999968,
+              0.12849699999999986,
+              0.13705699999999998,
+              0.1267680000000002,
+              0.13151899999999994
+            ],
+            "pdftex": [
+              0.329253,
+              0.3411949999999999,
+              0.3241770000000006,
+              0.3239779999999999,
+              0.31509399999999976,
+              0.30950200000000017,
+              0.3404409999999993
+            ],
+            "baseline": [
+              0.13741799999999982,
+              0.15085300000000013,
+              0.13237699999999952,
+              0.13372300000000026,
+              0.15712500000000018,
+              0.13402899999999995,
+              0.1473280000000008
+            ]
+          },
+          "cpu_median": {
+            "umber": 0.12952699999999995,
+            "pdftex": 0.3241770000000006,
+            "baseline": 0.13741799999999982
+          },
+          "cpu_ratio": 0.39955641516825596,
+          "cpu_ratio_to_baseline": 0.9425766639013821
+        }
+      ],
+      "baseline_binary_sha256": "45a1f67864efd6f811503441f948a8a142bbb3a6f68d2efc78acf70172d1e826",
+      "startup": {
+        "seconds": {
+          "umber": [
+            0.001219598,
+            0.003354115,
+            0.0013992,
+            0.001321973,
+            0.001234951,
+            0.001370211,
+            0.001259942
+          ],
+          "pdftex": [
+            0.004527194,
+            0.004788158,
+            0.006022159,
+            0.004969616,
+            0.004736826,
+            0.005073702,
+            0.004675026
+          ],
+          "baseline": [
+            0.001265685,
+            0.001719528,
+            0.001337303,
+            0.001243817,
+            0.001423364,
+            0.001457513,
+            0.001537068
+          ]
+        },
+        "median": {
+          "umber": 0.001321973,
+          "pdftex": 0.004788158,
+          "baseline": 0.001423364
+        },
+        "ratio": 0.27609218409250486,
+        "ratio_to_baseline": 0.9287666401566991,
+        "cpu_seconds": {
+          "umber": [
+            0.001008999999999996,
+            0.0028800000000000076,
+            0.0011690000000000034,
+            0.0010679999999999995,
+            0.0010229999999999961,
+            0.0011029999999999929,
+            0.0010300000000000031
+          ],
+          "pdftex": [
+            0.004133000000000005,
+            0.004401999999999996,
+            0.005434000000000001,
+            0.0045489999999999975,
+            0.004366999999999996,
+            0.004641000000000006,
+            0.004305000000000003
+          ],
+          "baseline": [
+            0.0010430000000000023,
+            0.0012429999999999941,
+            0.0010630000000000014,
+            0.0010259999999999991,
+            0.0011030000000000068,
+            0.0011779999999999985,
+            0.0011810000000000015
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.0010679999999999995,
+          "pdftex": 0.004401999999999996,
+          "baseline": 0.0011030000000000068
+        },
+        "cpu_ratio": 0.24261699227623817,
+        "cpu_ratio_to_baseline": 0.9682683590208458
+      },
+      "scope": "Focused paired follow-up against the preceding native-profile interpreter; this supplements the full profile-versus-ordinary sweep."
+    }
+  ]
 }

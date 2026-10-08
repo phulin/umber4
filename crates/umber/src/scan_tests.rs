@@ -1,6 +1,52 @@
 use crate::{Engine, Error};
 
 #[test]
+fn file_integer_prefix_preserves_categories_and_progress() {
+    use crate::{scalars::Target, token::Token};
+    let letter = |byte| Token::character(11, byte);
+    let cases = [
+        ("7X", Ok(7), letter(b'X')),
+        ("007X", Ok(7), letter(b'X')),
+        ("2147483647X", Ok(i32::MAX), letter(b'X')),
+        ("2147483648X", Err(Error::Overflow), letter(b'X')),
+        ("21474836470X", Err(Error::Overflow), letter(b'X')),
+        ("7  X", Ok(7), letter(b'X')),
+        ("7\tX", Ok(7), Token::other(9)),
+        ("7% ignored\n8X", Ok(78), letter(b'X')),
+        ("7\n8X", Ok(7), Token::other(b'8')),
+    ];
+    for loaded in [false, true] {
+        for (operand, expected, next) in cases {
+            let source = format!("{}{operand}", if loaded { "!" } else { "" });
+            let mut engine = Engine::new(source.as_bytes());
+            if loaded {
+                assert_eq!(engine.next_raw().unwrap().token, Token::other(b'!'));
+            }
+            assert_eq!(engine.scan_int(), expected, "{operand:?}, loaded={loaded}");
+            assert_eq!(engine.next_raw().unwrap().token, next);
+        }
+    }
+    for (category, expected, next) in [
+        (12, Ok(123), letter(b'X')),
+        (11, Err(Error::Number), letter(b'1')),
+        (10, Ok(23), letter(b'X')),
+    ] {
+        let mut engine = Engine::new(b"!123X");
+        engine.scalars[Target::catcode(b'1' as usize)].value = category;
+        engine.next_raw().unwrap();
+        assert_eq!(engine.scan_int(), expected);
+        assert_eq!(engine.next_raw().unwrap().token, next);
+    }
+    for (endline, expected) in [(-1, 78), (b'0' as i32, 708)] {
+        let mut engine = Engine::new(b"!7\n8X");
+        engine.scalars[Target::ENDLINE].value = endline;
+        engine.next_raw().unwrap();
+        assert_eq!(engine.scan_int(), Ok(expected));
+        assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));
+    }
+}
+
+#[test]
 fn macro_integer_arguments_cross_windows() {
     // The padding and seven definitions put take's first argument word at
     // padding + 7. These offsets cross its two argument words and terminator.

@@ -97,6 +97,17 @@ impl<'a> FileInput<'a> {
         self.position
     }
     #[inline]
+    pub fn literal_digit(&mut self, cats: &[Integer; 256]) -> Option<i32> {
+        let &byte = self.line.get(self.position)?;
+        let digit = byte.wrapping_sub(b'0');
+        if digit >= 10 || cats[byte as usize].value != 12 {
+            return None;
+        }
+        self.position += 1;
+        self.state = 1;
+        Some(i32::from(digit))
+    }
+    #[inline]
     pub fn read_character_except<const EXCEPT: bool>(
         &mut self,
         cats: &[Integer; 256],

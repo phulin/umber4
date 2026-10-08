@@ -102,6 +102,12 @@ use a static byte table. Spelling handles and hashes use arrays indexed directly
 by control-sequence ID; fixed slots have empty handles. Interned identities
 retain their existing session lifetime.
 
+An integer scan can read its first literal decimal digit directly from the
+loaded file line using the current category table. The cursor consumes that
+character and enters the middle-of-line state. The existing suffix scanner then
+reads further digits and the expanded terminator; signs, other radices, and
+expandable operands retain the general scanner.
+
 Expanded definitions and token-register replacements still accumulate arena
 storage within a run. Benchmarks expose this cost through definition churn and
 larger working sets, with bounded total materialized tokens. The first MVP's

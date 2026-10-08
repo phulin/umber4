@@ -116,6 +116,9 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn literal_digit(&mut self) -> Option<i32> {
+        if self.sources.is_empty() {
+            return self.file.literal_digit(self.scalars.catcodes());
+        }
         let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
             return None;
         };
