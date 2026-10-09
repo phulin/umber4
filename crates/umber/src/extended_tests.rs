@@ -185,24 +185,26 @@ fn macro_equality_crosses_shifted_chunk_boundaries() {
 
 #[test]
 fn arena_windows_retain_whole_chunk_access() {
-    use crate::token::{Token, TokenArena};
-    let mut arena = TokenArena::default();
+    use crate::token::Token;
+    let mut values = crate::values::Values::default();
+    let mut builder = values.builder();
     for index in 0..4100 {
-        arena.push(Token::other(index as u8)).unwrap();
+        builder.push(Token::other(index as u8)).unwrap();
     }
-    let (first, end, next) = arena.window(4094, 4100);
+    let value = values.publish(builder, None).unwrap();
+    let (first, end, next) = value.tokens.window(4094, 4100);
     assert_eq!(next, 4096);
-    arena.push(Token::other(99)).unwrap();
-    // SAFETY: this published window retains its whole chunk, including after
-    // a disjoint suffix is initialized. Both words precede the returned end.
+    let mut neighbor = values.builder();
+    neighbor.push(Token::other(99)).unwrap();
+    // SAFETY: value retains the page, and neighbor writes a disjoint suffix.
     unsafe {
         assert_eq!(first.read(), Token::other(254));
         assert_eq!(first.add(1).read(), Token::other(255));
         assert_eq!(first.add(2), end);
     }
-    assert!(arena.equal_ranges(1, 257, 3843));
-    assert!(!arena.equal_ranges(1, 258, 3842));
-    assert!(arena.equal_ranges(arena.len, 0, 0));
+    assert!(value.tokens.equal(1, &value.tokens, 257, 3843));
+    assert!(!value.tokens.equal(1, &value.tokens, 258, 3842));
+    assert!(value.tokens.equal(value.tokens.len, &value.tokens, 0, 0));
 }
 
 #[test]

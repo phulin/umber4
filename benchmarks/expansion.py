@@ -256,7 +256,7 @@ def main():
         "kernels_sha256": hashlib.sha256((CORPUS / "gentle-kernels.tex").read_bytes()).hexdigest(),
         "corpus": provenance,
         "validation": "Every record compares its expanded definition with independently generated expected tokens; comparison and expected definition construction are timed.",
-        "storage": "Definition and token-register replacements accumulate immutable arena tokens within the Umber run; total work is bounded by the selected size.",
+        "storage": "Immutable definitions and token lists are reclaimed after their last semantic owner; bump chunks and value IDs are reused. Interned names remain session-owned.",
         "repeats": args.repeats, "complete": False, "samples": [],
     }
     if args.baseline:

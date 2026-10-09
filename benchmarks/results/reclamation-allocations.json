@@ -1,0 +1,444 @@
+{
+  "date": "2026-10-09T18:45:39.670850+00:00",
+  "scope": "Separate allocator diagnostics during engine construction/execution, excluding host input. Requested heap bytes, not RSS or pdfTeX memory.",
+  "engine_source_base_commit": "3f48a59",
+  "engine_change": "Immutable-value reclamation",
+  "baseline_engine_source_base_commit": "3f48a59",
+  "umber_binary_sha256": "b371c6a540bc0807c80a1b6f1ef24b8cf6807268380ae6053b0c83346c6cbf8d",
+  "baseline_binary_sha256": "03f3e22d924cc95de5015286445a1967a0cad75d1d4dbdedcf56829dd6d7a176",
+  "complete": true,
+  "samples": [
+    {
+      "case": "gentle-text",
+      "size": 1000,
+      "input_bytes": 236667,
+      "sha256": "fce2e4169a7ad74d3d355c483fff6ef062e5c0040c19ce69d3b3a4c99a3a49bf",
+      "allocation": {
+        "allocations": 3102,
+        "requested_bytes": 470209,
+        "peak_bytes": 99558
+      },
+      "baseline_allocation": {
+        "allocations": 68,
+        "requested_bytes": 650025,
+        "peak_bytes": 514678
+      }
+    },
+    {
+      "case": "gentle-text",
+      "size": 10000,
+      "input_bytes": 2350179,
+      "sha256": "2fa4cce87042c5fd23614ed51d45cf4ef0a92ddb20a203acc7acff9f13d4cafa",
+      "allocation": {
+        "allocations": 30466,
+        "requested_bytes": 3733313,
+        "peak_bytes": 99558
+      },
+      "baseline_allocation": {
+        "allocations": 259,
+        "requested_bytes": 5519657,
+        "peak_bytes": 4465014
+      }
+    },
+    {
+      "case": "gentle-text",
+      "size": 50000,
+      "input_bytes": 11743481,
+      "sha256": "91e5e2a70541c94abd0478b7702258297cab3dc484aa6cd2699ef6e029c208b0",
+      "allocation": {
+        "allocations": 152082,
+        "requested_bytes": 18235777,
+        "peak_bytes": 99558
+      },
+      "baseline_allocation": {
+        "allocations": 1088,
+        "requested_bytes": 33712425,
+        "peak_bytes": 25303414
+      }
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 1000,
+      "input_bytes": 193117,
+      "sha256": "dc9688d58f4a35ca4d5ae84e04183f5f18531b336dfea4559e92e316f9074880",
+      "allocation": {
+        "allocations": 2069,
+        "requested_bytes": 347945,
+        "peak_bytes": 98838
+      },
+      "baseline_allocation": {
+        "allocations": 45,
+        "requested_bytes": 304977,
+        "peak_bytes": 235358
+      }
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 10000,
+      "input_bytes": 1914581,
+      "sha256": "9a60d241ee061549ac6e534e2ef77029022b9f33c09667f6c2a50538a49dfc1e",
+      "allocation": {
+        "allocations": 20208,
+        "requested_bytes": 2516809,
+        "peak_bytes": 98838
+      },
+      "baseline_allocation": {
+        "allocations": 123,
+        "requested_bytes": 3419857,
+        "peak_bytes": 2366238
+      }
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 50000,
+      "input_bytes": 9565527,
+      "sha256": "fab3a9c93dbcef2225869be0a23c293465d6332c0108d408f21c5c197f2cd4c7",
+      "allocation": {
+        "allocations": 100816,
+        "requested_bytes": 12155401,
+        "peak_bytes": 98838
+      },
+      "baseline_allocation": {
+        "allocations": 436,
+        "requested_bytes": 14780113,
+        "peak_bytes": 10577694
+      }
+    },
+    {
+      "case": "gentle-contents",
+      "size": 1000,
+      "input_bytes": 464607,
+      "sha256": "fba791be743190c3b246e034d664f1e4f8351ed9448b3ec7d7408cf5db494a75",
+      "allocation": {
+        "allocations": 3256,
+        "requested_bytes": 481925,
+        "peak_bytes": 100860
+      },
+      "baseline_allocation": {
+        "allocations": 150,
+        "requested_bytes": 1833469,
+        "peak_bytes": 1696276
+      }
+    },
+    {
+      "case": "gentle-contents",
+      "size": 10000,
+      "input_bytes": 4629814,
+      "sha256": "dc98d4a8920abdcd02453a500c999a1759361cecd99960ac5fc120968cb9dee2",
+      "allocation": {
+        "allocations": 31924,
+        "requested_bytes": 3828549,
+        "peak_bytes": 100860
+      },
+      "baseline_allocation": {
+        "allocations": 992,
+        "requested_bytes": 17379837,
+        "peak_bytes": 16317972
+      }
+    },
+    {
+      "case": "gentle-contents",
+      "size": 50000,
+      "input_bytes": 23141928,
+      "sha256": "a97e212664cbf03e1c7fba3dacca9ee8b15c35e53d94bb9c561cfa9ffea3eb92",
+      "allocation": {
+        "allocations": 159324,
+        "requested_bytes": 18701381,
+        "peak_bytes": 100860
+      },
+      "baseline_allocation": {
+        "allocations": 4710,
+        "requested_bytes": 92991997,
+        "peak_bytes": 84532756
+      }
+    },
+    {
+      "case": "gentle-records",
+      "size": 1000,
+      "input_bytes": 840995,
+      "sha256": "eaaeea792d1aa2802b348b50dcbd2c78f87e0b969f181189685368ae6d96eb95",
+      "allocation": {
+        "allocations": 2413,
+        "requested_bytes": 389613,
+        "peak_bytes": 109608
+      },
+      "baseline_allocation": {
+        "allocations": 231,
+        "requested_bytes": 3000341,
+        "peak_bytes": 2918704
+      }
+    },
+    {
+      "case": "gentle-records",
+      "size": 10000,
+      "input_bytes": 8393367,
+      "sha256": "b2b051e964b7c79f9d9b47e4b9a041272b663e8eca4dd9969364924a30e66c49",
+      "allocation": {
+        "allocations": 23481,
+        "requested_bytes": 2745773,
+        "peak_bytes": 109608
+      },
+      "baseline_allocation": {
+        "allocations": 1775,
+        "requested_bytes": 30177301,
+        "peak_bytes": 29098288
+      }
+    },
+    {
+      "case": "gentle-records",
+      "size": 50000,
+      "input_bytes": 41959401,
+      "sha256": "f4555b0af99aa439743fa81944c84a0e4d6f6a04b87605ca9bfb2d5ccc99b25f",
+      "allocation": {
+        "allocations": 117128,
+        "requested_bytes": 13218637,
+        "peak_bytes": 109608
+      },
+      "baseline_allocation": {
+        "allocations": 8612,
+        "requested_bytes": 148633621,
+        "peak_bytes": 144294192
+      }
+    },
+    {
+      "case": "stored-records",
+      "size": 1000,
+      "input_bytes": 849029,
+      "sha256": "c168a660adb70c5eee3380b4fafdb48419c27b321486710fa48b60256542a306",
+      "allocation": {
+        "allocations": 3001,
+        "requested_bytes": 455309,
+        "peak_bytes": 110176
+      },
+      "baseline_allocation": {
+        "allocations": 278,
+        "requested_bytes": 3803485,
+        "peak_bytes": 3656312
+      }
+    },
+    {
+      "case": "stored-records",
+      "size": 10000,
+      "input_bytes": 8473401,
+      "sha256": "8e7e835856cba9d943458bdbc05046bebd3d9df8e4cbf05d6277424cb33cb077",
+      "allocation": {
+        "allocations": 29313,
+        "requested_bytes": 3399213,
+        "peak_bytes": 110176
+      },
+      "baseline_allocation": {
+        "allocations": 2192,
+        "requested_bytes": 36944221,
+        "peak_bytes": 35848824
+      }
+    },
+    {
+      "case": "stored-records",
+      "size": 50000,
+      "input_bytes": 42359435,
+      "sha256": "c7e23067ffd76699254e5fdd8b2684e0d2c22f9d793ae8ef3867f9298007cdd0",
+      "allocation": {
+        "allocations": 146239,
+        "requested_bytes": 16481645,
+        "peak_bytes": 110176
+      },
+      "baseline_allocation": {
+        "allocations": 10672,
+        "requested_bytes": 182303069,
+        "peak_bytes": 177963640
+      }
+    },
+    {
+      "case": "token-pipeline",
+      "size": 1000,
+      "input_bytes": 1531013,
+      "sha256": "388c26e20fd91e47c4aac2c08af97853d6d9908e94cd0180c4991caa69a5b6e0",
+      "allocation": {
+        "allocations": 7948,
+        "requested_bytes": 1027749,
+        "peak_bytes": 120360
+      },
+      "baseline_allocation": {
+        "allocations": 498,
+        "requested_bytes": 7808445,
+        "peak_bytes": 7534528
+      }
+    },
+    {
+      "case": "token-pipeline",
+      "size": 10000,
+      "input_bytes": 15292613,
+      "sha256": "20fdb1c9c3393190230db9d59d60447a3493b49706d6a6076686dfc2efc6ba4b",
+      "allocation": {
+        "allocations": 78854,
+        "requested_bytes": 9093189,
+        "peak_bytes": 120424
+      },
+      "baseline_allocation": {
+        "allocations": 4466,
+        "requested_bytes": 76498365,
+        "peak_bytes": 74328000
+      }
+    },
+    {
+      "case": "token-pipeline",
+      "size": 50000,
+      "input_bytes": 76455271,
+      "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+      "allocation": {
+        "allocations": 394016,
+        "requested_bytes": 44942021,
+        "peak_bytes": 120424
+      },
+      "baseline_allocation": {
+        "allocations": 22075,
+        "requested_bytes": 377914813,
+        "peak_bytes": 369256384
+      }
+    },
+    {
+      "case": "name-table",
+      "size": 1000,
+      "input_bytes": 243338,
+      "sha256": "3123407e89bd90dc93fde3788a361b0e34f618438d94234563b17c5b1dd2fb63",
+      "allocation": {
+        "allocations": 2314,
+        "requested_bytes": 721705,
+        "peak_bytes": 460430
+      },
+      "baseline_allocation": {
+        "allocations": 64,
+        "requested_bytes": 698577,
+        "peak_bytes": 563230
+      }
+    },
+    {
+      "case": "name-table",
+      "size": 10000,
+      "input_bytes": 2437877,
+      "sha256": "4897ca4af7537db822ab45ff673764bc21de05c0f0cc2d54327e04ef6a4d77bc",
+      "allocation": {
+        "allocations": 22623,
+        "requested_bytes": 6796017,
+        "peak_bytes": 4205862
+      },
+      "baseline_allocation": {
+        "allocations": 291,
+        "requested_bytes": 6166289,
+        "peak_bytes": 5062462
+      }
+    },
+    {
+      "case": "name-table",
+      "size": 50000,
+      "input_bytes": 12045473,
+      "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+      "allocation": {
+        "allocations": 110598,
+        "requested_bytes": 33107353,
+        "peak_bytes": 20159254
+      },
+      "baseline_allocation": {
+        "allocations": 1239,
+        "requested_bytes": 28211729,
+        "peak_bytes": 23701694
+      }
+    },
+    {
+      "case": "optional-arguments",
+      "size": 1000,
+      "input_bytes": 800225,
+      "sha256": "029485fd09af3f5d38b6aaa600c553c8c9cb1d08afbcc0d477f4f527b688b812",
+      "allocation": {
+        "allocations": 2993,
+        "requested_bytes": 452899,
+        "peak_bytes": 109872
+      },
+      "baseline_allocation": {
+        "allocations": 275,
+        "requested_bytes": 3654291,
+        "peak_bytes": 3508072
+      }
+    },
+    {
+      "case": "optional-arguments",
+      "size": 10000,
+      "input_bytes": 7993021,
+      "sha256": "d24a2ef5ce58db196cd615a96a2874b3e4d6a6c5e6f172f3f207fb3f418bd7dc",
+      "allocation": {
+        "allocations": 29144,
+        "requested_bytes": 3386403,
+        "peak_bytes": 109872
+      },
+      "baseline_allocation": {
+        "allocations": 2109,
+        "requested_bytes": 35467923,
+        "peak_bytes": 34389864
+      }
+    },
+    {
+      "case": "optional-arguments",
+      "size": 50000,
+      "input_bytes": 39990667,
+      "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+      "allocation": {
+        "allocations": 145412,
+        "requested_bytes": 16427171,
+        "peak_bytes": 109872
+      },
+      "baseline_allocation": {
+        "allocations": 10254,
+        "requested_bytes": 175354515,
+        "peak_bytes": 171016040
+      }
+    },
+    {
+      "case": "numeric-references",
+      "size": 1000,
+      "input_bytes": 267825,
+      "sha256": "f5d200d64785651175fff1e9c31f5df77683cb90e7e389f778677d7826a6d14b",
+      "allocation": {
+        "allocations": 2341,
+        "requested_bytes": 390817,
+        "peak_bytes": 133998
+      },
+      "baseline_allocation": {
+        "allocations": 55,
+        "requested_bytes": 453161,
+        "peak_bytes": 317942
+      }
+    },
+    {
+      "case": "numeric-references",
+      "size": 10000,
+      "input_bytes": 2536450,
+      "sha256": "3f46bc9992549fc4de16a9c1abc9a310e59fb5800e48c6517e5caa1afe10a343",
+      "allocation": {
+        "allocations": 20482,
+        "requested_bytes": 2559745,
+        "peak_bytes": 133998
+      },
+      "baseline_allocation": {
+        "allocations": 133,
+        "requested_bytes": 3469609,
+        "peak_bytes": 2415990
+      }
+    },
+    {
+      "case": "numeric-references",
+      "size": 50000,
+      "input_bytes": 12619279,
+      "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+      "allocation": {
+        "allocations": 101114,
+        "requested_bytes": 12200001,
+        "peak_bytes": 133998
+      },
+      "baseline_allocation": {
+        "allocations": 456,
+        "requested_bytes": 14993705,
+        "peak_bytes": 10791286
+      }
+    }
+  ]
+}

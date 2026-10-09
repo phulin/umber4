@@ -109,9 +109,9 @@ transformed tokens directly into destination chunks; neighboring spans in the
 same chunk can be combined by adjusting their bounds.
 
 A completed sequence owns its span descriptions and retains the backing storage
-they need. Session-owned definition storage already has a suitable lifetime;
-shorter-lived chunks can use shared ownership. Input cursors carry read positions
-separately, so reading advances a cursor while the sequence remains immutable.
+they need. Definition slices retain their immutable value; captured slices retain
+their backing chunks. Input cursors carry read positions separately, so reading
+advances a cursor while the sequence remains immutable.
 
 Use a small tagged input cursor with source-specific payloads:
 
@@ -148,9 +148,9 @@ primitives. Give them inline storage in the input representation. Larger
 generated results use constructed sequences with the same span-reading path.
 
 Token spans can use indices or internal pointers into stable backing storage.
-Definition segments live with the session; captured tokens stay stable once
-published to input. A narrow cursor/storage primitive can document these
-lifetimes and provide direct reads. Source-stack growth moves cursor records,
+Definition segments live through their semantic owners; captured tokens stay
+stable once published to input. A narrow cursor/storage primitive can document
+these lifetimes and provide direct reads. Source-stack growth moves cursor records,
 while their backing token storage remains in place.
 
 ## 4. Definition representation
@@ -161,7 +161,8 @@ arguments, up to TeX's nine parameters. Replacement tokens use internal paramete
 markers for substitution and ordinary token words for literals.
 
 The definition scanner writes new tokens and parameter markers directly into
-session storage, while retaining compatible literal spans from existing sources.
+owned immutable storage, while retaining compatible literal spans from existing
+sources.
 Its completed body is a sequence; its header and parameter descriptions can be
 built alongside it. Invocation uses the selected definition directly, with no
 compilation step or replacement-list copy on each call. A parameter-free macro
@@ -242,12 +243,11 @@ existing storage. The macro input source retains the packet until its body and
 argument sources finish. Unshared backing storage can then return to a reusable
 pool.
 
-Retention belongs at backing-chunk granularity. Each packet holds the chunk
-owners used by its span descriptors. A child retains the actual backing chunks,
-so consumed packet records can retire independently. Session-owned definition
-slices already have their longer lifetime. Shorter-lived captured storage can
-initially use reference-counted heap chunks, with ownership work paid when chunks
-are retained or released.
+Retention belongs at backing-value or chunk granularity. Each packet holds the
+owners used by its span descriptors. A child retains the actual immutable value
+or capture chunk, so consumed packet records can retire independently. The MVP
+uses non-atomic shared ownership at these transitions; token reads advance plain
+pointers without updating reference counts.
 
 Chunk-backed bump allocation fits the construction of new tokens and packet
 metadata. Finish by retaining or transferring these chunks in place. Reusable

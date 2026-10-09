@@ -59,8 +59,8 @@ with local progress. Pending sources contain tokens and cursors.
 
 Use 32-bit token words and a dense meaning table with assignment levels. An
 append-only byte interner supplies stable names for a run. Definition tokens are
-built directly in session-owned stable chunks. Common token sources read one
-contiguous span; source changes do the ownership work.
+built directly in stable chunks retained by their immutable value. Common token
+sources read one contiguous span; source changes do the ownership work.
 
 Definition prefixes, delimiters, and bodies use pairs of arena coordinates.
 Their storage is fixed by the definition's lifetime; a general input span adds
@@ -74,8 +74,9 @@ construction; invocation reads it without accessing the matching vectors.
 Only definitions with parameters allocate that record; delimiter and
 failure-table vectors move into it after construction. Parameter-free invocation
 reads only the small definition record. These records and their optional metadata
-remain live with the token arena. Stored argument scans pass their retained
-windows to a small character-run leaf. It tests four initialized words together
+remain live through bindings, saved values, active sources, and captured ranges.
+Stored argument scans pass their retained windows to a small character-run leaf.
+It tests four initialized words together
 and advances only when all are ordinary characters; a scalar tail stops at the
 first structural word or window end. The surrounding Rust frame keeps brace
 depth and parameter handling local. The execution loop borrows the engine;
@@ -172,9 +173,12 @@ is consumed, while an unexpandable nonspace token remains at its cursor for the
 next operation. Expansion, parameter substitution, suppression, and source
 transitions use the ordinary reader. Numeric progress stays on the Rust stack.
 
-The implemented arena uses 4,096-token boxed chunks. Published tokens are
-immutable; fresh suffix writes use `UnsafeCell` and chunk addresses remain stable
-when the directory grows. A source window covers initialized cells in one chunk.
+The immutable-value allocator uses 4,096-token boxed chunks with bump
+reservations during construction and a bounded cache for recycled chunks.
+Descriptor slots return to a free list after their last owner disappears.
+Published tokens are immutable; fresh suffix writes use `UnsafeCell` and chunk
+addresses remain stable when descriptors grow. A source window covers initialized
+cells in one chunk.
 Capture buffers grow while uniquely owned; publication gives their packets shared
 ownership and makes the buffers immutable. A child retains that backing before
 the parent source can retire. Source pointers remain valid through those semantic

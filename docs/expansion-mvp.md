@@ -63,11 +63,12 @@ execution continuations.
 
 ## Storage and control flow
 
-Keep immutable token-register values in the stable token arena for this slice.
-Register copies and save entries share a compact span. Arena retention makes
-active sources independent of subsequent assignments. A source for a standalone
-span carries its existing span and cursor, without manufacturing a macro header.
-Checkpoint-aware reclamation remains with the storage deep dive.
+Immutable token-register values own stable token chunks. Register copies and
+save entries retain the same value; an active source independently retains its
+backing through later assignments. A source for a standalone span carries its
+span, owner, and cursor without manufacturing a macro header. Replacing the last
+owner releases the payload and makes its descriptor slot reusable. Future
+checkpoints retain these same immutable values through their table roots.
 
 Use the same list-scanning loop with destination-specific Rust functions:
 definitions and register values append token words into their destination arena;
@@ -126,10 +127,11 @@ scanner or the general recursive scanner for signs, other radices, and internal
 quantities. Literal operands avoid setting up the general scanner's saved
 registers and temporary reads. Both scanners continue on the Rust stack.
 
-Expanded definitions and token-register replacements still accumulate arena
-storage within a run. Benchmarks expose this cost through definition churn and
-larger working sets, with bounded total materialized tokens. The first MVP's
-constant-storage loops remain a separate regression set.
+Expanded definitions and token-register replacements release obsolete immutable
+values. Compact-source memory workloads distinguish replacement of a fixed live
+working set from deliberate live growth; the allocator retains a bounded cache
+of empty chunks. The first MVP's constant-storage loops remain a separate
+regression set.
 
 ## Corpus and measurements
 

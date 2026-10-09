@@ -1,17 +1,14 @@
 use crate::names::SpellingStore;
 use crate::{Error, Result};
-use std::cell::UnsafeCell;
-use std::mem::MaybeUninit;
 use std::ptr::NonNull;
 use std::rc::Rc;
 
 pub(crate) const CS: u32 = 1 << 24;
 pub(crate) const PARAM: u32 = 1 << 23;
-pub(crate) const DEFS: u32 = u32::MAX;
-pub(crate) const SINGLE: u32 = DEFS - 1;
+pub(crate) const DURABLE: u32 = 1 << 31;
+pub(crate) const SINGLE: u32 = u32::MAX - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
 pub(crate) const CHUNK_BITS: u32 = 12;
-const CHUNK_LEN: usize = 1 << CHUNK_BITS;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -190,9 +187,9 @@ impl ArenaRange {
     pub fn empty(self) -> bool {
         self.start == self.end
     }
-    pub fn span(self) -> Span {
+    pub fn span(self, id: u32) -> Span {
         Span {
-            store: DEFS,
+            store: DURABLE | id,
             start: self.start,
             end: self.end,
         }
@@ -263,8 +260,9 @@ impl Sequence {
         self.rest.clear();
     }
 }
-#[derive(Clone, Copy, Default)]
+#[derive(Clone, Default)]
 pub(crate) struct TokenValue {
+    pub owner: Option<crate::values::Owner>,
     pub span: Span,
     pub level: u16,
 }
@@ -292,10 +290,22 @@ impl Definition {
         }
     }
 }
+pub(crate) enum Backing {
+    Capture { id: u32, _owner: Rc<Vec<Token>> },
+    Durable(crate::values::Owner),
+}
+impl Backing {
+    pub fn id(&self) -> u32 {
+        match self {
+            Self::Capture { id, .. } => *id,
+            Self::Durable(value) => DURABLE | value.id,
+        }
+    }
+}
 #[derive(Default)]
 pub(crate) struct Packet {
     pub arguments: Vec<Sequence>,
-    pub owners: Vec<(u32, Rc<Vec<Token>>)>,
+    pub owners: Vec<Backing>,
 }
 impl Packet {
     pub fn clear(&mut self) {
@@ -308,105 +318,6 @@ impl Packet {
 pub(crate) struct Capture {
     pub tokens: Rc<Vec<Token>>,
     pub building: bool,
-}
-// Cells use interior mutability solely for their one initialization. Published
-// cells never change; chunk addresses stay stable and Engine retains all chunks.
-// A cached cursor therefore remains valid while a disjoint suffix is initialized.
-type TokenChunk = [UnsafeCell<MaybeUninit<Token>>; CHUNK_LEN];
-pub(crate) struct TokenArena {
-    chunks: Vec<Box<TokenChunk>>,
-    pub len: u32,
-    next: *mut Token,
-}
-impl Default for TokenArena {
-    fn default() -> Self {
-        Self {
-            chunks: Vec::new(),
-            len: 0,
-            next: std::ptr::null_mut(),
-        }
-    }
-}
-impl TokenArena {
-    #[inline(always)]
-    pub fn push(&mut self, token: Token) -> Result<()> {
-        if self.len == u32::MAX {
-            return Err(Error::Capacity);
-        }
-        if (self.len as usize).is_multiple_of(CHUNK_LEN) {
-            self.grow();
-        }
-        // SAFETY: grow installs the unused suffix of a stable boxed chunk.
-        // The length check and chunk-boundary growth ensure next points to an
-        // unpublished cell. Each push advances at most one past this chunk.
-        unsafe {
-            self.next.write(token);
-            self.next = self.next.add(1);
-        }
-        self.len += 1;
-        Ok(())
-    }
-    #[inline(never)]
-    fn grow(&mut self) {
-        let chunk = Box::<TokenChunk>::new_uninit();
-        // SAFETY: every array element is a transparent UnsafeCell wrapper over
-        // MaybeUninit<Token>, which permits uninitialized contents. This makes
-        // the cell array valid without asserting that any Token is initialized.
-        // push initializes each cell before advancing the published length.
-        self.chunks.push(unsafe { chunk.assume_init() });
-        let chunk = self.chunks.last().expect("new arena chunk");
-        self.next = UnsafeCell::raw_get(chunk.as_ptr()).cast::<Token>();
-    }
-    pub fn get(&self, index: u32) -> Token {
-        assert!(index < self.len);
-        // SAFETY: the initialized prefix is immutable after publication.
-        unsafe {
-            (*self.chunks[index as usize >> CHUNK_BITS][index as usize & (CHUNK_LEN - 1)].get())
-                .assume_init_read()
-        }
-    }
-    pub fn window(&self, start: u32, end: u32) -> (*const Token, *const Token, u32) {
-        assert!(start < end && end <= self.len);
-        let chunk = start as usize >> CHUNK_BITS;
-        let offset = start as usize & (CHUNK_LEN - 1);
-        let count = ((end - start) as usize).min(CHUNK_LEN - offset);
-        // Derive from the whole chunk so the pointer retains access to every
-        // cell in the window, rather than borrowing just its first cell.
-        let base = UnsafeCell::raw_get(self.chunks[chunk].as_ptr())
-            .cast::<Token>()
-            .cast_const();
-        // SAFETY: UnsafeCell and MaybeUninit preserve Token's layout. Offset
-        // and count remain within this chunk, and start..end is initialized.
-        let first = unsafe { base.add(offset) };
-        (first, unsafe { first.add(count) }, start + count as u32)
-    }
-    pub fn equal_ranges(&self, mut first: u32, mut second: u32, length: u32) -> bool {
-        assert!(first <= self.len && second <= self.len);
-        assert!(length <= self.len - first && length <= self.len - second);
-        let first_end = first + length;
-        let second_end = second + length;
-        while first != first_end {
-            let (a, _, a_end) = self.window(first, first_end);
-            let (b, _, b_end) = self.window(second, second_end);
-            let count = (a_end - first).min(b_end - second);
-            // SAFETY: Token is transparent over u32. Both windows contain
-            // initialized, immutable words in stable arena chunks, and count
-            // stays within each allocation. The shared arena borrow excludes
-            // append operations throughout these temporary slice reads.
-            let (a, b) = unsafe {
-                (
-                    std::slice::from_raw_parts(a.cast::<u32>(), count as usize),
-                    std::slice::from_raw_parts(b.cast::<u32>(), count as usize),
-                )
-            };
-            if a != b {
-                return false;
-            }
-            first += count;
-            second += count;
-        }
-        true
-    }
 }
 const NAMED_BASE: usize = 514;
 static BYTE_NAMES: [[u8; 1]; 256] = {
@@ -530,6 +441,7 @@ pub(crate) enum SequenceRef {
     Argument(u32, u8),
 }
 pub(crate) struct Cursor {
+    pub _owner: Option<crate::values::Owner>,
     pub sequence: SequenceRef,
     pub span_index: usize,
     pub span: Span,

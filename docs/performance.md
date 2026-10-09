@@ -120,7 +120,7 @@ earlier restart, a source append after observed EOF, changed font/image resource
 and generated-file/multiple-pass behavior.
 
 Measure several missing-resource discoveries before the first checkpoint, not
-just a single replay. That catches definition-tail amplification and repeated
+just a single replay. That catches retained-definition amplification and repeated
 preamble work. A cached resource reduces later acquisition cost, while the
 ordinary interpreter still reexecutes from its valid root.
 

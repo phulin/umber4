@@ -74,7 +74,7 @@ impl Engine<'_> {
             capture.building = true;
             return Ok(id as u32);
         }
-        if self.captures.len() >= SINGLE as usize {
+        if self.captures.len() >= DURABLE as usize {
             return Err(Error::Capacity);
         }
         let id = self.captures.len() as u32;
@@ -111,9 +111,7 @@ impl Engine<'_> {
                 last.end = span.end;
                 return Ok(());
             }
-            if span.store != DEFS {
-                self.retain_capture(packet, span.store);
-            }
+            self.retain_backing(packet, span.store);
             span
         } else {
             self.materialize_token(raw.token, builder)?
@@ -139,9 +137,7 @@ impl Engine<'_> {
             last.end = span.end;
             return Ok(());
         }
-        if span.store != DEFS {
-            self.retain_capture(packet, span.store);
-        }
+        self.retain_backing(packet, span.store);
         self.packets[packet as usize].arguments[argument].append(span);
         Ok(())
     }
@@ -162,10 +158,17 @@ impl Engine<'_> {
         Ok(())
     }
     #[inline(never)]
-    fn retain_capture(&mut self, packet: u32, id: u32) {
+    fn retain_backing(&mut self, packet: u32, id: u32) {
         let owners = &mut self.packets[packet as usize].owners;
-        if !owners.iter().any(|(old, _)| *old == id) {
-            owners.push((id, Rc::clone(&self.captures[id as usize].tokens)));
+        if !owners.iter().any(|old| old.id() == id) {
+            owners.push(if id & DURABLE != 0 {
+                Backing::Durable(self.values.get(id & !DURABLE))
+            } else {
+                Backing::Capture {
+                    id,
+                    _owner: Rc::clone(&self.captures[id as usize].tokens),
+                }
+            });
         }
     }
     #[inline(never)]
@@ -198,22 +201,24 @@ impl Engine<'_> {
     #[inline(never)]
     fn publish_capture(&mut self, packet: u32, id: u32) {
         self.captures[id as usize].building = false;
-        self.packets[packet as usize]
-            .owners
-            .push((id, Rc::clone(&self.captures[id as usize].tokens)));
+        self.packets[packet as usize].owners.push(Backing::Capture {
+            id,
+            _owner: Rc::clone(&self.captures[id as usize].tokens),
+        });
     }
     #[inline(always)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
-        let definition = &self.definitions[id as usize];
+        let owner = self.values.get(id);
+        let definition = owner.definition();
         if definition.prefix.empty() && definition.parameter_count == 0 {
             let body = definition.body;
             self.retire_exhausted();
-            return self.push_body(id, body, None);
+            return self.push_body(owner, body, None);
         }
         if definition.uses_parameters {
-            self.begin_macro_with_arguments::<true>(id)
+            self.begin_macro_with_arguments::<true>(owner)
         } else {
-            self.begin_macro_with_arguments::<false>(id)
+            self.begin_macro_with_arguments::<false>(owner)
         }
     }
     #[inline(always)]
@@ -487,28 +492,29 @@ impl Engine<'_> {
         Ok(false)
     }
     #[inline(never)]
-    fn begin_macro_with_arguments<const RETAIN: bool>(&mut self, id: u32) -> Result<()> {
-        let prefix = self.definitions[id as usize].prefix;
+    fn begin_macro_with_arguments<const RETAIN: bool>(
+        &mut self,
+        owner: crate::values::Owner,
+    ) -> Result<()> {
+        let definition = owner.definition();
+        let prefix = definition.prefix;
         for position in prefix.start..prefix.end {
-            let expected = self.arena.get(position);
+            let expected = owner.tokens.get(position);
             if self.next_raw()?.token != expected {
                 return Err(Error::Argument);
             }
         }
-        let count = self.definitions[id as usize].parameter_count as usize;
+        let count = definition.parameter_count as usize;
         if count == 0 {
             self.retire_exhausted();
-            return self.push_body(id, self.definitions[id as usize].body, None);
+            let body = definition.body;
+            return self.push_body(owner, body, None);
         }
         let packet = if RETAIN { self.take_packet(count)? } else { 0 };
         let mut builder = None;
-        let long = self.definitions[id as usize].long;
+        let long = definition.long;
         for argument in 0..count {
-            let delimiter = self.definitions[id as usize]
-                .parameters
-                .as_ref()
-                .unwrap()
-                .delimiters[argument];
+            let delimiter = definition.parameters.as_ref().unwrap().delimiters[argument];
             if delimiter.empty() {
                 let first = loop {
                     let raw = self.next_raw()?;
@@ -528,18 +534,15 @@ impl Engine<'_> {
                     self.capture_raw(packet, argument, first, &mut builder)?;
                 }
             } else {
-                self.capture_delimited::<RETAIN>(id, packet, argument, &mut builder)?;
+                self.capture_delimited::<RETAIN>(&owner, packet, argument, &mut builder)?;
             }
         }
         if RETAIN {
             self.finish_capture(packet, builder);
         }
         self.retire_exhausted();
-        if RETAIN {
-            self.push_body(id, self.definitions[id as usize].body, Some(packet))
-        } else {
-            self.push_body(id, self.definitions[id as usize].body, None)
-        }
+        let body = definition.body;
+        self.push_body(owner, body, RETAIN.then_some(packet))
     }
     pub(crate) fn same_meaning(&self, a: Meaning, b: Meaning) -> bool {
         if a == b {
@@ -548,14 +551,17 @@ impl Engine<'_> {
         if a.command != b.command || !a.is_macro() {
             return false;
         }
-        let a = &self.definitions[a.value as usize];
-        let b = &self.definitions[b.value as usize];
+        let a_owner = self.values.get(a.value as u32);
+        let b_owner = self.values.get(b.value as u32);
+        let a = a_owner.definition();
+        let b = b_owner.definition();
         let a_signature = a.signature();
         let b_signature = b.signature();
         a.long == b.long
             && a_signature.end - a_signature.start == b_signature.end - b_signature.start
-            && self.arena.equal_ranges(
+            && a_owner.tokens.equal(
                 a_signature.start,
+                &b_owner.tokens,
                 b_signature.start,
                 a_signature.end - a_signature.start,
             )

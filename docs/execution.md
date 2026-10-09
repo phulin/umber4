@@ -96,8 +96,8 @@ that remembers only the first write in the group would get this wrong.
 
 Saved payloads move into the stack rather than being copied when ownership can
 transfer. Restoration moves them back. Discarding a current or saved value follows
-its payload semantics: session definitions keep their storage, a box relinquishes
-its list, and shared immutable values release their owner at that boundary.
+its payload semantics: definitions and shared immutable values release their
+owner at that boundary, and a box relinquishes its list.
 
 `\aftergroup` stores token identities and inserts them in TeX's order as the group
 closes. `\afterassignment` is a separate pending token inserted at the

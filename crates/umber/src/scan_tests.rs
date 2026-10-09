@@ -98,7 +98,7 @@ fn macro_integer_arguments_cross_windows() {
 
 #[test]
 fn short_integer_terminators_and_progress_cross_windows() {
-    use crate::token::{DEFS, FROZEN_RELAX, Meaning, Span, Token, cmd};
+    use crate::token::{DURABLE, FROZEN_RELAX, Meaning, Span, Token, cmd};
     let letter = |byte| Token::character(11, byte);
     for padding in [0, 4094, 4095, 4096] {
         for case in 0..10 {
@@ -161,18 +161,20 @@ fn short_integer_terminators_and_progress_cross_windows() {
                 ),
                 _ => unreachable!(),
             };
+            let mut tokens = engine.values.builder();
             for _ in 0..padding {
-                engine.arena.push(letter(b'P')).unwrap();
+                tokens.push(letter(b'P')).unwrap();
             }
-            let start = engine.arena.len;
+            let start = tokens.len();
             for word in words {
-                engine.arena.push(word).unwrap();
+                tokens.push(word).unwrap();
             }
+            let owner = engine.values.publish(tokens, None).unwrap();
             engine
                 .push_tokens(Span {
-                    store: DEFS,
+                    store: DURABLE | owner.id,
                     start,
-                    end: engine.arena.len,
+                    end: owner.tokens.len,
                 })
                 .unwrap();
             assert_eq!(engine.scan_int(), result, "padding {padding}, case {case}");
@@ -189,7 +191,7 @@ fn short_integer_terminators_and_progress_cross_windows() {
 
 #[test]
 fn keyword_matches_and_rollback_cross_arena_windows() {
-    use crate::token::{DEFS, Meaning, Span, Token, cmd};
+    use crate::token::{DURABLE, Meaning, Span, Token, cmd};
     let letter = |byte| Token::character(11, byte);
     for padding in [0, 4093, 4094, 4095, 4096, 8191] {
         for case in 0..15 {
@@ -228,19 +230,21 @@ fn keyword_matches_and_rollback_cross_arena_windows() {
                 14 => (vec![Token::character(10, b'B'), letter(b'Y')], true),
                 _ => unreachable!(),
             };
+            let mut tokens = engine.values.builder();
             for _ in 0..padding {
-                engine.arena.push(letter(b'P')).unwrap();
+                tokens.push(letter(b'P')).unwrap();
             }
-            let start = engine.arena.len;
+            let start = tokens.len();
             for &word in &words {
-                engine.arena.push(word).unwrap();
+                tokens.push(word).unwrap();
             }
-            engine.arena.push(letter(b'X')).unwrap();
+            tokens.push(letter(b'X')).unwrap();
+            let owner = engine.values.publish(tokens, None).unwrap();
             engine
                 .push_tokens(Span {
-                    store: DEFS,
+                    store: DURABLE | owner.id,
                     start,
-                    end: engine.arena.len,
+                    end: owner.tokens.len,
                 })
                 .unwrap();
             assert_eq!(engine.scan_keyword(b"by").unwrap(), matched);

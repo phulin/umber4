@@ -7,7 +7,7 @@ impl Engine<'_> {
         packet: u32,
         argument: usize,
         builder: &mut Option<u32>,
-        delimiter_start: u32,
+        except: Token,
         depth: i32,
     ) -> Result<u32> {
         let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
@@ -33,11 +33,7 @@ impl Engine<'_> {
         if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2) {
             return Ok(0);
         }
-        let except = if depth == 0 {
-            self.arena.get(delimiter_start)
-        } else {
-            Token(u32::MAX)
-        };
+        let except = if depth == 0 { except } else { Token(u32::MAX) };
         loop {
             if token == except {
                 break;
@@ -77,41 +73,30 @@ impl Engine<'_> {
         packet: u32,
         argument: usize,
         builder: &mut Option<u32>,
-        start: u32,
+        except: Token,
         depth: i32,
     ) -> Result<()> {
-        let except = if depth == 0 {
-            self.arena.get(start)
-        } else {
-            Token(u32::MAX)
-        };
+        let except = if depth == 0 { except } else { Token(u32::MAX) };
         self.capture_file_characters::<RETAIN, true>(packet, argument, builder, except)
     }
     #[inline(never)]
     pub(crate) fn capture_delimited<const RETAIN: bool>(
         &mut self,
-        id: u32,
+        owner: &crate::values::Value,
         packet: u32,
         argument: usize,
         builder: &mut Option<u32>,
     ) -> Result<()> {
-        let delimiter = self.definitions[id as usize]
-            .parameters
-            .as_ref()
-            .unwrap()
-            .delimiters[argument];
-        let long = self.definitions[id as usize].long;
+        let definition = owner.definition();
+        let delimiter = definition.parameters.as_ref().unwrap().delimiters[argument];
+        let long = definition.long;
         let length = (delimiter.end - delimiter.start) as usize;
         #[cfg(feature = "native-profile")]
         let (failure_words, failure_len) = {
-            let failures = &self.definitions[id as usize]
-                .parameters
-                .as_ref()
-                .unwrap()
-                .failures[argument];
+            let failures = &definition.parameters.as_ref().unwrap().failures[argument];
             // Each table is built once with its immutable definition and retained
-            // until the engine is released. Reader/capture calls mutate other
-            // stores; definition-vector growth leaves this allocation intact.
+            // by the macro invocation owner. Reader/capture calls mutate other
+            // stores; their growth leaves this allocation intact.
             // Keep raw parts across those calls and borrow only for a lookup.
             (failures.as_ptr(), failures.len())
         };
@@ -127,7 +112,7 @@ impl Engine<'_> {
                     packet,
                     argument,
                     builder,
-                    delimiter.start,
+                    owner.tokens.get(delimiter.start),
                     depth,
                 )?;
                 if RETAIN {
@@ -140,7 +125,7 @@ impl Engine<'_> {
                     packet,
                     argument,
                     builder,
-                    delimiter.start,
+                    owner.tokens.get(delimiter.start),
                     depth,
                 )? as usize;
             }
@@ -154,7 +139,7 @@ impl Engine<'_> {
             }
             if depth == 0 {
                 loop {
-                    if self.arena.get(delimiter.start + matched as u32) == raw.token {
+                    if owner.tokens.get(delimiter.start + matched as u32) == raw.token {
                         matched += 1;
                         break;
                     }
@@ -168,11 +153,8 @@ impl Engine<'_> {
                         std::slice::from_raw_parts(failure_words, failure_len)[matched - 1]
                     };
                     #[cfg(not(feature = "native-profile"))]
-                    let failure = self.definitions[id as usize]
-                        .parameters
-                        .as_ref()
-                        .unwrap()
-                        .failures[argument][matched - 1];
+                    let failure =
+                        definition.parameters.as_ref().unwrap().failures[argument][matched - 1];
                     matched = failure;
                 }
                 if matched == length {

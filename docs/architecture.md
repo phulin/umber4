@@ -172,16 +172,17 @@ The resulting lines have a longer lifetime than the computation that found them.
 Building them directly in their destination storage keeps this distinction
 visible in the layout API.
 
-### Session lifetime: definitions and persistent TeX values
+### Persistent TeX values: semantic ownership
 
-Immutable macro bodies and token lists are well suited to a session-owned
-segmented bump store. Redefinition changes a table entry; the old body stays
-available to an active invocation and to any checkpoint using that definition.
-Starting with session lifetime makes their ownership cheap and simple. Segment
-reclamation or reuse of identical bodies across replay can be added where actual
-session workloads justify it.
-When rollback drops every younger owner, an abandoned definition tail can rewind
-to the checkpoint's append boundary. Retained prefix definitions remain in place.
+Immutable macro bodies and token lists are built in stable bump-allocated chunks.
+Bindings, saved values, active sources, captured ranges, and checkpoints retain
+the values they need. Redefinition changes a table entry and releases its old
+owner; an active invocation or retained checkpoint keeps the old body available.
+After the last owner disappears, its metadata is reclaimed and empty chunks can
+be recycled. The MVP uses non-atomic shared ownership at these boundaries, while
+token loops advance ordinary pointers. Builders publish their destination
+storage without copying it. [storage.md](storage.md) develops the allocator and
+its lifetime rules.
 
 Boxes, marks, insertions, and unfinished page lists belong to stores organized
 around their semantic owners. A box register owns its box until replacement or
@@ -285,8 +286,8 @@ and its checkpoint behavior are working.
 
 Bulk allocation makes memory behavior largely a question of store sizes and
 lifetimes. Paragraph scratch is reused; process interners and resource caches
-accumulate reusable data; definitions live with the session; output and snapshots
-live as long as the application keeps them.
+accumulate reusable data; definitions live through their semantic owners; output
+and snapshots live as long as the application keeps them.
 
 Checkpoint history is an application-level choice about memory versus repeated
 work. Releasing an old checkpoint releases the storage retained only for that

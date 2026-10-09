@@ -10,9 +10,10 @@ impl Engine<'_> {
         protected: bool,
     ) -> Result<()> {
         let cs = self.scan_cs()?;
-        let signature_start = self.arena.len;
+        let mut tokens = self.values.builder();
+        let signature_start = tokens.len();
         let mut prefix_end = None;
-        let mut delimiter_start = self.arena.len;
+        let mut delimiter_start = tokens.len();
         let mut delimiters = Vec::new();
         let mut parameters = 0u8;
         let mut brace_tail = None;
@@ -27,7 +28,7 @@ impl Engine<'_> {
             if read.meaning.command == 6 {
                 let next = self.next_token()?;
                 if next.token.is_begin() {
-                    self.arena.push(next.token)?;
+                    tokens.push(next.token)?;
                     brace_tail = Some(next.token);
                     break;
                 }
@@ -35,43 +36,43 @@ impl Engine<'_> {
                     return Err(Error::Syntax);
                 }
                 if parameters == 0 {
-                    prefix_end = Some(self.arena.len);
+                    prefix_end = Some(tokens.len());
                 } else {
                     delimiters.push(ArenaRange {
                         start: delimiter_start,
-                        end: self.arena.len,
+                        end: tokens.len(),
                     });
                 }
-                self.arena.push(Token(PARAM | read.meaning.value as u32))?;
+                tokens.push(Token(PARAM | read.meaning.value as u32))?;
                 parameters += 1;
-                delimiter_start = self.arena.len;
+                delimiter_start = tokens.len();
             } else {
-                self.arena.push(read.token)?;
+                tokens.push(read.token)?;
             }
         }
         if parameters > 0 {
             delimiters.push(ArenaRange {
                 start: delimiter_start,
-                end: self.arena.len,
+                end: tokens.len(),
             });
         }
         let prefix = ArenaRange {
             start: signature_start,
-            end: prefix_end.unwrap_or(self.arena.len),
+            end: prefix_end.unwrap_or(tokens.len()),
         };
-        self.arena.push(Token(PARAM | 255))?;
-        let body_start = self.arena.len;
+        tokens.push(Token(PARAM | 255))?;
+        let body_start = tokens.len();
         let uses_parameters = if expanded {
-            self.scan_body::<true>(Some(parameters), |engine, token| engine.arena.push(token))?
+            self.scan_body::<true>(Some(parameters), |_, token| tokens.push(token))?
         } else {
-            self.scan_body::<false>(Some(parameters), |engine, token| engine.arena.push(token))?
+            self.scan_body::<false>(Some(parameters), |_, token| tokens.push(token))?
         };
         if let Some(token) = brace_tail {
-            self.arena.push(token)?;
+            tokens.push(token)?;
         }
         let body = ArenaRange {
             start: body_start,
-            end: self.arena.len,
+            end: tokens.len(),
         };
         let failures = delimiters
             .iter()
@@ -80,11 +81,11 @@ impl Engine<'_> {
                 let mut failure = vec![0; len];
                 let mut matched = 0;
                 for index in 1..len {
-                    let token = self.arena.get(span.start + index as u32);
-                    while matched > 0 && self.arena.get(span.start + matched as u32) != token {
+                    let token = tokens.get(span.start + index as u32);
+                    while matched > 0 && tokens.get(span.start + matched as u32) != token {
                         matched = failure[matched - 1];
                     }
-                    if self.arena.get(span.start + matched as u32) == token {
+                    if tokens.get(span.start + matched as u32) == token {
                         matched += 1;
                     }
                     failure[index] = matched;
@@ -92,24 +93,24 @@ impl Engine<'_> {
                 failure
             })
             .collect();
-        if self.definitions.len() > i32::MAX as usize {
-            return Err(Error::Capacity);
-        }
-        let id = self.definitions.len() as u32;
         let parameter_data = (parameters != 0).then(|| {
             Box::new(Parameters {
                 delimiters,
                 failures,
             })
         });
-        self.definitions.push(Definition {
-            prefix,
-            body,
-            parameters: parameter_data,
-            parameter_count: parameters,
-            long,
-            uses_parameters,
-        });
+        let owner = self.values.publish(
+            tokens,
+            Some(Definition {
+                prefix,
+                body,
+                parameters: parameter_data,
+                parameter_count: parameters,
+                long,
+                uses_parameters,
+            }),
+        )?;
+        let id = owner.id;
         self.assign_meaning(
             cs,
             Meaning {

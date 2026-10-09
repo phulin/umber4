@@ -1,7 +1,7 @@
 use crate::{Engine, Error, Result, scalars::Target, token::*};
 pub(crate) enum Save {
     Boundary(bool),
-    Meaning(usize, Binding),
+    Meaning(usize, Binding, Option<crate::values::Owner>),
     Integer(Target, Integer),
     Tokens(usize, TokenValue),
     After(Token),
@@ -94,15 +94,20 @@ impl Engine<'_> {
                         break read;
                     }
                 };
-                let span = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
+                let value = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
                     let from = self.toks_index(first)?;
-                    self.token_registers[from].span
+                    self.token_registers[from].clone()
                 } else if first.meaning.command == cmd::BEGIN {
-                    self.store_body()?
+                    let owner = self.store_body()?;
+                    TokenValue {
+                        span: owner.span(),
+                        owner: Some(owner),
+                        level: 0,
+                    }
                 } else {
                     return Err(Error::Syntax);
                 };
-                self.assign_tokens(index, span, assignment_global);
+                self.assign_tokens(index, value, assignment_global);
                 Ok(())
             }
             cmd::COUNT
@@ -263,23 +268,25 @@ impl Engine<'_> {
         if !global && old.meaning() == meaning {
             return;
         }
+        let owner = meaning
+            .is_macro()
+            .then(|| self.values.get(meaning.value as u32));
+        let old_owner = std::mem::replace(&mut self.binding_owners[id], owner);
         if !global && self.level > 0 && old.level != self.level {
-            self.save.push(Save::Meaning(id, old));
+            self.save.push(Save::Meaning(id, old, old_owner));
         }
         self.bindings[id] = Binding::new(meaning, if global { 0 } else { self.level });
     }
-    fn assign_tokens(&mut self, index: usize, span: Span, global: bool) {
-        let old = self.token_registers[index];
-        if !global && old.span == span {
+    fn assign_tokens(&mut self, index: usize, mut value: TokenValue, global: bool) {
+        let old_level = self.token_registers[index].level;
+        if !global && self.token_registers[index].span == value.span {
             return;
         }
-        if !global && self.level > 0 && old.level != self.level {
+        value.level = if global { 0 } else { self.level };
+        let old = std::mem::replace(&mut self.token_registers[index], value);
+        if !global && self.level > 0 && old_level != self.level {
             self.save.push(Save::Tokens(index, old));
         }
-        self.token_registers[index] = TokenValue {
-            span,
-            level: if global { 0 } else { self.level },
-        };
     }
     fn close_group(&mut self, kind: bool) -> Result<()> {
         if self.level == 0 {
@@ -300,9 +307,10 @@ impl Engine<'_> {
                         self.token_registers[index] = old;
                     }
                 }
-                Save::Meaning(id, old) => {
+                Save::Meaning(id, old, owner) => {
                     if self.bindings[id].level != 0 {
                         self.bindings[id] = old;
+                        self.binding_owners[id] = owner;
                     }
                 }
                 Save::Integer(target, old) => {

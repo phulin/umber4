@@ -131,7 +131,9 @@ impl Engine<'_> {
         let meaning = read.meaning;
         if meaning.is_macro() {
             let id = meaning.value as usize;
-            let long = self.definitions[id].long;
+            let owner = self.values.get(id as u32);
+            let definition = owner.definition();
+            let long = definition.long;
             let protected = meaning.command == cmd::PROTECTED_MACRO;
             if protected {
                 self.escaped_text(b"protected", emit)?;
@@ -143,12 +145,12 @@ impl Engine<'_> {
                 emit(self, b' ')?;
             }
             self.emit_text(b"macro:", emit)?;
-            let signature = self.definitions[id].signature();
-            let body_start = self.definitions[id].body.start;
+            let signature = definition.signature();
+            let body_start = definition.body.start;
             let mut marker = b'#';
             let mut parameter = 0;
             for position in signature.start..signature.end {
-                let token = self.arena.get(position);
+                let token = owner.tokens.get(position);
                 if token.0 & PARAM != 0 && !token.is_cs() {
                     if position < body_start {
                         if token.byte() == 255 {

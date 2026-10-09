@@ -46,8 +46,8 @@ The checkpoint has a compact scalar state and owners for subsystem roots:
 
 The group restoration stack and paragraph algorithm scratch are empty at this
 boundary. Process identities and reusable immutable resources are outside the
-snapshot; rollback preserves them. Session definition storage remains available
-for any restored meaning or input cursor. [storage.md](storage.md) defines the
+snapshot; rollback preserves them. Restored meanings and input cursors retain
+their immutable definitions and token values. [storage.md](storage.md) defines the
 table, node, and token ownership rather than assigning every state field the
 same persistence strategy.
 
@@ -89,13 +89,12 @@ Dropping the abandoned roots releases uniquely owned chunks and auxiliary
 objects. Reusable scratch capacity can remain. Interned names discovered later
 remain stable, while their document meanings again come from the restored table.
 
-Each checkpoint also records the session definition store's append boundary.
-Discard younger execution checkpoints and owners before rewinding an abandoned
-tail to that boundary. Earlier definitions and their spans remain in place;
-host-visible output holds detached bytes, so it carries no tail references.
-This recovers repeated preamble construction when several missing resources cause
-replay before the first paragraph. Successful execution can still use simple
-session-lifetime definition storage without collecting individual definitions.
+Immutable definitions and token lists follow the retained roots. Dropping younger
+checkpoints and the abandoned live state releases their owners; values shared
+with an older checkpoint remain allocated. Empty backing chunks return to a
+bounded reuse pool. Repeated preamble execution can therefore reclaim obsolete
+values even before the first paragraph checkpoint, while names remain available
+for replay.
 
 Output pages, diagnostics, and generated-file contents become the checkpoint's
 prefixes. Backend object numbering and resources return to their retained state.
@@ -185,7 +184,7 @@ its roots; shared objects disappear when their last owner goes away.
 
 The boundary can leave a large unfinished page or saved boxes alive. Measure
 those actual owners, table/node chunk copies after snapshots, and retained input
-packets, definition tails during resource replay, and whole source-version bytes.
+packets, immutable values during resource replay, and whole source-version bytes.
 Allocation between checkpoints remains linear and mostly bump-based;
 snapshot sharing changes only the stores that are subsequently mutated.
 

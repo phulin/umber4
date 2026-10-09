@@ -2,7 +2,7 @@ use crate::{Engine, Error, Result, token::*};
 
 pub(crate) enum Internal {
     Integer(i32),
-    Tokens(Span),
+    Tokens(TokenValue),
 }
 
 impl Engine<'_> {
@@ -17,7 +17,7 @@ impl Engine<'_> {
         let read = self.next_expanded()?;
         if matches!(read.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
             let index = self.toks_index(read)?;
-            Ok(Internal::Tokens(self.token_registers[index].span))
+            Ok(Internal::Tokens(self.token_registers[index].clone()))
         } else {
             Ok(Internal::Integer(self.internal_int(read)?))
         }
@@ -41,9 +41,11 @@ impl Engine<'_> {
                     }
                     match read.meaning.command {
                         cmd::THE => match self.the_value()? {
-                            Internal::Tokens(span) => {
-                                for position in span.start..span.end {
-                                    emit(self, self.arena.get(position))?;
+                            Internal::Tokens(value) => {
+                                if let Some(owner) = value.owner {
+                                    for position in value.span.start..value.span.end {
+                                        emit(self, owner.tokens.get(position))?;
+                                    }
                                 }
                             }
                             Internal::Integer(value) => self.emit_number(value, &mut emit)?,
@@ -212,13 +214,9 @@ impl Engine<'_> {
         }
         Ok(())
     }
-    pub(crate) fn store_body(&mut self) -> Result<Span> {
-        let start = self.arena.len;
-        self.scan_raw_body(|engine, token| engine.arena.push(token))?;
-        Ok(Span {
-            store: DEFS,
-            start,
-            end: self.arena.len,
-        })
+    pub(crate) fn store_body(&mut self) -> Result<crate::values::Owner> {
+        let mut tokens = self.values.builder();
+        self.scan_raw_body(|_, token| tokens.push(token))?;
+        self.values.publish(tokens, None)
     }
 }

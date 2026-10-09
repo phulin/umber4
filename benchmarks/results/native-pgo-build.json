@@ -1,212 +1,170 @@
 {
-  "engine_source_base_commit": "abe197a",
-  "build": {
-    "features": [
-      "native-profile"
-    ],
-    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
-    "profdata_version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
-    "builder_sha256": "0d1b17da9e5b9355691bf63b2fb6ac51906d183e94f8e99bc71777d1cd25468b",
-    "source_files": {
-      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
-      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
-      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
-      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
-      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
-      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
-      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
-      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
-      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
-      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
-      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
-      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
-      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
-      "crates/umber/src/lib.rs": "2aa6fc35e8e6965c35d8cad713ef1ee593147dc7699ea8d3f2f472411c7be9d4",
-      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
-      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
-      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
-      "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
-      "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
-      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
-      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
-      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
-      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
-      "crates/umber/src/token.rs": "c256cf26ec2edecf017b3e8a580408adbf21b3f13e07ecefc4b2feb48c0f96e4"
-    },
-    "training_binary_sha256": "d0faf0fec08479ca5265ae9181d968e79d3486677092708c86b9fd49d996253c",
-    "generators": {
-      "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
-      "expansion": "7d1c3ec0ba6cd4126427b23c8b175f159244df068b39eb571c3796894743da84"
-    },
-    "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
-    "sources": [
-      {
-        "case": "raw",
-        "size": 75031,
-        "bytes": 1875884,
-        "sha256": "8210581caee71a7b068b85029828785d03525929d733cb222d87379cbed0aaed"
-      },
-      {
-        "case": "bodies",
-        "size": 75031,
-        "bytes": 563,
-        "sha256": "e174c138ad2f1c8b7707809ec0c664fe3f7a2d81e96a230f0ae1087b3cabd5f0"
-      },
-      {
-        "case": "integers",
-        "size": 75031,
-        "bytes": 544,
-        "sha256": "aa9230157e94bbd09acc3b5715e6ba0a650bf9409670459fbb03c58cdcdf74ca"
-      },
-      {
-        "case": "parameters",
-        "size": 75031,
-        "bytes": 578,
-        "sha256": "9b1da982e0de4b9e0300bc38a5afebecc1706752712d86129c930f7ab164f786"
-      },
-      {
-        "case": "file-parameters",
-        "size": 75031,
-        "bytes": 750489,
-        "sha256": "664d72d8e0d740e086b144654d75a452153357da1f27fec25ad88829c4431ede"
-      },
-      {
-        "case": "long-parameters",
-        "size": 75031,
-        "bytes": 832,
-        "sha256": "78265e7eacd7567f00c31dca81b17981a62411f4381b86bc3bdc9050557ac9ac"
-      },
-      {
-        "case": "delimiters",
-        "size": 75031,
-        "bytes": 549,
-        "sha256": "9179158e3382c573d4528a62b1d786441653fb73fa7ef2f4c203ff19680b8191"
-      },
-      {
-        "case": "groups",
-        "size": 75031,
-        "bytes": 571,
-        "sha256": "e7eaa2b2d431962caff88d03e50c949835e7ba9c7c32b731c46bd3dbf6da2fc2"
-      },
-      {
-        "case": "source-integers",
-        "size": 75031,
-        "bytes": 5114792,
-        "sha256": "eaf0e7827fce2c102abb115ea03e69123d753275ea592bfe16f589b319c84cbd"
-      },
-      {
-        "case": "gentle-text",
-        "size": 7003,
-        "bytes": 1646386,
-        "sha256": "6bb39bf1787dbd06a16a9e0e34a9d23899e8d88b980f9e25bd5bfcc41d92f17a"
-      },
-      {
-        "case": "gentle-calendar",
-        "size": 7003,
-        "bytes": 1341330,
-        "sha256": "d39a6c883220ebbd6098c9787c54add9468e44c36a3b7d43663a9db06ed5370e"
-      },
-      {
-        "case": "gentle-contents",
-        "size": 7003,
-        "bytes": 3242731,
-        "sha256": "d437bb09faa905ae2ac2013c2223bfd8e0812ea674e6879373197ec062d89000"
-      },
-      {
-        "case": "gentle-records",
-        "size": 7003,
-        "bytes": 5877051,
-        "sha256": "20f8ace46f45a47bf1819becd2d8cb9065586d4137fb4c9fba506cb40304734b"
-      },
-      {
-        "case": "stored-records",
-        "size": 7003,
-        "bytes": 5933101,
-        "sha256": "0e62efb86d029ac17bda074c20257a7f031ef761949506e187cf257fd267ccc5"
-      },
-      {
-        "case": "token-pipeline",
-        "size": 7003,
-        "bytes": 10707198,
-        "sha256": "fa2328db1cf10e2940d502e115547d10bd87bf9b294ffc59321e68fc64d50d9e"
-      },
-      {
-        "case": "name-table",
-        "size": 7003,
-        "bytes": 1704234,
-        "sha256": "abda60ec5ff68f2683cfb6c6627d38561fd262adb5b3f857767c9ff1d8a8b983"
-      },
-      {
-        "case": "optional-arguments",
-        "size": 7003,
-        "bytes": 5595815,
-        "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
-      },
-      {
-        "case": "numeric-references",
-        "size": 7003,
-        "bytes": 1781001,
-        "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
-      }
-    ],
-    "profile_path": "target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata",
-    "profile_sha256": "93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370",
-    "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
-    "rustflags_args": [
-      "-C",
-      "profile-use=/home/phulin/umber4/target/pgo/93115dc56a79b34014c30e279636b6514683074d8d7c531cf0d85e6178186370.profdata",
-      "-C",
-      "llvm-args=-pgo-warn-missing-function",
-      "-C",
-      "llvm-args=--inline-enable-cost-benefit-analysis=false",
-      "-C",
-      "llvm-args=--hot-callsite-threshold=1000",
-      "-C",
-      "llvm-args=--align-all-functions=6"
-    ],
-    "umber_binary_sha256": "2b4548078502fbe71ec2c6eb4567846a64f6ff0048efc2cd6c529def29ff72a3",
-    "allocation_binary_sha256": "423556165e11b8b1ee117d8141fae28459591f0e4fc5078e935d3ab7395fe425"
+  "features": [
+    "native-profile"
+  ],
+  "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+  "profdata_version": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
+  "builder_sha256": "0d1b17da9e5b9355691bf63b2fb6ac51906d183e94f8e99bc71777d1cd25468b",
+  "source_files": {
+    "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+    "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
+    "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
+    "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+    "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
+    "crates/umber/src/convert.rs": "c2e791f8325972f20cc1e664c836e85ad822114e6d7c1832935b82b9382ae26c",
+    "crates/umber/src/define.rs": "cf4c7644d39c64806e49fb72f47ede0c6af04478cf75a81c1164a48d636f6e8a",
+    "crates/umber/src/delimit.rs": "f6218c879a6b5cb7a7805320e39a955deba757c1c7789df47907a03b842fa523",
+    "crates/umber/src/execute.rs": "7df3aca8b070353c5ff0167d01feb87cf0c5ff8bc02f51028e0ee845c31cc15d",
+    "crates/umber/src/expand.rs": "fee5953c7826918e7ead0a77db451d7d523241054570874c1e81b0e56fc61738",
+    "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
+    "crates/umber/src/extended_tests.rs": "4dab915cea52c86158bee08051ccfc68613ba005ff3cbc4a5e8ebdd60378ea84",
+    "crates/umber/src/input.rs": "5b5a604c261b34314ed316cd8a59082905f03e4a4d7e494b9746fce23bf15019",
+    "crates/umber/src/lib.rs": "c9785392b13aa63c4e1730c38986569b3939882e4c955f5218383453de47680e",
+    "crates/umber/src/lists.rs": "225b2c7ff080fde1a312daf814a77a00f6bdcab97e64945b89a6b8b3f377645d",
+    "crates/umber/src/macros.rs": "a5a709cd54141e58c443a9407a6cbd484ef47f657b6cf440cdcb3c84bd01a1bd",
+    "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+    "crates/umber/src/memory_tests.rs": "36aeae24a246d30e3cd2c223575af2784495b3ac5a7be23dfa6bde1899240a0f",
+    "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
+    "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
+    "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+    "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
+    "crates/umber/src/scan_tests.rs": "38feaff7dd7d11a41912a0a5353069ce822ec298b5a909efac69c29f91f59b66",
+    "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
+    "crates/umber/src/token.rs": "e9ca2bfbdda093df3a095ce061720d510b64920faf508be30a1174cd870998a1",
+    "crates/umber/src/values.rs": "2edcb8f1b78575021610b6c379753eb000c9c6fbbf4fda39110961911c23d667",
+    "crates/umber/src/values_tests.rs": "4167d8fe54af4850f6349cf5abf55df6dc6695d6d3c9ea48457560f7c8bd28ce"
   },
-  "ordinary_build": {
-    "umber_binary_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
-    "allocation_binary_sha256": "03f3e22d924cc95de5015286445a1967a0cad75d1d4dbdedcf56829dd6d7a176",
-    "features": [],
-    "rustflags": "",
-    "source_files": {
-      "Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
-      "Cargo.toml": "d0ed21306e933e636ba4303cedf75c683b01ea429a984308becc0375b639fc19",
-      "crates/umber/Cargo.toml": "e906e0a3c0971aca7154766046d5da54b661ee67765689e7d717c38e0dff0507",
-      "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
-      "crates/umber/src/condition.rs": "c4ca4bc7f03e894b5bf773d06ac4e78ba0ccb84001168df2fe9941a243a238e3",
-      "crates/umber/src/convert.rs": "59a6f53be937d8c14b711ae8fe6289513aa8c7480b3962e86db70f4290f792a6",
-      "crates/umber/src/define.rs": "5f2438c05d6c8340ba9d34afed581633768f697739f6190d64ce3376595c4549",
-      "crates/umber/src/delimit.rs": "06d4b1ffec4e7c323784282b59d738bb5b082e7b45dce6633051ed194b40e3e9",
-      "crates/umber/src/execute.rs": "c50c31b59879a26ef674c917cda713e3bc70e9cc787287c1a715159bdf868542",
-      "crates/umber/src/expand.rs": "4333e6a5eedfd2f38244c84be53c723ae531ee6a2520997507699919b7da3f25",
-      "crates/umber/src/expression.rs": "94967c2c28f1b964d83dd52f475b4a0f8ea3cdca544723ade0fcea1cce0ae2af",
-      "crates/umber/src/extended_tests.rs": "72fa2b9b589b0c7791d176594a7931743d792d66c1d96fb231f228fa3e935a85",
-      "crates/umber/src/input.rs": "4d48ebf023559755c5c7b1091dc78cd94306af9f680c1e75f7bf3152a4ba01ae",
-      "crates/umber/src/lib.rs": "2aa6fc35e8e6965c35d8cad713ef1ee593147dc7699ea8d3f2f472411c7be9d4",
-      "crates/umber/src/lists.rs": "03f03cbc11ec3e265f9d04ed04eedace3a3c7764e526ebdd7cc87077bd1fabad",
-      "crates/umber/src/macros.rs": "8215c4add63101faac6fd951069f85ee8d8e4f8c5d5d54d61eb44c6f364cbd8b",
-      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
-      "crates/umber/src/names.rs": "009dba245913bec9f635e9412dda147e0a75bfdfec3519757c3f6f26bc1d599e",
-      "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
-      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
-      "crates/umber/src/scan.rs": "2a213faa3a37289c092761c6c58001be7ca98f97d600bb79f723b3bfd72ed2b8",
-      "crates/umber/src/scan_tests.rs": "7f2ff2265349800ac0093cd744bb2da5651417b263670e83b7d9e5fbf75d3c95",
-      "crates/umber/src/tests.rs": "4f6004bb9cd8a608f154997f30e8a4fe2b305b0a28786504aaa917e373fe2f29",
-      "crates/umber/src/token.rs": "c256cf26ec2edecf017b3e8a580408adbf21b3f13e07ecefc4b2feb48c0f96e4"
-    },
-    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
-    "execution_text_sha256": "74f470b4cf5a78a3cfe0a781fe2b50779e08658ecbd6a0cd2b10766a7adaf7ad",
-    "timed_snapshot_sha256": "4407e21d99152c749577ed4196d8718758940901fe7374b5159c63d4478c2349",
-    "final_rebuild_matches_timed_snapshot": true
+  "training_binary_sha256": "15a5e06d9718cd33835762d2b77e4efd09c860e4192b5581f8cf17a2794c1727",
+  "generators": {
+    "mvp": "5186b32457e78238ee6da59036e7424c9fd4d709976b2973237a8ecd1e56e8c3",
+    "expansion": "6f225e9e51beb479e3e68d90447699d29cb0eae41b48f62ec30a7d33a39aa712"
   },
-  "identity": "Exact final ordinary and native-profile interpreters, allocation adapters, source hashes, compiler flags and eighteen generated training inputs. Instrumented oracle executions are also part of profile training. Final ordinary rebuild is byte-identical to the paired timing snapshot.",
-  "previous_profile_comparison": {
-    "provenance": "name-spelling-arena-followup.json",
-    "provenance_sha256": "d9b3c9fdc438d3026a6936c67cdbc7e5c6ae1964b807bdcc49521642343fa564",
-    "baseline_engine_source_commit": "abe197a"
-  }
+  "kernels_sha256": "9e4fd2dd994011e4b920f983c755881bc0c20d15817c29a6fee79b3d05943ac6",
+  "sources": [
+    {
+      "case": "raw",
+      "size": 75031,
+      "bytes": 1875884,
+      "sha256": "8210581caee71a7b068b85029828785d03525929d733cb222d87379cbed0aaed"
+    },
+    {
+      "case": "bodies",
+      "size": 75031,
+      "bytes": 563,
+      "sha256": "e174c138ad2f1c8b7707809ec0c664fe3f7a2d81e96a230f0ae1087b3cabd5f0"
+    },
+    {
+      "case": "integers",
+      "size": 75031,
+      "bytes": 544,
+      "sha256": "aa9230157e94bbd09acc3b5715e6ba0a650bf9409670459fbb03c58cdcdf74ca"
+    },
+    {
+      "case": "parameters",
+      "size": 75031,
+      "bytes": 578,
+      "sha256": "9b1da982e0de4b9e0300bc38a5afebecc1706752712d86129c930f7ab164f786"
+    },
+    {
+      "case": "file-parameters",
+      "size": 75031,
+      "bytes": 750489,
+      "sha256": "664d72d8e0d740e086b144654d75a452153357da1f27fec25ad88829c4431ede"
+    },
+    {
+      "case": "long-parameters",
+      "size": 75031,
+      "bytes": 832,
+      "sha256": "78265e7eacd7567f00c31dca81b17981a62411f4381b86bc3bdc9050557ac9ac"
+    },
+    {
+      "case": "delimiters",
+      "size": 75031,
+      "bytes": 549,
+      "sha256": "9179158e3382c573d4528a62b1d786441653fb73fa7ef2f4c203ff19680b8191"
+    },
+    {
+      "case": "groups",
+      "size": 75031,
+      "bytes": 571,
+      "sha256": "e7eaa2b2d431962caff88d03e50c949835e7ba9c7c32b731c46bd3dbf6da2fc2"
+    },
+    {
+      "case": "source-integers",
+      "size": 75031,
+      "bytes": 5114792,
+      "sha256": "eaf0e7827fce2c102abb115ea03e69123d753275ea592bfe16f589b319c84cbd"
+    },
+    {
+      "case": "gentle-text",
+      "size": 7003,
+      "bytes": 1646386,
+      "sha256": "6bb39bf1787dbd06a16a9e0e34a9d23899e8d88b980f9e25bd5bfcc41d92f17a"
+    },
+    {
+      "case": "gentle-calendar",
+      "size": 7003,
+      "bytes": 1341330,
+      "sha256": "d39a6c883220ebbd6098c9787c54add9468e44c36a3b7d43663a9db06ed5370e"
+    },
+    {
+      "case": "gentle-contents",
+      "size": 7003,
+      "bytes": 3242731,
+      "sha256": "d437bb09faa905ae2ac2013c2223bfd8e0812ea674e6879373197ec062d89000"
+    },
+    {
+      "case": "gentle-records",
+      "size": 7003,
+      "bytes": 5877051,
+      "sha256": "20f8ace46f45a47bf1819becd2d8cb9065586d4137fb4c9fba506cb40304734b"
+    },
+    {
+      "case": "stored-records",
+      "size": 7003,
+      "bytes": 5933101,
+      "sha256": "0e62efb86d029ac17bda074c20257a7f031ef761949506e187cf257fd267ccc5"
+    },
+    {
+      "case": "token-pipeline",
+      "size": 7003,
+      "bytes": 10707198,
+      "sha256": "fa2328db1cf10e2940d502e115547d10bd87bf9b294ffc59321e68fc64d50d9e"
+    },
+    {
+      "case": "name-table",
+      "size": 7003,
+      "bytes": 1704234,
+      "sha256": "abda60ec5ff68f2683cfb6c6627d38561fd262adb5b3f857767c9ff1d8a8b983"
+    },
+    {
+      "case": "optional-arguments",
+      "size": 7003,
+      "bytes": 5595815,
+      "sha256": "cd9ec5b5b26c0d5bc28ab7460c6805358993d52577d337d7fc977fe64406c082"
+    },
+    {
+      "case": "numeric-references",
+      "size": 7003,
+      "bytes": 1781001,
+      "sha256": "5151d0785c77a200bc9cd39b85a20f2755a6e248bcb8fdcbe013852dff58dacb"
+    }
+  ],
+  "profile_path": "target/pgo/3c87913a02cba2ef90d3d07ffb861c4dd81d099973f35097532d69fdc68bf107.profdata",
+  "profile_sha256": "3c87913a02cba2ef90d3d07ffb861c4dd81d099973f35097532d69fdc68bf107",
+  "rustflags": "-C profile-use=/home/phulin/umber4/target/pgo/3c87913a02cba2ef90d3d07ffb861c4dd81d099973f35097532d69fdc68bf107.profdata -C llvm-args=-pgo-warn-missing-function -C llvm-args=--inline-enable-cost-benefit-analysis=false -C llvm-args=--hot-callsite-threshold=1000 -C llvm-args=--align-all-functions=6",
+  "rustflags_args": [
+    "-C",
+    "profile-use=/home/phulin/umber4/target/pgo/3c87913a02cba2ef90d3d07ffb861c4dd81d099973f35097532d69fdc68bf107.profdata",
+    "-C",
+    "llvm-args=-pgo-warn-missing-function",
+    "-C",
+    "llvm-args=--inline-enable-cost-benefit-analysis=false",
+    "-C",
+    "llvm-args=--hot-callsite-threshold=1000",
+    "-C",
+    "llvm-args=--align-all-functions=6"
+  ],
+  "umber_binary_sha256": "53916f615707d04265750d708a6fe7062ef8243c82a3f9399ebc08654ae2f152",
+  "allocation_binary_sha256": "cbc6b4da0968c558a25260a04cc0f3a6a63c8d7ebc36e5f590c200a6d35593a8"
 }

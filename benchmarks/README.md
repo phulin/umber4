@@ -64,7 +64,8 @@ Interned spelling bytes share stable session-owned chunks. The
 [spelling-store comparison](results/name-spelling-arena-followup.json) retains
 nine paired repetitions for all eighteen workloads, 21-repetition confirmations
 for selected gains and regressions, and ordinary/profile allocation diagnostics.
-Current full sweeps in `results/` identify this exact ordinary and profile build.
+The current full sweeps in `results/` compare reclaimable immutable values against
+the spelling-store build; the earlier follow-ups retain their original identities.
 Compare both suites when changing these settings or updating Rust.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |
@@ -109,8 +110,9 @@ fixtures separately check conversion categories. A record increments the final
 checksum only after equality succeeds. Expected-definition construction and
 comparison are included in timing. Payloads vary from 8 to 1,024 characters;
 `expanded_text_bytes` counts final validated text, not intermediate storage or
-total interpreter work. Umber's replaced definitions and token lists currently
-accumulate in its session arena, so allocation diagnostics matter too.
+total interpreter work. Umber reclaims replaced definitions and token lists after their last semantic
+owner disappears. Allocation diagnostics report the backing chunks retained by
+live values and the bounded empty-chunk cache.
 
 The selected definitions are retained in
 [gentle-kernels.tex](corpus/gentle-kernels.tex). [gentle.json](corpus/gentle.json)
@@ -128,6 +130,27 @@ Expected source hash:
 Each report also records the selected-kernel, generator, measurement-runner,
 generated-input, and executable hashes. Exact input files remain under
 `target/benchmark/expansion/` after running the generator.
+
+`memory.py` adds compact-source lifetime workloads. `churn` repeatedly replaces
+fixed names and token registers, retains aliases, and saves/restores local values.
+`live-growth` retains a new definition on each iteration. Both validate their
+results in TeX and time the same source in both interpreters. Churn defaults to
+1,000, 10,000, and 50,000 iterations; live growth uses 100, 1,000, and 2,500 to fit
+the native INITEX oracle's configured memory capacity. The input stays compact
+while execution grows. Its allocation adapter excludes the host input buffer and
+records requested engine heap, not process RSS or pdfTeX heap.
+
+```bash
+cargo build --release --example allocations
+python3 benchmarks/memory.py --report target/benchmark/memory.json
+```
+
+Use `--baseline` and `--baseline-allocations` for a paired earlier interpreter and
+its diagnostic adapter. `--sizes` overrides the workload defaults. Memory pools
+retain at most sixteen empty 4,096-token chunks plus the active bump chunk;
+live immutable values retain their occupied chunks. Small surviving values may
+retain unused parts of those chunks, so live-growth measurements also expose
+fragmentation and per-value metadata overhead.
 
 Measure allocations with the separate adapter; its counters stay out of timing:
 

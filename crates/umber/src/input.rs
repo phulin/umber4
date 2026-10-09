@@ -209,7 +209,9 @@ impl<'a> FileInput<'a> {
 }
 
 impl Engine<'_> {
-    #[inline(always)]
+    // Debug scanner recursion keeps a reader call boundary instead of
+    // duplicating its unoptimized temporaries in every expansion frame.
+    #[cfg_attr(not(debug_assertions), inline(always))]
     pub(crate) fn next_raw(&mut self) -> Result<Raw> {
         loop {
             let Some(source) = self.sources.last_mut() else {
@@ -255,7 +257,7 @@ impl Engine<'_> {
                         continue;
                     }
                     // SAFETY: cursor windows cover initialized immutable tokens.
-                    // Definition chunks live with Engine. Argument windows are
+                    // Durable windows are retained by cursor owners. Argument windows are
                     // retained by the owning packet beneath their source; child
                     // capture retains a chunk before the next read can retire it.
                     let token = unsafe { cursor.next.read() };
@@ -304,8 +306,11 @@ impl Engine<'_> {
                 suppress: false,
             });
         }
-        let token = if span.store == DEFS {
-            self.arena.get(span.start)
+        let token = if span.store & DURABLE != 0 {
+            self.values
+                .get(span.store & !DURABLE)
+                .tokens
+                .get(span.start)
         } else {
             self.captures[span.store as usize].tokens[span.start as usize]
         };
@@ -322,7 +327,7 @@ impl Engine<'_> {
         match sequence {
             SequenceRef::List => None,
             SequenceRef::Body(id) => (index == 0)
-                .then_some(self.definitions[id as usize].body.span())
+                .then(|| self.values.get(id).definition().body.span(id))
                 .filter(|s| !s.empty()),
             SequenceRef::Argument(packet, arg) => {
                 self.packets[packet as usize].arguments[arg as usize].span(index)
@@ -330,8 +335,11 @@ impl Engine<'_> {
         }
     }
     fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
-        if span.store == DEFS {
-            self.arena.window(start, span.end)
+        if span.store & DURABLE != 0 {
+            self.values
+                .get(span.store & !DURABLE)
+                .tokens
+                .window(start, span.end)
         } else {
             let tokens = &self.captures[span.store as usize].tokens;
             assert!(start < span.end && span.end as usize <= tokens.len());
@@ -372,7 +380,7 @@ impl Engine<'_> {
     #[inline]
     pub(crate) fn push_body(
         &mut self,
-        id: u32,
+        owner: crate::values::Owner,
         body: ArenaRange,
         packet: Option<u32>,
     ) -> Result<()> {
@@ -385,12 +393,14 @@ impl Engine<'_> {
         if self.sources.len() > 10000 {
             return Err(Error::Capacity);
         }
-        // Definition bodies always belong to the immutable token arena.
-        let (next, end, window_end_position) = self.arena.window(body.start, body.end);
+        // The installed source owns this immutable definition.
+        let id = owner.id;
+        let (next, end, window_end_position) = owner.tokens.window(body.start, body.end);
         self.sources.push(Source::Tokens(Cursor {
+            _owner: Some(owner),
             sequence: SequenceRef::Body(id),
             span_index: 0,
-            span: body.span(),
+            span: body.span(id),
             window_end_position,
             next,
             end,
@@ -417,7 +427,9 @@ impl Engine<'_> {
             return Err(Error::Capacity);
         }
         let (next, end, window_end_position) = self.window(span, span.start);
+        let owner = (span.store & DURABLE != 0).then(|| self.values.get(span.store & !DURABLE));
         self.sources.push(Source::Tokens(Cursor {
+            _owner: owner,
             sequence,
             span_index: 0,
             span,

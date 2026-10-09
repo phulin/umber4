@@ -12,6 +12,7 @@ mod names;
 mod scalars;
 mod scan;
 mod token;
+mod values;
 use scalars::{Scalars, Target};
 use token::*;
 
@@ -43,11 +44,11 @@ pub struct Engine<'a> {
     pub(crate) file: input::FileInput<'a>,
     pub(crate) names: Box<Names>,
     pub(crate) bindings: Vec<Binding>,
+    pub(crate) binding_owners: Vec<Option<values::Owner>>,
     pub(crate) scalars: Scalars,
     pub(crate) token_registers: [TokenValue; 256],
     pub(crate) after_assignment: Option<Token>,
-    pub(crate) arena: TokenArena,
-    pub(crate) definitions: Vec<Definition>,
+    pub(crate) values: values::Values,
     pub(crate) sources: Vec<Source>,
     pub(crate) captures: Vec<Capture>,
     pub(crate) packets: Vec<Packet>,
@@ -65,11 +66,11 @@ impl<'a> Engine<'a> {
             file: input::FileInput::new(source),
             names: Box::new(Names::new()),
             bindings: vec![Binding::default(); 514],
+            binding_owners: vec![None; 514],
             scalars: Scalars::default(),
-            token_registers: [TokenValue::default(); 256],
+            token_registers: std::array::from_fn(|_| TokenValue::default()),
             after_assignment: None,
-            arena: TokenArena::default(),
-            definitions: Vec::new(),
+            values: values::Values::default(),
             sources: Vec::with_capacity(16),
             captures: Vec::new(),
             packets: Vec::new(),
@@ -207,6 +208,7 @@ impl<'a> Engine<'a> {
     #[inline(never)]
     pub(crate) fn grow_bindings(&mut self, len: usize) {
         self.bindings.resize(len, Binding::default());
+        self.binding_owners.resize_with(len, || None);
     }
     #[inline(always)]
     pub(crate) fn resolve(&self, token: Token) -> Meaning {
@@ -257,3 +259,6 @@ mod extended_tests;
 mod scan_tests;
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod memory_tests;

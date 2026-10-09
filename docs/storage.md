@@ -12,7 +12,7 @@ allocating or updating reference counts for each element.
 | Control-sequence identities               | Process interner; append-only bytes and dense IDs     | Process exit                              |
 | Font files and parsed metrics             | Immutable resource cache keyed by resource version    | Cache or process lifetime                 |
 | Live font parameters and settings         | Document-owned font tables and derived caches         | Last document/checkpoint root             |
-| Macro definitions and durable token lists | Session-owned segmented append store                  | Session end initially                     |
+| Macro definitions and durable token lists | Immutable values in reusable token chunks             | Last semantic owner                       |
 | Invocation arguments                      | Immutable token chunks and small sequence descriptors | Last consuming input source or checkpoint |
 | Group restoration records                 | Reusable stack vector                                 | Group exit                                |
 | Scalar scanner work                       | Rust locals                                           | Function return                           |
@@ -20,14 +20,37 @@ allocating or updating reference counts for each element.
 | Mutable TeX nodes and tables              | Document-owned stores with snapshot sharing           | Last document/checkpoint root             |
 | Shipped output                            | Immutable page records and resource references        | Last retained result/checkpoint           |
 
-Appending immutable definitions for the whole session is deliberately a cheap
-starting point. Repeated editing can eventually make that store large; segment
-retention or deduplication can be introduced independently of its read interface.
-An abandoned execution tail can be rewound after younger roots and owners are
-dropped, using the append boundary retained by a checkpoint. Definitions in the
-retained prefix still have session lifetime. The interner continues growing
-across rollback. A name's ID is permanent; its
-meaning belongs to the current document's tables.
+Definitions and durable lists have explicit owners. A binding, saved group value,
+active source, retained argument range, or checkpoint keeps the immutable value
+alive. Replacement releases the old owner, while saving/restoring transfers
+ownership where possible. Macro bodies contain control-sequence identities, so
+recursive expansion does not form an ownership cycle between definitions.
+
+The MVP uses non-atomic shared ownership for each complete value. Reading a
+token changes only its cursor. An executing macro retains its definition before
+argument scanning can retire an enclosing source; a captured range independently
+retains its backing value. Token-register insertion retains the selected value
+while its scanner or input source consumes it. Builders own unpublished storage
+and release it on failure. Definition headers, delimiter metadata, and token
+payloads are reclaimed together when their last semantic owner disappears.
+
+Stable backing chunks use bump allocation during construction and return to a
+bounded reuse pool after their last value disappears. Builders write in place;
+publishing a value transfers its backing and does not flatten or copy tokens.
+An unused reservation suffix returns immediately when it remains the current
+bump tail; later interleaved reservations keep their own cells.
+Descriptor slots are reused after the last owner disappears; weak slots and
+owner headers retain their high-water capacity until reuse. Chunk size and
+reservation policy remain measured choices, including the space retained by
+small surviving ranges. Names remain append-only across rollback; their mutable
+meanings belong to document tables.
+
+The memory regression workload repeatedly overwrites a fixed set of definitions
+and token registers using compact source. Engine storage should reach a plateau
+as iteration count grows. A separate workload deliberately grows live state.
+Keep live payload, reserved chunk capacity, allocator requests, and host input
+distinct when interpreting measurements. Retain CPU comparisons against the
+previous implementation alongside the memory results.
 
 ## 2. Three allocation primitives
 
@@ -45,7 +68,7 @@ a chunk rather than relocating published contents. A partially built value has
 one builder owner; completion transfers its storage and descriptor in place.
 Keep raw arena ranges as plain token/cell data where possible. Headers and
 auxiliary owners needing destruction use ordinary containers alongside the
-chunks, so truncating an abandoned tail also drops its initialized owners.
+chunks, so releasing a value also drops its initialized owners.
 
 Token chunks can hold `UnsafeCell<MaybeUninit<Token>>` cells. The uninitialized
 array is valid storage; appending constructs each token before publishing its
@@ -56,8 +79,8 @@ and boxed chunks keep their addresses as the directory grows. Dropping a chunk
 releases its allocation; token words own no resources. This permits direct
 allocation without first filling the chunk.
 
-Interned spelling bytes use the same append-store lifetime. Pack new spellings
-into stable byte chunks, with one contiguous range per name. A spelling longer
+Interned spelling bytes use an append store owned by the interner. Pack new
+spellings into stable byte chunks, with one contiguous range per name. A spelling longer
 than the normal chunk size receives a sufficiently large chunk. Initialize its
 complete range before publishing its dense-ID descriptor; later insertions write
 only disjoint suffixes. Byte cells can use `UnsafeCell<MaybeUninit<u8>>`, so shared
@@ -85,16 +108,17 @@ input and newly written tokens are mixed. Retaining a compatible range changes
 ownership metadata, not its token words. A transform writes only the tokens it
 actually changes into destination storage.
 
-Session-owned ranges need no individual reference counts. Shorter-lived capture
-chunks use shared ownership at chunk boundaries. A completed argument packet owns
-its sequence descriptors and retains the backing chunks directly. A child packet
-retaining an argument range acquires that chunk, so the enclosing packet can die
+Durable ranges retain their immutable backing value at source and packet
+boundaries. Shorter-lived capture chunks use shared ownership at chunk boundaries.
+A completed argument packet owns its sequence descriptors and retains the backing
+chunks directly. A child packet retaining an argument range acquires that chunk,
+so the enclosing packet can die
 without creating a chain of packet owners. Repeated occurrences of a parameter
 reread the same immutable sequence.
 
 New file tokens are materialized once, directly in the packet's chunks. Definitions
-are built directly in session storage. A builder can mix owned new ranges with
-retained old ranges and coalesce adjacent compatible spans. If a caller genuinely
+are built directly in their owned destination storage. A builder can mix owned new
+ranges with retained old ranges and coalesce adjacent compatible spans. If a caller
 needs contiguous output, it writes that output into the caller's destination;
 normal expansion traverses the existing pieces.
 
@@ -132,7 +156,7 @@ Engine-private frozen commands and permanent font selectors also have distinct
 reserved identities; printable spelling does not merge them with user names.
 Their compact tokens still use the same direct meaning-table path.
 
-Table payloads use compact handles to session definitions, immutable values, or
+Table payloads use compact handles to immutable definitions, other values, or
 document nodes. Shared owners belong to a block or store root where possible.
 Cloning a table block therefore copies entries in bulk; it should not turn a
 meaning lookup into a heap access to an individually allocated entry.
@@ -207,9 +231,9 @@ See the [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/
 Restoring a checkpoint selects its table and node roots, input cursors, and
 immutable owners. The abandoned live roots are dropped together. Scratch arrays
 retain capacity but reset their lengths; no scanner locals need reconstruction.
-The session definition store and process caches remain available for replay.
-Reclaim the abandoned definition tail only after dropping all younger owners,
-as described in [checkpoints.md](checkpoints.md).
+Definitions shared with retained state remain available for replay. Dropping
+abandoned table roots and sources releases their immutable owners. Process caches
+and interned identities remain available across restore.
 
 Numeric node IDs stay inside the state version that gives them meaning. Host
 results expose detached immutable pages and diagnostics, so a discarded live

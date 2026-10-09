@@ -1,0 +1,15 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\base{OLD}\let\alias=\base\def\base{NEW}
+\message{UMBER:\alias/\base:END}
+{\def\base{LOCAL}\global\def\base{GLOBAL}\def\base{LAST}}
+\message{UMBER:\alias/\base:END}
+\def\active{\def\active{NEW}\message{UMBER:OLD:END}}
+\active\message{UMBER:\active:END}
+\def\take#1{\def\producer{REPLACED}\edef\result{#1}}
+\def\producer{\take{forwarded {nested} tokens}}
+\producer\message{UMBER:\result/\producer:END}
+\def\replace{\toks0={NEW}}
+\toks0={\replace\message{UMBER:OLD:END}}\the\toks0
+\toks1=\toks0{\toks0={LOCAL}\global\toks2=\toks0\toks0={OTHER}}
+\message{UMBER:\the\toks0/\the\toks1/\the\toks2:END}
+\end

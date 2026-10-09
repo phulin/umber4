@@ -62,7 +62,7 @@ permanent part of the file.
 Each document gets independent mutable roots over the baseline, using the
 per-type storage in [storage.md](storage.md). Small tables can copy eagerly;
 larger table/node chunks become writable on mutation. Immutable definitions and
-resources keep their cached owners. New document definitions append to session
+resources keep their cached owners. New document definitions own their immutable
 storage and can retain compatible format spans directly. Assignments leave the
 baseline and other documents independent.
 
