@@ -94,20 +94,15 @@ impl Engine<'_> {
                         break read;
                     }
                 };
-                let value = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
+                let owner = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
                     let from = self.toks_index(first)?;
-                    self.token_registers[from].clone()
+                    self.token_registers[from].owner.clone()
                 } else if first.meaning.command == cmd::BEGIN {
-                    let owner = self.store_body()?;
-                    TokenValue {
-                        span: owner.span(),
-                        owner: Some(owner),
-                        level: 0,
-                    }
+                    Some(self.store_body()?)
                 } else {
                     return Err(Error::Syntax);
                 };
-                self.assign_tokens(index, value, assignment_global);
+                self.assign_tokens(index, owner, assignment_global);
                 Ok(())
             }
             cmd::COUNT
@@ -277,14 +272,17 @@ impl Engine<'_> {
         }
         self.bindings[id] = Binding::new(meaning, if global { 0 } else { self.level });
     }
-    fn assign_tokens(&mut self, index: usize, mut value: TokenValue, global: bool) {
-        let old_level = self.token_registers[index].level;
-        if !global && self.token_registers[index].span == value.span {
+    fn assign_tokens(&mut self, index: usize, owner: Option<crate::values::Owner>, global: bool) {
+        let slot = &mut self.token_registers[index];
+        if !global && slot.owner.as_ref().map(|v| v.id) == owner.as_ref().map(|v| v.id) {
             return;
         }
-        value.level = if global { 0 } else { self.level };
-        let old = std::mem::replace(&mut self.token_registers[index], value);
-        if !global && self.level > 0 && old_level != self.level {
+        let value = TokenValue {
+            owner,
+            level: if global { 0 } else { self.level },
+        };
+        let old = std::mem::replace(slot, value);
+        if !global && self.level > 0 && old.level != self.level {
             self.save.push(Save::Tokens(index, old));
         }
     }

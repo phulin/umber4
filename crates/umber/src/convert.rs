@@ -296,7 +296,7 @@ impl Engine<'_> {
             engine.generated_byte(packet, &mut builder, byte)
         })?;
         self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
+        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
     }
     // Operands are read once; consumers choose their destination. The callback
     // appends only and preserves installed sources and immutable input spans.
@@ -385,6 +385,6 @@ impl Engine<'_> {
             engine.generated_token(packet, &mut builder, token)
         })?;
         self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
+        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
     }
 }

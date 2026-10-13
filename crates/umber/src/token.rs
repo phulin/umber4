@@ -260,10 +260,9 @@ impl Sequence {
         self.rest.clear();
     }
 }
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub(crate) struct TokenValue {
     pub owner: Option<crate::values::Owner>,
-    pub span: Span,
     pub level: u16,
 }
 pub(crate) struct Definition {
@@ -437,7 +436,6 @@ impl Names {
 #[derive(Clone, Copy)]
 pub(crate) enum SequenceRef {
     List,
-    Body(u32),
     Argument(u32, u8),
 }
 pub(crate) struct Cursor {

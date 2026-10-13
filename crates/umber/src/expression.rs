@@ -98,24 +98,17 @@ impl Engine<'_> {
         Ok(value)
     }
     pub(crate) fn scan_expression(&mut self) -> Result<i32> {
-        if self.expansion_depth >= 256 {
-            return Err(Error::Capacity);
-        }
-        self.expansion_depth += 1;
         // e-TeX keeps scanning after an arithmetic failure, substituting zero
         // for the failing intermediate. Report overflow only at expression end:
         // a later scan error (such as an undefined control sequence) comes first.
-        let mut overflow = false;
-        let result = self
-            .expression_sum(0, false, &mut overflow)
-            .and_then(|value| {
-                if overflow {
-                    Err(Error::Overflow)
-                } else {
-                    Ok(value)
-                }
-            });
-        self.expansion_depth -= 1;
-        result
+        self.with_expansion(|engine| {
+            let mut overflow = false;
+            let value = engine.expression_sum(0, false, &mut overflow)?;
+            if overflow {
+                Err(Error::Overflow)
+            } else {
+                Ok(value)
+            }
+        })
     }
 }

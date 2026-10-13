@@ -211,9 +211,8 @@ impl Engine<'_> {
         let owner = self.values.get(id);
         let definition = owner.definition();
         if definition.prefix.empty() && definition.parameter_count == 0 {
-            let body = definition.body;
             self.retire_exhausted();
-            return self.push_body(owner, body, None);
+            return self.push_body(owner, None);
         }
         if definition.uses_parameters {
             self.begin_macro_with_arguments::<true>(owner)
@@ -364,11 +363,7 @@ impl Engine<'_> {
                             return Ok(());
                         }
                     } else {
-                        self.push_sequence(
-                            SequenceRef::Argument(parent, parent_argument),
-                            None,
-                            None,
-                        )?;
+                        self.push_sequence(SequenceRef::Argument(parent, parent_argument), None)?;
                     }
                 } else {
                     self.advance_source()?;
@@ -507,8 +502,7 @@ impl Engine<'_> {
         let count = definition.parameter_count as usize;
         if count == 0 {
             self.retire_exhausted();
-            let body = definition.body;
-            return self.push_body(owner, body, None);
+            return self.push_body(owner, None);
         }
         let packet = if RETAIN { self.take_packet(count)? } else { 0 };
         let mut builder = None;
@@ -541,8 +535,7 @@ impl Engine<'_> {
             self.finish_capture(packet, builder);
         }
         self.retire_exhausted();
-        let body = definition.body;
-        self.push_body(owner, body, RETAIN.then_some(packet))
+        self.push_body(owner, RETAIN.then_some(packet))
     }
     pub(crate) fn same_meaning(&self, a: Meaning, b: Meaning) -> bool {
         if a == b {

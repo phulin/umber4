@@ -2,7 +2,7 @@ use crate::{Engine, Error, Result, token::*};
 
 pub(crate) enum Internal {
     Integer(i32),
-    Tokens(TokenValue),
+    Tokens(Option<crate::values::Owner>),
 }
 
 impl Engine<'_> {
@@ -17,7 +17,7 @@ impl Engine<'_> {
         let read = self.next_expanded()?;
         if matches!(read.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
             let index = self.toks_index(read)?;
-            Ok(Internal::Tokens(self.token_registers[index].clone()))
+            Ok(Internal::Tokens(self.token_registers[index].owner.clone()))
         } else {
             Ok(Internal::Integer(self.internal_int(read)?))
         }
@@ -41,9 +41,9 @@ impl Engine<'_> {
                     }
                     match read.meaning.command {
                         cmd::THE => match self.the_value()? {
-                            Internal::Tokens(value) => {
-                                if let Some(owner) = value.owner {
-                                    for position in value.span.start..value.span.end {
+                            Internal::Tokens(owner) => {
+                                if let Some(owner) = owner {
+                                    for position in 0..owner.tokens.len {
                                         emit(self, owner.tokens.get(position))?;
                                     }
                                 }

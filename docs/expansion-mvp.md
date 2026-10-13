@@ -70,6 +70,11 @@ span, owner, and cursor without manufacturing a macro header. Replacing the last
 owner releases the payload and makes its descriptor slot reusable. Future
 checkpoints retain these same immutable values through their table roots.
 
+A token register stores its complete immutable owner and assignment level. Its
+input range comes from that owner when installed; the register carries no separate
+cached span. Reading an internal token-list quantity retains only its owner,
+without carrying the register's group level into expansion.
+
 Use the same list-scanning loop with destination-specific Rust functions:
 definitions and register values append token words into their destination arena;
 messages append formatted bytes into their output buffer. Raw insertions within

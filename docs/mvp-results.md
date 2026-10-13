@@ -1,5 +1,9 @@
 # Native expansion measurements
 
+The full three-size sweeps below measure immutable-value reclamation at
+`a7f8be0`. A later representation simplification is measured separately in the
+[follow-up report](../benchmarks/results/simplification-followup.json).
+
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) implement
 63 primitive names, covering parsing, expansion, macros, groups, integer state,
 and token registers. Immutable definitions and token lists now follow semantic
@@ -13,6 +17,30 @@ suite and -10.0% on the broader suite, using geometric means of paired
 ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
+
+## Representation simplification follow-up
+
+The 2026-10-13 follow-up removes cached token-register spans, register levels from
+internal token-list quantities, and the redundant macro-body source variant.
+Macro-body installation takes its range directly from the retained definition;
+argument-source construction drops an unused parameter. Expression scanning uses
+the existing expansion-depth guard. These changes preserve storage ownership and
+build tokens in the same destinations.
+
+Seven paired repetitions at the largest size of all eighteen cases measure 2.2%
+less core CPU and 0.6% more broader CPU, using geometric means against `a7f8be0`.
+The broader change is within the earlier control-run variation. Individual gains
+and regressions remain in the report: stored macro calls improve 11.4%, while
+21-repetition follow-ups measure 7.8% more raw-dispatch CPU, 6.7% more discarded
+long-argument CPU, and 3.5% more calendar CPU. All cases still use less CPU than
+pdfTeX in the seven-repetition comparison. Allocation counts match the baseline
+in all eighteen diagnostics; register and group-save records carry less data.
+
+The follow-up covers ordinary release only. The native profile tables below
+remain measurements of the preceding reclamation build. The simplified source
+passes the same 53 debug/release tests, 747 native messages, 26 rejection cases,
+Clippy, and Wasm build. Active-definition/forwarded-range and register-replacement
+fixtures also pass Miri.
 
 ## What is measured
 

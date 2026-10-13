@@ -5,10 +5,10 @@ impl Engine<'_> {
         self.with_expansion(|engine| engine.expand_inner(read))
     }
     #[inline]
-    pub(crate) fn with_expansion(
+    pub(crate) fn with_expansion<T>(
         &mut self,
-        action: impl FnOnce(&mut Self) -> Result<()>,
-    ) -> Result<()> {
+        action: impl FnOnce(&mut Self) -> Result<T>,
+    ) -> Result<T> {
         if self.expansion_depth >= 256 {
             return Err(Error::Capacity);
         }
@@ -26,7 +26,8 @@ impl Engine<'_> {
             }
             cmd::THE => match self.the_value()? {
                 crate::lists::Internal::Integer(value) => self.insert_number(value),
-                crate::lists::Internal::Tokens(value) => self.push_tokens(value.span),
+                crate::lists::Internal::Tokens(Some(owner)) => self.push_tokens(owner.span()),
+                crate::lists::Internal::Tokens(None) => Ok(()),
             },
             cmd::STRING | cmd::MEANING | cmd::ROMAN | cmd::DETOKENIZE => self.convert(read),
             cmd::UNEXPANDED => {
@@ -37,7 +38,7 @@ impl Engine<'_> {
                     engine.generated_token(packet, &mut builder, token)
                 })?;
                 self.finish_generated(packet, builder);
-                self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
+                self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
             }
             cmd::EXPANDAFTER => {
                 let first = self.next_raw()?.token;
@@ -123,6 +124,6 @@ impl Engine<'_> {
                 .reverse();
         }
         self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet), None)
+        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
     }
 }

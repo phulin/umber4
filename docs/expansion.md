@@ -132,6 +132,12 @@ Token-sequence sources share span traversal: the current span is read directly,
 and another is selected when it ends. Macro body reading additionally handles
 the internal parameter markers.
 
+The MVP installs a macro body's span directly from its retained definition. Like
+a standalone list, it has one span across any backing-window refills. Argument
+input carries a packet/argument index because it can continue through several
+spans. The body cursor retains its packet for parameter substitution and release;
+argument-source construction supplies only the packet ownership it actually uses.
+
 The macro body uses compact internal parameter markers. Reading one selects the
 corresponding argument sequence and makes it the current source. When that input
 finishes, reading continues in the body. The body remains beneath the argument

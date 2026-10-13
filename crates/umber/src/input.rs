@@ -269,7 +269,7 @@ impl Engine<'_> {
                         if let Some(raw) = self.single_argument(packet, argument) {
                             return Ok(raw);
                         }
-                        self.push_sequence(SequenceRef::Argument(packet, argument), None, None)?;
+                        self.push_sequence(SequenceRef::Argument(packet, argument), None)?;
                         continue;
                     }
                     // SAFETY: next and end belong to the same window. Derive
@@ -326,9 +326,6 @@ impl Engine<'_> {
     pub(crate) fn span_for(&self, sequence: SequenceRef, index: usize) -> Option<Span> {
         match sequence {
             SequenceRef::List => None,
-            SequenceRef::Body(id) => (index == 0)
-                .then(|| self.values.get(id).definition().body.span(id))
-                .filter(|s| !s.empty()),
             SequenceRef::Argument(packet, arg) => {
                 self.packets[packet as usize].arguments[arg as usize].span(index)
             }
@@ -357,7 +354,6 @@ impl Engine<'_> {
         &mut self,
         sequence: SequenceRef,
         owns_packet: Option<u32>,
-        macro_packet: Option<u32>,
     ) -> Result<()> {
         let Some(span) = self.span_for(sequence, 0) else {
             if let Some(packet) = owns_packet {
@@ -375,15 +371,15 @@ impl Engine<'_> {
             }
             return Ok(());
         }
-        self.push_span(sequence, span, owns_packet, macro_packet)
+        self.push_span(sequence, span, owns_packet)
     }
     #[inline]
     pub(crate) fn push_body(
         &mut self,
         owner: crate::values::Owner,
-        body: ArenaRange,
         packet: Option<u32>,
     ) -> Result<()> {
+        let body = owner.definition().body;
         if body.empty() {
             if let Some(packet) = packet {
                 self.release_packet(packet);
@@ -398,7 +394,7 @@ impl Engine<'_> {
         let (next, end, window_end_position) = owner.tokens.window(body.start, body.end);
         self.sources.push(Source::Tokens(Cursor {
             _owner: Some(owner),
-            sequence: SequenceRef::Body(id),
+            sequence: SequenceRef::List,
             span_index: 0,
             span: body.span(id),
             window_end_position,
@@ -413,7 +409,7 @@ impl Engine<'_> {
         if span.empty() {
             return Ok(());
         }
-        self.push_span(SequenceRef::List, span, None, None)
+        self.push_span(SequenceRef::List, span, None)
     }
     #[inline]
     fn push_span(
@@ -421,7 +417,6 @@ impl Engine<'_> {
         sequence: SequenceRef,
         span: Span,
         owns_packet: Option<u32>,
-        macro_packet: Option<u32>,
     ) -> Result<()> {
         if self.sources.len() > 10000 {
             return Err(Error::Capacity);
@@ -437,7 +432,7 @@ impl Engine<'_> {
             next,
             end,
             owns_packet,
-            macro_packet,
+            macro_packet: None,
         }));
         Ok(())
     }
