@@ -9,6 +9,25 @@ fn value(values: &mut Values, count: usize, byte: u8) -> Owner {
 }
 
 #[test]
+fn builder_reads_and_publication_cover_only_initialized_words() {
+    let mut values = Values::default();
+    let mut builder = values.builder();
+    for length in [1, 63, 64, 65, 4095, 4096, 4097] {
+        while builder.len() < length {
+            builder.push(Token::other(builder.len() as u8)).unwrap();
+        }
+        assert_eq!(builder.len(), length);
+        assert_eq!(builder.get(length - 1), Token::other((length - 1) as u8));
+        assert!(
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| builder.get(length))).is_err()
+        );
+    }
+    let owner = values.publish(builder, None).unwrap();
+    assert_eq!(owner.tokens.len, 4097);
+    assert_eq!(owner.tokens.get(4096), Token::other(0));
+}
+
+#[test]
 fn published_windows_survive_interleaved_builders_and_reuse() {
     let mut values = Values::default();
     let held = value(&mut values, 127, b'A');

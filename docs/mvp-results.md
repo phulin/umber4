@@ -2,7 +2,8 @@
 
 The full three-size sweeps below measure immutable-value reclamation at
 `a7f8be0`. A later representation simplification is measured separately in the
-[follow-up report](../benchmarks/results/simplification-followup.json).
+[follow-up report](../benchmarks/results/simplification-followup.json). The
+structural simplification below compares the next cleanup with `d8a8c28`.
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) implement
 63 primitive names, covering parsing, expansion, macros, groups, integer state,
@@ -10,13 +11,71 @@ and token registers. Immutable definitions and token lists now follow semantic
 ownership and reuse their backing storage. A fixed-working-set workload peaks at
 96 KiB through 50,000 replacements, versus 83 MiB in the preceding implementation.
 
-At the largest sizes, ordinary release uses 0.08–0.62 times native pdfTeX's CPU
+In the reclamation sweeps, ordinary release uses 0.08–0.62 times native pdfTeX's CPU
 time across nine core workloads and 0.22–0.44 times across nine broader macro
 workloads. Reclamation changes aggregate CPU time by +21.6% on the core
 suite and -10.0% on the broader suite, using geometric means of paired
 ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
+
+## Structural simplification
+
+The next cleanup reduces library/CLI Rust from 4,285 to 3,916 physical lines,
+excluding separate test modules. The unchanged allocation adapter adds 70 lines
+to each. Benchmark and oracle tooling drops from 946 to 889 Python lines:
+5,301 to 4,875 lines across the reviewed non-test code, a reduction of 426 (8.0%).
+
+One command inventory now supplies primitive registration, meaning text, and
+assignment/conditional classification. Grouped and delimited arguments share a
+scanner specialized at compile time. Generated output retains its buffer
+directly, removing the argument packets previously needed for conversions and
+decimal output. One token cursor serves generated, value-backed, and argument
+input, reducing native source records from 80 to 72 bytes. Immutable parameter
+slices supply their own arity and eliminate the optional metadata wrapper;
+delimiter ranges come from the stored signature. Numeric scanners share their
+suffix loop and decimal emitter. Benchmark suites share setup and reporting,
+with unchanged generated inputs and expected results.
+
+The release profile changes from thin to fat LTO, keeping one codegen unit and
+the same debug setting. The retained measurements distinguish that complete
+before/after comparison from a control rebuilding `d8a8c28` with fat LTO. These
+are ordinary native builds without PGO. The profile tables later in this document
+remain measurements of the older reclamation build.
+
+The [comparison report](../benchmarks/results/structural-simplification.json)
+retains seven repetitions at 1,000,000 core iterations and 50,000 broader records,
+21-repetition confirmations, nine paired repetitions for the same-LTO control,
+and separate allocation diagnostics. These runs use the same host and compiler
+described below. CPU changes are geometric means of the nine cases in each suite;
+the supplemental register-meaning case is reported separately.
+
+| CPU comparison                    | Core suite | Broader suite |
+| --------------------------------- | ---------: | ------------: |
+| Complete change, thin to fat LTO  |      -8.7% |         -1.5% |
+| Source change, both using fat LTO |      -3.3% |         -1.8% |
+
+Individual regressions remain. The longer confirmations measure +3.0% for Gentle
+records, +8.0% for the token-register pipeline, and +5.0% for optional arguments.
+The seven-run sweep measures +10.4% for optional arguments; both sets of raw
+samples are retained. Integer assignments improve 5.7%, nested parameters 7.5%,
+and register-meaning conversion 5.5% in the confirmations. All nineteen kernels
+still use less CPU than native pdfTeX in the full comparison. These measurements
+cover the implemented expansion/register slice.
+
+Fixed-working-set churn retains exactly the baseline allocation counts, requested
+bytes, and 98,396-byte heap peak through 50,000 replacements; CPU increases 7.4%
+at that size. At 2,500 retained definitions, live-growth CPU decreases 3.2%, with
+a 2,038,732-byte peak versus 2,039,164 bytes. Register-meaning conversion drops
+from 200,889 to 100,883 allocation requests at 50,000 records by emitting alias
+indices directly. Heap figures exclude host input, stack, and allocator overhead.
+
+The final source passes 55 debug/release Rust tests, rustfmt, Clippy with warnings
+denied, and the release Wasm library build. The native oracle matches 747 messages
+and 26 rejection cases. Seven selected arena, cursor-retention, and failure-progress
+tests pass Miri with `native-profile`. Generated inputs, expected results, and
+workload metadata match the preceding generators for all nineteen cases at three
+sizes.
 
 ## Representation simplification follow-up
 
@@ -44,7 +103,8 @@ fixtures also pass Miri.
 
 ## What is measured
 
-Measurements were made on 2026-10-09, Linux x86-64, AMD EPYC 7642, pinned to CPU 0.
+The reclamation sweeps were measured on 2026-10-09, Linux x86-64, AMD EPYC 7642,
+pinned to CPU 0.
 The oracle is pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian), running INITEX
 with e-TeX enabled.
 Ordinary release uses Rust 1.98.1, thin LTO, one codegen unit, debug information,
@@ -238,7 +298,7 @@ The final profile binary passes the native oracle. Full timing samples are in
 
 ## Compatibility and reproduction
 
-All 53 Rust tests pass in debug and release. Rustfmt, Clippy with warnings denied,
+At `a7f8be0`, all 53 Rust tests pass in debug and release. Rustfmt, Clippy with warnings denied,
 and the release `wasm32-unknown-unknown` library build pass. The native oracle
 matches 747 marked messages and 26 rejection cases. Coverage includes active
 self-redefinition, forwarded durable ranges after producer replacement,

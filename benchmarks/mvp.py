@@ -127,26 +127,27 @@ def measure(engines, path, expected, repeats):
     return result
 
 
-def main():
+def run_suite(program, *, cases, sizes, output, report, startup, generator,
+              default_cases=None, max_size=2147483647 // 6, metadata=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
     parser.add_argument("--pdftex")
     parser.add_argument("--baseline", type=Path,
                         help="previous Umber binary to time in the same run")
-    parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
-    parser.add_argument("--sizes", nargs="+", type=int, default=[10000, 100000, 1000000])
+    parser.add_argument("--cases", nargs="+", choices=cases,
+                        default=list(default_cases or cases))
+    parser.add_argument("--sizes", nargs="+", type=int, default=sizes)
     parser.add_argument("--repeats", type=int, default=7)
     parser.add_argument("--cpu", type=int,
                         help="Linux CPU to pin; defaults to the first allowed CPU")
-    parser.add_argument("--report", type=Path, default=ROOT / "target/benchmark/results.json")
+    parser.add_argument("--report", type=Path, default=report)
     args = parser.parse_args()
-    if args.repeats < 1 or any(size < 1 or size * 6 > 2147483647 for size in args.sizes):
-        parser.error("use positive repeats and sizes whose checksums fit a TeX integer")
+    if args.repeats < 1 or any(size < 1 or size > max_size for size in args.sizes):
+        parser.error(f"use positive repeats and sizes up to {max_size}")
     cpu = args.cpu
     if hasattr(os, "sched_setaffinity"):
         cpu = cpu if cpu is not None else min(os.sched_getaffinity(0))
         os.sched_setaffinity(0, {cpu})
-    output = ROOT / "target/benchmark"
     command, env = reference(args.pdftex, output / "pdftex")
     engines = {"umber": ([str(args.umber.resolve())], None), "pdftex": (command, env)}
     if args.baseline:
@@ -162,19 +163,22 @@ def main():
               "rustflags": os.environ.get("RUSTFLAGS", ""),
               "machine": platform.platform(), "cpu": cpu, "cpu_model": cpu_model,
               "umber_binary_sha256": hashlib.sha256(args.umber.read_bytes()).hexdigest(),
-              "generator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              "generator_sha256": hashlib.sha256(generator.read_bytes()).hexdigest(),
+              "measurement_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              **(metadata or {}),
               "repeats": args.repeats, "complete": False, "samples": []}
     if args.baseline:
         report["baseline_binary_sha256"] = hashlib.sha256(args.baseline.read_bytes()).hexdigest()
-    startup = output / "startup.tex"
-    startup.write_text(BOOT + r"\message{UMBER:0,0:END}\end" + "\n")
-    report["startup"] = measure(engines, startup, b"0,0", args.repeats)
+    startup_path = output / "startup.tex"
+    startup_path.write_text(BOOT + r"\message{UMBER:" + startup + r":END}\end" + "\n")
+    report["startup"] = measure(engines, startup_path, startup.encode(), args.repeats)
     for case in args.cases:
         for size in args.sizes:
-            source, expected = program(case, size)
+            source, expected, *work = program(case, size)
             path = output / f"{case}-{size}.tex"
             path.write_bytes(source)
             row = {"case": case, "size": size, "bytes": len(source),
+                   **(work[0] if work else {}),
                    "sha256": hashlib.sha256(source).hexdigest(),
                    **measure(engines, path, expected, args.repeats)}
             clock = "cpu" if "cpu_median" in row else "wall"
@@ -192,6 +196,12 @@ def main():
             args.report.write_text(json.dumps(report, indent=2) + "\n")
     report["complete"] = True
     args.report.write_text(json.dumps(report, indent=2) + "\n")
+
+
+def main():
+    output = ROOT / "target/benchmark"
+    run_suite(program, cases=CASES, sizes=[10000, 100000, 1000000], output=output,
+              report=output / "results.json", startup="0,0", generator=Path(__file__))
 
 
 if __name__ == "__main__":

@@ -63,6 +63,37 @@ execution continuations.
 
 ## Storage and control flow
 
+Primitive registration, meaning serialization, and assignment/conditional
+classification share one command inventory, including the value-indexed names of
+arithmetic operations and integer parameters.
+Generated expansion output is an owned input source; it needs no macro argument
+packet. Its writer lives on the Rust stack and publishes its buffer only after
+the operand scan has completed. Character-run and literal-number fast paths stay
+separate where their cursor behavior or measured cost requires it.
+
+Argument packets reuse their descriptor slots and backing-owner vectors. Grouped
+and delimited arguments share traversal and capture; their stopping rules
+specialize at compile time. Delimiter matching retains its prefix-fallback table
+and outer-group removal.
+
+All list input uses one cursor containing its backing ID, logical end position,
+read pointers, and any following-span coordinates. Value roots retain their
+immutable value; generated roots retain their buffer directly. Argument cursors
+borrow the body packet beneath them. Token reading uses the same path for each;
+ownership is distinguished when installing and retiring a source.
+
+Each definition starts at logical token zero, stores its tokens in signature
+order, and caches its prefix end and body range. Each parameter descriptor owns
+its delimiter range and immutable fallback slice. One immutable slice holds the
+descriptors and its length supplies the arity; the empty slice needs no allocation.
+The stored signature already delimits every parameter. Once the body is complete,
+walk those markers to construct the descriptors and matcher tables in their final
+storage.
+
+The lexer hashes each spelling as it is consumed. Name lookup packs hash
+fragments and dense IDs into its probe table; growth reuses those fragments.
+Stable spelling bytes and identity lifetime remain the interner's responsibility.
+
 Immutable token-register values own stable token chunks. Register copies and
 save entries retain the same value; an active source independently retains its
 backing through later assignments. A source for a standalone span carries its
@@ -75,7 +106,7 @@ input range comes from that owner when installed; the register carries no separa
 cached span. Reading an internal token-list quantity retains only its owner,
 without carrying the register's group level into expansion.
 
-Use the same list-scanning loop with destination-specific Rust functions:
+List scanners use destination-specific Rust functions:
 definitions and register values append token words into their destination arena;
 messages append formatted bytes into their output buffer. Raw insertions within
 expanded scans use that destination directly. Avoid building an intermediate
@@ -96,22 +127,25 @@ parameter interpretation. Read operands with the existing scanners and
 expansion-depth accounting. Emit digits in reading order using bounded ordinary
 Rust calls; text conversion shares its byte emitter with general expansion.
 General expansion installs a token source when later input consumers need one.
+The expression scanner passes an already-read leading decimal digit directly to
+the shared numeric suffix scanner.
 
 Scalar tables share an array of integer values and group levels. A compact target
 identifies its slot directly; assignment uses that slot for the read, save, and
 write. Token registers and meanings retain their own representations. When
 general expansion needs a token source, generated conversion and decimal output
 append to a uniquely owned reusable buffer and publish one range at completion.
-Decimal digits are generated with division by ten and reversed in place before
-publication. Numbers that fit in the existing two-token inline source use it
-directly. Other empty and singleton generated output stays inline in its packet.
+Decimal digits are emitted in reading order with bounded Rust calls, sharing the
+same emitter as direct list expansion and register-meaning text. Numbers that fit
+in the existing two-token inline source use it directly. Empty generated output
+installs no source, and singleton output stays inline.
 
 Token-arena chunks have their fixed size in the Rust type. Per-word appending
 uses a small inline gate; allocation remains in a separate growth helper. Common
 control-sequence name assembly uses stack scratch space, spilling once for long
 names. Fixed single-byte control names derive their spelling from their IDs and
-use a static byte table. Spelling handles and hashes use arrays indexed directly
-by control-sequence ID; fixed slots have empty handles. Interned identities
+use a static byte table. Spelling handles use an array indexed directly by
+control-sequence ID; the lookup table retains hashes alongside IDs. Interned identities
 retain their existing session lifetime.
 
 Store newly interned multi-byte spellings in stable byte chunks owned by the

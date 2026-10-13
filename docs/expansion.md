@@ -135,8 +135,8 @@ the internal parameter markers.
 The MVP installs a macro body's span directly from its retained definition. Like
 a standalone list, it has one span across any backing-window refills. Argument
 input carries a packet/argument index because it can continue through several
-spans. The body cursor retains its packet for parameter substitution and release;
-argument-source construction supplies only the packet ownership it actually uses.
+spans. The body cursor owns its packet for parameter substitution and release;
+argument sources borrow that packet while its body remains beneath them.
 
 The macro body uses compact internal parameter markers. Reading one selects the
 corresponding argument sequence and makes it the current source. When that input
@@ -151,7 +151,8 @@ no replacement-list construction.
 
 One- and two-token insertions are common in lookahead and expansion-order
 primitives. Give them inline storage in the input representation. Larger
-generated results use constructed sequences with the same span-reading path.
+generated results retain their constructed buffer directly through the same
+span-reading path, without an argument packet.
 
 Token spans can use indices or internal pointers into stable backing storage.
 Definition segments live through their semantic owners; captured tokens stay

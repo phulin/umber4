@@ -3,6 +3,6 @@ members = ["crates/umber"]
 resolver = "3"
 
 [profile.release]
-lto = "thin"
+lto = "fat"
 codegen-units = 1
 debug = 1

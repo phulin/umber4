@@ -1,36 +1,6 @@
 use crate::{Engine, Error, Result, token::*};
 use std::rc::Rc;
 
-// The source retains an immutable initialized window in one allocation, with
-// next at or before end. Four-word reads only peek within that window; advance
-// together when all are characters, otherwise find the first structural word
-// with the scalar tail. The caller handles that word at the returned cursor.
-// Equal endpoints may be empty and are never dereferenced.
-#[inline(never)]
-unsafe fn group_character_end(mut next: *const Token, end: *const Token) -> *const Token {
-    // SAFETY: unequal endpoints belong to the same retained allocation.
-    while next != end && unsafe { end.offset_from(next) } >= 4 {
-        // SAFETY: four initialized immutable words remain in this window.
-        let words = unsafe { next.cast::<[Token; 4]>().read() };
-        let structural = words.map(|token| u32::from(!(3 << 8..PARAM).contains(&token.0)));
-        if structural[0] | structural[1] | structural[2] | structural[3] != 0 {
-            break;
-        }
-        // SAFETY: all four words precede end in the same retained window.
-        next = unsafe { next.add(4) };
-    }
-    while next != end {
-        // SAFETY: the caller supplied this retained immutable window.
-        let token = unsafe { next.read() };
-        if !(3 << 8..PARAM).contains(&token.0) {
-            break;
-        }
-        // SAFETY: advance at most one past the same initialized window.
-        next = unsafe { next.add(1) };
-    }
-    next
-}
-
 impl Engine<'_> {
     #[inline]
     pub(crate) fn take_packet(&mut self, count: usize) -> Result<u32> {
@@ -101,21 +71,13 @@ impl Engine<'_> {
             };
             return Ok(());
         }
+        if let Some(span) = raw.origin {
+            return self.capture_span(packet, argument, span, builder);
+        }
         if first.store == SINGLE && !first.empty() {
             self.promote_single(packet, argument, builder)?;
         }
-        let span = if let Some(span) = raw.origin {
-            let sequence = &mut self.packets[packet as usize].arguments[argument];
-            let last = sequence.rest.last_mut().unwrap_or(&mut sequence.first);
-            if !last.empty() && last.store == span.store && last.end == span.start {
-                last.end = span.end;
-                return Ok(());
-            }
-            self.retain_backing(packet, span.store);
-            span
-        } else {
-            self.materialize_token(raw.token, builder)?
-        };
+        let span = self.materialize_token(raw.token, builder)?;
         self.packets[packet as usize].arguments[argument].append(span);
         Ok(())
     }
@@ -131,14 +93,10 @@ impl Engine<'_> {
         if first.store == SINGLE && !first.empty() {
             self.promote_single(packet, argument, builder)?;
         }
-        let sequence = &mut self.packets[packet as usize].arguments[argument];
-        let last = sequence.rest.last_mut().unwrap_or(&mut sequence.first);
-        if !last.empty() && last.store == span.store && last.end == span.start {
-            last.end = span.end;
-            return Ok(());
+        if self.packets[packet as usize].arguments[argument].append(span) {
+            // Appending metadata leaves the input owner alive through this call.
+            self.retain_backing(packet, span.store);
         }
-        self.retain_backing(packet, span.store);
-        self.packets[packet as usize].arguments[argument].append(span);
         Ok(())
     }
     #[inline(never)]
@@ -160,15 +118,19 @@ impl Engine<'_> {
     #[inline(never)]
     fn retain_backing(&mut self, packet: u32, id: u32) {
         let owners = &mut self.packets[packet as usize].owners;
-        if !owners.iter().any(|old| old.id() == id) {
-            owners.push(if id & DURABLE != 0 {
-                Backing::Durable(self.values.get(id & !DURABLE))
-            } else {
-                Backing::Capture {
-                    id,
-                    _owner: Rc::clone(&self.captures[id as usize].tokens),
-                }
-            });
+        if !owners.iter().any(|old| old.0 == id) {
+            owners.push((
+                id,
+                if id & DURABLE != 0 {
+                    Backing::Durable {
+                        _owner: self.values.get(id & !DURABLE),
+                    }
+                } else {
+                    Backing::Capture {
+                        _owner: Rc::clone(&self.captures[id as usize].tokens),
+                    }
+                },
+            ));
         }
     }
     #[inline(never)]
@@ -201,16 +163,18 @@ impl Engine<'_> {
     #[inline(never)]
     fn publish_capture(&mut self, packet: u32, id: u32) {
         self.captures[id as usize].building = false;
-        self.packets[packet as usize].owners.push(Backing::Capture {
+        self.packets[packet as usize].owners.push((
             id,
-            _owner: Rc::clone(&self.captures[id as usize].tokens),
-        });
+            Backing::Capture {
+                _owner: Rc::clone(&self.captures[id as usize].tokens),
+            },
+        ));
     }
     #[inline(always)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
         let owner = self.values.get(id);
         let definition = owner.definition();
-        if definition.prefix.empty() && definition.parameter_count == 0 {
+        if definition.prefix_end == 0 && definition.parameters.is_empty() {
             self.retire_exhausted();
             return self.push_body(owner, None);
         }
@@ -221,8 +185,13 @@ impl Engine<'_> {
         }
     }
     #[inline(always)]
-    fn capture_single_group(&mut self, packet: u32, argument: usize) -> bool {
-        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+    pub(crate) fn capture_single_group(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        long: bool,
+    ) -> bool {
+        let Some(cursor) = self.sources.last().and_then(Source::cursor) else {
             return false;
         };
         let first = cursor.next;
@@ -238,7 +207,7 @@ impl Engine<'_> {
         // SAFETY: first precedes second in the same retained window.
         let token = unsafe { first.read() };
         let token = if token.0 & PARAM != 0 && !token.is_cs() {
-            let Some(parent) = cursor.macro_packet else {
+            let Some(parent) = cursor.owns_packet else {
                 return false;
             };
             let sequence = &self.packets[parent as usize].arguments[(token.byte() - 1) as usize];
@@ -250,143 +219,25 @@ impl Engine<'_> {
         } else {
             token
         };
-        if !(3 << 8..PARAM).contains(&token.0) {
+        if !(3 << 8..PARAM).contains(&token.0)
+            && (token.is_begin() || token.is_end() || (!long && token == self.par))
+        {
             return false;
         }
         // SAFETY: second was initialized in this window. Looking up an argument
         // only borrowed packet metadata; this cursor and its backing stay live.
+        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+            return false;
+        };
         cursor.next = unsafe { second.add(1) };
-        // Initial grouped capture has an empty argument. A character word
-        // has value semantics and needs no backing owner after retirement.
+        // Initial grouped capture has an empty argument. Character words and
+        // interned control-sequence identities need no token backing owner.
         self.packets[packet as usize].arguments[argument].first = Span {
             store: SINGLE,
             start: token.0,
             end: token.0 + 1,
         };
         true
-    }
-    #[inline(always)]
-    fn capture_group<const RETAIN: bool>(
-        &mut self,
-        packet: u32,
-        argument: usize,
-        long: bool,
-        builder: &mut Option<u32>,
-    ) -> Result<()> {
-        if RETAIN && self.capture_single_group(packet, argument) {
-            return Ok(());
-        }
-        let mut depth = 1;
-        loop {
-            if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
-                let first = cursor.next;
-                let mut next = first;
-                let parameter = loop {
-                    if next == cursor.end {
-                        break None;
-                    }
-                    // SAFETY: this source retains the immutable window;
-                    // the helper only reads and returns a cursor within it.
-                    next = unsafe { group_character_end(next, cursor.end) };
-                    if next == cursor.end {
-                        break None;
-                    }
-                    // SAFETY: next precedes end in this retained window.
-                    let token = unsafe { next.read() };
-                    if token.0 & PARAM != 0 && !token.is_cs() {
-                        break Some(token.byte() - 1);
-                    }
-                    if !long && token == self.par {
-                        return Err(Error::Argument);
-                    }
-                    // SAFETY: next is before the end of the same allocation.
-                    next = unsafe { next.add(1) };
-                    match token.0 >> 8 {
-                        1 => depth += 1,
-                        2 => {
-                            depth -= 1;
-                            if depth == 0 {
-                                break None;
-                            }
-                        }
-                        _ => {}
-                    }
-                };
-                let parent = cursor.macro_packet;
-                // SAFETY: a parameter marker was read strictly before end.
-                cursor.next = if parameter.is_some() {
-                    unsafe { next.add(1) }
-                } else {
-                    next
-                };
-                if next != first {
-                    // SAFETY: all pointers belong to this one source window.
-                    let start = cursor.window_end_position
-                        - unsafe { cursor.end.offset_from(first) } as u32;
-                    let end = start + unsafe { next.offset_from(first) } as u32;
-                    let span = Span {
-                        store: cursor.span.store,
-                        start,
-                        end: end - u32::from(depth == 0),
-                    };
-                    // Retain before the scalar reader can retire this source.
-                    if RETAIN && !span.empty() {
-                        if depth == 0
-                            && span.end - span.start == 1
-                            && self.packets[packet as usize].arguments[argument]
-                                .first
-                                .empty()
-                        {
-                            // SAFETY: the sole captured token is initialized in
-                            // this retained window. Its word has value semantics
-                            // and remains valid after the source is retired.
-                            let token = unsafe { first.read() };
-                            self.packets[packet as usize].arguments[argument].first = Span {
-                                store: SINGLE,
-                                start: token.0,
-                                end: token.0 + 1,
-                            };
-                        } else {
-                            self.capture_span(packet, argument, span, builder)?;
-                        }
-                    }
-                    if depth == 0 {
-                        return Ok(());
-                    }
-                }
-                if let Some(parent_argument) = parameter {
-                    let parent = parent.ok_or(Error::Syntax)?;
-                    if let Some(raw) = self.single_argument(parent, parent_argument) {
-                        if self.capture_group_token::<RETAIN>(
-                            packet, argument, long, builder, &mut depth, raw,
-                        )? {
-                            return Ok(());
-                        }
-                    } else {
-                        self.push_sequence(SequenceRef::Argument(parent, parent_argument), None)?;
-                    }
-                } else {
-                    self.advance_source()?;
-                }
-                continue;
-            }
-            if self.sources.is_empty() {
-                self.capture_file_characters::<RETAIN, false>(
-                    packet,
-                    argument,
-                    builder,
-                    Token(u32::MAX),
-                )?;
-            }
-            // Special file categories and short insertions use the ordinary
-            // reader. Source transitions resume directly at the next window.
-            let raw = self.next_raw()?;
-            if self
-                .capture_group_token::<RETAIN>(packet, argument, long, builder, &mut depth, raw)?
-            {
-                return Ok(());
-            }
-        }
     }
     #[inline(never)]
     pub(crate) fn capture_file_characters<const RETAIN: bool, const EXCEPT: bool>(
@@ -459,47 +310,19 @@ impl Engine<'_> {
         });
         Ok(())
     }
-    #[inline(always)]
-    fn capture_group_token<const RETAIN: bool>(
-        &mut self,
-        packet: u32,
-        argument: usize,
-        long: bool,
-        builder: &mut Option<u32>,
-        depth: &mut usize,
-        raw: Raw,
-    ) -> Result<bool> {
-        if !long && raw.token == self.par {
-            return Err(Error::Argument);
-        }
-        if raw.token.is_begin() {
-            *depth += 1;
-        }
-        if raw.token.is_end() {
-            *depth -= 1;
-            if *depth == 0 {
-                return Ok(true);
-            }
-        }
-        if RETAIN {
-            self.capture_raw(packet, argument, raw, builder)?;
-        }
-        Ok(false)
-    }
     #[inline(never)]
     fn begin_macro_with_arguments<const RETAIN: bool>(
         &mut self,
         owner: crate::values::Owner,
     ) -> Result<()> {
         let definition = owner.definition();
-        let prefix = definition.prefix;
-        for position in prefix.start..prefix.end {
+        for position in 0..definition.prefix_end {
             let expected = owner.tokens.get(position);
             if self.next_raw()?.token != expected {
                 return Err(Error::Argument);
             }
         }
-        let count = definition.parameter_count as usize;
+        let count = definition.parameters.len();
         if count == 0 {
             self.retire_exhausted();
             return self.push_body(owner, None);
@@ -508,7 +331,7 @@ impl Engine<'_> {
         let mut builder = None;
         let long = definition.long;
         for argument in 0..count {
-            let delimiter = definition.parameters.as_ref().unwrap().delimiters[argument];
+            let delimiter = definition.parameters[argument].delimiter;
             if delimiter.empty() {
                 let first = loop {
                     let raw = self.next_raw()?;
@@ -523,12 +346,19 @@ impl Engine<'_> {
                     return Err(Error::Argument);
                 }
                 if first.token.is_begin() {
-                    self.capture_group::<RETAIN>(packet, argument, long, &mut builder)?;
+                    if !RETAIN || !self.capture_single_group(packet, argument, long) {
+                        self.capture_argument::<false, RETAIN>(
+                            &owner,
+                            packet,
+                            argument,
+                            &mut builder,
+                        )?;
+                    }
                 } else if RETAIN {
                     self.capture_raw(packet, argument, first, &mut builder)?;
                 }
             } else {
-                self.capture_delimited::<RETAIN>(&owner, packet, argument, &mut builder)?;
+                self.capture_argument::<true, RETAIN>(&owner, packet, argument, &mut builder)?;
             }
         }
         if RETAIN {

@@ -389,8 +389,8 @@ fn supported_failure_boundaries() {
 fn real_hash_fragment_collisions_keep_distinct_meanings() {
     let hash = |name: &[u8]| {
         name.iter()
-            .fold(crate::token::Names::HASH_START, |hash, &byte| {
-                crate::token::Names::hash_byte(hash, byte)
+            .fold(crate::names::Names::HASH_START, |hash, &byte| {
+                crate::names::Names::hash_byte(hash, byte)
             })
     };
     let first = hash(b"collisiongnzbie");
@@ -415,14 +415,14 @@ fn real_hash_fragment_collisions_keep_distinct_meanings() {
 }
 #[test]
 fn interned_names_compare_all_bytes_under_hash_collisions() {
-    let mut names = crate::token::Names::new();
+    let mut names = crate::names::Names::new();
     let mut entries = Vec::new();
     // Force every spelling into the same probe chain. Different lengths and
     // each differing byte must remain distinct through comparison and growth.
     for length in 2..=33 {
         let original = vec![b'a'; length];
         let original_id = names.intern_hashed(&original, 0).unwrap();
-        let mut first_bucket = crate::token::Names::new();
+        let mut first_bucket = crate::names::Names::new();
         let first_id = first_bucket.intern_hashed(&original, 0).unwrap();
         entries.push((original.clone(), original_id));
         for position in 0..length {

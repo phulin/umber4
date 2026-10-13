@@ -21,7 +21,7 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn scan_digit_window(&mut self, radix: i32, value: &mut i32) -> Result<bool> {
-        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
             return Ok(false);
         };
         while cursor.next != cursor.end {
@@ -92,36 +92,32 @@ impl Engine<'_> {
     }
     pub(crate) fn internal_int(&mut self, read: Read) -> Result<i32> {
         match read.meaning.command {
-            cmd::COUNT => {
-                let index = self.scan_index()?;
-                Ok(self.scalars[Target::count(index)].value)
-            }
-            cmd::COUNT_REF => Ok(self.scalars[Target::count(read.meaning.value as usize)].value),
-            cmd::CATCODE => {
-                let index = self.scan_index()?;
-                Ok(self.scalars[Target::catcode(index)].value)
-            }
-            cmd::ENDLINE => Ok(self.scalars[Target::ENDLINE].value),
-            cmd::INTEGER_PARAM => {
-                Ok(self.scalars[Target::parameter(read.meaning.value as usize)].value)
-            }
-            cmd::CASE_CODE => {
-                let index = self.scan_index()?;
-                Ok(self.scalars[Target::casecode(read.meaning.value as usize, index)].value)
-            }
             cmd::CHAR_GIVEN => Ok(read.meaning.value),
             cmd::NUMEXPR => self.scan_expression(),
-            _ => Err(Error::Number),
+            _ => {
+                let target = self.scalar_target(read)?;
+                Ok(self.scalars[target].value)
+            }
         }
+    }
+    #[inline]
+    pub(crate) fn scalar_target(&mut self, read: Read) -> Result<Target> {
+        Ok(match read.meaning.command {
+            cmd::COUNT => Target::count(self.scan_index()?),
+            cmd::COUNT_REF => Target::count(read.meaning.value as usize),
+            cmd::CATCODE => Target::catcode(self.scan_index()?),
+            cmd::ENDLINE => Target::ENDLINE,
+            cmd::INTEGER_PARAM => Target::parameter(read.meaning.value as usize),
+            cmd::CASE_CODE => Target::casecode(read.meaning.value as usize, self.scan_index()?),
+            _ => return Err(Error::Number),
+        })
     }
     #[inline(always)]
     fn literal_digit(&mut self) -> Option<i32> {
         if self.sources.is_empty() {
             return self.file.literal_digit(self.scalars.catcodes());
         }
-        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
-            return None;
-        };
+        let cursor = self.sources.last_mut().and_then(Source::cursor_mut)?;
         if cursor.next == cursor.end {
             return None;
         }
@@ -138,21 +134,21 @@ impl Engine<'_> {
     }
     // Keep the suffix loop out of the general scanner's recursive stack frame.
     #[inline(never)]
-    fn decimal_suffix(&mut self, mut value: i32) -> Result<i32> {
+    pub(crate) fn scan_digits<const RADIX: i32>(&mut self, mut value: i32) -> Result<i32> {
         loop {
-            if self.scan_digit_window(10, &mut value)? {
+            if self.scan_digit_window(RADIX, &mut value)? {
                 return Ok(value);
             }
             let read = self.next_expanded()?;
-            let digit = Self::digit(read.token, 10);
-            if digit >= 10 {
+            let digit = Self::digit(read.token, RADIX);
+            if digit >= RADIX {
                 if read.meaning.command != cmd::SPACE {
                     self.back(read.token);
                 }
                 return Ok(value);
             }
             value = value
-                .checked_mul(10)
+                .checked_mul(RADIX)
                 .and_then(|v| v.checked_add(digit))
                 .ok_or(Error::Overflow)?;
         }
@@ -160,7 +156,7 @@ impl Engine<'_> {
     #[inline]
     pub(crate) fn scan_int(&mut self) -> Result<i32> {
         if let Some(value) = self.literal_digit() {
-            return self.decimal_suffix(value);
+            return self.scan_digits::<10>(value);
         }
         self.scan_int_slow()
     }
@@ -214,32 +210,18 @@ impl Engine<'_> {
             if radix != 10 {
                 read = self.next_expanded()?;
             }
-            let mut value = 0i32;
-            let mut digits = 0;
-            let mut stopped_at_cursor = false;
-            loop {
-                let digit = Self::digit(read.token, radix);
-                if digit >= radix {
-                    break;
+            let digit = Self::digit(read.token, radix);
+            if digit >= radix {
+                if read.meaning.command != cmd::SPACE {
+                    self.back(read.token);
                 }
-                value = value
-                    .checked_mul(radix)
-                    .and_then(|v| v.checked_add(digit))
-                    .ok_or(Error::Overflow)?;
-                digits += 1;
-                if self.scan_digit_window(radix, &mut value)? {
-                    stopped_at_cursor = true;
-                    break;
-                }
-                read = self.next_expanded()?;
-            }
-            if !stopped_at_cursor && read.meaning.command != cmd::SPACE {
-                self.back(read.token);
-            }
-            if digits == 0 {
                 return Err(Error::Number);
             }
-            value
+            match radix {
+                8 => self.scan_digits::<8>(digit)?,
+                16 => self.scan_digits::<16>(digit)?,
+                _ => self.scan_digits::<10>(digit)?,
+            }
         };
         Ok(if negative {
             value.wrapping_neg()
@@ -248,7 +230,7 @@ impl Engine<'_> {
         })
     }
     pub(crate) fn scan_keyword(&mut self, keyword: &[u8]) -> Result<bool> {
-        if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+        if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
             // SAFETY: both pointers belong to this retained immutable window.
             let available = unsafe { cursor.end.offset_from(cursor.next) } as usize;
             if keyword.len() <= available {

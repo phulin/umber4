@@ -1,58 +1,66 @@
 use crate::{Engine, Error, Result, scalars::Target, token::*};
 use std::rc::Rc;
 
+#[derive(Default)]
+pub(crate) struct Generated {
+    first: Option<Token>,
+    buffer: Option<u32>,
+}
+
 impl Engine<'_> {
-    #[inline]
-    pub(crate) fn generated_token(
+    pub(crate) fn decimal_digits(
         &mut self,
-        packet: u32,
-        builder: &mut Option<u32>,
-        token: Token,
+        value: u32,
+        emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
-        if let Some(id) = *builder {
+        // At most ten ordinary calls emit directly in reading order. Decimal
+        // characters cannot alter brace depth or parameter interpretation.
+        if value >= 10 {
+            self.decimal_digits(value / 10, emit)?;
+        }
+        emit(self, b'0' + (value % 10) as u8)
+    }
+
+    #[inline]
+    pub(crate) fn generated_token(&mut self, output: &mut Generated, token: Token) -> Result<()> {
+        if let Some(id) = output.buffer {
             let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
             if tokens.len() >= u32::MAX as usize {
                 return Err(Error::Capacity);
             }
             tokens.push(token);
+        } else if let Some(first) = output.first.take() {
+            let id = self.capture_buffer()?;
+            Rc::get_mut(&mut self.captures[id as usize].tokens)
+                .unwrap()
+                .extend_from_slice(&[first, token]);
+            output.buffer = Some(id);
         } else {
-            let first = self.packets[packet as usize].arguments[0].first;
-            if first.empty() {
-                self.packets[packet as usize].arguments[0].first = Span {
-                    store: SINGLE,
-                    start: token.0,
-                    end: token.0 + 1,
-                };
-            } else {
-                let id = self.capture_buffer()?;
-                Rc::get_mut(&mut self.captures[id as usize].tokens)
-                    .unwrap()
-                    .extend_from_slice(&[Token(first.start), token]);
-                *builder = Some(id);
-            }
+            output.first = Some(token);
         }
         Ok(())
     }
-    pub(crate) fn finish_generated(&mut self, packet: u32, builder: Option<u32>) {
-        if let Some(id) = builder {
-            // The packet has no installed source while being built. Its dense
-            // buffer has one writer; publish one range and owner at completion.
-            self.packets[packet as usize].arguments[0].first = Span {
-                store: id,
-                start: 0,
-                end: self.captures[id as usize].tokens.len() as u32,
-            };
+    pub(crate) fn finish_generated(&mut self, output: Generated) -> Result<()> {
+        if let Some(id) = output.buffer {
+            self.push_generated(id)
+        } else if let Some(token) = output.first {
+            if self.sources.len() > 10000 {
+                return Err(Error::Capacity);
+            }
+            self.back(token);
+            Ok(())
+        } else {
+            Ok(())
         }
-        self.finish_capture(packet, builder);
     }
     #[inline]
-    fn generated_byte(&mut self, packet: u32, builder: &mut Option<u32>, byte: u8) -> Result<()> {
+    fn generated_byte(&mut self, output: &mut Generated, byte: u8) -> Result<()> {
         let token = if byte == b' ' {
             Token::character(10, byte)
         } else {
             Token::other(byte)
         };
-        self.generated_token(packet, builder, token)
+        self.generated_token(output, token)
     }
     pub(crate) fn token_text(
         &mut self,
@@ -208,95 +216,23 @@ impl Engine<'_> {
                 },
                 emit,
             )?;
-            let value = meaning.value.to_string();
-            return self.emit_text(value.as_bytes(), emit);
+            return self.decimal_digits(meaning.value as u32, emit);
         }
-        let name: &[u8] = match meaning.command {
-            cmd::RELAX => b"relax",
-            cmd::DEF => b"def",
-            cmd::GDEF => b"gdef",
-            cmd::EDEF => b"edef",
-            cmd::XDEF => b"xdef",
-            cmd::LET => b"let",
-            cmd::GLOBAL => b"global",
-            cmd::LONG => b"long",
-            cmd::PROTECTED => b"protected",
-            cmd::BEGIN_GROUP => b"begingroup",
-            cmd::END_GROUP => b"endgroup",
-            cmd::COUNT => b"count",
-            cmd::COUNT_DEF => b"countdef",
-            cmd::CATCODE => b"catcode",
-            cmd::ENDLINE => b"endlinechar",
-            cmd::MESSAGE => b"message",
-            cmd::NUMBER => b"number",
-            cmd::THE => b"the",
-            cmd::EXPANDAFTER => b"expandafter",
-            cmd::NOEXPAND => b"noexpand",
-            cmd::CSNAME => b"csname",
-            cmd::ENDCSNAME => b"endcsname",
-            cmd::IFNUM => b"ifnum",
-            cmd::IFX => b"ifx",
-            cmd::IFTRUE => b"iftrue",
-            cmd::IFFALSE => b"iffalse",
-            cmd::ELSE => b"else",
-            cmd::FI => b"fi",
-            cmd::END => b"end",
-            cmd::PAR => b"par",
-            cmd::TOKS => b"toks",
-            cmd::TOKS_DEF => b"toksdef",
-            cmd::CHAR_DEF => b"chardef",
-            cmd::FUTURELET => b"futurelet",
-            cmd::AFTER_ASSIGN => b"afterassignment",
-            cmd::AFTER_GROUP => b"aftergroup",
-            cmd::NUMEXPR => b"numexpr",
-            cmd::STRING => b"string",
-            cmd::ROMAN => b"romannumeral",
-            cmd::MEANING => b"meaning",
-            cmd::IF => b"if",
-            cmd::IFCAT => b"ifcat",
-            cmd::IFODD => b"ifodd",
-            cmd::IFCASE => b"ifcase",
-            cmd::OR => b"or",
-            cmd::IFDEFINED => b"ifdefined",
-            cmd::IFCSNAME => b"ifcsname",
-            cmd::UNEXPANDED => b"unexpanded",
-            cmd::DETOKENIZE => b"detokenize",
-            cmd::UNLESS => b"unless",
-            cmd::ARITH => [b"advance".as_slice(), b"multiply", b"divide"][meaning.value as usize],
-            cmd::CASE_CODE => {
-                if meaning.value == 0 {
-                    b"lccode"
-                } else {
-                    b"uccode"
-                }
-            }
-            cmd::CHANGE_CASE => {
-                if meaning.value == 0 {
-                    b"lowercase"
-                } else {
-                    b"uppercase"
-                }
-            }
-            cmd::INTEGER_PARAM => [
-                b"globaldefs".as_slice(),
-                b"escapechar",
-                b"time",
-                b"day",
-                b"month",
-                b"year",
-            ][meaning.value as usize],
-            _ => return Err(Error::Unsupported),
+        let names = cmd::names(meaning.command);
+        let index = if names.len() == 1 {
+            0
+        } else {
+            meaning.value as usize
         };
+        let name = names.get(index).ok_or(Error::Unsupported)?;
         self.escaped_text(name, emit)
     }
     pub(crate) fn convert(&mut self, read: Read) -> Result<()> {
-        let packet = self.take_packet(1)?;
-        let mut builder = None;
+        let mut output = Generated::default();
         self.conversion::<false>(read, |engine, byte| {
-            engine.generated_byte(packet, &mut builder, byte)
+            engine.generated_byte(&mut output, byte)
         })?;
-        self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
+        self.finish_generated(output)
     }
     // Operands are read once; consumers choose their destination. The callback
     // appends only and preserves installed sources and immutable input spans.
@@ -363,8 +299,7 @@ impl Engine<'_> {
     }
     pub(crate) fn change_case(&mut self, which: usize) -> Result<()> {
         self.opening_brace()?;
-        let packet = self.take_packet(1)?;
-        let mut builder = None;
+        let mut output = Generated::default();
         self.scan_raw_body(|engine, mut token| {
             let active = token.is_cs() && (258..514).contains(&token.id());
             if !token.is_cs() || active {
@@ -382,9 +317,8 @@ impl Engine<'_> {
                     };
                 }
             }
-            engine.generated_token(packet, &mut builder, token)
+            engine.generated_token(&mut output, token)
         })?;
-        self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
+        self.finish_generated(output)
     }
 }

@@ -138,7 +138,7 @@ impl Engine<'_> {
             emit(self, token)?;
         }
     }
-    fn emit_number(
+    pub(crate) fn emit_number(
         &mut self,
         value: i32,
         emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
@@ -151,19 +151,9 @@ impl Engine<'_> {
         if value < 0 {
             emit(self, Token::other(b'-'))?;
         }
-        self.emit_digits(value.unsigned_abs(), emit)
-    }
-    fn emit_digits(
-        &mut self,
-        value: u32,
-        emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
-    ) -> Result<()> {
-        // At most ten ordinary calls emit directly in reading order. Decimal
-        // characters cannot alter brace depth or parameter interpretation.
-        if value >= 10 {
-            self.emit_digits(value / 10, emit)?;
-        }
-        emit(self, Token::other(b'0' + (value % 10) as u8))
+        self.decimal_digits(value.unsigned_abs(), &mut |engine, byte| {
+            emit(engine, Token::other(byte))
+        })
     }
     // These destination emitters append only: they preserve sources and the
     // immutable window backing. A new output chunk can move arena descriptors,
@@ -179,7 +169,7 @@ impl Engine<'_> {
             }
             return Ok(());
         }
-        let Some(Source::Tokens(cursor)) = self.sources.last() else {
+        let Some(cursor) = self.sources.last().and_then(Source::cursor) else {
             return Ok(());
         };
         let (mut next, end) = (cursor.next, cursor.end);
@@ -203,13 +193,13 @@ impl Engine<'_> {
             next = unsafe { next.add(1) };
             let result = emit(self, token);
             if result.is_err() {
-                if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+                if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
                     cursor.next = next;
                 }
                 return result;
             }
         }
-        if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+        if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
             cursor.next = next;
         }
         Ok(())

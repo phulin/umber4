@@ -141,7 +141,7 @@ impl Engine<'_> {
             while self.file.read_character(self.scalars.catcodes()).is_some() {}
             return;
         }
-        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
             return;
         };
         while cursor.next != cursor.end {

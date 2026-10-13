@@ -34,6 +34,8 @@ impl Engine<'_> {
                 return Err(Error::Capacity);
             }
             self.expression_sum(depth + 1, true, overflow)
+        } else if (Token::other(b'0').0..=Token::other(b'9').0).contains(&read.token.0) {
+            self.scan_digits::<10>(i32::from(read.token.byte() - b'0'))
         } else {
             self.back(read.token);
             self.scan_int()

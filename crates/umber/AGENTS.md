@@ -1,13 +1,13 @@
 # Core MVP
 
 Read the root guidance. `src/lib.rs` owns the driver and document state;
-`token.rs` owns compact tokens, definition metadata, names, and source
-descriptors; `names.rs` owns the immutable spelling-byte allocator;
+`token.rs` owns compact tokens, the command inventory, definition metadata, and
+source descriptors; `names.rs` owns name lookup and immutable spelling bytes;
 `values.rs` owns reclaimable immutable token values and reusable backing chunks;
 `values_tests.rs` and `memory_tests.rs` check reclamation and semantic ownership;
 `input.rs` supplies lazy character input and token cursors;
-`define.rs` builds macro definitions; `macros.rs` scans grouped arguments and builds
-invocation packets; `delimit.rs` matches delimited arguments; `scan.rs` scans
+`define.rs` builds macro definitions; `macros.rs` builds invocation packets and
+captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;
 `scalars.rs` stores integer tables and their group levels;
 `lists.rs` scans raw/expanded lists into their destinations; `convert.rs` builds

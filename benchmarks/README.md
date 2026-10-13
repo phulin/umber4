@@ -25,6 +25,11 @@ Use `--cases`, `--sizes`, and `--repeats` for focused runs. Both accept
 suite's baseline must support its primitive set. Default reports live under
 `target/`. Reviewed measurements live in `results/`.
 
+The [structural cleanup comparison](results/structural-simplification.json)
+retains largest-size timings, same-LTO controls, longer confirmations, and
+allocation diagnostics. The release profile now uses fat LTO; earlier reports
+retain the settings of their measured builds.
+
 An optional native profile build uses the same generators for compiler training:
 
 ```bash

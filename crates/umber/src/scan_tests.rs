@@ -1,6 +1,29 @@
 use crate::{Engine, Error};
 
 #[test]
+fn list_destination_failure_preserves_file_progress_and_lexical_state() {
+    use crate::{scalars::Target, token::Token};
+    let mut engine = Engine::new(b"{abc XYZ}");
+    engine.scalars[Target::catcode(b'{' as usize)].value = 1;
+    engine.scalars[Target::catcode(b'}' as usize)].value = 2;
+    engine.opening_brace().unwrap();
+    let mut consumed = 0;
+    assert_eq!(
+        engine.scan_raw_body(|_, _| {
+            consumed += 1;
+            if consumed == 3 {
+                Err(Error::Capacity)
+            } else {
+                Ok(())
+            }
+        }),
+        Err(Error::Capacity)
+    );
+    assert_eq!(engine.next_raw().unwrap().token, Token::character(10, b' '));
+    assert_eq!(engine.next_raw().unwrap().token, Token::character(11, b'X'));
+}
+
+#[test]
 fn file_integer_prefix_preserves_categories_and_progress() {
     use crate::{scalars::Target, token::Token};
     let letter = |byte| Token::character(11, byte);

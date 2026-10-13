@@ -11,10 +11,7 @@ impl Engine<'_> {
     ) -> Result<()> {
         let cs = self.scan_cs()?;
         let mut tokens = self.values.builder();
-        let signature_start = tokens.len();
         let mut prefix_end = None;
-        let mut delimiter_start = tokens.len();
-        let mut delimiters = Vec::new();
         let mut parameters = 0u8;
         let mut brace_tail = None;
         loop {
@@ -37,29 +34,14 @@ impl Engine<'_> {
                 }
                 if parameters == 0 {
                     prefix_end = Some(tokens.len());
-                } else {
-                    delimiters.push(ArenaRange {
-                        start: delimiter_start,
-                        end: tokens.len(),
-                    });
                 }
                 tokens.push(Token(PARAM | read.meaning.value as u32))?;
                 parameters += 1;
-                delimiter_start = tokens.len();
             } else {
                 tokens.push(read.token)?;
             }
         }
-        if parameters > 0 {
-            delimiters.push(ArenaRange {
-                start: delimiter_start,
-                end: tokens.len(),
-            });
-        }
-        let prefix = ArenaRange {
-            start: signature_start,
-            end: prefix_end.unwrap_or(tokens.len()),
-        };
+        let prefix_end = prefix_end.unwrap_or(tokens.len());
         tokens.push(Token(PARAM | 255))?;
         let body_start = tokens.len();
         let uses_parameters = if expanded {
@@ -74,11 +56,24 @@ impl Engine<'_> {
             start: body_start,
             end: tokens.len(),
         };
-        let failures = delimiters
-            .iter()
-            .map(|span| {
+        // Each parameter marker already lives in the immutable signature.
+        // Walk between markers to build metadata directly in its final slice.
+        let mut delimiter_start = prefix_end + 1;
+        let parameter_data = (0..parameters)
+            .map(|_| {
+                let start = delimiter_start;
+                let mut end = start;
+                while end < body_start - 1 {
+                    let token = tokens.get(end);
+                    if token.0 & PARAM != 0 && !token.is_cs() {
+                        break;
+                    }
+                    end += 1;
+                }
+                delimiter_start = end + 1;
+                let span = ArenaRange { start, end };
                 let len = (span.end - span.start) as usize;
-                let mut failure = vec![0; len];
+                let mut failure = vec![0; len].into_boxed_slice();
                 let mut matched = 0;
                 for index in 1..len {
                     let token = tokens.get(span.start + index as u32);
@@ -90,22 +85,18 @@ impl Engine<'_> {
                     }
                     failure[index] = matched;
                 }
-                failure
+                Parameter {
+                    delimiter: span,
+                    failure,
+                }
             })
             .collect();
-        let parameter_data = (parameters != 0).then(|| {
-            Box::new(Parameters {
-                delimiters,
-                failures,
-            })
-        });
         let owner = self.values.publish(
             tokens,
             Some(Definition {
-                prefix,
+                prefix_end,
                 body,
                 parameters: parameter_data,
-                parameter_count: parameters,
                 long,
                 uses_parameters,
             }),

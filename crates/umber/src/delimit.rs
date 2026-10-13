@@ -1,86 +1,83 @@
 use crate::{Engine, Error, Result, token::*};
 
+// The source retains an immutable initialized window in one allocation, with
+// next at or before end. Four-word reads only peek within that window; advance
+// together when all are characters, otherwise find the first structural word
+// with the scalar tail. The caller handles that word at the returned cursor.
+// Equal endpoints may be empty and are never dereferenced.
+#[inline(never)]
+unsafe fn character_end<const EXCEPT: bool>(
+    mut next: *const Token,
+    end: *const Token,
+    except: Token,
+) -> *const Token {
+    // SAFETY: unequal endpoints belong to the same retained allocation.
+    while next != end && unsafe { end.offset_from(next) } >= 4 {
+        // SAFETY: four initialized immutable words remain in this window.
+        let words = unsafe { next.cast::<[Token; 4]>().read() };
+        let structural = words.map(|token| {
+            u32::from(!(3 << 8..PARAM).contains(&token.0) || (EXCEPT && token == except))
+        });
+        if structural[0] | structural[1] | structural[2] | structural[3] != 0 {
+            break;
+        }
+        // SAFETY: all four words precede end in the same retained window.
+        next = unsafe { next.add(4) };
+    }
+    while next != end {
+        // SAFETY: the caller supplied this retained immutable window.
+        let token = unsafe { next.read() };
+        if !(3 << 8..PARAM).contains(&token.0) || (EXCEPT && token == except) {
+            break;
+        }
+        // SAFETY: advance at most one past the same initialized window.
+        next = unsafe { next.add(1) };
+    }
+    next
+}
+
 impl Engine<'_> {
-    #[inline(never)]
-    fn capture_delimited_tokens(
+    #[inline(always)]
+    fn capture_token_run<const RETAIN: bool, const EXCEPT: bool>(
         &mut self,
         packet: u32,
         argument: usize,
         builder: &mut Option<u32>,
         except: Token,
-        depth: i32,
-    ) -> Result<u32> {
-        let Some(Source::Tokens(cursor)) = self.sources.last_mut() else {
+    ) -> Result<usize> {
+        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
             return Ok(0);
         };
-        // Promote an existing inline word through the scalar path before any
-        // lookahead, preserving consumption if promotion fails at the next word.
-        if self.packets[packet as usize].arguments[argument]
-            .first
-            .store
-            == SINGLE
+        // Promotion stays on the scalar path so a failed append consumes only
+        // the failing word. A published range is retained before source retirement.
+        if RETAIN
+            && self.packets[packet as usize].arguments[argument]
+                .first
+                .store
+                == SINGLE
         {
             return Ok(0);
         }
-        let (first, end) = (cursor.next, cursor.end);
-        let mut next = first;
-        if next == end {
-            return Ok(0);
-        }
-        // SAFETY: next is inside an initialized immutable source window. Its
-        // owner retains the allocation throughout this scan.
-        let mut token = unsafe { next.read() };
-        if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2) {
-            return Ok(0);
-        }
-        let except = if depth == 0 { except } else { Token(u32::MAX) };
-        loop {
-            if token == except {
-                break;
-            }
-            // SAFETY: next advances at most to this allocation's end.
-            next = unsafe { next.add(1) };
-            if next == end {
-                break;
-            }
-            // SAFETY: next is inside the same retained immutable window. Neither
-            // matching nor capture installs or retires a source during the scan.
-            token = unsafe { next.read() };
-            if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2) {
-                break;
-            }
-        }
+        let first = cursor.next;
+        // SAFETY: this source retains an initialized immutable window; scanning
+        // returns a pointer within it and neither installs nor retires a source.
+        let next = unsafe { character_end::<EXCEPT>(first, cursor.end, except) };
         cursor.next = next;
-        if next == first {
-            return Ok(0);
+        // SAFETY: first, next and end belong to this retained allocation.
+        let count = unsafe { next.offset_from(first) } as usize;
+        if RETAIN && count != 0 {
+            let start = cursor.end_position - unsafe { cursor.end.offset_from(first) } as u32;
+            let span = Span {
+                store: cursor.store,
+                start,
+                end: start + count as u32,
+            };
+            self.capture_span(packet, argument, span, builder)?;
         }
-        // SAFETY: all three pointers belong to this installed source window.
-        let count = unsafe { next.offset_from(first) } as u32;
-        let start = cursor.window_end_position - unsafe { end.offset_from(first) } as u32;
-        let span = Span {
-            store: cursor.span.store,
-            start,
-            end: start + count,
-        };
-        // Retain before the ordinary reader can retire this source. With no
-        // inline word to promote, capturing this immutable range cannot fail.
-        self.capture_span(packet, argument, span, builder)?;
         Ok(count)
     }
     #[inline(never)]
-    fn capture_delimited_file<const RETAIN: bool>(
-        &mut self,
-        packet: u32,
-        argument: usize,
-        builder: &mut Option<u32>,
-        except: Token,
-        depth: i32,
-    ) -> Result<()> {
-        let except = if depth == 0 { except } else { Token(u32::MAX) };
-        self.capture_file_characters::<RETAIN, true>(packet, argument, builder, except)
-    }
-    #[inline(never)]
-    pub(crate) fn capture_delimited<const RETAIN: bool>(
+    pub(crate) fn capture_argument<const DELIMITED: bool, const RETAIN: bool>(
         &mut self,
         owner: &crate::values::Value,
         packet: u32,
@@ -88,83 +85,103 @@ impl Engine<'_> {
         builder: &mut Option<u32>,
     ) -> Result<()> {
         let definition = owner.definition();
-        let delimiter = definition.parameters.as_ref().unwrap().delimiters[argument];
+        let delimiter = if DELIMITED {
+            definition.parameters[argument].delimiter
+        } else {
+            ArenaRange::default()
+        };
+        #[cfg(feature = "native-profile")]
+        let failure = if DELIMITED {
+            definition.parameters[argument].failure.as_ref()
+        } else {
+            &[]
+        };
+        let first = if DELIMITED {
+            owner.tokens.get(delimiter.start)
+        } else {
+            Token(u32::MAX)
+        };
         let long = definition.long;
         let length = (delimiter.end - delimiter.start) as usize;
-        #[cfg(feature = "native-profile")]
-        let (failure_words, failure_len) = {
-            let failures = &definition.parameters.as_ref().unwrap().failures[argument];
-            // Each table is built once with its immutable definition and retained
-            // by the macro invocation owner. Reader/capture calls mutate other
-            // stores; their growth leaves this allocation intact.
-            // Keep raw parts across those calls and borrow only for a lookup.
-            (failures.as_ptr(), failures.len())
-        };
         let mut matched = 0;
-        let mut depth = 0;
+        let mut depth = usize::from(!DELIMITED);
         let mut seen = 0;
         let mut first_group = false;
         let mut group_end = None;
         loop {
-            if self.sources.is_empty() && (matched == 0 || depth > 0) {
-                let position = self.file.position();
-                self.capture_delimited_file::<RETAIN>(
-                    packet,
-                    argument,
-                    builder,
-                    owner.tokens.get(delimiter.start),
-                    depth,
-                )?;
-                if RETAIN {
-                    // The run stays within the prepared line. It has no braces,
-                    // so only the count used to recognize one outer group changes.
+            if (!DELIMITED || matched == 0 || depth > 0)
+                && (self.sources.is_empty() || !DELIMITED || RETAIN)
+            {
+                let except = if DELIMITED && depth == 0 {
+                    first
+                } else {
+                    Token(u32::MAX)
+                };
+                if self.sources.is_empty() {
+                    let position = self.file.position();
+                    self.capture_file_characters::<RETAIN, DELIMITED>(
+                        packet, argument, builder, except,
+                    )?;
                     seen += self.file.position() - position;
+                } else if !DELIMITED || RETAIN {
+                    seen += self.capture_token_run::<RETAIN, DELIMITED>(
+                        packet, argument, builder, except,
+                    )?;
                 }
-            } else if RETAIN && (matched == 0 || depth > 0) {
-                seen += self.capture_delimited_tokens(
-                    packet,
-                    argument,
-                    builder,
-                    owner.tokens.get(delimiter.start),
-                    depth,
-                )? as usize;
+            }
+            if !DELIMITED
+                && let Some(cursor) = self.sources.last().and_then(Source::cursor)
+                && cursor.next == cursor.end
+            {
+                self.advance_source()?;
+                continue;
+            }
+            // The grouped-window path reports a non-long paragraph before
+            // advancing that window, as its existing bulk scanner does.
+            if !DELIMITED && !long
+                && let Some(cursor) = self.sources.last().and_then(Source::cursor)
+                && cursor.next != cursor.end
+                // SAFETY: next precedes end in the retained immutable window.
+                && unsafe { cursor.next.read() } == self.par
+            {
+                return Err(Error::Argument);
             }
             let raw = self.next_raw()?;
-            if RETAIN {
+            if DELIMITED && RETAIN {
                 seen += 1;
                 if seen == 1 {
                     first_group = raw.token.is_begin();
                 }
                 self.capture_raw(packet, argument, raw, builder)?;
             }
-            if depth == 0 {
+            if DELIMITED && depth == 0 {
                 loop {
-                    if owner.tokens.get(delimiter.start + matched as u32) == raw.token {
+                    let expected = if matched == 0 {
+                        first
+                    } else {
+                        owner.tokens.get(delimiter.start + matched as u32)
+                    };
+                    if expected == raw.token {
                         matched += 1;
                         break;
                     }
                     if matched == 0 {
                         break;
                     }
-                    // SAFETY: the immutable table remains allocated throughout
-                    // this call. This borrow ends before another engine call.
                     #[cfg(feature = "native-profile")]
-                    let failure = unsafe {
-                        std::slice::from_raw_parts(failure_words, failure_len)[matched - 1]
-                    };
+                    let fallback = failure[matched - 1];
                     #[cfg(not(feature = "native-profile"))]
-                    let failure =
-                        definition.parameters.as_ref().unwrap().failures[argument][matched - 1];
-                    matched = failure;
+                    let fallback = definition.parameters[argument].failure[matched - 1];
+                    matched = fallback;
                 }
                 if matched == length {
                     break;
                 }
             }
-            // Tokens previously matched against a delimiter become argument
-            // content without another par check on fallback. The current token
-            // is checked only when it is unmatched.
-            if !long && raw.token == self.par && (depth > 0 || matched == 0) {
+            // On delimiter fallback, already matched tokens become argument
+            // content without another paragraph check. Check the current word
+            // only when it is unmatched or inside a group.
+            if !long && raw.token == self.par && (!DELIMITED || depth > 0 || matched == 0) {
                 return Err(Error::Argument);
             }
             if raw.token.is_begin() {
@@ -175,9 +192,15 @@ impl Engine<'_> {
                     return Err(Error::Argument);
                 }
                 depth -= 1;
+                if !DELIMITED && depth == 0 {
+                    return Ok(());
+                }
                 if RETAIN && depth == 0 && first_group && group_end.is_none() {
                     group_end = Some(seen);
                 }
+            }
+            if !DELIMITED && RETAIN {
+                self.capture_raw(packet, argument, raw, builder)?;
             }
         }
         if RETAIN {

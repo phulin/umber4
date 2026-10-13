@@ -111,7 +111,7 @@ impl Engine<'_> {
             | cmd::ENDLINE
             | cmd::INTEGER_PARAM
             | cmd::CASE_CODE => {
-                let target = self.assignment_target(read)?;
+                let target = self.scalar_target(read)?;
                 self.scan_equals()?;
                 let value = self.scan_int()?;
                 if read.meaning.command == cmd::CATCODE && !(0..=15).contains(&value) {
@@ -131,7 +131,7 @@ impl Engine<'_> {
                 ) {
                     return Err(Error::Unsupported);
                 }
-                let target = self.assignment_target(register)?;
+                let target = self.scalar_target(register)?;
                 self.scan_keyword(b"by")?;
                 let operand = self.scan_int()?;
                 self.update_integer(target, assignment_global, |old| {
@@ -175,27 +175,7 @@ impl Engine<'_> {
         };
         if result.is_ok()
             && let Some(token) = self.after_assignment
-            && matches!(
-                read.meaning.command,
-                cmd::DEF
-                    | cmd::GDEF
-                    | cmd::EDEF
-                    | cmd::XDEF
-                    | cmd::LET
-                    | cmd::FUTURELET
-                    | cmd::COUNT_DEF
-                    | cmd::CHAR_DEF
-                    | cmd::TOKS_DEF
-                    | cmd::COUNT
-                    | cmd::COUNT_REF
-                    | cmd::CATCODE
-                    | cmd::ENDLINE
-                    | cmd::INTEGER_PARAM
-                    | cmd::CASE_CODE
-                    | cmd::ARITH
-                    | cmd::TOKS
-                    | cmd::TOKS_REF
-            )
+            && cmd::is_assignment(read.meaning.command)
         {
             self.after_assignment = None;
             self.back(token);
@@ -219,18 +199,6 @@ impl Engine<'_> {
                 }
             }
         }
-    }
-    #[inline]
-    fn assignment_target(&mut self, read: Read) -> Result<Target> {
-        Ok(match read.meaning.command {
-            cmd::COUNT => Target::count(self.scan_index()?),
-            cmd::COUNT_REF => Target::count(read.meaning.value as usize),
-            cmd::CATCODE => Target::catcode(self.scan_index()?),
-            cmd::ENDLINE => Target::ENDLINE,
-            cmd::INTEGER_PARAM => Target::parameter(read.meaning.value as usize),
-            cmd::CASE_CODE => Target::casecode(read.meaning.value as usize, self.scan_index()?),
-            _ => return Err(Error::Syntax),
-        })
     }
     #[inline]
     fn update_integer(

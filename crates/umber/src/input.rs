@@ -1,4 +1,4 @@
-use crate::{Engine, Error, Result, token::*};
+use crate::{Engine, Error, Result, names::Names, token::*};
 
 pub(crate) struct FileInput<'a> {
     bytes: &'a [u8],
@@ -230,66 +230,59 @@ impl Engine<'_> {
                     suppress: false,
                 });
             };
-            match source {
-                Source::Inline {
-                    tokens,
-                    position,
-                    len,
-                    suppress,
-                } => {
-                    if *position == *len {
-                        self.pop_source();
-                        continue;
-                    }
-                    let token = tokens[*position as usize];
-                    *position += 1;
-                    let suppressed = *suppress;
-                    *suppress = false;
-                    return Ok(Raw {
-                        token,
-                        origin: None,
-                        suppress: suppressed,
-                    });
+            if let Source::Inline {
+                tokens,
+                position,
+                len,
+                suppress,
+            } = source
+            {
+                if *position == *len {
+                    self.pop_source();
+                    continue;
                 }
-                Source::Tokens(cursor) => {
-                    if cursor.next == cursor.end {
-                        self.advance_source()?;
-                        continue;
-                    }
-                    // SAFETY: cursor windows cover initialized immutable tokens.
-                    // Durable windows are retained by cursor owners. Argument windows are
-                    // retained by the owning packet beneath their source; child
-                    // capture retains a chunk before the next read can retire it.
-                    let token = unsafe { cursor.next.read() };
-                    // SAFETY: next < end within the same backing allocation.
-                    cursor.next = unsafe { cursor.next.add(1) };
-                    if token.0 & PARAM != 0 && !token.is_cs() {
-                        let packet = cursor.macro_packet.ok_or(Error::Syntax)?;
-                        let argument = token.byte() - 1;
-                        if let Some(raw) = self.single_argument(packet, argument) {
-                            return Ok(raw);
-                        }
-                        self.push_sequence(SequenceRef::Argument(packet, argument), None)?;
-                        continue;
-                    }
-                    // SAFETY: next and end belong to the same window. Derive
-                    // coordinates only for capture; resolved reads discard this
-                    // metadata, leaving a single pointer advance on their path.
-                    let position = cursor.window_end_position
-                        - unsafe { cursor.end.offset_from(cursor.next) } as u32
-                        - 1;
-                    let origin = Span {
-                        store: cursor.span.store,
-                        start: position,
-                        end: position + 1,
-                    };
-                    return Ok(Raw {
-                        token,
-                        origin: Some(origin),
-                        suppress: false,
-                    });
-                }
+                let token = tokens[*position as usize];
+                *position += 1;
+                let suppressed = *suppress;
+                *suppress = false;
+                return Ok(Raw {
+                    token,
+                    origin: None,
+                    suppress: suppressed,
+                });
             }
+            let window = source.cursor_mut().unwrap();
+            if window.next == window.end {
+                self.advance_source()?;
+                continue;
+            }
+            // SAFETY: value sources retain their value, generated sources retain
+            // their vector, and argument windows borrow the packet below them.
+            // Capture retains backing before the next read can retire a source.
+            let token = unsafe { window.next.read() };
+            window.next = unsafe { window.next.add(1) };
+            if token.0 & PARAM != 0 && !token.is_cs() {
+                let packet = window.owns_packet.ok_or(Error::Syntax)?;
+                let argument = token.byte() - 1;
+                if let Some(raw) = self.single_argument(packet, argument) {
+                    return Ok(raw);
+                }
+                self.push_argument(packet, argument)?;
+                continue;
+            }
+            // SAFETY: pointers belong to the same retained initialized window.
+            // Resolved readers discard these coordinates; capture uses them.
+            let position =
+                window.end_position - unsafe { window.end.offset_from(window.next) } as u32 - 1;
+            return Ok(Raw {
+                token,
+                origin: Some(Span {
+                    store: window.store,
+                    start: position,
+                    end: position + 1,
+                }),
+                suppress: false,
+            });
         }
     }
     #[inline(always)]
@@ -323,13 +316,9 @@ impl Engine<'_> {
             suppress: false,
         })
     }
-    pub(crate) fn span_for(&self, sequence: SequenceRef, index: usize) -> Option<Span> {
-        match sequence {
-            SequenceRef::List => None,
-            SequenceRef::Argument(packet, arg) => {
-                self.packets[packet as usize].arguments[arg as usize].span(index)
-            }
-        }
+    fn span_for(&self, argument: Option<(u32, u8)>, index: usize) -> Option<Span> {
+        let (packet, arg) = argument?;
+        self.packets[packet as usize].arguments[arg as usize].span(index)
     }
     fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
         if span.store & DURABLE != 0 {
@@ -350,28 +339,14 @@ impl Engine<'_> {
             }
         }
     }
-    pub(crate) fn push_sequence(
-        &mut self,
-        sequence: SequenceRef,
-        owns_packet: Option<u32>,
-    ) -> Result<()> {
+    pub(crate) fn push_argument(&mut self, packet: u32, argument: u8) -> Result<()> {
+        let sequence = Some((packet, argument));
         let Some(span) = self.span_for(sequence, 0) else {
-            if let Some(packet) = owns_packet {
-                self.release_packet(packet);
-            }
             return Ok(());
         };
-        if span.store == SINGLE {
-            if self.sources.len() > 10000 {
-                return Err(Error::Capacity);
-            }
-            self.back(Token(span.start));
-            if let Some(packet) = owns_packet {
-                self.release_packet(packet);
-            }
-            return Ok(());
-        }
-        self.push_span(sequence, span, owns_packet)
+        // Singleton arguments are returned by single_argument before this call.
+        // The body below this cursor owns the complete argument packet.
+        self.push_span(sequence, span, None, None)
     }
     #[inline]
     pub(crate) fn push_body(
@@ -380,90 +355,95 @@ impl Engine<'_> {
         packet: Option<u32>,
     ) -> Result<()> {
         let body = owner.definition().body;
-        if body.empty() {
+        let span = Span {
+            store: DURABLE | owner.id,
+            start: body.start,
+            end: body.end,
+        };
+        if span.empty() {
             if let Some(packet) = packet {
                 self.release_packet(packet);
             }
             return Ok(());
         }
-        if self.sources.len() > 10000 {
-            return Err(Error::Capacity);
-        }
-        // The installed source owns this immutable definition.
-        let id = owner.id;
-        let (next, end, window_end_position) = owner.tokens.window(body.start, body.end);
-        self.sources.push(Source::Tokens(Cursor {
-            _owner: Some(owner),
-            sequence: SequenceRef::List,
-            span_index: 0,
-            span: body.span(id),
-            window_end_position,
-            next,
-            end,
-            owns_packet: packet,
-            macro_packet: packet,
-        }));
-        Ok(())
+        self.push_span(None, span, packet, Some(Backing::Durable { _owner: owner }))
     }
     pub(crate) fn push_tokens(&mut self, span: Span) -> Result<()> {
         if span.empty() {
             return Ok(());
         }
-        self.push_span(SequenceRef::List, span, None)
+        let owner = self.values.get(span.store & !DURABLE);
+        self.push_span(None, span, None, Some(Backing::Durable { _owner: owner }))
     }
-    #[inline]
+    #[inline(always)]
     fn push_span(
         &mut self,
-        sequence: SequenceRef,
+        argument: Option<(u32, u8)>,
         span: Span,
         owns_packet: Option<u32>,
+        owner: Option<Backing>,
     ) -> Result<()> {
         if self.sources.len() > 10000 {
             return Err(Error::Capacity);
         }
-        let (next, end, window_end_position) = self.window(span, span.start);
-        let owner = (span.store & DURABLE != 0).then(|| self.values.get(span.store & !DURABLE));
+        let (next, end, window_end_position) = match &owner {
+            Some(Backing::Durable { _owner: value }) => value.tokens.window(span.start, span.end),
+            _ => self.window(span, span.start),
+        };
         self.sources.push(Source::Tokens(Cursor {
-            _owner: owner,
-            sequence,
-            span_index: 0,
-            span,
-            window_end_position,
             next,
             end,
+            end_position: window_end_position,
+            store: span.store,
+            _owner: owner,
+            argument,
+            span_index: 0,
+            span_end: span.end,
             owns_packet,
-            macro_packet: None,
         }));
         Ok(())
+    }
+    pub(crate) fn push_generated(&mut self, id: u32) -> Result<()> {
+        let capture = &mut self.captures[id as usize];
+        capture.building = false;
+        let owner = std::rc::Rc::clone(&capture.tokens);
+        let span = Span {
+            store: id,
+            start: 0,
+            end: owner.len() as u32,
+        };
+        self.push_span(None, span, None, Some(Backing::Capture { _owner: owner }))
     }
     pub(crate) fn advance_source(&mut self) -> Result<()> {
         let Some(Source::Tokens(cursor)) = self.sources.last() else {
             return Err(Error::Syntax);
         };
-        let (sequence, next_index, old_span, position) = (
-            cursor.sequence,
-            cursor.span_index + 1,
-            cursor.span,
-            cursor.window_end_position,
+        let (mut span, mut index, mut position) = (
+            Span {
+                store: cursor.store,
+                start: cursor.end_position,
+                end: cursor.span_end,
+            },
+            cursor.span_index,
+            cursor.end_position,
         );
-        if position < old_span.end {
-            let (next, end, window_end_position) = self.window(old_span, position);
-            if let Some(Source::Tokens(c)) = self.sources.last_mut() {
-                c.next = next;
-                c.end = end;
-                c.window_end_position = window_end_position;
-            }
-        } else if let Some(span) = self.span_for(sequence, next_index) {
-            let (next, end, window_end_position) = self.window(span, span.start);
-            if let Some(Source::Tokens(c)) = self.sources.last_mut() {
-                c.span = span;
-                c.window_end_position = window_end_position;
-                c.span_index = next_index;
-                c.next = next;
-                c.end = end;
-            }
-        } else {
-            self.pop_source();
+        if position == span.end {
+            index += 1;
+            let Some(next) = self.span_for(cursor.argument, index) else {
+                self.pop_source();
+                return Ok(());
+            };
+            span = next;
+            position = span.start;
+        }
+        let (next, end, end_position) = self.window(span, position);
+        if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+            cursor.next = next;
+            cursor.end = end;
+            cursor.end_position = end_position;
+            cursor.store = span.store;
+            cursor.span_end = span.end;
+            cursor.span_index = index;
         }
         Ok(())
     }
@@ -480,8 +460,8 @@ impl Engine<'_> {
                 Some(Source::Inline { position, len, .. }) => position == len,
                 Some(Source::Tokens(c)) => {
                     c.next == c.end
-                        && c.window_end_position == c.span.end
-                        && self.span_for(c.sequence, c.span_index + 1).is_none()
+                        && c.end_position == c.span_end
+                        && self.span_for(c.argument, c.span_index + 1).is_none()
                 }
                 None => false,
             };

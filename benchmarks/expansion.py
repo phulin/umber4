@@ -5,16 +5,11 @@ record is expanded into a definition and compared with independently generated
 expected tokens. This validation is part of the measured work.
 """
 
-import argparse
-from datetime import datetime, timezone
 import hashlib
 import json
-import os
 from pathlib import Path
-import platform
-import subprocess
 
-from mvp import BOOT, ROOT, measure, reference
+from mvp import BOOT, ROOT, run_suite
 
 CORPUS = Path(__file__).resolve().parent / "corpus"
 KERNELS = (CORPUS / "gentle-kernels.tex").read_text()
@@ -214,78 +209,16 @@ def program(case, size):
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--umber", type=Path, default=ROOT / "target/release/umber")
-    parser.add_argument("--pdftex")
-    parser.add_argument("--baseline", type=Path,
-                        help="previous expanded-MVP binary to time in the same run")
-    parser.add_argument("--cases", nargs="+", choices=CASES + SUPPLEMENTAL_CASES,
-                        default=list(CASES))
-    parser.add_argument("--sizes", nargs="+", type=int, default=[1000, 10000, 50000])
-    parser.add_argument("--repeats", type=int, default=7)
-    parser.add_argument("--cpu", type=int)
-    parser.add_argument("--report", type=Path, default=ROOT / "target/benchmark/expansion.json")
-    args = parser.parse_args()
-    if args.repeats < 1 or any(size < 1 or size > 1000000 for size in args.sizes):
-        parser.error("use positive repeats and sizes up to 1000000")
-    cpu = args.cpu
-    if hasattr(os, "sched_setaffinity"):
-        cpu = cpu if cpu is not None else min(os.sched_getaffinity(0))
-        os.sched_setaffinity(0, {cpu})
     output = ROOT / "target/benchmark/expansion"
-    command, env = reference(args.pdftex, output / "pdftex")
-    engines = {"umber": ([str(args.umber.resolve())], None), "pdftex": (command, env)}
-    if args.baseline:
-        engines["baseline"] = ([str(args.baseline.resolve())], None)
-    cpu_model = platform.processor()
-    if Path("/proc/cpuinfo").is_file():
-        cpu_model = next(line.split(":", 1)[1].strip()
-                         for line in Path("/proc/cpuinfo").read_text().splitlines()
-                         if line.startswith("model name"))
-    provenance = json.loads((CORPUS / "gentle.json").read_text())
-    report = {
-        "date": datetime.now(timezone.utc).isoformat(),
-        "pdftex": subprocess.check_output([command[0], "--version"], env=env)
-        .decode().splitlines()[0],
-        "rustc": subprocess.check_output(["rustc", "--version"]).decode().strip(),
-        "rustflags": os.environ.get("RUSTFLAGS", ""),
-        "machine": platform.platform(), "cpu": cpu, "cpu_model": cpu_model,
-        "umber_binary_sha256": hashlib.sha256(args.umber.read_bytes()).hexdigest(),
-        "generator_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        "measurement_sha256": hashlib.sha256((Path(__file__).parent / "mvp.py").read_bytes()).hexdigest(),
-        "kernels_sha256": hashlib.sha256((CORPUS / "gentle-kernels.tex").read_bytes()).hexdigest(),
-        "corpus": provenance,
-        "validation": "Every record compares its expanded definition with independently generated expected tokens; comparison and expected definition construction are timed.",
-        "storage": "Immutable definitions and token lists are reclaimed after their last semantic owner; bump chunks and value IDs are reused. Interned names remain session-owned.",
-        "repeats": args.repeats, "complete": False, "samples": [],
-    }
-    if args.baseline:
-        report["baseline_binary_sha256"] = hashlib.sha256(args.baseline.read_bytes()).hexdigest()
-    startup = output / "startup.tex"
-    startup.write_text(BOOT + r"\message{UMBER:0:END}\end" + "\n")
-    report["startup"] = measure(engines, startup, b"0", args.repeats)
-    for case in args.cases:
-        for size in args.sizes:
-            source, expected, work = program(case, size)
-            path = output / f"{case}-{size}.tex"
-            path.write_bytes(source)
-            row = {"case": case, "size": size, "bytes": len(source), **work,
-                   "sha256": hashlib.sha256(source).hexdigest(),
-                   **measure(engines, path, expected, args.repeats)}
-            report["samples"].append(row)
-            clock = "cpu" if "cpu_median" in row else "wall"
-            medians = row.get("cpu_median", row["median"])
-            ratio = row.get("cpu_ratio", row["ratio"])
-            print(f"{case:16} {size:7}  {clock} umber {medians['umber']:.6f}s  "
-                  f"pdftex {medians['pdftex']:.6f}s  ratio {ratio:.3f}"
-                  + (f"  previous {medians['baseline']:.6f}s"
-                     f"  ratio {row.get('cpu_ratio_to_baseline', row['ratio_to_baseline']):.3f}"
-                     if args.baseline else ""),
-                  flush=True)
-            args.report.parent.mkdir(parents=True, exist_ok=True)
-            args.report.write_text(json.dumps(report, indent=2) + "\n")
-    report["complete"] = True
-    args.report.write_text(json.dumps(report, indent=2) + "\n")
+    run_suite(program, cases=CASES + SUPPLEMENTAL_CASES, default_cases=CASES,
+              sizes=[1000, 10000, 50000], max_size=1000000, output=output,
+              report=output / "expansion.json", startup="0", generator=Path(__file__),
+              metadata={
+                  "kernels_sha256": hashlib.sha256((CORPUS / "gentle-kernels.tex").read_bytes()).hexdigest(),
+                  "corpus": json.loads((CORPUS / "gentle.json").read_text()),
+                  "validation": "Every record compares its expanded definition with independently generated expected tokens; comparison and expected definition construction are timed.",
+                  "storage": "Immutable definitions and token lists are reclaimed after their last semantic owner; bump chunks and value IDs are reused. Interned names remain session-owned.",
+              })
 
 
 if __name__ == "__main__":

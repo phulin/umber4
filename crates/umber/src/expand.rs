@@ -32,13 +32,9 @@ impl Engine<'_> {
             cmd::STRING | cmd::MEANING | cmd::ROMAN | cmd::DETOKENIZE => self.convert(read),
             cmd::UNEXPANDED => {
                 self.opening_brace()?;
-                let packet = self.take_packet(1)?;
-                let mut builder = None;
-                self.scan_raw_body(|engine, token| {
-                    engine.generated_token(packet, &mut builder, token)
-                })?;
-                self.finish_generated(packet, builder);
-                self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
+                let mut output = crate::convert::Generated::default();
+                self.scan_raw_body(|engine, token| engine.generated_token(&mut output, token))?;
+                self.finish_generated(output)
             }
             cmd::EXPANDAFTER => {
                 let first = self.next_raw()?.token;
@@ -101,29 +97,10 @@ impl Engine<'_> {
             }
             return Ok(());
         }
-        let packet = self.take_packet(1)?;
-        let mut builder = None;
-        if value < 0 {
-            self.generated_token(packet, &mut builder, Token::other(b'-'))?;
-        }
-        let mut number = value.unsigned_abs();
-        loop {
-            let token = Token::other(b'0' + (number % 10) as u8);
-            self.generated_token(packet, &mut builder, token)?;
-            number /= 10;
-            if number == 0 {
-                break;
-            }
-        }
-        if let Some(id) = builder {
-            // The unpublished buffer has one writer. Reverse its digit suffix
-            // in place; the optional sign stays at the front. Publish only after
-            // the complete digit suffix is in reading order.
-            std::rc::Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap()
-                [usize::from(value < 0)..]
-                .reverse();
-        }
-        self.finish_generated(packet, builder);
-        self.push_sequence(SequenceRef::Argument(packet, 0), Some(packet))
+        let mut output = crate::convert::Generated::default();
+        self.emit_number(value, &mut |engine, token| {
+            engine.generated_token(&mut output, token)
+        })?;
+        self.finish_generated(output)
     }
 }
