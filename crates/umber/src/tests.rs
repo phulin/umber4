@@ -44,6 +44,24 @@ fn arguments_and_delimiters() {
     message(r"\def\a#{X}\message{\a{Y}}", b"X{Y}");
 }
 #[test]
+fn file_argument_runs_keep_space_states_and_group_counts() {
+    message(
+        r"\def\a#1.{[#1]}\message{\a x   y.\a x{y}.}",
+        b"[x y][x{y}]",
+    );
+    message("\\def\\a#1.{[#1]}\\message{\\a x\n   y.}", b"[x y]");
+    // A space after the only group keeps its braces in the argument.
+    message(
+        r"\def\a#1.{[#1]}\message{\a{x y}.\a{x} .\a{x}ab.}",
+        b"[x y][{x} ][{x}ab]",
+    );
+    message(
+        r"\def\a#1 #2.{[#1|#2]}\message{\a ab  cd ef.}",
+        b"[ab|cd ef]",
+    );
+    message(r"\def\a#1{[#1]}\message{\a{x  y}\a{ x}}", b"[x y][ x]");
+}
+#[test]
 fn grouping_and_arithmetic() {
     let result =
         run(r"\count0=1{\count0=2\global\count0=3\count0=4}\count1=-7\divide\count1 BY2\relax");

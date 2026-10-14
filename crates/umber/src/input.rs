@@ -96,9 +96,6 @@ impl<'a> FileInput<'a> {
     pub fn read_character(&mut self, cats: &[Integer; 256]) -> Option<Token> {
         self.read_character_except::<false>(cats, Token(u32::MAX))
     }
-    pub fn position(&self) -> usize {
-        self.position
-    }
     #[inline]
     pub fn literal_digit(&mut self, cats: &[Integer; 256]) -> Option<i32> {
         let &byte = self.line.get(self.position)?;
@@ -131,14 +128,23 @@ impl<'a> FileInput<'a> {
         Some(token)
     }
     /// Tokenizes letters, other characters, and spaces directly into a
-    /// builder, keeping the line position local for the whole run.
+    /// builder, keeping the line position local for the whole run. A token
+    /// equal to `except` ends the run unread.
     #[inline]
-    pub fn read_characters(&mut self, cats: &[Integer; 256], tokens: &mut Builder) -> Result<()> {
+    pub fn read_characters<const EXCEPT: bool>(
+        &mut self,
+        cats: &[Integer; 256],
+        except: Token,
+        tokens: &mut Builder,
+    ) -> Result<()> {
         let (line, mut position, mut state) = (self.line.as_slice(), self.position, self.state);
         let result = tokens.extend_with(|| {
             loop {
                 let &byte = line.get(position)?;
                 if let Some(token) = Self::character(cats, byte) {
+                    if EXCEPT && token == except {
+                        return None;
+                    }
                     (position, state) = (position + 1, 1);
                     return Some(token);
                 }
@@ -146,6 +152,9 @@ impl<'a> FileInput<'a> {
                     return None;
                 }
                 // As in read, only a space after a character is a token.
+                if EXCEPT && state == 1 && Token::SPACE == except {
+                    return None;
+                }
                 position += 1;
                 if std::mem::replace(&mut state, 2) == 1 {
                     return Some(Token::SPACE);

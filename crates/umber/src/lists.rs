@@ -185,7 +185,10 @@ impl<'a> Engine<'a> {
     fn emit_characters(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
         if self.sources.is_empty() {
             if let Some(tokens) = emit.builder() {
-                return self.file.read_characters(self.scalars.catcodes(), tokens);
+                let cats = self.scalars.catcodes();
+                return self
+                    .file
+                    .read_characters::<false>(cats, Token(u32::MAX), tokens);
             }
             while let Some(token) = self.file.read_character(self.scalars.catcodes()) {
                 emit.token(self, token)?;

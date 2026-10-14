@@ -117,11 +117,9 @@ impl Engine<'_> {
                     Token(u32::MAX)
                 };
                 if self.sources.is_empty() {
-                    let position = self.file.position();
-                    self.capture_file_characters::<RETAIN, DELIMITED>(
+                    seen += self.capture_file_characters::<RETAIN, DELIMITED>(
                         packet, argument, builder, except,
                     )?;
-                    seen += self.file.position() - position;
                 } else if !DELIMITED || RETAIN {
                     seen += self.capture_token_run::<RETAIN, DELIMITED>(
                         packet, argument, builder, except,
