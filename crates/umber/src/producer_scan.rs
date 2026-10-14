@@ -145,24 +145,7 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
                 }
                 Finish::Assign(target, global, operation, catcode) => {
                     self.pop();
-                    if catcode && !(0..=15).contains(&value) {
-                        return Err(Error::Number);
-                    }
-                    return self.engine.update_integer(target, global, |old| {
-                        Ok(match operation {
-                            -1 => value,
-                            0 => old.wrapping_add(value),
-                            1 => {
-                                let product = i64::from(old) * i64::from(value);
-                                if product.abs() > i64::from(i32::MAX) {
-                                    return Err(Error::Overflow);
-                                }
-                                product as i32
-                            }
-                            2 => old.checked_div(value).ok_or(Error::Overflow)?,
-                            _ => unreachable!(),
-                        })
-                    });
+                    return self.assign_integer(target, global, operation, catcode, value);
                 }
                 Finish::CompareLeft(condition) => {
                     self.consumer = Consumer::Relation(value, condition);
@@ -198,6 +181,170 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
                 }
                 _ => return self.finish_integer_slow(value, finish),
             }
+        }
+    }
+    #[inline(always)]
+    fn arithmetic(old: i32, operation: i32, value: i32) -> Result<i32> {
+        Ok(match operation {
+            -1 => value,
+            0 => old.wrapping_add(value),
+            1 => {
+                let product = i64::from(old) * i64::from(value);
+                if product.abs() > i64::from(i32::MAX) {
+                    return Err(Error::Overflow);
+                }
+                product as i32
+            }
+            2 => old.checked_div(value).ok_or(Error::Overflow)?,
+            _ => unreachable!(),
+        })
+    }
+    #[inline(always)]
+    fn assign_integer(
+        &mut self,
+        target: Target,
+        global: bool,
+        operation: i32,
+        catcode: bool,
+        value: i32,
+    ) -> Result<()> {
+        if catcode && !(0..=15).contains(&value) {
+            return Err(Error::Number);
+        }
+        self.engine.update_integer(target, global, |old| {
+            Self::arithmetic(old, operation, value)
+        })
+    }
+    // Speculation changes only this borrowed slice cursor. A failed recognition
+    // leaves execution, its consumer, and the producer cursor untouched.
+    #[inline(never)]
+    pub(super) fn scalar_window(&mut self, read: Read, words: &[Token]) -> usize {
+        if self.prefix & 2 != 0 {
+            return 0;
+        }
+        let mut rest = words;
+        let mut operation = -1;
+        let catcode = read.meaning.command == cmd::CATCODE;
+        let target = if read.meaning.command == cmd::ENDLINE {
+            Target::ENDLINE
+        } else {
+            if read.meaning.command == cmd::ARITH {
+                let Some(register) = self.window_nonspace(&mut rest) else {
+                    return 0;
+                };
+                if self.engine.resolve(register).command != cmd::COUNT {
+                    return 0;
+                }
+                operation = read.meaning.value;
+            }
+            let Some(index) = self.window_number::<true>(&mut rest) else {
+                return 0;
+            };
+            let Ok(index) = Self::index(index) else {
+                return 0;
+            };
+            if catcode {
+                Target::catcode(index)
+            } else {
+                Target::count(index)
+            }
+        };
+        while rest
+            .first()
+            .is_some_and(|&token| self.engine.resolve(token).command == cmd::SPACE)
+        {
+            rest = &rest[1..];
+        }
+        if operation == -1 {
+            if rest.first() == Some(&Token::other(b'=')) {
+                rest = &rest[1..];
+            }
+        } else if rest
+            .first()
+            .is_some_and(|&token| !token.is_cs() && token.byte().eq_ignore_ascii_case(&b'b'))
+        {
+            let Some(&token) = rest.get(1) else {
+                return 0;
+            };
+            if token.is_cs() || !token.byte().eq_ignore_ascii_case(&b'y') {
+                return 0;
+            }
+            rest = &rest[2..];
+        }
+        let Some(value) = self.window_number::<true>(&mut rest) else {
+            return 0;
+        };
+        if catcode && !(0..=15).contains(&value) {
+            return 0;
+        }
+        let Ok(result) = Self::arithmetic(self.engine.scalars[target].value, operation, value)
+        else {
+            return 0;
+        };
+        let global = self.prefix & 1 != 0;
+        self.prefix = 0;
+        // Recognition has no execution effects, so this computed value still
+        // describes the slot read by the shared group-aware scalar setter.
+        // The setter returns errors only from its callback, which is constant
+        // here. Arithmetic failure already rejected the speculative operation.
+        self.engine
+            .update_integer(target, global, |_| Ok(result))
+            .expect("constant scalar update is infallible");
+        words.len() - rest.len()
+    }
+    #[inline(always)]
+    fn window_nonspace(&self, rest: &mut &[Token]) -> Option<Token> {
+        loop {
+            let (&token, tail) = rest.split_first()?;
+            *rest = tail;
+            let meaning = self.engine.resolve(token);
+            if meaning.expandable() {
+                return None;
+            }
+            if meaning.command != cmd::SPACE {
+                return Some(token);
+            }
+        }
+    }
+    #[inline(always)]
+    fn window_number<const INTERNAL: bool>(&self, rest: &mut &[Token]) -> Option<i32> {
+        let mut negative = false;
+        let token = loop {
+            let token = self.window_nonspace(rest)?;
+            if token == Token::other(b'-') {
+                negative = !negative;
+            } else if token != Token::other(b'+') {
+                break token;
+            }
+        };
+        if INTERNAL && self.engine.resolve(token).command == cmd::COUNT {
+            let index = Self::index(self.window_number::<false>(rest)?).ok()?;
+            let value = self.engine.scalars[Target::count(index)].value;
+            return Some(if negative {
+                value.wrapping_neg()
+            } else {
+                value
+            });
+        }
+        let mut value = Engine::digit(token, 10);
+        if value >= 10 {
+            return None;
+        }
+        loop {
+            let (&token, tail) = rest.split_first()?;
+            let digit = Engine::digit(token, 10);
+            if digit >= 10 {
+                let meaning = self.engine.resolve(token);
+                if meaning.expandable() {
+                    return None;
+                }
+                if meaning.command == cmd::SPACE {
+                    *rest = tail;
+                }
+                return Some(if negative { -value } else { value });
+            }
+            value = Number::append(value, digit).ok()?;
+            *rest = tail;
         }
     }
     #[inline(never)]

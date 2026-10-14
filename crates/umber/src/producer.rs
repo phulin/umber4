@@ -161,7 +161,30 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
                     let token = unsafe { next.read() };
                     next = unsafe { next.add(1) };
                     position += 1;
-                    if let Some(child) = self.feed(token)? {
+                    let read = Read {
+                        token,
+                        meaning: self.engine.resolve(token),
+                    };
+                    if matches!(self.consumer, Consumer::Execute)
+                        && matches!(
+                            read.meaning.command,
+                            cmd::COUNT | cmd::CATCODE | cmd::ENDLINE | cmd::ARITH
+                        )
+                    {
+                        // SAFETY: the current body owner retains these immutable
+                        // initialized words throughout recognition and assignment.
+                        let words = unsafe {
+                            std::slice::from_raw_parts(next, end.offset_from(next) as usize)
+                        };
+                        let consumed = self.scalar_window(read, words);
+                        if consumed != 0 {
+                            // SAFETY: recognition consumes only this window.
+                            next = unsafe { next.add(consumed) };
+                            position += consumed as u32;
+                            continue;
+                        }
+                    }
+                    if let Some(child) = self.deliver(read)? {
                         if position == range.end {
                             if TRACE {
                                 self.stats.tail_calls += 1;
@@ -186,11 +209,14 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
     }
     #[inline(always)]
     fn feed(&mut self, token: Token) -> Result<Option<u32>> {
+        self.deliver(Read {
+            token,
+            meaning: self.engine.resolve(token),
+        })
+    }
+    #[inline(always)]
+    fn deliver(&mut self, mut read: Read) -> Result<Option<u32>> {
         loop {
-            let read = Read {
-                token,
-                meaning: self.engine.resolve(token),
-            };
             if read.meaning.expandable() && !self.consumer.raw() {
                 if read.meaning.is_macro() {
                     // Definitions are validated when constructed. Aliases
@@ -206,6 +232,7 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
             if !self.consume(read)? {
                 return Ok(None);
             }
+            read.meaning = self.engine.resolve(read.token);
         }
     }
     #[inline(never)]
