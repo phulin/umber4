@@ -1,11 +1,9 @@
 # Native expansion measurements
 
-The full three-size sweeps below measure immutable-value reclamation at
-`a7f8be0`. A later representation simplification is measured separately in the
-[follow-up report](../benchmarks/results/simplification-followup.json). The
-structural simplification below compares the next cleanup with `d8a8c28`.
-The historical name/scanner comparison records `c154e34` before its name-table
-change was reverted.
+The shared-token-store comparison below uses `dc64762` as its baseline, with the
+restored custom name table and unchanged dependencies. The earlier reclamation
+sweeps measure `a7f8be0`; subsequent sections retain the representation,
+structural, and name/scanner comparisons with their original baselines.
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) implement
 63 primitive names, covering parsing, expansion, macros, groups, integer state,
@@ -21,6 +19,60 @@ ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
 
+## Shared token storage
+
+Definitions, materialized arguments, and generated output share one chunk pool,
+builder, and ownership path. This removes the capture-vector table, backing-type
+tag, and separate capture-publication path. Builders reserve a reusable header
+before writing and publish by transferring descriptors; token words stay in
+place. Releasing the last owner recycles the header and can return its final
+reservation to the bump tail. Short token/window queries avoid reference-count
+traffic, and generated sources receive their existing owner directly.
+
+Production library/CLI Rust drops from 3,893 to 3,857 physical lines, excluding
+tests: 36 fewer lines. Native source records shrink from 72 to 64 bytes, and
+code plus read-only data shrinks 4.4%. Across the simplification passes, reviewed
+non-test Rust and Python drop from 5,301 to 4,816 lines, a reduction of 9.1%.
+Dependencies, primitive coverage, and benchmark generators are unchanged.
+
+The [comparison report](../benchmarks/results/unified-token-storage.json)
+retains seven paired repetitions at 1,000,000 core iterations and 50,000 broader
+records, twenty-one-repetition confirmations, and separate allocation diagnostics.
+Both builds use ordinary native release, fat LTO, and the same compiler. CPU
+changes below are geometric means against `dc64762` across nine cases per suite;
+the supplemental register-meaning workload is retained separately.
+
+| CPU comparison | Core suite | Broader suite |
+| -------------- | ---------: | ------------: |
+| Shared store   |      -0.8% |         +1.1% |
+
+The longer runs confirm an 11.2% delimiter-scanning regression and 3.5% more CPU
+for 50,000 fixed-state replacements. Stored-argument execution is unchanged;
+source arguments improve 4.0%. In the full seven-run sweep, core workloads use
+0.067–0.528 times pdfTeX's CPU and broader workloads use 0.239–0.431 times.
+These results cover the implemented parsing/expansion/register slice.
+
+Across the nine broader workloads, allocation requests fall from 1,426,660 to
+182,968 (87.2%), and cumulative requested bytes from 185.4 MB to 34.1 MB. Selected
+50,000-record diagnostics show where the reusable headers help:
+
+| Workload          | Requests before | Requests after |
+| ----------------- | --------------: | -------------: |
+| Gentle records    |         117,122 |         25,248 |
+| Token pipeline    |         394,008 |         43,789 |
+| Fixed-state churn |         359,480 |          9,161 |
+
+Churn's requested heap peak plateaus at 90,012 bytes through 50,000 replacements,
+versus 90,204 before. At 2,500 retained definitions, the peak is 2,058,500 bytes
+versus 2,038,732; live values still retain their occupied chunks. These counters
+exclude host input, Rust stack, allocator overhead, and pdfTeX memory.
+
+All 60 debug/release Rust tests, rustfmt, Clippy with warnings denied, and the
+release Wasm library build pass. The native oracle matches 747 messages and
+26 rejection cases. All ten arena tests and the cross-window keyword test pass
+Miri with `native-profile`, covering publication, header/cell reuse, interleaved
+reservations, and owners/builders surviving registry teardown.
+
 ## Name and scanner simplification
 
 The custom packed name table is restored, with no added dependencies. The dense
@@ -35,7 +87,8 @@ Python drop from 5,301 to 4,852 physical non-test lines, a reduction of 449 (8.5
 
 The [historical comparison report](../benchmarks/results/name-scanner-simplification.json)
 measures `c154e34`, which used `hashbrown`. Its CPU and heap measurements describe
-that earlier build; the restored implementation has not been retimed.
+that earlier build. The shared-token-store comparison uses the restored
+implementation as its baseline.
 
 ## Structural simplification
 

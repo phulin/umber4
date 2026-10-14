@@ -68,13 +68,11 @@ the arena store ID only when installing a source. The complete signature runs
 from the prefix's start through the body's end, including its parameter marker
 and any brace-tail token. Derive those bounds when comparing or serializing a
 definition instead of retaining another range in every definition record. Each
-definition keeps its coordinates, flags, parameter count, and an optional owned
-parameter record. The count is at most nine and is set with that record at
-construction; invocation reads it without accessing the matching vectors.
-Only definitions with parameters allocate that record; delimiter and
-failure-table vectors move into it after construction. Parameter-free invocation
-reads only the small definition record. These records and their optional metadata
-remain live through bindings, saved values, active sources, and captured ranges.
+definition keeps its coordinates, flags, and immutable parameter slice. The
+slice's length supplies the arity, at most nine; an empty slice needs no allocation.
+Delimiter ranges and failure tables are built after the signature is complete.
+The value and its metadata remain live through bindings, saved values, active
+sources, and captured ranges.
 Stored argument scans pass their retained windows to a small character-run leaf.
 It tests four initialized words together
 and advances only when all are ordinary characters; a scalar tail stops at the
@@ -83,13 +81,13 @@ depth and parameter handling local. The execution loop borrows the engine;
 its owning caller constructs the outcome and releases the engine after that
 loop returns.
 
-Invocation packets own argument sequences and their backing capture chunks.
+Invocation packets own argument sequences and retain their backing values.
 Existing token ranges are retained; newly scanned source tokens are built in
 the packet's inline slot or capture buffer. A captured range retains its backing
-directly, so retiring a parent does not invalidate it. Reuse packet and capture-buffer
-capacity. Reusing a packet with the same argument count takes a small inline
+directly, so retiring a parent does not invalidate it. Reuse packet capacity,
+value headers, and token chunks. Reusing a packet with the same argument count takes a small inline
 path; resizing and allocation use a separate helper. Parameter-free invocation
-installs the existing body without allocation or reference counting. Retire
+retains the existing body without allocation. Retire
 exhausted sources before installing a successor.
 
 Definitions record whether their replacement tokens substitute any parameter.
@@ -101,7 +99,7 @@ state and group trimming out of the common undelimited scanner.
 The native profile build caches the immutable delimiter failure table's raw
 parts in this Rust frame. Its allocation remains live with the definition;
 matching borrows it only for each checked fallback lookup. Reader and capture
-calls change other stores, and growing the definition vector preserves the
+calls change other stores, and growing the value registry preserves the
 table's allocation. Ordinary release retains direct metadata lookup, selected
 by measurements of the surrounding execution paths.
 When no delimiter prefix is pending, file input scans character runs up to a
@@ -175,12 +173,15 @@ transitions use the ordinary reader. Numeric progress stays on the Rust stack.
 
 The immutable-value allocator uses 4,096-token boxed chunks with bump
 reservations during construction and a bounded cache for recycled chunks.
-Descriptor slots return to a free list after their last owner disappears.
+Definitions, captured tokens, and generated output share this allocator and its
+reusable value headers. Builders reserve their final IDs before writing;
+publication transfers the completed descriptor without copying token words.
+IDs return to a free list after their last external owner disappears.
 Published tokens are immutable; fresh suffix writes use `UnsafeCell` and chunk
 addresses remain stable when descriptors grow. A source window covers initialized
 cells in one chunk.
-Capture buffers grow while uniquely owned; publication gives their packets shared
-ownership and makes the buffers immutable. A child retains that backing before
+Builders grow while uniquely owned; publication gives their consumers shared
+ownership and makes the value immutable. A child retains that value before
 the parent source can retire. Source pointers remain valid through those semantic
 owners. Checked name and storage indices preserve the compact token layout.
 

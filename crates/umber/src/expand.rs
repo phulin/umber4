@@ -26,7 +26,7 @@ impl Engine<'_> {
             }
             cmd::THE => match self.the_value()? {
                 crate::lists::Internal::Integer(value) => self.insert_number(value),
-                crate::lists::Internal::Tokens(Some(owner)) => self.push_tokens(owner.span()),
+                crate::lists::Internal::Tokens(Some(owner)) => self.push_tokens(owner, 0),
                 crate::lists::Internal::Tokens(None) => Ok(()),
             },
             cmd::STRING | cmd::MEANING | cmd::ROMAN | cmd::DETOKENIZE => self.convert(read),

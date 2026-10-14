@@ -1,10 +1,9 @@
 use crate::{Engine, Error, Result, scalars::Target, token::*};
-use std::rc::Rc;
 
 #[derive(Default)]
 pub(crate) struct Generated {
     first: Option<Token>,
-    buffer: Option<u32>,
+    buffer: Option<crate::values::Builder>,
 }
 
 impl Engine<'_> {
@@ -23,26 +22,21 @@ impl Engine<'_> {
 
     #[inline]
     pub(crate) fn generated_token(&mut self, output: &mut Generated, token: Token) -> Result<()> {
-        if let Some(id) = output.buffer {
-            let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
-            if tokens.len() >= u32::MAX as usize {
-                return Err(Error::Capacity);
-            }
-            tokens.push(token);
+        if let Some(tokens) = &mut output.buffer {
+            tokens.push(token)?;
         } else if let Some(first) = output.first.take() {
-            let id = self.capture_buffer()?;
-            Rc::get_mut(&mut self.captures[id as usize].tokens)
-                .unwrap()
-                .extend_from_slice(&[first, token]);
-            output.buffer = Some(id);
+            let mut tokens = self.values.builder()?;
+            tokens.push(first)?;
+            tokens.push(token)?;
+            output.buffer = Some(tokens);
         } else {
             output.first = Some(token);
         }
         Ok(())
     }
     pub(crate) fn finish_generated(&mut self, output: Generated) -> Result<()> {
-        if let Some(id) = output.buffer {
-            self.push_generated(id)
+        if let Some(tokens) = output.buffer {
+            self.push_tokens(tokens.finish(None), 0)
         } else if let Some(token) = output.first {
             if self.sources.len() > 10000 {
                 return Err(Error::Capacity);

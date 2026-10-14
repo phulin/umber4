@@ -25,6 +25,12 @@ Use `--cases`, `--sizes`, and `--repeats` for focused runs. Both accept
 suite's baseline must support its primitive set. Default reports live under
 `target/`. Reviewed measurements live in `results/`.
 
+The [shared-token-store comparison](results/unified-token-storage.json) measures
+one pool for definitions, captures, and generated output against `dc64762`.
+It retains largest-size CPU samples, longer confirmations, both memory workloads
+at three sizes, and allocation diagnostics, with source and executable identities.
+The paired builds use the restored custom name table and unchanged dependencies.
+
 The [structural cleanup comparison](results/structural-simplification.json)
 retains largest-size timings, same-LTO controls, longer confirmations, and
 allocation diagnostics. The release profile now uses fat LTO; earlier reports

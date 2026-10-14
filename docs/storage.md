@@ -34,13 +34,27 @@ while its scanner or input source consumes it. Builders own unpublished storage
 and release it on failure. Definition headers, delimiter metadata, and token
 payloads are reclaimed together when their last semantic owner disappears.
 
+Definitions, materialized arguments, and generated token lists use the same
+chunk pool and reusable value headers in the MVP. A builder reserves
+its value ID before writing, so captured ranges already name their final storage.
+The slot remains unpublished until the completed token descriptor is transferred
+into it. Publication moves descriptors and owners; token words stay in place.
+
+The registry retains one reference to each header for reuse. External owners keep
+its published contents alive; releasing the last external owner clears the value
+and returns its ID. Dropping the registry releases its references while external
+owners continue to retain their values. Builders keep the chunk pool alive during
+construction, and chunks themselves remain owned by the values that use them.
+The common invocation path reuses both headers and chunk cells. Once a value's
+last owner disappears, its final reservation can return to the bump pointer if
+it is still the tail; intervening live reservations keep their own cells.
+
 Stable backing chunks use bump allocation during construction and return to a
 bounded reuse pool after their last value disappears. Builders write in place;
 publishing a value transfers its backing and does not flatten or copy tokens.
 An unused reservation suffix returns immediately when it remains the current
 bump tail; later interleaved reservations keep their own cells.
-Descriptor slots are reused after the last owner disappears; weak slots and
-owner headers retain their high-water capacity until reuse. Chunk size and
+The registry and empty headers retain their high-water capacity. Chunk size and
 reservation policy remain measured choices, including the space retained by
 small surviving ranges. Names remain append-only across rollback; their mutable
 meanings belong to document tables.
@@ -69,6 +83,15 @@ one builder owner; completion transfers its storage and descriptor in place.
 Keep raw arena ranges as plain token/cell data where possible. Headers and
 auxiliary owners needing destruction use ordinary containers alongside the
 chunks, so releasing a value also drops its initialized owners.
+
+Reusable headers keep an initialized value behind `UnsafeCell`. Registry
+references carry no view of its contents. A builder is the sole external owner
+until publication; after publication, views borrow an owner. Releasing the last
+external owner empties the header before its ID becomes reusable. Short token
+and window queries read without changing reference counts; their temporary views
+stay inside those non-reentrant queries. Raw cursor windows remain protected by
+their source or packet owner. This confines header mutation to construction and
+reclamation, with immutable reads between them.
 
 Token chunks can hold `UnsafeCell<MaybeUninit<Token>>` cells. The uninitialized
 array is valid storage; appending constructs each token before publishing its
@@ -108,16 +131,15 @@ input and newly written tokens are mixed. Retaining a compatible range changes
 ownership metadata, not its token words. A transform writes only the tokens it
 actually changes into destination storage.
 
-Durable ranges retain their immutable backing value at source and packet
-boundaries. Shorter-lived capture chunks use shared ownership at chunk boundaries.
-A completed argument packet owns its sequence descriptors and retains the backing
-chunks directly. A child packet retaining an argument range acquires that chunk,
-so the enclosing packet can die
-without creating a chain of packet owners. Repeated occurrences of a parameter
-reread the same immutable sequence.
+Stored ranges retain their immutable backing values at source and packet
+boundaries; those values own their chunks. A completed argument packet owns its
+sequence descriptors and retains each backing value once. A child packet acquires
+the value behind a forwarded range, so the enclosing packet can die without
+creating a chain of packet owners. Repeated occurrences of a parameter reread
+the same immutable sequence.
 
 New file tokens are materialized once, directly in the packet's chunks. Definitions
-are built directly in their owned destination storage. A builder can mix owned new
+are built directly in their owned destination storage. An argument can mix owned new
 ranges with retained old ranges and coalesce adjacent compatible spans. If a caller
 needs contiguous output, it writes that output into the caller's destination;
 normal expansion traverses the existing pieces.

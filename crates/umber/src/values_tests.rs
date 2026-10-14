@@ -1,17 +1,17 @@
 use super::*;
 
 fn value(values: &mut Values, count: usize, byte: u8) -> Owner {
-    let mut builder = values.builder();
+    let mut builder = values.builder().unwrap();
     for _ in 0..count {
         builder.push(Token::other(byte)).unwrap();
     }
-    values.publish(builder, None).unwrap()
+    builder.finish(None)
 }
 
 #[test]
 fn builder_reads_and_publication_cover_only_initialized_words() {
     let mut values = Values::default();
-    let mut builder = values.builder();
+    let mut builder = values.builder().unwrap();
     for length in [1, 63, 64, 65, 4095, 4096, 4097] {
         while builder.len() < length {
             builder.push(Token::other(builder.len() as u8)).unwrap();
@@ -22,9 +22,68 @@ fn builder_reads_and_publication_cover_only_initialized_words() {
             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| builder.get(length))).is_err()
         );
     }
-    let owner = values.publish(builder, None).unwrap();
+    let owner = builder.finish(None);
     assert_eq!(owner.tokens.len, 4097);
     assert_eq!(owner.tokens.get(4096), Token::other(0));
+}
+
+#[test]
+fn builder_id_is_stable_and_unpublished_until_finish() {
+    let mut values = Values::default();
+    let mut builder = values.builder().unwrap();
+    let id = builder.id();
+    builder.push(Token::other(b'A')).unwrap();
+    assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| values.get(id))).is_err());
+    let owner = builder.finish(None);
+    assert_eq!(owner.id, id);
+    assert_eq!(values.get(id).tokens.get(0), Token::other(b'A'));
+}
+
+#[test]
+fn last_owner_reuses_header_and_initialized_bump_tail() {
+    let mut values = Values::default();
+    let first = value(&mut values, 32, b'A');
+    let id = first.id;
+    let header = Rc::as_ptr(&first.0);
+    let (cells, _, _) = first.tokens.window(0, 32);
+    drop(first);
+    assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 0);
+    let next = value(&mut values, 32, b'B');
+    assert_eq!(next.id, id);
+    assert_eq!(Rc::as_ptr(&next.0), header);
+    assert_eq!(next.tokens.window(0, 32).0, cells);
+    assert_eq!(next.tokens.get(31), Token::other(b'B'));
+}
+
+#[test]
+fn last_owner_preserves_intervening_reservations() {
+    let mut values = Values::default();
+    let first = value(&mut values, 32, b'A');
+    let second = value(&mut values, 32, b'B');
+    drop(first);
+    assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 64);
+    let third = value(&mut values, 32, b'C');
+    assert_eq!(second.tokens.get(31), Token::other(b'B'));
+    drop(third);
+    assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 64);
+    drop(second);
+    assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 32);
+}
+
+#[test]
+fn owners_and_unpublished_builders_survive_registry_drop() {
+    let mut values = Values::default();
+    let original = value(&mut values, 64, b'A');
+    let alias = original.clone();
+    let mut builder = values.builder().unwrap();
+    builder.push(Token::other(b'B')).unwrap();
+    drop(values);
+    drop(original);
+    assert_eq!(alias.tokens.get(63), Token::other(b'A'));
+    let completed = builder.finish(None);
+    assert_eq!(completed.tokens.get(0), Token::other(b'B'));
+    drop(alias);
+    assert_eq!(completed.tokens.get(0), Token::other(b'B'));
 }
 
 #[test]
@@ -32,14 +91,14 @@ fn published_windows_survive_interleaved_builders_and_reuse() {
     let mut values = Values::default();
     let held = value(&mut values, 127, b'A');
     let (first, end, _) = held.tokens.window(0, 127);
-    let mut a = values.builder();
-    let mut b = values.builder();
+    let mut a = values.builder().unwrap();
+    let mut b = values.builder().unwrap();
     for index in 0..8200 {
         a.push(Token::other(index as u8)).unwrap();
         b.push(Token::other((index + 3) as u8)).unwrap();
     }
-    let a = values.publish(a, None).unwrap();
-    let b = values.publish(b, None).unwrap();
+    let a = a.finish(None);
+    let b = b.finish(None);
     for index in 0..8200 {
         assert_eq!(a.tokens.get(index), Token::other(index as u8));
         assert_eq!(b.tokens.get(index), Token::other((index + 3) as u8));
@@ -65,7 +124,7 @@ fn published_windows_survive_interleaved_builders_and_reuse() {
 fn slots_recycle_after_last_owner_and_page_cache_is_bounded() {
     let mut values = Values::default();
     let original = value(&mut values, 10, b'A');
-    let alias = Rc::clone(&original);
+    let alias = original.clone();
     let id = original.id;
     drop(original);
     let other = value(&mut values, 10, b'B');
@@ -87,7 +146,7 @@ fn slots_recycle_after_last_owner_and_page_cache_is_bounded() {
 #[test]
 fn failed_builders_release_pages_and_owners_outlive_registry() {
     let mut values = Values::default();
-    let mut abandoned = values.builder();
+    let mut abandoned = values.builder().unwrap();
     for _ in 0..WORDS * 3 {
         abandoned.push(Token::other(b'X')).unwrap();
     }
@@ -101,13 +160,13 @@ fn failed_builders_release_pages_and_owners_outlive_registry() {
 #[test]
 fn publication_returns_only_the_unused_bump_tail() {
     let mut values = Values::default();
-    let mut first = values.builder();
+    let mut first = values.builder().unwrap();
     first.push(Token::other(b'A')).unwrap();
-    let mut second = values.builder();
+    let mut second = values.builder().unwrap();
     second.push(Token::other(b'B')).unwrap();
-    let first = values.publish(first, None).unwrap();
+    let first = first.finish(None);
     assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 128);
-    let second = values.publish(second, None).unwrap();
+    let second = second.finish(None);
     assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 65);
     let next = value(&mut values, 1, b'C');
     assert_eq!(values.pool.active.borrow().as_ref().unwrap().1, 66);
@@ -121,8 +180,8 @@ fn publication_returns_only_the_unused_bump_tail() {
 
 #[test]
 fn reservation_stays_inside_value_coordinates() {
-    let values = Values::default();
-    let mut builder = values.builder();
+    let mut values = Values::default();
+    let mut builder = values.builder().unwrap();
     // Exercise the final reservation without allocating the preceding words.
     builder.tokens.len = u32::MAX - 1;
     builder.push(Token::other(b'Z')).unwrap();

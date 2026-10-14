@@ -256,8 +256,8 @@ impl Engine<'_> {
                 self.advance_source()?;
                 continue;
             }
-            // SAFETY: value sources retain their value, generated sources retain
-            // their vector, and argument windows borrow the packet below them.
+            // SAFETY: standalone sources retain their immutable value, and
+            // argument windows borrow the packet below them.
             // Capture retains backing before the next read can retire a source.
             let token = unsafe { window.next.read() };
             window.next = unsafe { window.next.add(1) };
@@ -299,14 +299,7 @@ impl Engine<'_> {
                 suppress: false,
             });
         }
-        let token = if span.store & DURABLE != 0 {
-            self.values
-                .get(span.store & !DURABLE)
-                .tokens
-                .get(span.start)
-        } else {
-            self.captures[span.store as usize].tokens[span.start as usize]
-        };
+        let token = self.values.token(span.store, span.start);
         // Argument tokens contain no internal parameter markers: their scanner
         // already substituted them. The body keeps this backing alive until the
         // next read; a child capture retains it before that read can retire it.
@@ -319,25 +312,6 @@ impl Engine<'_> {
     fn span_for(&self, argument: Option<(u32, u8)>, index: usize) -> Option<Span> {
         let (packet, arg) = argument?;
         self.packets[packet as usize].arguments[arg as usize].span(index)
-    }
-    fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
-        if span.store & DURABLE != 0 {
-            self.values
-                .get(span.store & !DURABLE)
-                .tokens
-                .window(start, span.end)
-        } else {
-            let tokens = &self.captures[span.store as usize].tokens;
-            assert!(start < span.end && span.end as usize <= tokens.len());
-            // SAFETY: packet ownership keeps this vector immutable and allocated.
-            unsafe {
-                (
-                    tokens.as_ptr().add(start as usize),
-                    tokens.as_ptr().add(span.end as usize),
-                    span.end,
-                )
-            }
-        }
     }
     pub(crate) fn push_argument(&mut self, packet: u32, argument: u8) -> Result<()> {
         let sequence = Some((packet, argument));
@@ -356,7 +330,7 @@ impl Engine<'_> {
     ) -> Result<()> {
         let body = owner.definition().body;
         let span = Span {
-            store: DURABLE | owner.id,
+            store: owner.id,
             start: body.start,
             end: body.end,
         };
@@ -366,14 +340,18 @@ impl Engine<'_> {
             }
             return Ok(());
         }
-        self.push_span(None, span, packet, Some(Backing::Durable { _owner: owner }))
+        self.push_span(None, span, packet, Some(owner))
     }
-    pub(crate) fn push_tokens(&mut self, span: Span) -> Result<()> {
+    pub(crate) fn push_tokens(&mut self, owner: crate::values::Owner, start: u32) -> Result<()> {
+        let span = Span {
+            store: owner.id,
+            start,
+            end: owner.tokens.len,
+        };
         if span.empty() {
             return Ok(());
         }
-        let owner = self.values.get(span.store & !DURABLE);
-        self.push_span(None, span, None, Some(Backing::Durable { _owner: owner }))
+        self.push_span(None, span, None, Some(owner))
     }
     #[inline(always)]
     fn push_span(
@@ -381,14 +359,14 @@ impl Engine<'_> {
         argument: Option<(u32, u8)>,
         span: Span,
         owns_packet: Option<u32>,
-        owner: Option<Backing>,
+        owner: Option<crate::values::Owner>,
     ) -> Result<()> {
         if self.sources.len() > 10000 {
             return Err(Error::Capacity);
         }
         let (next, end, window_end_position) = match &owner {
-            Some(Backing::Durable { _owner: value }) => value.tokens.window(span.start, span.end),
-            _ => self.window(span, span.start),
+            Some(value) => value.tokens.window(span.start, span.end),
+            _ => self.values.window(span, span.start),
         };
         self.sources.push(Source::Tokens(Cursor {
             next,
@@ -402,17 +380,6 @@ impl Engine<'_> {
             owns_packet,
         }));
         Ok(())
-    }
-    pub(crate) fn push_generated(&mut self, id: u32) -> Result<()> {
-        let capture = &mut self.captures[id as usize];
-        capture.building = false;
-        let owner = std::rc::Rc::clone(&capture.tokens);
-        let span = Span {
-            store: id,
-            start: 0,
-            end: owner.len() as u32,
-        };
-        self.push_span(None, span, None, Some(Backing::Capture { _owner: owner }))
     }
     pub(crate) fn advance_source(&mut self) -> Result<()> {
         let Some(Source::Tokens(cursor)) = self.sources.last() else {
@@ -436,7 +403,7 @@ impl Engine<'_> {
             span = next;
             position = span.start;
         }
-        let (next, end, end_position) = self.window(span, position);
+        let (next, end, end_position) = self.values.window(span, position);
         if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
             cursor.next = next;
             cursor.end = end;

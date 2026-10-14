@@ -10,7 +10,7 @@ impl Engine<'_> {
         protected: bool,
     ) -> Result<()> {
         let cs = self.scan_cs()?;
-        let mut tokens = self.values.builder();
+        let mut tokens = self.values.builder()?;
         let mut prefix_end = None;
         let mut parameters = 0u8;
         let mut brace_tail = None;
@@ -91,16 +91,13 @@ impl Engine<'_> {
                 }
             })
             .collect();
-        let owner = self.values.publish(
-            tokens,
-            Some(Definition {
-                prefix_end,
-                body,
-                parameters: parameter_data,
-                long,
-                uses_parameters,
-            }),
-        )?;
+        let owner = tokens.finish(Some(Definition {
+            prefix_end,
+            body,
+            parameters: parameter_data,
+            long,
+            uses_parameters,
+        }));
         let id = owner.id;
         self.assign_meaning(
             cs,

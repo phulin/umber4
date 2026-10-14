@@ -140,7 +140,7 @@ fn macro_integer_arguments_cross_windows() {
 
 #[test]
 fn short_integer_terminators_and_progress_cross_windows() {
-    use crate::token::{DURABLE, FROZEN_RELAX, Meaning, Span, Token, cmd};
+    use crate::token::{FROZEN_RELAX, Meaning, Token, cmd};
     let letter = |byte| Token::character(11, byte);
     for padding in [0, 4094, 4095, 4096] {
         for case in 0..10 {
@@ -203,7 +203,7 @@ fn short_integer_terminators_and_progress_cross_windows() {
                 ),
                 _ => unreachable!(),
             };
-            let mut tokens = engine.values.builder();
+            let mut tokens = engine.values.builder().unwrap();
             for _ in 0..padding {
                 tokens.push(letter(b'P')).unwrap();
             }
@@ -211,14 +211,8 @@ fn short_integer_terminators_and_progress_cross_windows() {
             for word in words {
                 tokens.push(word).unwrap();
             }
-            let owner = engine.values.publish(tokens, None).unwrap();
-            engine
-                .push_tokens(Span {
-                    store: DURABLE | owner.id,
-                    start,
-                    end: owner.tokens.len,
-                })
-                .unwrap();
+            let owner = tokens.finish(None);
+            engine.push_tokens(owner, start).unwrap();
             assert_eq!(engine.scan_int(), result, "padding {padding}, case {case}");
             for word in rest {
                 assert_eq!(
@@ -233,7 +227,7 @@ fn short_integer_terminators_and_progress_cross_windows() {
 
 #[test]
 fn keyword_matches_and_rollback_cross_arena_windows() {
-    use crate::token::{DURABLE, Meaning, Span, Token, cmd};
+    use crate::token::{Meaning, Token, cmd};
     let letter = |byte| Token::character(11, byte);
     for padding in [0, 4093, 4094, 4095, 4096, 8191] {
         for case in 0..15 {
@@ -272,7 +266,7 @@ fn keyword_matches_and_rollback_cross_arena_windows() {
                 14 => (vec![Token::character(10, b'B'), letter(b'Y')], true),
                 _ => unreachable!(),
             };
-            let mut tokens = engine.values.builder();
+            let mut tokens = engine.values.builder().unwrap();
             for _ in 0..padding {
                 tokens.push(letter(b'P')).unwrap();
             }
@@ -281,14 +275,8 @@ fn keyword_matches_and_rollback_cross_arena_windows() {
                 tokens.push(word).unwrap();
             }
             tokens.push(letter(b'X')).unwrap();
-            let owner = engine.values.publish(tokens, None).unwrap();
-            engine
-                .push_tokens(Span {
-                    store: DURABLE | owner.id,
-                    start,
-                    end: owner.tokens.len,
-                })
-                .unwrap();
+            let owner = tokens.finish(None);
+            engine.push_tokens(owner, start).unwrap();
             assert_eq!(engine.scan_keyword(b"by").unwrap(), matched);
             if !matched {
                 // Leading spaces are discarded; the partially matched prefix

@@ -42,7 +42,7 @@ impl Engine<'_> {
         &mut self,
         packet: u32,
         argument: usize,
-        builder: &mut Option<u32>,
+        builder: &mut Option<crate::values::Builder>,
         except: Token,
     ) -> Result<usize> {
         let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
@@ -82,7 +82,7 @@ impl Engine<'_> {
         owner: &crate::values::Value,
         packet: u32,
         argument: usize,
-        builder: &mut Option<u32>,
+        builder: &mut Option<crate::values::Builder>,
     ) -> Result<()> {
         let definition = owner.definition();
         let delimiter = if DELIMITED {

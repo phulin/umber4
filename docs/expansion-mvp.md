@@ -17,8 +17,8 @@ continues reading its original value after the register is overwritten. Local
 saves retain that value; global writes supersede earlier saves.
 
 Add `\string`, `\meaning`, `\romannumeral`, `\detokenize`, `\unexpanded`,
-`\protected`, and `\escapechar`. Generated tokens are built in reusable capture
-storage. Expanded definitions and messages share an expanded-list scanner:
+`\protected`, and `\escapechar`. Generated tokens are built in reusable token
+chunks. Expanded definitions and messages share an expanded-list scanner:
 `\the` of a token register and `\unexpanded` append their tokens directly into
 the destination, bypassing further expansion, brace accounting, and macro
 parameter interpretation. Ordinary execution of these primitives installs a
@@ -67,7 +67,7 @@ Primitive registration, meaning serialization, and assignment/conditional
 classification share one command inventory, including the value-indexed names of
 arithmetic operations and integer parameters.
 Generated expansion output is an owned input source; it needs no macro argument
-packet. Its writer lives on the Rust stack and publishes its buffer only after
+packet. Its writer lives on the Rust stack and publishes its value only after
 the operand scan has completed. Character-run and literal-number fast paths stay
 separate where their cursor behavior or measured cost requires it.
 
@@ -77,10 +77,12 @@ specialize at compile time. Delimiter matching retains its prefix-fallback table
 and outer-group removal.
 
 All list input uses one cursor containing its backing ID, logical end position,
-read pointers, and any following-span coordinates. Value roots retain their
-immutable value; generated roots retain their buffer directly. Argument cursors
-borrow the body packet beneath them. Token reading uses the same path for each;
-ownership is distinguished when installing and retiring a source.
+read pointers, and any following-span coordinates. Standalone roots retain their
+immutable value; argument cursors borrow the body packet beneath them. Definitions,
+materialized arguments, and generated output share one chunk pool and value-ID
+space. Builders reserve reusable headers before writing and publish completed
+descriptors without moving token words. Source installation and retirement handle
+ownership; reading advances the cursor.
 
 Each definition starts at logical token zero, stores its tokens in signature
 order, and caches its prefix end and body range. Each parameter descriptor owns
@@ -134,7 +136,7 @@ Scalar tables share an array of integer values and group levels. A compact targe
 identifies its slot directly; assignment uses that slot for the read, save, and
 write. Token registers and meanings retain their own representations. When
 general expansion needs a token source, generated conversion and decimal output
-append to a uniquely owned reusable buffer and publish one range at completion.
+append to an unpublished chunk builder and publish one value at completion.
 Decimal digits are emitted in reading order with bounded Rust calls, sharing the
 same emitter as direct list expansion and register-meaning text. Numbers that fit
 in the existing two-token inline source use it directly. Empty generated output

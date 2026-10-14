@@ -1,5 +1,5 @@
 use crate::{Error, Result, token::*};
-use std::cell::{RefCell, UnsafeCell};
+use std::cell::{Cell, RefCell, UnsafeCell};
 use std::mem::MaybeUninit;
 use std::rc::{Rc, Weak};
 
@@ -28,6 +28,20 @@ impl Drop for Page {
     }
 }
 impl Pool {
+    fn rewind(&self, piece: &Piece, count: u32) -> bool {
+        let mut active = self.active.borrow_mut();
+        if let Some((page, used)) = active.as_mut()
+            && Rc::ptr_eq(page, &piece.page)
+        {
+            let cells = page.cells.as_ref().unwrap();
+            let base = UnsafeCell::raw_get(cells.as_ptr()).cast::<Token>();
+            if base.wrapping_add(*used) == piece.base.wrapping_add(piece.capacity as usize) {
+                *used -= count as usize;
+                return true;
+            }
+        }
+        false
+    }
     fn reserve(self: &Rc<Self>, requested: usize, start: u32) -> Piece {
         let mut active = self.active.borrow_mut();
         if active.as_ref().is_none_or(|(_, used)| *used == WORDS) {
@@ -128,10 +142,14 @@ impl Tokens {
 pub(crate) struct Builder {
     tokens: Tokens,
     pool: Rc<Pool>,
+    owner: Owner,
     next: *mut Token,
     remaining: u32,
 }
 impl Builder {
+    pub fn id(&self) -> u32 {
+        self.owner.id
+    }
     pub fn len(&self) -> u32 {
         self.tokens.len
     }
@@ -178,7 +196,7 @@ impl Builder {
     pub fn get(&self, position: u32) -> Token {
         self.tokens.get(position)
     }
-    fn finish(mut self) -> Tokens {
+    pub fn finish(mut self, definition: Option<Definition>) -> Owner {
         if self.remaining != 0 {
             let last = self
                 .tokens
@@ -186,23 +204,18 @@ impl Builder {
                 .last_mut()
                 .or(self.tokens.first.as_mut())
                 .unwrap();
-            let mut active = self.pool.active.borrow_mut();
-            if let Some((page, used)) = active.as_mut()
-                && Rc::ptr_eq(page, &last.page)
-            {
-                let cells = page.cells.as_ref().unwrap();
-                let base = UnsafeCell::raw_get(cells.as_ptr()).cast::<Token>();
-                if base.wrapping_add(*used) == last.base.wrapping_add(last.capacity as usize) {
-                    // This reservation is still the bump tail. Only its unused
-                    // suffix is returned; every initialized word stays owned
-                    // and immutable. Interleaved later reservations prevent
-                    // this rewind, so another builder's cells remain intact.
-                    *used -= self.remaining as usize;
-                    last.capacity -= self.remaining;
-                }
+            if self.pool.rewind(last, self.remaining) {
+                last.capacity -= self.remaining;
             }
         }
-        self.tokens
+        // SAFETY: only this builder owns the unpublished value. get refuses
+        // unpublished slots, and the builder exposes token copies and IDs only.
+        // Moving the completed descriptor leaves every token cell in place.
+        let value = unsafe { &mut *self.owner.0.value.get() };
+        value.tokens = self.tokens;
+        value.definition = definition;
+        self.owner.0.published.set(true);
+        self.owner
     }
 }
 
@@ -210,71 +223,126 @@ pub(crate) struct Value {
     pub id: u32,
     pub tokens: Tokens,
     definition: Option<Definition>,
-    pool: Rc<Pool>,
 }
 impl Value {
     #[inline]
     pub fn definition(&self) -> &Definition {
         self.definition.as_ref().unwrap()
     }
-    pub fn span(&self) -> Span {
-        Span {
-            store: DURABLE | self.id,
-            start: 0,
-            end: self.tokens.len,
+}
+struct Slot {
+    value: UnsafeCell<Value>,
+    published: Cell<bool>,
+    registered: Cell<bool>,
+    pool: Weak<Pool>,
+}
+
+// The registry owns one reference per reusable header. External owners retain
+// initialized contents; only an unpublished Builder can change those contents.
+#[derive(Clone)]
+pub(crate) struct Owner(Rc<Slot>);
+impl std::ops::Deref for Owner {
+    type Target = Value;
+    fn deref(&self) -> &Value {
+        // SAFETY: Owners are created after initialization. A returned view
+        // borrows this owner, so the last owner cannot disappear during its use.
+        unsafe { &*self.0.value.get() }
+    }
+}
+impl Drop for Owner {
+    #[inline]
+    fn drop(&mut self) {
+        if Rc::strong_count(&self.0) == 1 + usize::from(self.0.registered.get()) {
+            self.0.release();
         }
     }
 }
-impl Drop for Value {
-    fn drop(&mut self) {
-        self.pool.ids.borrow_mut().push(self.id);
+impl Slot {
+    #[inline(never)]
+    fn release(&self) {
+        self.published.set(false);
+        // SAFETY: called only by the last external owner. All borrowed views
+        // have ended, and registered headers retain no reader of their contents.
+        let value = unsafe { &mut *self.value.get() };
+        let tokens = std::mem::take(&mut value.tokens);
+        value.definition = None;
+        if let Some(pool) = self.pool.upgrade() {
+            if let Some(last) = tokens.rest.last().or(tokens.first.as_ref()) {
+                // No reader remains. Reuse the whole final reservation only
+                // if later reservations have already left the bump tail.
+                pool.rewind(last, last.capacity);
+            }
+            pool.ids.borrow_mut().push(value.id);
+        }
     }
 }
-pub(crate) type Owner = Rc<Value>;
 
 #[derive(Default)]
 pub(crate) struct Values {
     pool: Rc<Pool>,
-    slots: Vec<Weak<Value>>,
+    slots: Vec<Rc<Slot>>,
 }
 impl Values {
-    pub fn builder(&self) -> Builder {
-        Builder {
-            tokens: Tokens::default(),
-            pool: Rc::clone(&self.pool),
-            next: std::ptr::null_mut(),
-            remaining: 0,
-        }
-    }
-    pub fn publish(&mut self, builder: Builder, definition: Option<Definition>) -> Result<Owner> {
-        assert!(Rc::ptr_eq(&builder.pool, &self.pool));
+    pub fn builder(&mut self) -> Result<Builder> {
         let id = self
             .pool
             .ids
             .borrow_mut()
             .pop()
             .unwrap_or(self.slots.len() as u32);
-        if id >= SINGLE - DURABLE {
+        if id >= SINGLE {
             return Err(Error::Capacity);
         }
-        let value = Rc::new(Value {
-            id,
-            tokens: builder.finish(),
-            definition,
-            pool: Rc::clone(&self.pool),
-        });
         if id as usize == self.slots.len() {
-            self.slots.push(Rc::downgrade(&value));
-        } else {
-            self.slots[id as usize] = Rc::downgrade(&value);
+            self.slots.push(Rc::new(Slot {
+                value: UnsafeCell::new(Value {
+                    id,
+                    tokens: Tokens::default(),
+                    definition: None,
+                }),
+                published: Cell::new(false),
+                registered: Cell::new(true),
+                pool: Rc::downgrade(&self.pool),
+            }));
         }
-        Ok(value)
+        // Free IDs name cleared headers with only the registry reference.
+        let slot = Rc::clone(&self.slots[id as usize]);
+        Ok(Builder {
+            tokens: Tokens::default(),
+            pool: Rc::clone(&self.pool),
+            owner: Owner(slot),
+            next: std::ptr::null_mut(),
+            remaining: 0,
+        })
     }
     #[inline]
     pub fn get(&self, id: u32) -> Owner {
-        self.slots[id as usize]
-            .upgrade()
-            .expect("retained token value")
+        let slot = &self.slots[id as usize];
+        assert!(slot.published.get(), "retained published token value");
+        Owner(Rc::clone(slot))
+    }
+    // Used only by the non-reentrant copy/window queries below. Their temporary
+    // view never escapes or runs code that could release an external owner.
+    fn tokens(&self, id: u32) -> &Tokens {
+        let slot = &self.slots[id as usize];
+        assert!(slot.published.get(), "retained published token value");
+        // SAFETY: publication initializes the value, and no owner can disappear
+        // during these queries. Returned raw windows need a caller-held owner.
+        unsafe { &(*slot.value.get()).tokens }
+    }
+    pub fn token(&self, id: u32, position: u32) -> Token {
+        self.tokens(id).get(position)
+    }
+    pub fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
+        self.tokens(span.store).window(start, span.end)
+    }
+}
+
+impl Drop for Values {
+    fn drop(&mut self) {
+        for slot in &self.slots {
+            slot.registered.set(false);
+        }
     }
 }
 
@@ -284,7 +352,7 @@ impl Values {
         let live = self
             .slots
             .iter()
-            .filter(|slot| slot.strong_count() != 0)
+            .filter(|slot| slot.published.get())
             .count();
         (live, self.slots.len(), self.pool.free.borrow().len())
     }

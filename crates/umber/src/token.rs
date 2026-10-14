@@ -1,8 +1,5 @@
-use std::rc::Rc;
-
 pub(crate) const CS: u32 = 1 << 24;
 pub(crate) const PARAM: u32 = 1 << 23;
-pub(crate) const DURABLE: u32 = 1 << 31;
 pub(crate) const SINGLE: u32 = u32::MAX - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
 pub(crate) const CHUNK_BITS: u32 = 12;
@@ -294,14 +291,10 @@ pub(crate) struct Parameter {
     pub delimiter: ArenaRange,
     pub failure: Box<[usize]>,
 }
-pub(crate) enum Backing {
-    Capture { _owner: Rc<Vec<Token>> },
-    Durable { _owner: crate::values::Owner },
-}
 #[derive(Default)]
 pub(crate) struct Packet {
     pub arguments: Vec<Sequence>,
-    pub owners: Vec<(u32, Backing)>,
+    pub owners: Vec<crate::values::Owner>,
 }
 impl Packet {
     pub fn clear(&mut self) {
@@ -311,16 +304,12 @@ impl Packet {
         self.owners.clear();
     }
 }
-pub(crate) struct Capture {
-    pub tokens: Rc<Vec<Token>>,
-    pub building: bool,
-}
 pub(crate) struct Cursor {
     pub next: *const Token,
     pub end: *const Token,
     pub end_position: u32,
     pub store: u32,
-    pub _owner: Option<Backing>,
+    pub _owner: Option<crate::values::Owner>,
     pub argument: Option<(u32, u8)>,
     pub span_index: usize,
     pub span_end: u32,

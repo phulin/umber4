@@ -205,8 +205,8 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn store_body(&mut self) -> Result<crate::values::Owner> {
-        let mut tokens = self.values.builder();
+        let mut tokens = self.values.builder()?;
         self.scan_raw_body(|_, token| tokens.push(token))?;
-        self.values.publish(tokens, None)
+        Ok(tokens.finish(None))
     }
 }

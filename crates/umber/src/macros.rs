@@ -1,5 +1,4 @@
 use crate::{Engine, Error, Result, token::*};
-use std::rc::Rc;
 
 impl Engine<'_> {
     #[inline]
@@ -33,34 +32,13 @@ impl Engine<'_> {
         self.packets[id as usize].clear();
         self.free_packets.push(id);
     }
-    pub(crate) fn capture_buffer(&mut self) -> Result<u32> {
-        if let Some((id, capture)) = self
-            .captures
-            .iter_mut()
-            .enumerate()
-            .find(|(_, c)| !c.building && Rc::strong_count(&c.tokens) == 1)
-        {
-            Rc::get_mut(&mut capture.tokens).unwrap().clear();
-            capture.building = true;
-            return Ok(id as u32);
-        }
-        if self.captures.len() >= DURABLE as usize {
-            return Err(Error::Capacity);
-        }
-        let id = self.captures.len() as u32;
-        self.captures.push(Capture {
-            tokens: Rc::new(Vec::with_capacity(16)),
-            building: true,
-        });
-        Ok(id)
-    }
     #[inline(always)]
     pub(crate) fn capture_raw(
         &mut self,
         packet: u32,
         argument: usize,
         raw: Raw,
-        builder: &mut Option<u32>,
+        builder: &mut Option<crate::values::Builder>,
     ) -> Result<()> {
         let first = self.packets[packet as usize].arguments[argument].first;
         if first.empty() && raw.origin.is_none() {
@@ -87,7 +65,7 @@ impl Engine<'_> {
         packet: u32,
         argument: usize,
         span: Span,
-        builder: &mut Option<u32>,
+        builder: &mut Option<crate::values::Builder>,
     ) -> Result<()> {
         let first = self.packets[packet as usize].arguments[argument].first;
         if first.store == SINGLE && !first.empty() {
@@ -104,7 +82,7 @@ impl Engine<'_> {
         &mut self,
         packet: u32,
         argument: usize,
-        builder: &mut Option<u32>,
+        builder: &mut Option<crate::values::Builder>,
     ) -> Result<()> {
         let token = Token(
             self.packets[packet as usize].arguments[argument]
@@ -118,57 +96,35 @@ impl Engine<'_> {
     #[inline(never)]
     fn retain_backing(&mut self, packet: u32, id: u32) {
         let owners = &mut self.packets[packet as usize].owners;
-        if !owners.iter().any(|old| old.0 == id) {
-            owners.push((
-                id,
-                if id & DURABLE != 0 {
-                    Backing::Durable {
-                        _owner: self.values.get(id & !DURABLE),
-                    }
-                } else {
-                    Backing::Capture {
-                        _owner: Rc::clone(&self.captures[id as usize].tokens),
-                    }
-                },
-            ));
+        if !owners.iter().any(|owner| owner.id == id) {
+            owners.push(self.values.get(id));
         }
     }
     #[inline(never)]
-    fn materialize_token(&mut self, token: Token, builder: &mut Option<u32>) -> Result<Span> {
-        let id = if let Some(id) = *builder {
-            id
-        } else {
-            let id = self.capture_buffer()?;
-            *builder = Some(id);
-            id
-        };
-        let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
-        if tokens.len() >= u32::MAX as usize {
-            return Err(Error::Capacity);
+    fn materialize_token(
+        &mut self,
+        token: Token,
+        builder: &mut Option<crate::values::Builder>,
+    ) -> Result<Span> {
+        if builder.is_none() {
+            *builder = Some(self.values.builder()?);
         }
-        let start = tokens.len() as u32;
-        tokens.push(token);
+        let tokens = builder.as_mut().unwrap();
+        let start = tokens.len();
+        tokens.push(token)?;
         Ok(Span {
-            store: id,
+            store: tokens.id(),
             start,
             end: start + 1,
         })
     }
     #[inline(always)]
-    pub(crate) fn finish_capture(&mut self, packet: u32, builder: Option<u32>) {
-        if let Some(id) = builder {
-            self.publish_capture(packet, id);
+    pub(crate) fn finish_capture(&mut self, packet: u32, builder: Option<crate::values::Builder>) {
+        if let Some(tokens) = builder {
+            self.packets[packet as usize]
+                .owners
+                .push(tokens.finish(None));
         }
-    }
-    #[inline(never)]
-    fn publish_capture(&mut self, packet: u32, id: u32) {
-        self.captures[id as usize].building = false;
-        self.packets[packet as usize].owners.push((
-            id,
-            Backing::Capture {
-                _owner: Rc::clone(&self.captures[id as usize].tokens),
-            },
-        ));
     }
     #[inline(always)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
@@ -244,7 +200,7 @@ impl Engine<'_> {
         &mut self,
         packet: u32,
         argument: usize,
-        builder: &mut Option<u32>,
+        builder: &mut Option<crate::values::Builder>,
         except: Token,
     ) -> Result<()> {
         if !RETAIN {
@@ -284,17 +240,12 @@ impl Engine<'_> {
         {
             self.promote_single(packet, argument, builder)?;
         }
-        // capture_raw acquired a builder for a non-inline first word; promotion
-        // acquired one for an inline word. It remains uniquely owned until the
-        // invocation publishes it, so Vec growth cannot move published tokens.
-        let id = builder.unwrap();
-        let tokens = Rc::get_mut(&mut self.captures[id as usize].tokens).unwrap();
-        let start = tokens.len() as u32;
+        // Both paths acquired the invocation's unpublished builder. Chunk
+        // growth preserves its initialized words and their final coordinates.
+        let tokens = builder.as_mut().unwrap();
+        let start = tokens.len();
         loop {
-            if tokens.len() >= u32::MAX as usize {
-                return Err(Error::Capacity);
-            }
-            tokens.push(token);
+            tokens.push(token)?;
             let Some(next) = self
                 .file
                 .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
@@ -304,9 +255,9 @@ impl Engine<'_> {
             token = next;
         }
         self.packets[packet as usize].arguments[argument].append(Span {
-            store: id,
+            store: tokens.id(),
             start,
-            end: tokens.len() as u32,
+            end: tokens.len(),
         });
         Ok(())
     }
