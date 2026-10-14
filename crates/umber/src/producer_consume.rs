@@ -10,6 +10,13 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
                 digits,
                 finish,
             } => {
+                if matches!(finish, Finish::Assign(..))
+                    && digits
+                    && Engine::digit(read.token, 10) >= 10
+                {
+                    self.finish_integer(if negative { -value } else { value }, finish)?;
+                    return Ok(read.meaning.command != cmd::SPACE);
+                }
                 return self.number(
                     read,
                     Number {

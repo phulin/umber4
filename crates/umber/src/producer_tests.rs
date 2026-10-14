@@ -72,6 +72,36 @@ fn scalar_windows_share_signed_internal_values_and_group_restoration() {
     );
 }
 #[test]
+fn file_index_completion_preserves_expansion_and_character_scanning() {
+    compare(
+        r"\def\more{2}\count1\more=7\relax\count^^31=8\relax\count-0=9\relax\message{\the\count12/\the\count1/\the\count0}\end",
+        &[b"7/8/9"],
+    );
+}
+#[test]
+fn internal_completion_reads_suspended_parents_in_order() {
+    compare(
+        r"\count0=1\relax\count1=2\relax\count2=7\relax\ifnum\count\count0<\count\count\count0 \message{LESS}\else\message{WRONG}\fi\message{\the\count\count0/\number-\count\count\count0/\number\number\count\count0}\end",
+        &[b"LESS", b"2/-7/2"],
+    );
+}
+#[test]
+fn scalar_windows_consume_only_inert_operand_terminators() {
+    compare(
+        r"\let\R\relax\def\work{\count0=12\R\advance\count0by3\R\global\count1=\count0\R}\work\message{\the\count0/\the\count1}\end",
+        &[b"15/15"],
+    );
+    let source = format!(r"{BOOT}\def\work{{\count0\relax=7\relax}}\work\end");
+    assert_eq!(
+        Engine::new(source.as_bytes()).run().err(),
+        Some(Error::Number)
+    );
+    assert_eq!(
+        Engine::new(source.as_bytes()).run_producer().err(),
+        Some(Error::Number)
+    );
+}
+#[test]
 fn scalar_windows_defer_expansions_and_incomplete_windows() {
     for (source, expected) in [
         (

@@ -121,7 +121,7 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
         Ok(value as usize)
     }
     #[inline(always)]
-    fn finish_integer(&mut self, mut value: i32, mut finish: Finish) -> Result<()> {
+    pub(super) fn finish_integer(&mut self, mut value: i32, mut finish: Finish) -> Result<()> {
         loop {
             match finish {
                 Finish::Target(kind, global, operation) => {
@@ -164,12 +164,13 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
                     );
                 }
                 Finish::InternalCount => {
-                    self.pop();
+                    // This parent completes immediately, so read it directly
+                    // without restoring a soon-to-be-replaced active record.
                     let Consumer::Integer {
                         negative,
                         finish: parent,
                         ..
-                    } = self.consumer
+                    } = self.suspended.pop().unwrap()
                     else {
                         unreachable!()
                     };
@@ -290,6 +291,14 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
         self.engine
             .update_integer(target, global, |_| Ok(result))
             .expect("constant scalar update is infallible");
+        // A completed assignment leaves execution active, where a resolved
+        // relax is inert. Consume this terminator with the operation.
+        if rest
+            .first()
+            .is_some_and(|&token| self.engine.resolve(token).command == cmd::RELAX)
+        {
+            rest = &rest[1..];
+        }
         words.len() - rest.len()
     }
     #[inline(always)]
@@ -317,7 +326,11 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
                 break token;
             }
         };
-        if INTERNAL && self.engine.resolve(token).command == cmd::COUNT {
+        let mut value = Engine::digit(token, 10);
+        if value >= 10 {
+            if !INTERNAL || self.engine.resolve(token).command != cmd::COUNT {
+                return None;
+            }
             let index = Self::index(self.window_number::<false>(rest)?).ok()?;
             let value = self.engine.scalars[Target::count(index)].value;
             return Some(if negative {
@@ -325,10 +338,6 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
             } else {
                 value
             });
-        }
-        let mut value = Engine::digit(token, 10);
-        if value >= 10 {
-            return None;
         }
         loop {
             let (&token, tail) = rest.split_first()?;

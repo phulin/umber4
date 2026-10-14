@@ -30,12 +30,13 @@ for the opt-in `producer` experiment. Its
 [design and reproduction commands](../docs/producer.md) identify the supported
 primitive subset and ordinary-release baseline. The
 [original comparison](results/producer-experiment.json),
-[delivery comparison](results/producer-optimized.json), and
-[scalar-parser comparison](results/producer-scalars.json) include five supported
-core kernels and these three additions. The scalar report compares the original
-baseline, the preceding producer, the current producer, and native pdfTeX in nine
-rounds, retaining samples and allocation/depth diagnostics. These reports cover
-the producer's supported subset.
+[delivery comparison](results/producer-optimized.json),
+[scalar-parser comparison](results/producer-scalars.json), and
+[handoff comparison](results/producer-handoff.json) include five supported core
+kernels and these three additions. The handoff report compares the original
+baseline, two preceding producers, the current producer, and native pdfTeX in
+nine rounds, retaining samples and allocation/depth diagnostics. These reports
+cover the producer's supported subset.
 
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.

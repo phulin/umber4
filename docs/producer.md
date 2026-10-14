@@ -1,11 +1,12 @@
 # Producer-driven expansion experiment
 
 This experiment replaces the MVP's token-source vector with recursive token
-production for a limited primitive set. It uses 22.3% less CPU across eight
-supported kernels than the ordinary `29266eb` baseline and 12.1% less than the
-previous optimized producer at `989b62f`. Every measured kernel beats the original
-baseline. Handoffs regress 6.9% against the previous producer. The experiment
-remains isolated on `experiment/producer-driven`.
+production for a limited primitive set. It uses 26.8% less CPU across eight
+supported kernels than the ordinary `29266eb` baseline and 5.0% less than the
+preceding producer at `4116226`. Every measured kernel beats the original
+baseline. Handoffs now beat `989b62f` by 2.9%; source integer operands regress
+4.3% against `4116226`. The experiment remains isolated on
+`experiment/producer-driven`.
 
 ## Execution model
 
@@ -37,7 +38,10 @@ scanning and its destination, messages, aliases, and conditional skipping. The
 active record lives beside the engine; a reusable vector retains suspended
 consumers when operations nest. Consecutive phases of one operation replace its
 active record directly: register index, optional `=` or `by`, then operand.
-Nested internal integer completion unwinds consumers in a loop.
+Nested internal integer completion reads parents directly from the suspended
+records and unwinds in a loop. Only a parent that resumes receives an active
+record again. Completed scalar operands assign inline during delivery; the
+general integer handler covers the remaining scanning and completion cases.
 
 This moves scanner progress into data while keeping body production on the Rust
 stack. Integer consumers accumulate contiguous digits in Rust locals and publish
@@ -56,10 +60,11 @@ sequence has changed meaning.
 A bounded scalar parser recognizes complete assignments and arithmetic inside
 one retained token window. It holds the target and operand in Rust locals and
 uses the shared group-aware scalar setter. It handles signed decimal operands
-and direct count reads with literal indices. Recognition reads immutable tokens
-without advancing production or changing engine state. Known nonexpanding
-integer terminators permit completion; incomplete windows, expansions, deeper
-internal reads, and invalid operands continue through ordinary delivery.
+and direct count reads with literal indices. Literal digits enter accumulation
+before internal-value dispatch. Recognition reads immutable tokens without
+advancing production or changing engine state. Known nonexpanding integer
+terminators permit completion; incomplete windows, expansions, deeper internal
+reads, and invalid operands continue through ordinary delivery.
 
 The parser returns the number of consumed words, with zero leaving production
 unchanged. Arithmetic and range checks precede the write, and rejection lets the
@@ -68,6 +73,10 @@ calculation runs once on success. Its constant-result setter callback is
 infallible. Meanings are resolved at execution, so aliases and redefinitions
 retain their current behavior. This keeps complete operations in native control
 flow while retaining consumer records for operations that cross input boundaries.
+After the write, the parser consumes an immediately following resolved `\relax`,
+which is inert in the resumed executor. This keeps a common integer terminator
+in the operation that has already classified it. Index terminators retain their
+ordinary scanning behavior.
 
 The producer uses no `Engine.sources` pushes or pops. Non-tail body nesting has a
 checked limit of 128; the consumer limit is 256. Diagnostic counters use a
@@ -98,69 +107,65 @@ positions at that boundary would need separate implementation.
 
 The comparison uses ordinary release builds against base commit `29266eb`, fat
 LTO, one codegen unit, no PGO, and unchanged dependencies. Each kernel has nine
-rounds on one AMD EPYC 7642 CPU, rotating/reversing all four engines: the original
-baseline, the producer at `989b62f`, the current producer, and native pdfTeX
-1.40.25. Every engine receives the same source and validates its checksum.
+rounds on one AMD EPYC 7642 CPU, rotating/reversing five engines: the original
+baseline, producers at `989b62f` and `4116226`, the current producer, and native
+pdfTeX 1.40.25. Every engine receives the same source and validates its checksum.
 Timings include process startup and file input; the table reports median CPU
-time. Core kernels use
-2,000,000 iterations and the three added kernels use 1,000,000.
+time. Core kernels use 2,000,000 iterations and the three added kernels use
+1,000,000.
 
-| Kernel                        | CPU vs. `29266eb` | CPU vs. `989b62f` |
+| Kernel                        | CPU vs. `29266eb` | CPU vs. `4116226` |
 | ----------------------------- | ----------------: | ----------------: |
-| Literal execution             |            -13.4% |             -3.8% |
-| Macro bodies                  |            -30.8% |            -19.6% |
-| Stored integer operands       |            -21.6% |            -26.5% |
-| Groups                        |            -28.6% |            -32.0% |
-| Source integer operands       |            -22.4% |             -2.5% |
-| Scanner completes inside body |            -11.9% |             +6.9% |
-| Conditional tail loop         |             -6.9% |             -8.3% |
-| Eleven nested non-tail bodies |            -38.0% |             -3.6% |
+| Literal execution             |            -12.6% |             -1.6% |
+| Macro bodies                  |            -37.3% |             -6.0% |
+| Stored integer operands       |            -28.2% |             -5.9% |
+| Groups                        |            -35.1% |            -10.8% |
+| Source integer operands       |            -18.8% |             +4.3% |
+| Scanner completes inside body |            -18.4% |             -5.7% |
+| Conditional tail loop         |            -14.3% |             -6.4% |
+| Eleven nested non-tail bodies |            -43.1% |             -7.1% |
 
-The geometric mean of median CPU ratios against the original baseline is 0.764
-for the five core kernels, 0.798 for the three added kernels, and 0.777 across all
-eight. Against `989b62f`, those ratios are 0.823, 0.981, and 0.879. Handoffs lose
-some of the preceding version's gain while remaining ahead of the original
-baseline.
+The geometric mean of median CPU ratios against the original baseline is 0.730
+for the five core kernels, 0.735 for the three added kernels, and 0.732 across all
+eight. Against `4116226`, those ratios are 0.958, 0.936, and 0.950. Across all
+eight, CPU use is 17.2% below `989b62f`; handoffs are 2.9% below that version,
+recovering the preceding scalar parser's regression. Source integer operands
+cost 4.3% more than `4116226` while remaining 18.8% below the original baseline.
+
 All selected kernels use less CPU than native pdfTeX. These measurements cover
 expansion/register kernels within the supported subset; whole-document
 performance and the full MVP remain unmeasured on this producer path.
 
-The consumer record is 24 bytes on the measured native build, down from 32.
-Generated code uses 192 bytes per recursive producer activation, including its
-inlined token delivery, saved registers, and return address; `989b62f` used 176.
-The bounded scalar parser adds a transient 112-byte frame and returns its word
-count in a register. The first version used a 96-byte producer frame and a
-transient 144-byte dispatcher frame. Inlining
-increases retained bytes per nested body while removing the common callback
-boundary. Other callees add transient stack use. The million-call tail loop uses
-one producer activation; the explicitly nested kernel reaches eleven.
+The consumer record remains 24 bytes on the measured native build. Generated
+code uses 208 bytes per recursive producer activation, including inlined token
+delivery, saved registers, and return address; `4116226` used 192. The bounded
+scalar parser adds a transient 128-byte frame, up from 112, and returns its word
+count in a register. The outlined number handler uses 48 bytes, down from 96;
+other callees add transient stack use. The million-call tail loop uses one
+producer activation; the explicitly nested kernel reaches eleven.
 
-Each kernel makes one more heap allocation request than the ordinary engine,
-from the reusable consumer vector, with no allocation per macro call. The first
-version made two extra requests. Both entries construct the shared `Engine`, whose
-preallocated source vector goes unused in the producer. Heap counters exclude
-the native stack, so they do not demonstrate lower total memory consumption.
+All eight kernels match `4116226` in heap allocation requests, requested bytes,
+and peak live bytes. Each makes one fixed allocation beyond the ordinary engine
+for the reusable consumer vector, with no allocation per macro call. Both
+entries construct the shared `Engine`, whose preallocated source vector goes
+unused in the producer. Heap counters exclude the host input and native stack.
 
-The [scalar-parser report](../benchmarks/results/producer-scalars.json) retains
-the four-way confirmation, source/binary hashes, allocation and depth diagnostics,
-and seven exploratory candidates. Allocation samples match `989b62f` in all
-eight kernels. The shared measurement helper and exact comparison driver accompany
-the retained samples. The
-[delivery report](../benchmarks/results/producer-optimized.json) retains the
-preceding optimization and its fourteen exploratory candidates. The
-[original report](../benchmarks/results/producer-experiment.json) retains the
-first version's regressions. Compact consumer layout, in-place phase changes,
-and the hot/cold split produced the gains. Inlining the entire dispatcher and
-adding a larger literal-phase scanner both regressed in exploratory timing.
+The [handoff report](../benchmarks/results/producer-handoff.json) retains the
+five-way confirmation, source/binary hashes, allocation and depth diagnostics,
+and eleven exploratory candidates. The shared measurement helper and exact
+comparison driver accompany the samples. Earlier measurements remain in the
+[scalar-parser report](../benchmarks/results/producer-scalars.json),
+[delivery report](../benchmarks/results/producer-optimized.json), and
+[original report](../benchmarks/results/producer-experiment.json).
 
 ## Validation and reproduction
 
-All 72 Rust tests pass in debug and release, including twelve producer tests.
-Four selected ownership/scalar tests pass under Miri, including operations split
-across retained pages and rejection before expansion or arithmetic errors.
-The shared handoff fixture matches all sixteen native pdfTeX messages.
-Rustfmt, clippy across all targets/features, and the release Wasm library build
-pass. Wasm runtime performance is unmeasured.
+All 75 Rust tests pass in debug and release, including fifteen producer tests.
+Four selected tests pass under Miri, covering suspended parent completion,
+aliased inert terminators, translated input characters, and operations split
+across retained pages. The shared handoff fixture matches all sixteen native
+pdfTeX messages. Rustfmt, clippy across all targets/features, and the release
+Wasm library build pass. Wasm runtime performance is unmeasured.
 
 Build a baseline binary from `29266eb` without the `producer` feature in a
 separate checkout. Then, from this experimental checkout:
@@ -175,6 +180,7 @@ python3 benchmarks/producer.py --sizes 1000000 --repeats 9 --baseline /path/to/b
 ```
 
 Those commands reproduce the original-baseline comparison. For the same native
-comparison against the preceding producer, build `989b62f` with `producer` and
-pass its binary to `--baseline`. The retained four-way run uses the same
-measurement helper to time both baselines in each round.
+comparison against the preceding producer, build `4116226` with `producer` and
+pass its binary to `--baseline`. The retained five-way run also includes
+`989b62f`, using the same measurement helper to time all three Rust baselines
+in each round.

@@ -71,8 +71,8 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
         }
         Ok(())
     }
-    fn pop(&mut self) -> Consumer {
-        std::mem::replace(&mut self.consumer, self.suspended.pop().unwrap())
+    fn pop(&mut self) {
+        self.consumer = self.suspended.pop().unwrap();
     }
     fn run(mut self) -> Result<(Outcome, Stats)> {
         while !self.ended {
