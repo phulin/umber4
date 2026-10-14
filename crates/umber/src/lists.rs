@@ -31,6 +31,10 @@ impl<'a> Emit<'a> for Builder {
     }
 }
 
+// Window runs up to this length copy word by word; past it, a wide scan and
+// bulk copy repay their call.
+const SHORT_RUN: usize = 16;
+
 // A character that neither changes depth nor introduces a parameter.
 #[inline(always)]
 fn body_character(token: Token) -> bool {
@@ -40,6 +44,54 @@ fn body_character(token: Token) -> bool {
         return true;
     }
     token.0 < 16 << 8 && !matches!(token.cat(), 1 | 2 | 6)
+}
+
+// SAFETY: next and stop lie within one retained immutable window.
+#[inline(always)]
+unsafe fn next_body_character(next: &mut *const Token, stop: *const Token) -> Option<Token> {
+    if *next == stop {
+        return None;
+    }
+    // SAFETY: next precedes stop in the window.
+    let token = unsafe { next.read() };
+    if !body_character(token) {
+        return None;
+    }
+    // SAFETY: next advances at most to stop.
+    *next = unsafe { next.add(1) };
+    Some(token)
+}
+
+// SAFETY: next and end delimit one retained immutable window. Words are
+// tested four at a time, then singly; returns the end of the run copied.
+#[inline(never)]
+unsafe fn copy_body_run(
+    next: *const Token,
+    end: *const Token,
+    tokens: &mut Builder,
+) -> Result<*const Token> {
+    let mut run_end = next;
+    // SAFETY: unequal endpoints belong to the same retained allocation.
+    while unsafe { end.offset_from(run_end) } >= 4 {
+        // SAFETY: four initialized immutable words remain in this window.
+        let words = unsafe { run_end.cast::<[Token; 4]>().read() };
+        let stops = words.map(|token| u32::from(!body_character(token)));
+        if stops[0] | stops[1] | stops[2] | stops[3] != 0 {
+            break;
+        }
+        // SAFETY: all four words precede end in the same window.
+        run_end = unsafe { run_end.add(4) };
+    }
+    // SAFETY: each word is read only before end.
+    while run_end != end && body_character(unsafe { run_end.read() }) {
+        // SAFETY: run_end advances at most to end.
+        run_end = unsafe { run_end.add(1) };
+    }
+    // SAFETY: the run lies within the window, which the builder copies into
+    // its own reservation.
+    tokens
+        .extend(unsafe { std::slice::from_raw_parts(next, run_end.offset_from(next) as usize) })?;
+    Ok(run_end)
 }
 
 impl<'a> Engine<'a> {
@@ -199,23 +251,25 @@ impl<'a> Engine<'a> {
             return Ok(());
         };
         let (mut next, end) = (cursor.next, cursor.end);
-        let read = || {
-            if next == end {
-                return None;
-            }
-            // SAFETY: this installed window contains initialized immutable
-            // tokens; its source retains the backing throughout emission.
-            let token = unsafe { next.read() };
-            if !body_character(token) {
-                return None;
-            }
-            // SAFETY: next is within this window and advances at most to end.
-            next = unsafe { next.add(1) };
-            Some(token)
-        };
+        // SAFETY: this installed window contains initialized immutable tokens;
+        // its source retains the backing throughout emission.
         let result = match emit.builder() {
-            Some(tokens) => tokens.extend_with(read),
-            None => std::iter::from_fn(read).try_for_each(|token| emit.token(self, token)),
+            Some(tokens) => unsafe {
+                // Short runs copy word by word. One that continues past them
+                // is located by a wide scan and copied in bulk.
+                let stop = if end.offset_from(next) > SHORT_RUN as isize {
+                    next.add(SHORT_RUN)
+                } else {
+                    end
+                };
+                let mut result = tokens.extend_with(|| next_body_character(&mut next, stop));
+                if next == stop && stop != end && result.is_ok() {
+                    result = copy_body_run(next, end, tokens).map(|run_end| next = run_end);
+                }
+                result
+            },
+            None => std::iter::from_fn(|| unsafe { next_body_character(&mut next, end) })
+                .try_for_each(|token| emit.token(self, token)),
         };
         if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
             cursor.next = next;

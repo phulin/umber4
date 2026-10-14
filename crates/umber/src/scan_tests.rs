@@ -36,6 +36,28 @@ fn character_runs_refill_builders_from_files_and_windows() {
 }
 
 #[test]
+fn window_runs_stop_around_the_bulk_copy_threshold() {
+    // Runs on either side of the word-by-word limit end at an expandable
+    // macro, each delimiter, a parameter, and their window's end.
+    for length in 13..=22 {
+        let run: String = (0..length)
+            .map(|index| b".xy z1"[index % 6] as char)
+            .collect();
+        let body = format!(r"{run}\x{run}{{{run}}}{run}##1{run}");
+        let source = format!(
+            r"\catcode123=1 \catcode125=2 \catcode35=6 \def\x{{!}}\def\a{{{body}}}
+\edef\b#1{{\a\a}}\message{{\meaning\b}}\end"
+        );
+        let outcome = Engine::new(source.as_bytes()).run().unwrap();
+        let expanded = format!("{run}!{run}{{{run}}}{run}#1{run}");
+        assert_eq!(
+            outcome.messages,
+            [format!("macro:#1->{expanded}{expanded}").into_bytes()]
+        );
+    }
+}
+
+#[test]
 fn file_character_runs_follow_space_states() {
     // Builders take spaces inside file runs; \message reads them one by one.
     // Repeated, tab, end-of-line, and line-leading spaces must agree.

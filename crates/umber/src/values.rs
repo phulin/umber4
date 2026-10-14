@@ -211,6 +211,27 @@ impl Builder {
         self.next = cursor;
         Ok(())
     }
+    /// Appends a run of tokens, growing exactly where pushes would.
+    #[inline]
+    pub fn extend(&mut self, mut tokens: &[Token]) -> Result<()> {
+        while !tokens.is_empty() {
+            if self.next == self.limit {
+                self.grow()?;
+            }
+            let count = tokens
+                .len()
+                .min(Self::words(self.next, self.limit) as usize);
+            // SAFETY: count words fit in this builder's unused reservation. The
+            // source is initialized elsewhere: published values never overlap an
+            // unpublished reservation.
+            unsafe {
+                std::ptr::copy_nonoverlapping(tokens.as_ptr(), self.next, count);
+                self.next = self.next.add(count);
+            }
+            tokens = &tokens[count..];
+        }
+        Ok(())
+    }
     #[inline(never)]
     fn grow(&mut self) -> Result<()> {
         let len = self.len();
