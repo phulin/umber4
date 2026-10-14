@@ -130,16 +130,27 @@ impl<'a> FileInput<'a> {
         self.state = 1;
         Some(token)
     }
-    /// Tokenizes the characters read_character would return directly into
-    /// a builder, keeping the line position local for the whole run.
+    /// Tokenizes letters, other characters, and spaces directly into a
+    /// builder, keeping the line position local for the whole run.
     #[inline]
     pub fn read_characters(&mut self, cats: &[Integer; 256], tokens: &mut Builder) -> Result<()> {
         let (line, mut position, mut state) = (self.line.as_slice(), self.position, self.state);
         let result = tokens.extend_with(|| {
-            let token = Self::character(cats, *line.get(position)?)?;
-            position += 1;
-            state = 1;
-            Some(token)
+            loop {
+                let &byte = line.get(position)?;
+                if let Some(token) = Self::character(cats, byte) {
+                    (position, state) = (position + 1, 1);
+                    return Some(token);
+                }
+                if cats[byte as usize].value != 10 {
+                    return None;
+                }
+                // As in read, only a space after a character is a token.
+                position += 1;
+                if std::mem::replace(&mut state, 2) == 1 {
+                    return Some(Token::SPACE);
+                }
+            }
         });
         self.position = position;
         self.state = state;

@@ -36,6 +36,19 @@ fn character_runs_refill_builders_from_files_and_windows() {
 }
 
 #[test]
+fn file_character_runs_follow_space_states() {
+    // Builders take spaces inside file runs; \message reads them one by one.
+    // Repeated, tab, end-of-line, and line-leading spaces must agree.
+    let body = "{ x  y\t\tz \n   w}";
+    let source = format!(
+        "\\catcode123=1 \\catcode125=2 \\catcode9=10\\relax
+\\def\\a{body}\\toks0={body}\\message{{\\a}}\\message{{\\the\\toks0}}\\message{body}\\end"
+    );
+    let outcome = Engine::new(source.as_bytes()).run().unwrap();
+    assert_eq!(outcome.messages, [b" x y z w"; 3]);
+}
+
+#[test]
 fn list_destination_failure_preserves_file_progress_and_lexical_state() {
     use crate::{scalars::Target, token::Token};
     let mut engine = Engine::new(b"{abc XYZ}");
