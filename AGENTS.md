@@ -32,6 +32,7 @@ tools and worktree caches checkout-local.
 
 ## General Instructions
 
+- Do not add dependencies.
 - Commit logical chunks after validation. Use a one-line summary followed by
   useful details, in rough Conventional Commits style.
 - Prefer principled architecture, clean code, and fast implementations. Refactor

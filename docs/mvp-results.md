@@ -4,13 +4,14 @@ The full three-size sweeps below measure immutable-value reclamation at
 `a7f8be0`. A later representation simplification is measured separately in the
 [follow-up report](../benchmarks/results/simplification-followup.json). The
 structural simplification below compares the next cleanup with `d8a8c28`.
-The name/scanner follow-up compares with the resulting `e0007e5` build.
+The historical name/scanner comparison records `c154e34` before its name-table
+change was reverted.
 
 The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) implement
 63 primitive names, covering parsing, expansion, macros, groups, integer state,
 and token registers. Immutable definitions and token lists now follow semantic
-ownership and reuse their backing storage. A fixed-working-set workload peaks at
-89 KiB through 50,000 replacements, versus 83 MiB before reclamation.
+ownership and reuse their backing storage. The reclamation build peaked at
+96 KiB through 50,000 replacements, versus 83 MiB before reclamation.
 
 In the reclamation sweeps, ordinary release uses 0.08–0.62 times native pdfTeX's CPU
 time across nine core workloads and 0.22–0.44 times across nine broader macro
@@ -22,38 +23,19 @@ implemented slice.
 
 ## Name and scanner simplification
 
-The follow-up removes another 55 production Rust lines: 3,916 to 3,861. Across
-both simplification passes, application-owned Rust and Python drop from 5,301 to
-4,820 physical non-test lines, a reduction of 481 (9.1%).
+The custom packed name table is restored, with no added dependencies. The dense
+spelling directory still removes 514 placeholder descriptors. Short and long
+expanded names share one scanner; long names spill once from stack storage.
+Macro equality and meaning conversion read the complete definition value directly,
+while body cursors retain their cached executable range.
 
-`hashbrown::HashTable` supplies name-table probing and growth, using the lexer's
-existing hashes. Stable spelling bytes remain in the session arena. The spelling
-directory stores named entries densely after the preassigned ID range, removing
-514 placeholder descriptors. Short and long expanded names share one scanner;
-long names spill once from stack storage. Macro equality and meaning conversion
-read the complete definition value directly, while body cursors retain their
-cached executable range.
+These retained changes remove 23 production Rust lines relative to `e0007e5`:
+3,916 to 3,893. Across both simplification passes, application-owned Rust and
+Python drop from 5,301 to 4,852 physical non-test lines, a reduction of 449 (8.5%).
 
-The [comparison report](../benchmarks/results/name-scanner-simplification.json)
-retains seven paired repetitions for all nineteen kernels and 21-repetition
-confirmations for selected cases. Both builds use ordinary release with fat LTO,
-one codegen unit, the same compiler, and no PGO. Geometric mean CPU time changes
-by -2.3% across nine core cases and +2.0% across nine broader cases; supplemental
-register-meaning conversion is separate. The confirmations measure -2.4% for raw
-dispatch, +3.6% for the token-register pipeline, +5.5% for the name table, and
-+2.0% for optional arguments. These are accepted costs for the simpler code.
-
-At 50,000 replacements, churn retains the same 359,480 allocation requests and
-reduces its requested heap peak from 98,396 to 90,740 bytes (7.8%). Its CPU time
-increases 1.7%. At 2,500 live definitions, CPU decreases 3.9%; the peak increases
-0.2%, from 2,038,732 to 2,042,852 bytes, with one additional allocation request.
-The report retains separate allocation diagnostics for every kernel.
-
-All 56 debug/release Rust tests, rustfmt, Clippy, and the release Wasm library
-build pass. The native oracle still matches 747 messages and 26 rejection cases.
-Five additional same-source checks cover expanded names of 63, 64, 65, 127, and
-4,097 bytes; the native oracle uses `buf_size = 10000` for this boundary comparison.
-Four selected name-retention, table-growth, collision, and scanner tests pass Miri.
+The [historical comparison report](../benchmarks/results/name-scanner-simplification.json)
+measures `c154e34`, which used `hashbrown`. Its CPU and heap measurements describe
+that earlier build; the restored implementation has not been retimed.
 
 ## Structural simplification
 

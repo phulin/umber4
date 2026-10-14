@@ -1,5 +1,4 @@
 use crate::{Error, Result, token::CS};
-use hashbrown::HashTable;
 use std::cell::UnsafeCell;
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
@@ -16,7 +15,8 @@ static BYTE_NAMES: [[u8; 1]; 256] = {
 };
 pub(crate) struct Names {
     spellings: Vec<NonNull<[u8]>>,
-    buckets: HashTable<(u64, u32)>,
+    // Each bucket packs a 32-bit hash fragment above its stable name ID.
+    buckets: Vec<u64>,
     bytes: SpellingStore,
 }
 impl Names {
@@ -28,7 +28,7 @@ impl Names {
     pub fn new() -> Self {
         Self {
             spellings: Vec::with_capacity(512),
-            buckets: HashTable::with_capacity(256),
+            buckets: vec![0; 1024],
             bytes: SpellingStore::default(),
         }
     }
@@ -65,12 +65,29 @@ impl Names {
     // lexer hashes consumed, translated letters; intern hashes its whole slice.
     #[cfg_attr(feature = "native-profile", inline(never))]
     pub fn intern_hashed(&mut self, name: &[u8], hash: u64) -> Result<u32> {
-        if let Some(&(_, id)) = self.buckets.find(hash, |&(stored, id)| {
-            // SAFETY: insertion publishes a complete spelling before its ID;
-            // the spelling arena keeps that immutable range alive.
-            stored == hash && unsafe { self.spellings[id as usize - NAMED_BASE].as_ref() } == name
-        }) {
-            return Ok(id);
+        let mut slot = hash as usize & (self.buckets.len() - 1);
+        let fragment = u64::from(hash as u32);
+        loop {
+            let bucket = self.buckets[slot];
+            if bucket == 0 {
+                break;
+            }
+            if bucket >> 32 == fragment {
+                let id = bucket as u32;
+                #[cfg(feature = "native-profile")]
+                // SAFETY: occupied buckets hold IDs assigned after appending
+                // their spelling. Subtracting NAMED_BASE selects that entry;
+                // rehashing preserves IDs and entries are never removed.
+                let spelling = unsafe { self.spellings.get_unchecked(id as usize - NAMED_BASE) };
+                #[cfg(not(feature = "native-profile"))]
+                let spelling = &self.spellings[id as usize - NAMED_BASE];
+                // SAFETY: occupied buckets refer to initialized immutable
+                // ranges retained by bytes. This view ends before insertion.
+                if unsafe { spelling.as_ref() } == name {
+                    return Ok(id);
+                }
+            }
+            slot = (slot + 1) & (self.buckets.len() - 1);
         }
         if self.len() >= CS as usize {
             return Err(Error::Capacity);
@@ -78,8 +95,23 @@ impl Names {
         let id = self.len() as u32;
         let spelling = self.bytes.append(name);
         self.spellings.push(spelling);
-        self.buckets
-            .insert_unique(hash, (hash, id), |&(hash, _)| hash);
+        self.buckets[slot] = (fragment << 32) | u64::from(id);
+        if self.spellings.len() * 2 > self.buckets.len() {
+            let mut buckets = vec![0; self.buckets.len() * 2];
+            // With 24-bit name IDs and a half-full table, bucket indices use
+            // at most 25 hash bits. The fragment retains all of those bits.
+            for &bucket in &self.buckets {
+                if bucket == 0 {
+                    continue;
+                }
+                let mut slot = (bucket >> 32) as usize & (buckets.len() - 1);
+                while buckets[slot] != 0 {
+                    slot = (slot + 1) & (buckets.len() - 1);
+                }
+                buckets[slot] = bucket;
+            }
+            self.buckets = buckets;
+        }
         Ok(id)
     }
 }
