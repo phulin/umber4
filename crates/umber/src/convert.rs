@@ -45,19 +45,30 @@ impl Engine<'_> {
             Ok(())
         }
     }
+    #[inline(always)]
     pub(crate) fn token_text(
         &mut self,
         token: Token,
         show: bool,
         mut emit: impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
-        if !token.is_cs() {
-            emit(self, token.byte())?;
-            if show && token.cat() == 6 {
-                emit(self, token.byte())?;
-            }
-            return Ok(());
+        if token.is_cs() {
+            return self.cs_text(token, show, emit);
         }
+        emit(self, token.byte())?;
+        if show && token.cat() == 6 {
+            emit(self, token.byte())?;
+        }
+        Ok(())
+    }
+    // Character text stays inline in conversion loops; names spill here.
+    #[inline(never)]
+    fn cs_text(
+        &mut self,
+        token: Token,
+        show: bool,
+        mut emit: impl FnMut(&mut Self, u8) -> Result<()>,
+    ) -> Result<()> {
         if let Some(byte) = token.active_byte() {
             return emit(self, byte);
         }
