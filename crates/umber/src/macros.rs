@@ -167,7 +167,8 @@ impl Engine<'_> {
                 return false;
             };
             let sequence = &self.packets[parent as usize].arguments[(token.byte() - 1) as usize];
-            if sequence.first.store != SINGLE {
+            // A delimiter trim can empty an inline word; it then holds no token.
+            if sequence.first.store != SINGLE || sequence.first.empty() {
                 return false;
             }
             // SINGLE is constructed only for a sequence containing one word.

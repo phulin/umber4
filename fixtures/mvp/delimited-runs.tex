@@ -16,4 +16,6 @@ DEFx:END}
 DEFx:END}
 \def\open#1#{[#1]}
 \message{UMBER:\open ABC{XYZ}:END}
+\def\group#1{[#1]}\def\forward#1x{\group{#1}}
+\message{UMBER:\forward x/\forward Ax/\forward{}x:END}
 \end
