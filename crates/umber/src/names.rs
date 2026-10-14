@@ -68,12 +68,13 @@ impl Names {
     // lexer hashes consumed, translated letters; intern hashes its whole slice.
     #[cfg_attr(feature = "native-profile", inline(never))]
     pub fn intern_hashed(&mut self, name: &[u8], hash: u64) -> Result<u32> {
-        let mut slot = hash as usize & (self.buckets.len() - 1);
+        let mask = self.buckets.len() - 1;
+        let mut slot = hash as usize & mask;
         let fragment = u64::from(hash as u32);
         loop {
             let bucket = self.buckets[slot];
             if bucket == 0 {
-                break;
+                return self.insert(name, fragment, slot);
             }
             if bucket >> 32 == fragment {
                 let id = bucket as u32;
@@ -86,12 +87,15 @@ impl Names {
                 let spelling = &self.spellings[id as usize - NAMED];
                 // SAFETY: occupied buckets refer to initialized immutable
                 // ranges retained by bytes. This view ends before insertion.
-                if unsafe { spelling.as_ref() } == name {
+                if same_spelling(unsafe { spelling.as_ref() }, name) {
                     return Ok(id);
                 }
             }
-            slot = (slot + 1) & (self.buckets.len() - 1);
+            slot = (slot + 1) & mask;
         }
+    }
+    #[inline(never)]
+    fn insert(&mut self, name: &[u8], fragment: u64, slot: usize) -> Result<u32> {
         if self.len() >= CS as usize {
             return Err(Error::Capacity);
         }
@@ -116,6 +120,25 @@ impl Names {
             self.buckets = buckets;
         }
         Ok(id)
+    }
+}
+
+// Typical names compare as two overlapping words of equal-length spellings,
+// which covers every byte without a library call.
+#[inline(always)]
+fn same_spelling(a: &[u8], b: &[u8]) -> bool {
+    fn words<const N: usize>(a: &[u8], b: &[u8], at: usize) -> bool {
+        a[at..at + N] == b[at..at + N]
+    }
+    let length = a.len();
+    if length != b.len() {
+        return false;
+    }
+    match length {
+        2..4 => words::<2>(a, b, 0) && words::<2>(a, b, length - 2),
+        4..8 => words::<4>(a, b, 0) && words::<4>(a, b, length - 4),
+        8..=16 => words::<8>(a, b, 0) && words::<8>(a, b, length - 8),
+        _ => a == b,
     }
 }
 

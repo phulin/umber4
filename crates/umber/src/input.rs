@@ -190,7 +190,21 @@ impl<'a> FileInput<'a> {
                         let start = self.position;
                         let mut hash = Names::hash_byte(Names::HASH_START, first);
                         self.position += 1;
-                        while self.position < self.line.len() {
+                        loop {
+                            // Untranslated letters need no line rewrite, so
+                            // the position stays local across the run.
+                            let mut position = self.position;
+                            while let Some(&byte) = self.line.get(position)
+                                && cats[byte as usize].value as u8 == 11
+                            {
+                                hash = Names::hash_byte(hash, byte);
+                                position += 1;
+                            }
+                            self.position = position;
+                            if position == self.line.len() {
+                                break;
+                            }
+                            // A superscript pair may still decode to a letter.
                             let (byte, cat) = self.classified(cats);
                             if cat != 11 {
                                 break;
