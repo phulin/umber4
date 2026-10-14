@@ -41,29 +41,34 @@ impl Engine<'_> {
             self.scan_int()
         }
     }
+    // A range-checked factor and the operator that follows it.
+    fn expression_operand(&mut self, depth: u16, overflow: &mut bool) -> Result<(i32, Read)> {
+        let factor = self.expression_factor(depth, overflow)?;
+        let operator = self.nonspace(true)?;
+        Ok((
+            Self::expression_range(i64::from(factor), overflow),
+            operator,
+        ))
+    }
     fn expression_term(&mut self, depth: u16, overflow: &mut bool) -> Result<(i32, Read)> {
-        let first = self.expression_factor(depth, overflow)?;
-        let mut operator = self.nonspace(true)?;
-        let mut value = Self::expression_range(i64::from(first), overflow);
+        let (mut value, mut operator) = self.expression_operand(depth, overflow)?;
         loop {
             if operator.token == Token::other(b'*') {
-                let factor = self.expression_factor(depth, overflow)?;
-                operator = self.nonspace(true)?;
-                let factor = Self::expression_range(i64::from(factor), overflow);
+                let (factor, next) = self.expression_operand(depth, overflow)?;
                 let product = i64::from(value) * i64::from(factor);
+                operator = next;
+                // A quotient after a product scales with the unrounded product.
                 if operator.token == Token::other(b'/') {
-                    let divisor = self.expression_factor(depth, overflow)?;
-                    operator = self.nonspace(true)?;
-                    let divisor = Self::expression_range(i64::from(divisor), overflow);
+                    let (divisor, next) = self.expression_operand(depth, overflow)?;
                     value = Self::rounded_divide(product, divisor, overflow);
+                    operator = next;
                 } else {
                     value = Self::expression_range(product, overflow);
                 }
             } else if operator.token == Token::other(b'/') {
-                let divisor = self.expression_factor(depth, overflow)?;
-                operator = self.nonspace(true)?;
-                let divisor = Self::expression_range(i64::from(divisor), overflow);
+                let (divisor, next) = self.expression_operand(depth, overflow)?;
                 value = Self::rounded_divide(i64::from(value), divisor, overflow);
+                operator = next;
             } else {
                 return Ok((value, operator));
             }
