@@ -120,8 +120,13 @@ impl Tokens {
     #[inline]
     pub fn get(&self, position: u32) -> Token {
         assert!(position < self.len);
+        // SAFETY: published positions are initialized.
+        unsafe { self.read(position) }
+    }
+    // SAFETY: position must be initialized. Its page is retained by self.
+    #[inline]
+    unsafe fn read(&self, position: u32) -> Token {
         let piece = self.piece(position);
-        // SAFETY: position is initialized and its page is retained by this value.
         unsafe { piece.base.add((position - piece.start) as usize).read() }
     }
     pub fn equal(&self, mut a: u32, other: &Self, mut b: u32, length: u32) -> bool {
@@ -145,68 +150,86 @@ impl Tokens {
         true
     }
 }
+// The write cursor runs from base, which holds position start, to the
+// reservation limit. Contiguous growth keeps base and start. All three
+// pointers are null before the first reservation.
 pub(crate) struct Builder {
     tokens: Tokens,
     pool: Rc<Pool>,
     owner: Owner,
+    base: *mut Token,
     next: *mut Token,
-    remaining: u32,
+    limit: *mut Token,
+    start: u32,
 }
 impl Builder {
     pub fn id(&self) -> u32 {
         self.owner.id
     }
     pub fn len(&self) -> u32 {
-        self.tokens.len
+        self.start + Self::words(self.base, self.next)
+    }
+    fn words(from: *mut Token, to: *mut Token) -> u32 {
+        ((to.addr() - from.addr()) / size_of::<Token>()) as u32
     }
     #[inline(always)]
     pub fn push(&mut self, token: Token) -> Result<()> {
-        if self.tokens.len == u32::MAX {
-            return Err(Error::Capacity);
-        }
-        if self.remaining == 0 {
-            self.grow();
+        if self.next == self.limit {
+            self.grow()?;
         }
         // SAFETY: grow reserves a disjoint unused suffix of a stable page.
-        // Each word is initialized before len advances; the cursor remains
-        // inside this reservation or one past its end. Published cells stay
-        // immutable, including when other builders share this page.
+        // Each word is initialized before the cursor passes it; the cursor
+        // remains inside this reservation or at its limit. Published cells
+        // stay immutable, including when other builders share this page.
         unsafe {
             self.next.write(token);
             self.next = self.next.add(1);
         }
-        self.remaining -= 1;
-        self.tokens.len += 1;
         Ok(())
     }
     #[inline(never)]
-    fn grow(&mut self) {
-        let requested = (self.tokens.len as usize)
+    fn grow(&mut self) -> Result<()> {
+        let len = self.len();
+        // Reservations end at u32::MAX positions, so the cursor's position
+        // always fits the published length.
+        let requested = (len as usize)
             .clamp(64, WORDS)
-            .min((u32::MAX - self.tokens.len) as usize);
-        let piece = self.pool.reserve(requested, self.tokens.len);
-        self.next = piece.base;
-        self.remaining = piece.capacity;
-        if let Some(last) = self.tokens.last_mut() {
-            if Rc::ptr_eq(&last.page, &piece.page)
-                && last.base.wrapping_add(last.capacity as usize) == piece.base
-            {
-                last.capacity += piece.capacity;
-                return;
-            }
-            self.tokens.rest.push(piece);
-        } else {
-            self.tokens.first = Some(piece);
+            .min((u32::MAX - len) as usize);
+        if requested == 0 {
+            return Err(Error::Capacity);
         }
+        let piece = self.pool.reserve(requested, len);
+        self.next = piece.base;
+        // SAFETY: the reservation lies inside its page's cell allocation.
+        self.limit = unsafe { piece.base.add(piece.capacity as usize) };
+        if let Some(last) = self.tokens.last_mut()
+            && Rc::ptr_eq(&last.page, &piece.page)
+            && last.base.wrapping_add(last.capacity as usize) == piece.base
+        {
+            last.capacity += piece.capacity;
+            return Ok(());
+        }
+        self.base = piece.base;
+        self.start = len;
+        if self.tokens.first.is_none() {
+            self.tokens.first = Some(piece);
+        } else {
+            self.tokens.rest.push(piece);
+        }
+        Ok(())
     }
     pub fn get(&self, position: u32) -> Token {
-        self.tokens.get(position)
+        assert!(position < self.len());
+        // SAFETY: positions before the cursor are initialized.
+        unsafe { self.tokens.read(position) }
     }
     pub fn finish(mut self, definition: Option<Definition>) -> Owner {
-        if self.remaining != 0 {
+        self.tokens.len = self.len();
+        let remaining = Self::words(self.next, self.limit);
+        if remaining != 0 {
             let last = self.tokens.last_mut().unwrap();
-            if self.pool.rewind(last, self.remaining) {
-                last.capacity -= self.remaining;
+            if self.pool.rewind(last, remaining) {
+                last.capacity -= remaining;
             }
         }
         // SAFETY: only this builder owns the unpublished value. get refuses
@@ -312,8 +335,10 @@ impl Values {
             tokens: Tokens::default(),
             pool: Rc::clone(&self.pool),
             owner: Owner(slot),
+            base: std::ptr::null_mut(),
             next: std::ptr::null_mut(),
-            remaining: 0,
+            limit: std::ptr::null_mut(),
+            start: 0,
         })
     }
     #[inline]

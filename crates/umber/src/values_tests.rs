@@ -183,12 +183,12 @@ fn reservation_stays_inside_value_coordinates() {
     let mut values = Values::default();
     let mut builder = values.builder().unwrap();
     // Exercise the final reservation without allocating the preceding words.
-    builder.tokens.len = u32::MAX - 1;
+    builder.start = u32::MAX - 1;
     builder.push(Token::other(b'Z')).unwrap();
     let piece = builder.tokens.first.as_ref().unwrap();
     assert_eq!(piece.start, u32::MAX - 1);
     assert_eq!(piece.capacity, 1);
     assert_eq!(piece.start.checked_add(piece.capacity), Some(u32::MAX));
-    assert_eq!(builder.tokens.len, u32::MAX);
+    assert_eq!(builder.len(), u32::MAX);
     assert_eq!(builder.push(Token::other(b'X')), Err(Error::Capacity));
 }
