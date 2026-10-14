@@ -65,7 +65,7 @@ impl Engine<'_> {
                 let mut end = start;
                 while end < body_start - 1 {
                     let token = tokens.get(end);
-                    if token.0 & PARAM != 0 && !token.is_cs() {
+                    if token.is_parameter() {
                         break;
                     }
                     end += 1;

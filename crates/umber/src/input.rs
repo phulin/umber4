@@ -179,7 +179,7 @@ impl<'a> FileInput<'a> {
                         return Ok(par);
                     }
                     if old == 1 {
-                        return Ok(Token::character(10, b' '));
+                        return Ok(Token::SPACE);
                     }
                 }
                 9 => {}
@@ -187,7 +187,7 @@ impl<'a> FileInput<'a> {
                     let old = self.state;
                     self.state = 2;
                     if old == 1 {
-                        return Ok(Token::character(10, b' '));
+                        return Ok(Token::SPACE);
                     }
                 }
                 13 => {
@@ -260,7 +260,7 @@ impl Engine<'_> {
             // Capture retains backing before the next read can retire a source.
             let token = unsafe { window.next.read() };
             window.next = unsafe { window.next.add(1) };
-            if token.0 & PARAM != 0 && !token.is_cs() {
+            if token.is_parameter() {
                 let packet = window.owns_packet.ok_or(Error::Syntax)?;
                 let argument = token.byte() - 1;
                 if let Some(raw) = self.single_argument(packet, argument) {

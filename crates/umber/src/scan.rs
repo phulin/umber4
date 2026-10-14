@@ -38,7 +38,7 @@ impl Engine<'_> {
                     .ok_or(Error::Overflow)?;
                 continue;
             }
-            if token.0 & PARAM != 0 && !token.is_cs() {
+            if token.is_parameter() {
                 return Ok(false);
             }
             let meaning = if token.is_cs() {

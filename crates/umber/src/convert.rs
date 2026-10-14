@@ -47,15 +47,6 @@ impl Engine<'_> {
             Ok(())
         }
     }
-    #[inline]
-    fn generated_byte(&mut self, output: &mut Generated, byte: u8) -> Result<()> {
-        let token = if byte == b' ' {
-            Token::character(10, byte)
-        } else {
-            Token::other(byte)
-        };
-        self.generated_token(output, token)
-    }
     pub(crate) fn token_text(
         &mut self,
         token: Token,
@@ -152,7 +143,7 @@ impl Engine<'_> {
             let mut parameter = 0;
             for position in 0..owner.tokens.len {
                 let token = owner.tokens.get(position);
-                if token.0 & PARAM != 0 && !token.is_cs() {
+                if token.is_parameter() {
                     if position < body_start {
                         if token.byte() == 255 {
                             self.emit_text(b"->", emit)?;
@@ -223,7 +214,7 @@ impl Engine<'_> {
     pub(crate) fn convert(&mut self, read: Read) -> Result<()> {
         let mut output = Generated::default();
         self.conversion::<false>(read, |engine, byte| {
-            engine.generated_byte(&mut output, byte)
+            engine.generated_token(&mut output, Token::string_character(byte))
         })?;
         self.finish_generated(output)
     }

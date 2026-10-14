@@ -15,9 +15,8 @@ unsafe fn character_end<const EXCEPT: bool>(
     while next != end && unsafe { end.offset_from(next) } >= 4 {
         // SAFETY: four initialized immutable words remain in this window.
         let words = unsafe { next.cast::<[Token; 4]>().read() };
-        let structural = words.map(|token| {
-            u32::from(!(3 << 8..PARAM).contains(&token.0) || (EXCEPT && token == except))
-        });
+        let structural = words
+            .map(|token| u32::from(!token.is_plain_character() || (EXCEPT && token == except)));
         if structural[0] | structural[1] | structural[2] | structural[3] != 0 {
             break;
         }
@@ -27,7 +26,7 @@ unsafe fn character_end<const EXCEPT: bool>(
     while next != end {
         // SAFETY: the caller supplied this retained immutable window.
         let token = unsafe { next.read() };
-        if !(3 << 8..PARAM).contains(&token.0) || (EXCEPT && token == except) {
+        if !token.is_plain_character() || (EXCEPT && token == except) {
             break;
         }
         // SAFETY: advance at most one past the same initialized window.

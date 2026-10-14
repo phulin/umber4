@@ -59,12 +59,7 @@ impl Engine<'_> {
                                 let mut nonempty = false;
                                 engine.conversion::<true>(read, |engine, byte| {
                                     nonempty = true;
-                                    let token = if byte == b' ' {
-                                        Token::character(10, byte)
-                                    } else {
-                                        Token::other(byte)
-                                    };
-                                    emit(engine, token)
+                                    emit(engine, Token::string_character(byte))
                                 })?;
                                 if nonempty && engine.sources.len() > 10000 {
                                     return Err(Error::Capacity);

@@ -15,6 +15,7 @@ pub(crate) const NAMED_BASE: u32 = ACTIVE_BASE + 256;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Token(pub u32);
 impl Token {
+    pub const SPACE: Self = Self((10 << 8) | 32);
     pub fn character(cat: u8, byte: u8) -> Self {
         Self((u32::from(cat) << 8) | u32::from(byte))
     }
@@ -54,10 +55,27 @@ impl Token {
         self.0 >> 8 == 2
     }
     pub fn is_space(self) -> bool {
-        self.0 == (10 << 8 | 32)
+        self == Self::SPACE
+    }
+    /// A parameter marker in a stored definition or argument.
+    pub fn is_parameter(self) -> bool {
+        self.0 & PARAM != 0 && !self.is_cs()
+    }
+    /// A character that cannot change group depth: neither a brace, a
+    /// control sequence, nor a parameter marker.
+    pub fn is_plain_character(self) -> bool {
+        (3 << 8..PARAM).contains(&self.0)
     }
     pub fn other(byte: u8) -> Self {
         Self::character(12, byte)
+    }
+    /// Converted text: spaces become blank spaces, other bytes other characters.
+    pub fn string_character(byte: u8) -> Self {
+        if byte == b' ' {
+            Self::SPACE
+        } else {
+            Self::other(byte)
+        }
     }
 }
 pub(crate) mod cmd {

@@ -162,7 +162,7 @@ impl Engine<'_> {
         }
         // SAFETY: first precedes second in the same retained window.
         let token = unsafe { first.read() };
-        let token = if token.0 & PARAM != 0 && !token.is_cs() {
+        let token = if token.is_parameter() {
             let Some(parent) = cursor.owns_packet else {
                 return false;
             };
@@ -175,7 +175,7 @@ impl Engine<'_> {
         } else {
             token
         };
-        if !(3 << 8..PARAM).contains(&token.0)
+        if !token.is_plain_character()
             && (token.is_begin() || token.is_end() || (!long && token == self.par))
         {
             return false;
