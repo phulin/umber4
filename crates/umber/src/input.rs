@@ -1,5 +1,8 @@
 use crate::{Engine, Error, Result, names::Names, token::*};
 
+// Installed token sources, including generated text, share one nesting limit.
+const MAX_SOURCES: usize = 10000;
+
 pub(crate) struct FileInput<'a> {
     bytes: &'a [u8],
     offset: usize,
@@ -208,6 +211,13 @@ impl<'a> FileInput<'a> {
 }
 
 impl Engine<'_> {
+    #[inline(always)]
+    pub(crate) fn check_source_limit(&self) -> Result<()> {
+        if self.sources.len() > MAX_SOURCES {
+            return Err(Error::Capacity);
+        }
+        Ok(())
+    }
     // Debug scanner recursion keeps a reader call boundary instead of
     // duplicating its unoptimized temporaries in every expansion frame.
     #[cfg_attr(not(debug_assertions), inline(always))]
@@ -360,9 +370,7 @@ impl Engine<'_> {
         owns_packet: Option<u32>,
         owner: Option<crate::values::Owner>,
     ) -> Result<()> {
-        if self.sources.len() > 10000 {
-            return Err(Error::Capacity);
-        }
+        self.check_source_limit()?;
         let (next, end, window_end_position) = match &owner {
             Some(value) => value.tokens.window(span.start, span.end),
             _ => self.values.window(span, span.start),

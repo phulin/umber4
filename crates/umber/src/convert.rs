@@ -38,9 +38,7 @@ impl Engine<'_> {
         if let Some(tokens) = output.buffer {
             self.push_tokens(tokens.finish(None), 0)
         } else if let Some(token) = output.first {
-            if self.sources.len() > 10000 {
-                return Err(Error::Capacity);
-            }
+            self.check_source_limit()?;
             self.back(token);
             Ok(())
         } else {

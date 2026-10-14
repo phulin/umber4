@@ -82,9 +82,7 @@ impl Engine<'_> {
     }
     pub(crate) fn insert_number(&mut self, value: i32) -> Result<()> {
         if (-9..=99).contains(&value) {
-            if self.sources.len() > 10000 {
-                return Err(Error::Capacity);
-            }
+            self.check_source_limit()?;
             match value {
                 -9..=-1 => {
                     self.insert_pair(Token::other(b'-'), Token::other(b'0' + (-value) as u8));

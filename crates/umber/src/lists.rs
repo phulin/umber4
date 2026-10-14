@@ -61,8 +61,8 @@ impl Engine<'_> {
                                     nonempty = true;
                                     emit(engine, Token::string_character(byte))
                                 })?;
-                                if nonempty && engine.sources.len() > 10000 {
-                                    return Err(Error::Capacity);
+                                if nonempty {
+                                    engine.check_source_limit()?;
                                 }
                                 Ok(())
                             })?;
@@ -140,9 +140,7 @@ impl Engine<'_> {
     ) -> Result<()> {
         // Preserve the general expansion path's source limit even though this
         // scanner needs no additional source for the generated characters.
-        if self.sources.len() > 10000 {
-            return Err(Error::Capacity);
-        }
+        self.check_source_limit()?;
         if value < 0 {
             emit(self, Token::other(b'-'))?;
         }
