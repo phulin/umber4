@@ -51,12 +51,7 @@ impl Engine<'_> {
             }
             cmd::NOEXPAND => {
                 let token = self.next_raw()?.token;
-                self.sources.push(Source::Inline {
-                    tokens: [token, Token(0)],
-                    position: 0,
-                    len: 1,
-                    suppress: true,
-                });
+                self.push_inline([token, Token(0)], 1, true);
                 Ok(())
             }
             cmd::CSNAME => {

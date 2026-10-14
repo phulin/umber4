@@ -11,12 +11,12 @@ impl Engine<'_> {
     fn conditional_character(read: Read) -> (u8, i32) {
         if read.meaning.command < 16 {
             (read.meaning.command, read.meaning.value)
-        } else if read.meaning.command == cmd::RELAX
-            && read.meaning.value == 257
+        } else if read.meaning == Meaning::NOEXPAND_RELAX
             && let Some(byte) = read.token.active_byte()
         {
             (13, i32::from(byte))
         } else {
+            // Other control sequences match each other, but no character code.
             (cmd::RELAX, 256)
         }
     }

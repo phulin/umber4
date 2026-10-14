@@ -62,24 +62,15 @@ impl Engine<'_> {
             return emit(self, byte);
         }
         let id = token.id();
-        let escape = self.scalars[Target::ESCAPECHAR].value;
         if id == NULL_CS as usize {
-            for word in [b"csname".as_slice(), b"endcsname"] {
-                if (0..=255).contains(&escape) {
-                    emit(self, escape as u8)?;
-                }
-                for &byte in word {
-                    emit(self, byte)?;
-                }
-            }
+            self.escaped_text(b"csname", &mut emit)?;
+            self.escaped_text(b"endcsname", &mut emit)?;
             if show {
                 emit(self, b' ')?;
             }
             return Ok(());
         }
-        if (0..=255).contains(&escape) {
-            emit(self, escape as u8)?;
-        }
+        self.emit_escape(&mut emit)?;
         let length = self.names.spelling(id).len();
         for index in 0..length {
             let byte = self.names.spelling(id)[index];
@@ -103,15 +94,19 @@ impl Engine<'_> {
         }
         Ok(())
     }
+    fn emit_escape(&mut self, emit: &mut impl FnMut(&mut Self, u8) -> Result<()>) -> Result<()> {
+        let escape = self.scalars[Target::ESCAPECHAR].value;
+        if (0..=255).contains(&escape) {
+            emit(self, escape as u8)?;
+        }
+        Ok(())
+    }
     fn escaped_text(
         &mut self,
         text: &[u8],
         emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
-        let escape = self.scalars[Target::ESCAPECHAR].value;
-        if (0..=255).contains(&escape) {
-            emit(self, escape as u8)?;
-        }
+        self.emit_escape(emit)?;
         self.emit_text(text, emit)
     }
     fn meaning_text(

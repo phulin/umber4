@@ -20,6 +20,13 @@ impl Engine<'_> {
         radix
     }
     #[inline(always)]
+    fn accumulate(value: i32, radix: i32, digit: i32) -> Result<i32> {
+        value
+            .checked_mul(radix)
+            .and_then(|v| v.checked_add(digit))
+            .ok_or(Error::Overflow)
+    }
+    #[inline(always)]
     fn scan_digit_window(&mut self, radix: i32, value: &mut i32) -> Result<bool> {
         let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
             return Ok(false);
@@ -32,15 +39,13 @@ impl Engine<'_> {
             if digit < radix {
                 // SAFETY: next is before end in the same allocation.
                 cursor.next = unsafe { cursor.next.add(1) };
-                *value = value
-                    .checked_mul(radix)
-                    .and_then(|v| v.checked_add(digit))
-                    .ok_or(Error::Overflow)?;
+                *value = Self::accumulate(*value, radix, digit)?;
                 continue;
             }
             if token.is_parameter() {
                 return Ok(false);
             }
+            // Engine::resolve would borrow the engine across this cursor.
             let meaning = if token.is_cs() {
                 self.bindings[token.id()].meaning()
             } else {
@@ -147,10 +152,7 @@ impl Engine<'_> {
                 }
                 return Ok(value);
             }
-            value = value
-                .checked_mul(RADIX)
-                .and_then(|v| v.checked_add(digit))
-                .ok_or(Error::Overflow)?;
+            value = Self::accumulate(value, RADIX, digit)?;
         }
     }
     #[inline]

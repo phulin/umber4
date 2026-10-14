@@ -160,12 +160,7 @@ impl<'a> Engine<'a> {
         let raw = self.next_raw()?;
         let mut meaning = self.resolve(raw.token);
         if raw.suppress && meaning.expandable() {
-            // TeX distinguishes this one-read relax from the ordinary primitive
-            // when a raw scanner (notably ifx) inspects it.
-            meaning = Meaning {
-                command: cmd::RELAX,
-                value: 257,
-            };
+            meaning = Meaning::NOEXPAND_RELAX;
         }
         Ok(Read {
             token: raw.token,

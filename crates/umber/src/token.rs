@@ -194,6 +194,12 @@ impl Meaning {
         command: cmd::RELAX,
         value: 0,
     };
+    // TeX distinguishes the one-read relax of a noexpanded token from the
+    // ordinary primitive when a raw scanner (notably ifx) inspects it.
+    pub const NOEXPAND_RELAX: Self = Self {
+        command: cmd::RELAX,
+        value: 257,
+    };
     pub fn is_macro(self) -> bool {
         matches!(self.command, cmd::MACRO | cmd::PROTECTED_MACRO)
     }
