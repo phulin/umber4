@@ -97,6 +97,9 @@ name can be a borrowed range in the line; a translated spelling uses a reusable
 small scratch buffer. A new spelling is written into process-owned name storage
 only when lookup misses.
 
+The MVP uses `hashbrown::HashTable` for probing and growth. Entries retain the
+lexer's hash and stable name ID; spelling bytes remain in the session arena.
+
 Single-character control sequences and active-character identities can use
 preassigned dense IDs. The empty control-sequence name has its own identity.
 Named identities and current meanings remain separate; name lookup does not make

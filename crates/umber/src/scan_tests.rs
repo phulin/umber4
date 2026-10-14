@@ -1,6 +1,25 @@
 use crate::{Engine, Error};
 
 #[test]
+fn expanded_names_preserve_identity_at_buffer_boundaries() {
+    for length in [63, 64, 65, 127, 4097] {
+        let prefix = "x".repeat(length - 1);
+        let source = format!(
+            r"\catcode123=1 \catcode125=2\relax
+\def\piece{{{prefix}}}
+\expandafter\def\csname\piece z\endcsname{{OK}}
+\message{{UMBER:\csname {prefix}z\endcsname/\ifcsname {prefix}z\endcsname Y\else N\fi/\ifcsname {prefix}q\endcsname Y\else N\fi:END}}
+\end"
+        );
+        assert_eq!(
+            Engine::new(source.as_bytes()).run().unwrap().messages,
+            [b"UMBER:OK/Y/N:END".as_slice()],
+            "name length {length}"
+        );
+    }
+}
+
+#[test]
 fn list_destination_failure_preserves_file_progress_and_lexical_state() {
     use crate::{scalars::Target, token::Token};
     let mut engine = Engine::new(b"{abc XYZ}");

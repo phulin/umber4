@@ -282,6 +282,8 @@ pub(crate) struct TokenValue {
     pub level: u16,
 }
 pub(crate) struct Definition {
+    // The owning value contains the full prefix, parameter markers, separator,
+    // and replacement text. body selects the executable part of that value.
     pub prefix_end: u32,
     pub body: ArenaRange,
     pub parameters: Box<[Parameter]>,
@@ -291,16 +293,6 @@ pub(crate) struct Definition {
 pub(crate) struct Parameter {
     pub delimiter: ArenaRange,
     pub failure: Box<[usize]>,
-}
-impl Definition {
-    pub fn signature(&self) -> ArenaRange {
-        // The writer emits prefix, parameter markers, the body separator, and
-        // body in arena order. Any final #{ brace is part of the body's end.
-        ArenaRange {
-            start: 0,
-            end: self.body.end,
-        }
-    }
 }
 pub(crate) enum Backing {
     Capture { _owner: Rc<Vec<Token>> },

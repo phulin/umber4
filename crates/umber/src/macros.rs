@@ -378,15 +378,10 @@ impl Engine<'_> {
         let b_owner = self.values.get(b.value as u32);
         let a = a_owner.definition();
         let b = b_owner.definition();
-        let a_signature = a.signature();
-        let b_signature = b.signature();
         a.long == b.long
-            && a_signature.end - a_signature.start == b_signature.end - b_signature.start
-            && a_owner.tokens.equal(
-                a_signature.start,
-                &b_owner.tokens,
-                b_signature.start,
-                a_signature.end - a_signature.start,
-            )
+            && a_owner.tokens.len == b_owner.tokens.len
+            && a_owner
+                .tokens
+                .equal(0, &b_owner.tokens, 0, a_owner.tokens.len)
     }
 }

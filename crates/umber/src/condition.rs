@@ -157,39 +157,33 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn scan_name(&mut self) -> Result<u32> {
-        // Name assembly lasts only for this scan. Common control names fit on
-        // the Rust stack; long names spill once into their destination vector.
-        let mut name = [0; 64];
+        // Common names stay on the stack; longer names spill once and continue
+        // through the same expansion and validation loop.
+        let mut prefix = [0; 64];
         let mut length = 0;
+        let mut spill = Vec::new();
         loop {
             let read = self.next_expanded()?;
             if read.meaning.command == cmd::ENDCSNAME {
-                return self.intern(&name[..length]);
+                return self.intern(if spill.is_empty() {
+                    &prefix[..length]
+                } else {
+                    &spill
+                });
             }
             if read.token.is_cs() {
                 return Err(Error::Syntax);
             }
-            if length == name.len() {
-                return self.scan_long_name(&name, read.token.byte());
+            if length < prefix.len() {
+                prefix[length] = read.token.byte();
+                length += 1;
+            } else {
+                if spill.is_empty() {
+                    spill.reserve(prefix.len() * 2);
+                    spill.extend_from_slice(&prefix);
+                }
+                spill.push(read.token.byte());
             }
-            name[length] = read.token.byte();
-            length += 1;
-        }
-    }
-    #[inline(never)]
-    fn scan_long_name(&mut self, prefix: &[u8], first: u8) -> Result<u32> {
-        let mut name = Vec::with_capacity(prefix.len() * 2);
-        name.extend_from_slice(prefix);
-        name.push(first);
-        loop {
-            let read = self.next_expanded()?;
-            if read.meaning.command == cmd::ENDCSNAME {
-                return self.intern(&name);
-            }
-            if read.token.is_cs() {
-                return Err(Error::Syntax);
-            }
-            name.push(read.token.byte());
         }
     }
 }

@@ -30,6 +30,10 @@ retains largest-size timings, same-LTO controls, longer confirmations, and
 allocation diagnostics. The release profile now uses fat LTO; earlier reports
 retain the settings of their measured builds.
 
+The [name/scanner comparison](results/name-scanner-simplification.json) retains
+the next cleanup against `e0007e5`, including its small broader CPU regressions,
+name-boundary compatibility checks, and reduced fixed-working-set heap peak.
+
 An optional native profile build uses the same generators for compiler training:
 
 ```bash
@@ -49,8 +53,8 @@ for the recorded compiler. The builder enables `native-profile`, which lets the
 trained compiler choose whether to inline physical-line loading. Ordinary and
 Wasm builds keep that loader in a separate function. The feature also allows
 compiler-selected argument-reset inlining and keeps name lookup behind a measured
-Rust call boundary. It reads published spelling entries directly; ordinary
-builds retain the measured reset call and checked spelling reads.
+Rust call boundary. Both builds use checked spelling-entry reads; ordinary
+builds retain the measured reset call.
 Stored-list scans in profile builds classify spaces, letters, and other
 characters through one contiguous token range, with the existing checks for
 all remaining words. Ordinary builds retain their previous classification path.

@@ -1,4 +1,5 @@
 use crate::{Error, Result, token::CS};
+use hashbrown::HashTable;
 use std::cell::UnsafeCell;
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
@@ -15,8 +16,7 @@ static BYTE_NAMES: [[u8; 1]; 256] = {
 };
 pub(crate) struct Names {
     spellings: Vec<NonNull<[u8]>>,
-    // Each bucket packs a 32-bit hash fragment above its stable name ID.
-    buckets: Vec<u64>,
+    buckets: HashTable<(u64, u32)>,
     bytes: SpellingStore,
 }
 impl Names {
@@ -26,16 +26,14 @@ impl Names {
         (hash ^ u64::from(byte)).wrapping_mul(0x100000001b3)
     }
     pub fn new() -> Self {
-        let mut spellings = Vec::with_capacity(1024);
-        spellings.resize(NAMED_BASE, NonNull::from(b"".as_slice()));
         Self {
-            spellings,
-            buckets: vec![0; 1024],
+            spellings: Vec::with_capacity(512),
+            buckets: HashTable::with_capacity(256),
             bytes: SpellingStore::default(),
         }
     }
     pub fn len(&self) -> usize {
-        self.spellings.len()
+        NAMED_BASE + self.spellings.len()
     }
     pub fn spelling(&self, id: usize) -> &[u8] {
         // Both fixed symbol ranges encode their byte directly in the ID.
@@ -47,7 +45,7 @@ impl Names {
             // SAFETY: every named entry is published after its complete range
             // is initialized. bytes owns that stable chunk for Names' lifetime;
             // this view's borrow ends before Names can be dropped.
-            _ => unsafe { self.spellings[id].as_ref() },
+            _ => unsafe { self.spellings[id - NAMED_BASE].as_ref() },
         }
     }
     pub fn intern(&mut self, name: &[u8]) -> Result<u32> {
@@ -67,30 +65,12 @@ impl Names {
     // lexer hashes consumed, translated letters; intern hashes its whole slice.
     #[cfg_attr(feature = "native-profile", inline(never))]
     pub fn intern_hashed(&mut self, name: &[u8], hash: u64) -> Result<u32> {
-        let mut slot = hash as usize & (self.buckets.len() - 1);
-        let fragment = u64::from(hash as u32);
-        loop {
-            let bucket = self.buckets[slot];
-            if bucket == 0 {
-                break;
-            }
-            if bucket >> 32 == fragment {
-                let id = bucket as u32;
-                #[cfg(feature = "native-profile")]
-                // SAFETY: every occupied bucket is published after its spelling
-                // entry is appended. Rehashing preserves those IDs and entries
-                // are never removed. This read ends before insertion can grow
-                // the spelling vector.
-                let spelling = unsafe { self.spellings.get_unchecked(id as usize) };
-                #[cfg(not(feature = "native-profile"))]
-                let spelling = &self.spellings[id as usize];
-                // SAFETY: occupied buckets refer to initialized immutable
-                // ranges retained by bytes. This view ends before insertion.
-                if unsafe { spelling.as_ref() } == name {
-                    return Ok(id);
-                }
-            }
-            slot = (slot + 1) & (self.buckets.len() - 1);
+        if let Some(&(_, id)) = self.buckets.find(hash, |&(stored, id)| {
+            // SAFETY: insertion publishes a complete spelling before its ID;
+            // the spelling arena keeps that immutable range alive.
+            stored == hash && unsafe { self.spellings[id as usize - NAMED_BASE].as_ref() } == name
+        }) {
+            return Ok(id);
         }
         if self.len() >= CS as usize {
             return Err(Error::Capacity);
@@ -98,23 +78,8 @@ impl Names {
         let id = self.len() as u32;
         let spelling = self.bytes.append(name);
         self.spellings.push(spelling);
-        self.buckets[slot] = (fragment << 32) | u64::from(id);
-        if (self.spellings.len() - NAMED_BASE) * 2 > self.buckets.len() {
-            let mut buckets = vec![0; self.buckets.len() * 2];
-            // With 24-bit name IDs and a half-full table, bucket indices use
-            // at most 25 hash bits. The fragment retains all of those bits.
-            for &bucket in &self.buckets {
-                if bucket == 0 {
-                    continue;
-                }
-                let mut slot = (bucket >> 32) as usize & (buckets.len() - 1);
-                while buckets[slot] != 0 {
-                    slot = (slot + 1) & (buckets.len() - 1);
-                }
-                buckets[slot] = bucket;
-            }
-            self.buckets = buckets;
-        }
+        self.buckets
+            .insert_unique(hash, (hash, id), |&(hash, _)| hash);
         Ok(id)
     }
 }

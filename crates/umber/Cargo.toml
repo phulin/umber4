@@ -7,4 +7,5 @@ edition = "2024"
 native-profile = []
 
 [dependencies]
+hashbrown = { version = "0.17.1", default-features = false }
 memchr = "2.8"

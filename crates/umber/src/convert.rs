@@ -153,11 +153,10 @@ impl Engine<'_> {
                 emit(self, b' ')?;
             }
             self.emit_text(b"macro:", emit)?;
-            let signature = definition.signature();
             let body_start = definition.body.start;
             let mut marker = b'#';
             let mut parameter = 0;
-            for position in signature.start..signature.end {
+            for position in 0..owner.tokens.len {
                 let token = owner.tokens.get(position);
                 if token.0 & PARAM != 0 && !token.is_cs() {
                     if position < body_start {

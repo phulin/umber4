@@ -1,0 +1,2580 @@
+{
+  "date": "2026-10-14T00:57:33.429495+00:00",
+  "baseline_commit": "e0007e5f28399b0a6ff4dad9cfa355821325f372",
+  "scope": "Ordinary native release versus e0007e5, with the same fat LTO profile and compiler. Full-process CPU/wall measurements of the same-source MVP kernels; no full typesetting, PGO retiming, or Wasm runtime claim.",
+  "builds": {
+    "common": {
+      "lto": "fat",
+      "codegen_units": 1,
+      "debug": 1,
+      "extra_rustflags": [],
+      "native_profile": false,
+      "pgo": false
+    },
+    "binary_sha256": {
+      "before": "672268cfc80210b4a171b6c3b8f94eb8487e243a8a6dd40609bdedaab1ff523d",
+      "after": "f58d8e844de239b8694bf925b76e60e1ce4924efe51c742d6aa3a7689b6f52df"
+    },
+    "allocation_binary_sha256": {
+      "before": "d8cb8fd3b050911d93b0671b232b883529c3ebcc87d5e2d9a540d0815e1bce03",
+      "after": "8ed50088d7082546bbff1409dd64958c06f72ca328e9f9d7593ce4ecc0584e24"
+    },
+    "dependency_change": "hashbrown 0.17.1, default features disabled; no new transitive packages",
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "gnu_size": {
+      "before": {
+        "text_including_readonly_data": 498151,
+        "data": 14800,
+        "bss": 1016
+      },
+      "after": {
+        "text_including_readonly_data": 497783,
+        "data": 14728,
+        "bss": 1456
+      }
+    }
+  },
+  "line_counts": {
+    "library_cli_rust": {
+      "before": 3916,
+      "after": 3861
+    },
+    "python": {
+      "before": 889,
+      "after": 889
+    },
+    "allocation_adapter": {
+      "before": 70,
+      "after": 70
+    },
+    "total_before": 4875,
+    "total_after": 4820,
+    "before_both_simplification_passes": 5301
+  },
+  "line_count_method": "Application-owned physical Rust/Python lines, including comments and blanks; separate Rust test modules excluded. Cargo metadata and dependency implementations are outside both counts.",
+  "summary": {
+    "core": {
+      "cases": 9,
+      "geometric_mean_cpu_ratio": 0.9772765831053318
+    },
+    "broader": {
+      "cases": 9,
+      "geometric_mean_cpu_ratio": 1.0196688004574643
+    }
+  },
+  "validation": {
+    "rust_tests": 56,
+    "native_messages": 747,
+    "native_rejections": 26,
+    "selected_miri_tests": 4,
+    "additional_native_name_boundaries": [
+      {
+        "length": 63,
+        "sha256": "e1f35066a5ebe4e9600e76c8b1aea5993608ef5f5b9cd5ad32b565ffc161d084",
+        "expected": "OK/Y/N"
+      },
+      {
+        "length": 64,
+        "sha256": "4f2d81ab38416d65bbabdfa9dd71e4ef2cb3dfcd193f6693a5a3742d5fbaa83d",
+        "expected": "OK/Y/N"
+      },
+      {
+        "length": 65,
+        "sha256": "01af8276a77f362227c48fc07f983f9eb1f73b16a3250917e8c9cc49e3044894",
+        "expected": "OK/Y/N"
+      },
+      {
+        "length": 127,
+        "sha256": "42f420226e6450b44806e775e305976458ee2215c7f0ce7fc9d56ca3dbc6ae43",
+        "expected": "OK/Y/N"
+      },
+      {
+        "length": 4097,
+        "sha256": "06ce0c86dc4e9804cce65156575d6103ca3c7bf10de6c2bc14a9ef501d13f03f",
+        "expected": "OK/Y/N"
+      }
+    ],
+    "additional_name_oracle_config": "TEXINPUTS = .\nopenin_any = a\nopenout_any = a\nshell_escape = f\nmax_print_line = 10000\nbuf_size = 10000\n",
+    "checks": {
+      "complete": true,
+      "commands": [
+        [
+          "python3",
+          "-m",
+          "py_compile",
+          "scripts/oracle.py",
+          "scripts/reference.py",
+          "benchmarks/mvp.py",
+          "benchmarks/expansion.py",
+          "benchmarks/memory.py",
+          "benchmarks/pgo.py"
+        ],
+        [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        [
+          "cargo",
+          "test",
+          "--locked",
+          "--lib"
+        ],
+        [
+          "cargo",
+          "test",
+          "--locked",
+          "--release",
+          "--all-targets",
+          "--all-features"
+        ],
+        [
+          "cargo",
+          "build",
+          "--locked",
+          "--release",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown"
+        ],
+        [
+          "cargo",
+          "build",
+          "--locked",
+          "--release",
+          "--bin",
+          "umber",
+          "--example",
+          "allocations"
+        ],
+        [
+          "python3",
+          "scripts/oracle.py",
+          "--umber",
+          "target/release/umber"
+        ],
+        [
+          "cargo",
+          "+nightly",
+          "miri",
+          "test",
+          "--locked",
+          "--lib",
+          "--features",
+          "native-profile",
+          "tests::real_hash_fragment_collisions_keep_distinct_meanings"
+        ],
+        [
+          "cargo",
+          "+nightly",
+          "miri",
+          "test",
+          "--locked",
+          "--lib",
+          "--features",
+          "native-profile",
+          "extended_tests::serialized_spelling_survives_name_table_growth"
+        ],
+        [
+          "cargo",
+          "+nightly",
+          "miri",
+          "test",
+          "--locked",
+          "--lib",
+          "--features",
+          "native-profile",
+          "names::tests::published_spellings_survive_suffix_writes_and_chunk_growth"
+        ],
+        [
+          "cargo",
+          "fmt",
+          "--all"
+        ],
+        [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        [
+          "cargo",
+          "test",
+          "--locked",
+          "--lib"
+        ],
+        [
+          "cargo",
+          "test",
+          "--locked",
+          "--release",
+          "--all-targets",
+          "--all-features"
+        ],
+        [
+          "cargo",
+          "+nightly",
+          "miri",
+          "test",
+          "--locked",
+          "--lib",
+          "--features",
+          "native-profile",
+          "scan_tests::expanded_names_preserve_identity_at_buffer_boundaries"
+        ],
+        [
+          "python3",
+          "/tmp/umber4-continued-boundaries.py"
+        ]
+      ],
+      "sources": {
+        "benchmarks/pgo.py": "0d1b17da9e5b9355691bf63b2fb6ac51906d183e94f8e99bc71777d1cd25468b",
+        "benchmarks/expansion.py": "62fce21bb0ee3f82190eec6fd2f6c71356ef06eb07103b3e81fbd48a564e1e4f",
+        "benchmarks/mvp.py": "7315ef188a38707b8329286406864e0abb81c8bdf2949e3cbb91a26482506eef",
+        "benchmarks/memory.py": "8c9b186c0ec4708cd3aaa3eefdff92688027ea6d3d5d19d85eeff4fa03493af9",
+        "scripts/reference.py": "e422c6b67ca7372389beea5e347e148f10f20b62017c907ab4ef4483eb889939",
+        "scripts/oracle.py": "a86b0e7164e139668b93751f924b1252115eeb80f82b4646907a7aa838e74bc3",
+        "Cargo.toml": "b57d6d898953c2026932f86230034314a55d29d9606154265d04d51e0ec6dc6d",
+        "Cargo.lock": "e84f2f8129bcdafcea35a06828488f91c73c70dc0c7957d985d6717c73816781",
+        "crates/umber/Cargo.toml": "b1a65a1c3202ed00682f215bc9c54e48f1ea71f3d1f1e456c7071cd196537c81",
+        "crates/umber/examples/allocations.rs": "38d529d940131c519681806a319adb39f59c44878312522a003184441ce97909",
+        "crates/umber/src/lib.rs": "0c18c5b6ecea5c7469f88c25d6904efa0e62ac099823f880ab2eb7c89ffa6bd0",
+        "crates/umber/src/extended_tests.rs": "4dab915cea52c86158bee08051ccfc68613ba005ff3cbc4a5e8ebdd60378ea84",
+        "crates/umber/src/scan_tests.rs": "d49401c47ff300c235adce3f836e2626ee00d45998d6c3d8a6d5c7bd0c2a933a",
+        "crates/umber/src/names.rs": "c1d96808691a4347653c7aaca688ceebb4e04d1056d08e1522c678cd143207a5",
+        "crates/umber/src/values.rs": "2edcb8f1b78575021610b6c379753eb000c9c6fbbf4fda39110961911c23d667",
+        "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+        "crates/umber/src/input.rs": "d19c85b069152cc64d80d53ce745fc677d7f6b8420d27538707dd0a78fa7ec3b",
+        "crates/umber/src/lists.rs": "3e2618ce8a4fb085cbae3eb4d9ab3826f252959ea2e4d38c856633c3e1df2076",
+        "crates/umber/src/expression.rs": "ee779c5f7a4ac27dd6e14273c11a4a542a90cdaa27fa2cb3ae01f71a23b2c18c",
+        "crates/umber/src/define.rs": "2e535d87c7af3d8592a3ee5a3e636e60b5404ddc5e0a4f305edc369d9498feca",
+        "crates/umber/src/names_tests.rs": "7de77852370181f2c145db1fd7078d010052b3f4ffa7cb5805aab635ba461932",
+        "crates/umber/src/token.rs": "7ce73342aa908694eb28cdf0a0445811f0c33e47d663e98137fb8aa2c9a24e9a",
+        "crates/umber/src/execute.rs": "37bc978ce57ace86b8324d53cd36428c361e39f3353975544a86bf15d98210db",
+        "crates/umber/src/tests.rs": "0ae343019d2d64c02f126b810553c0b9600cefa9285caf15e09c06ece9930998",
+        "crates/umber/src/values_tests.rs": "235a2ce08a064f740de22bcfd41e8d0a21e7da3ac079b489ec42ad86e3a115c9",
+        "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+        "crates/umber/src/expand.rs": "26807f79d15a12137aeb28c1e443dc60b8bdb359c95d71c2f13eb4b2d183d239",
+        "crates/umber/src/convert.rs": "b00b7b21ecaf82efd6543a1e31907066ae47e9ebc0c1d26f6022ffff09777e02",
+        "crates/umber/src/scan.rs": "13130f2379f18af40a38525e8d56efca5b249a67f0f701c581c2a76665c79eba",
+        "crates/umber/src/delimit.rs": "772eef6139fbe48849f90c7c41593f414b3243fed489083d42240e2e341c3411",
+        "crates/umber/src/condition.rs": "6b646c42756c6422a28f805a8a132cb0739a5913452f5aa4c68186e19df960d7",
+        "crates/umber/src/macros.rs": "dea499efd46bac135342f5717ec58a413e4f7a00ae686507495858ccb8ecdfa5",
+        "crates/umber/src/memory_tests.rs": "36aeae24a246d30e3cd2c223575af2784495b3ac5a7be23dfa6bde1899240a0f"
+      },
+      "binaries": {
+        "after": "f58d8e844de239b8694bf925b76e60e1ce4924efe51c742d6aa3a7689b6f52df",
+        "allocations-after": "8ed50088d7082546bbff1409dd64958c06f72ca328e9f9d7593ce4ecc0584e24"
+      },
+      "additional_name_oracle_config": "TEXINPUTS = .\nopenin_any = a\nopenout_any = a\nshell_escape = f\nmax_print_line = 10000\nbuf_size = 10000\n"
+    }
+  },
+  "timing_method": "One warmup then seven alternating paired repetitions, pinned to CPU 0, using complete-process child user+system CPU time. Selected confirmations use 21 repetitions. Memory runs rotate Umber, pdfTeX, and baseline order; allocation diagnostics use separate instrumented adapters.",
+  "paired_sweeps": {
+    "date": "2026-10-14T00:52:58.895809+00:00",
+    "cpu": 0,
+    "binary_sha256": {
+      "before": "672268cfc80210b4a171b6c3b8f94eb8487e243a8a6dd40609bdedaab1ff523d",
+      "after": "f58d8e844de239b8694bf925b76e60e1ce4924efe51c742d6aa3a7689b6f52df"
+    },
+    "sources": {
+      "crates/umber/src/lib.rs": "0c18c5b6ecea5c7469f88c25d6904efa0e62ac099823f880ab2eb7c89ffa6bd0",
+      "crates/umber/src/names.rs": "c1d96808691a4347653c7aaca688ceebb4e04d1056d08e1522c678cd143207a5",
+      "crates/umber/src/values.rs": "2edcb8f1b78575021610b6c379753eb000c9c6fbbf4fda39110961911c23d667",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/input.rs": "d19c85b069152cc64d80d53ce745fc677d7f6b8420d27538707dd0a78fa7ec3b",
+      "crates/umber/src/lists.rs": "3e2618ce8a4fb085cbae3eb4d9ab3826f252959ea2e4d38c856633c3e1df2076",
+      "crates/umber/src/expression.rs": "ee779c5f7a4ac27dd6e14273c11a4a542a90cdaa27fa2cb3ae01f71a23b2c18c",
+      "crates/umber/src/define.rs": "2e535d87c7af3d8592a3ee5a3e636e60b5404ddc5e0a4f305edc369d9498feca",
+      "crates/umber/src/token.rs": "7ce73342aa908694eb28cdf0a0445811f0c33e47d663e98137fb8aa2c9a24e9a",
+      "crates/umber/src/execute.rs": "37bc978ce57ace86b8324d53cd36428c361e39f3353975544a86bf15d98210db",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/expand.rs": "26807f79d15a12137aeb28c1e443dc60b8bdb359c95d71c2f13eb4b2d183d239",
+      "crates/umber/src/convert.rs": "b00b7b21ecaf82efd6543a1e31907066ae47e9ebc0c1d26f6022ffff09777e02",
+      "crates/umber/src/scan.rs": "13130f2379f18af40a38525e8d56efca5b249a67f0f701c581c2a76665c79eba",
+      "crates/umber/src/delimit.rs": "772eef6139fbe48849f90c7c41593f414b3243fed489083d42240e2e341c3411",
+      "crates/umber/src/condition.rs": "6b646c42756c6422a28f805a8a132cb0739a5913452f5aa4c68186e19df960d7",
+      "crates/umber/src/macros.rs": "dea499efd46bac135342f5717ec58a413e4f7a00ae686507495858ccb8ecdfa5"
+    },
+    "repeats": 7,
+    "complete": true,
+    "samples": [
+      {
+        "suite": "core",
+        "case": "raw",
+        "size": 1000000,
+        "sha256": "da1fe7e4cb29c08f024b338c7fe3d6046c1d2d76fe81b2c40e63d8fd85463719",
+        "cpu_seconds": {
+          "before": [
+            0.215018,
+            0.25103300000000006,
+            0.209727,
+            0.2113830000000001,
+            0.21440300000000034,
+            0.2211470000000002,
+            0.21197799999999978
+          ],
+          "after": [
+            0.21558299999999997,
+            0.222491,
+            0.20390299999999995,
+            0.2023299999999999,
+            0.21771799999999963,
+            0.21066800000000008,
+            0.20730799999999983
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.216015999,
+            0.25170983,
+            0.210490636,
+            0.211975275,
+            0.215078293,
+            0.221778199,
+            0.212599203
+          ],
+          "after": [
+            0.216421753,
+            0.223208182,
+            0.20458571,
+            0.202933544,
+            0.218361997,
+            0.211284244,
+            0.208010303
+          ]
+        },
+        "cpu_median": {
+          "before": 0.21440300000000034,
+          "after": 0.21066800000000008
+        },
+        "ratio": 0.9825795348012842
+      },
+      {
+        "suite": "core",
+        "case": "bodies",
+        "size": 1000000,
+        "sha256": "3aaccb91ab7050c05d84045d35b6e468e9c782bc15188d47e4784b047bad83b6",
+        "cpu_seconds": {
+          "before": [
+            0.13183599999999984,
+            0.13272800000000018,
+            0.13335600000000003,
+            0.13222999999999985,
+            0.12525399999999998,
+            0.12762199999999968,
+            0.12537499999999913
+          ],
+          "after": [
+            0.1260779999999997,
+            0.12878000000000034,
+            0.12406299999999959,
+            0.12359700000000018,
+            0.13364699999999985,
+            0.12607900000000072,
+            0.1256080000000006
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.132450536,
+            0.133444485,
+            0.133918822,
+            0.132855162,
+            0.125870026,
+            0.128248787,
+            0.126282737
+          ],
+          "after": [
+            0.126845344,
+            0.129671194,
+            0.12493239,
+            0.124340159,
+            0.13435954,
+            0.126676905,
+            0.126286282
+          ]
+        },
+        "cpu_median": {
+          "before": 0.13183599999999984,
+          "after": 0.1260779999999997
+        },
+        "ratio": 0.9563245244091132
+      },
+      {
+        "suite": "core",
+        "case": "integers",
+        "size": 1000000,
+        "sha256": "706e319d2c42dc2c6b167178404dfcb6e6d53d4f2b46d89ef8e6b8037d2e151a",
+        "cpu_seconds": {
+          "before": [
+            0.1280860000000006,
+            0.12714099999999906,
+            0.12625300000000106,
+            0.13497800000000026,
+            0.12398099999999967,
+            0.12906999999999957,
+            0.12976400000000066
+          ],
+          "after": [
+            0.1262249999999998,
+            0.13934300000000022,
+            0.12464799999999965,
+            0.12852599999999992,
+            0.12571599999999972,
+            0.1264410000000007,
+            0.12766999999999928
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.128729155,
+            0.127846834,
+            0.127236115,
+            0.135689346,
+            0.124669031,
+            0.129973562,
+            0.130364572
+          ],
+          "after": [
+            0.126837074,
+            0.139960576,
+            0.125313764,
+            0.129306913,
+            0.126439325,
+            0.127077293,
+            0.128359505
+          ]
+        },
+        "cpu_median": {
+          "before": 0.1280860000000006,
+          "after": 0.1264410000000007
+        },
+        "ratio": 0.9871570663460496
+      },
+      {
+        "suite": "core",
+        "case": "parameters",
+        "size": 1000000,
+        "sha256": "469f63295fc03e6bd69e539893c287bfcb158287dbe4756ac4ca0ad8f6b9604f",
+        "cpu_seconds": {
+          "before": [
+            0.34221700000000155,
+            0.4125679999999985,
+            0.35216000000000136,
+            0.3429360000000017,
+            0.3442869999999978,
+            0.3475040000000007,
+            0.34081399999999995
+          ],
+          "after": [
+            0.3379809999999992,
+            0.3630639999999996,
+            0.3237129999999997,
+            0.31863300000000017,
+            0.31532400000000216,
+            0.3301299999999987,
+            0.35523299999999836
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.343201513,
+            0.413588612,
+            0.352830472,
+            0.343627122,
+            0.345203931,
+            0.348317707,
+            0.341422603
+          ],
+          "after": [
+            0.338694879,
+            0.363751975,
+            0.324611692,
+            0.319251373,
+            0.316027473,
+            0.330811211,
+            0.356026699
+          ]
+        },
+        "cpu_median": {
+          "before": 0.3442869999999978,
+          "after": 0.3301299999999987
+        },
+        "ratio": 0.9588802365468369
+      },
+      {
+        "suite": "core",
+        "case": "file-parameters",
+        "size": 1000000,
+        "sha256": "9256bab9e6af6a6e49441c21b021111a0d3f483f892edda2b0cac894572bc0a1",
+        "cpu_seconds": {
+          "before": [
+            0.40409900000000043,
+            0.39665500000000087,
+            0.3861099999999986,
+            0.4068189999999987,
+            0.40416000000000096,
+            0.3885620000000003,
+            0.399087999999999
+          ],
+          "after": [
+            0.41481999999999886,
+            0.3981760000000012,
+            0.39759999999999884,
+            0.3923450000000024,
+            0.4024549999999998,
+            0.3973879999999994,
+            0.40389800000000164
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.40479439,
+            0.397428133,
+            0.386826306,
+            0.407524924,
+            0.405161994,
+            0.389164701,
+            0.399719117
+          ],
+          "after": [
+            0.415648134,
+            0.398927255,
+            0.398333897,
+            0.393136904,
+            0.403130976,
+            0.398010907,
+            0.404604845
+          ]
+        },
+        "cpu_median": {
+          "before": 0.399087999999999,
+          "after": 0.3981760000000012
+        },
+        "ratio": 0.9977147897205684
+      },
+      {
+        "suite": "core",
+        "case": "long-parameters",
+        "size": 1000000,
+        "sha256": "ec35dcad22794f18a7864beeed6e5eb3055eab974de3cf9d41f139e94dc77188",
+        "cpu_seconds": {
+          "before": [
+            0.6195060000000012,
+            0.6158010000000012,
+            0.6181039999999989,
+            0.6190770000000008,
+            0.6275690000000012,
+            0.6115910000000007,
+            0.6235120000000016
+          ],
+          "after": [
+            0.5866069999999972,
+            0.5785230000000006,
+            0.5863419999999984,
+            0.5650730000000017,
+            0.5744129999999998,
+            0.566475999999998,
+            0.5636580000000002
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.620258206,
+            0.616373111,
+            0.618867946,
+            0.619847415,
+            0.628155838,
+            0.612349404,
+            0.624251818
+          ],
+          "after": [
+            0.58726904,
+            0.580617313,
+            0.587005941,
+            0.565793157,
+            0.575236709,
+            0.567180286,
+            0.564229498
+          ]
+        },
+        "cpu_median": {
+          "before": 0.6190770000000008,
+          "after": 0.5744129999999998
+        },
+        "ratio": 0.9278538857040386
+      },
+      {
+        "suite": "core",
+        "case": "delimiters",
+        "size": 1000000,
+        "sha256": "f4e77abbc56c1ce0cc4c389d340560b6f6463799b6391969e2c889433fc83d5d",
+        "cpu_seconds": {
+          "before": [
+            0.13503199999999538,
+            0.13826099999999997,
+            0.13141199999999387,
+            0.13622000000000156,
+            0.14453199999999455,
+            0.14048999999999978,
+            0.14439799999999892
+          ],
+          "after": [
+            0.13204900000000208,
+            0.13752500000000367,
+            0.1301690000000022,
+            0.13319300000000212,
+            0.1311540000000022,
+            0.13038000000000238,
+            0.15585899999999953
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.135647386,
+            0.1389126,
+            0.131964081,
+            0.136999361,
+            0.145223568,
+            0.141093613,
+            0.145078575
+          ],
+          "after": [
+            0.132606868,
+            0.138171024,
+            0.130758105,
+            0.133927239,
+            0.131744741,
+            0.130931634,
+            0.15668081
+          ]
+        },
+        "cpu_median": {
+          "before": 0.13826099999999997,
+          "after": 0.13204900000000208
+        },
+        "ratio": 0.9550704826379247
+      },
+      {
+        "suite": "core",
+        "case": "groups",
+        "size": 1000000,
+        "sha256": "56824887485331bd046a03afd7d3670119bf9c5501af13c34aabf414ea30f37f",
+        "cpu_seconds": {
+          "before": [
+            0.22317500000000123,
+            0.22875699999999455,
+            0.2414020000000079,
+            0.22367700000000212,
+            0.22292999999999807,
+            0.23008499999999543,
+            0.22178900000000823
+          ],
+          "after": [
+            0.24532299999999552,
+            0.23740400000000506,
+            0.23023399999999583,
+            0.2221669999999989,
+            0.22863999999999862,
+            0.22736100000000192,
+            0.23543999999999699
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.223877704,
+            0.229482403,
+            0.242129769,
+            0.224372568,
+            0.223633108,
+            0.231027173,
+            0.222521137
+          ],
+          "after": [
+            0.24597817,
+            0.238120045,
+            0.230987579,
+            0.222973491,
+            0.229276897,
+            0.228114376,
+            0.236215721
+          ]
+        },
+        "cpu_median": {
+          "before": 0.22367700000000212,
+          "after": 0.23023399999999583
+        },
+        "ratio": 1.029314592023291
+      },
+      {
+        "suite": "core",
+        "case": "source-integers",
+        "size": 1000000,
+        "sha256": "6535162523edabb99dceaebe5bb14a9ce4883271f6f50e1085e9829b092fbbc7",
+        "cpu_seconds": {
+          "before": [
+            0.6781250000000014,
+            0.6696820000000017,
+            0.6923589999999962,
+            0.6875130000000027,
+            0.6695759999999993,
+            0.6785429999999977,
+            0.6744020000000006
+          ],
+          "after": [
+            0.6761100000000013,
+            0.6605920000000012,
+            0.7098519999999979,
+            0.6809989999999999,
+            0.6891819999999953,
+            0.6811990000000065,
+            0.6893630000000002
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.6788995,
+            0.670454943,
+            0.69317143,
+            0.688203675,
+            0.670317694,
+            0.67936033,
+            0.675292669
+          ],
+          "after": [
+            0.676869942,
+            0.661388553,
+            0.710719896,
+            0.681687379,
+            0.690000669,
+            0.681904064,
+            0.690155404
+          ]
+        },
+        "cpu_median": {
+          "before": 0.6781250000000014,
+          "after": 0.6811990000000065
+        },
+        "ratio": 1.0045330875576113
+      },
+      {
+        "suite": "broader",
+        "case": "gentle-text",
+        "size": 50000,
+        "sha256": "91e5e2a70541c94abd0478b7702258297cab3dc484aa6cd2699ef6e029c208b0",
+        "cpu_seconds": {
+          "before": [
+            0.1312289999999976,
+            0.132165999999998,
+            0.12820100000000423,
+            0.1355649999999997,
+            0.13534500000000094,
+            0.12855499999999864,
+            0.1309580000000068
+          ],
+          "after": [
+            0.13420100000000446,
+            0.1301559999999995,
+            0.14222199999999674,
+            0.15113300000000152,
+            0.13179299999999472,
+            0.13107300000000066,
+            0.15539799999999815
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.131896536,
+            0.132792007,
+            0.129074107,
+            0.136333816,
+            0.136120776,
+            0.129261191,
+            0.131646867
+          ],
+          "after": [
+            0.13491317,
+            0.130826693,
+            0.142884985,
+            0.151782801,
+            0.132514641,
+            0.131714712,
+            0.156261379
+          ]
+        },
+        "cpu_median": {
+          "before": 0.1312289999999976,
+          "after": 0.13420100000000446
+        },
+        "ratio": 1.0226474331131603
+      },
+      {
+        "suite": "broader",
+        "case": "gentle-calendar",
+        "size": 50000,
+        "sha256": "fab3a9c93dbcef2225869be0a23c293465d6332c0108d408f21c5c197f2cd4c7",
+        "cpu_seconds": {
+          "before": [
+            0.12221699999999913,
+            0.11134400000000255,
+            0.10510199999999514,
+            0.10918200000000411,
+            0.1067509999999956,
+            0.11133500000000396,
+            0.11444599999999383
+          ],
+          "after": [
+            0.10907000000000266,
+            0.1058749999999975,
+            0.11100200000000626,
+            0.11274899999999377,
+            0.10971400000000386,
+            0.11072099999999807,
+            0.11286600000000391
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.122932676,
+            0.112048496,
+            0.105751527,
+            0.109867156,
+            0.107489464,
+            0.112039765,
+            0.11523286
+          ],
+          "after": [
+            0.109701131,
+            0.106494004,
+            0.11167383,
+            0.11336444,
+            0.110474289,
+            0.111471687,
+            0.113727603
+          ]
+        },
+        "cpu_median": {
+          "before": 0.11133500000000396,
+          "after": 0.11072099999999807
+        },
+        "ratio": 0.9944851124982632
+      },
+      {
+        "suite": "broader",
+        "case": "gentle-contents",
+        "size": 50000,
+        "sha256": "a97e212664cbf03e1c7fba3dacca9ee8b15c35e53d94bb9c561cfa9ffea3eb92",
+        "cpu_seconds": {
+          "before": [
+            0.375823000000004,
+            0.3833219999999926,
+            0.3850169999999977,
+            0.3767600000000044,
+            0.38133599999999745,
+            0.3719999999999999,
+            0.3628100000000032
+          ],
+          "after": [
+            0.37929399999999447,
+            0.383100000000006,
+            0.3805930000000046,
+            0.3763489999999976,
+            0.38747400000000454,
+            0.38807399999999603,
+            0.376620999999993
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.376436649,
+            0.384151182,
+            0.385815329,
+            0.377442008,
+            0.38209437,
+            0.372652433,
+            0.363494191
+          ],
+          "after": [
+            0.380160044,
+            0.383793324,
+            0.381303389,
+            0.377066155,
+            0.388338908,
+            0.388892788,
+            0.377405249
+          ]
+        },
+        "cpu_median": {
+          "before": 0.3767600000000044,
+          "after": 0.3805930000000046
+        },
+        "ratio": 1.010173585306296
+      },
+      {
+        "suite": "broader",
+        "case": "gentle-records",
+        "size": 50000,
+        "sha256": "f4555b0af99aa439743fa81944c84a0e4d6f6a04b87605ca9bfb2d5ccc99b25f",
+        "cpu_seconds": {
+          "before": [
+            0.37947100000000233,
+            0.37386299999999295,
+            0.3958900000000014,
+            0.38689100000000565,
+            0.3916359999999983,
+            0.38061799999999835,
+            0.39777600000000035
+          ],
+          "after": [
+            0.40347899999999726,
+            0.4225810000000081,
+            0.38488499999999704,
+            0.39264699999999664,
+            0.39127599999999774,
+            0.39124100000000084,
+            0.3987729999999985
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.380498248,
+            0.374665045,
+            0.396661322,
+            0.38756146,
+            0.392435472,
+            0.38137807,
+            0.398464664
+          ],
+          "after": [
+            0.404290968,
+            0.423306404,
+            0.385713136,
+            0.393418586,
+            0.391963849,
+            0.391923501,
+            0.399647741
+          ]
+        },
+        "cpu_median": {
+          "before": 0.38689100000000565,
+          "after": 0.39264699999999664
+        },
+        "ratio": 1.014877575337733
+      },
+      {
+        "suite": "broader",
+        "case": "stored-records",
+        "size": 50000,
+        "sha256": "c7e23067ffd76699254e5fdd8b2684e0d2c22f9d793ae8ef3867f9298007cdd0",
+        "cpu_seconds": {
+          "before": [
+            0.39861700000000155,
+            0.4034690000000083,
+            0.4017589999999984,
+            0.3743130000000008,
+            0.37795099999999593,
+            0.3761030000000005,
+            0.3717619999999897
+          ],
+          "after": [
+            0.40002400000000193,
+            0.39120899999998926,
+            0.38511199999999235,
+            0.39176600000000406,
+            0.380810000000011,
+            0.40519600000000366,
+            0.38810399999999845
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.399566713,
+            0.40422005,
+            0.402472507,
+            0.375144891,
+            0.378549635,
+            0.376985122,
+            0.372582828
+          ],
+          "after": [
+            0.400760048,
+            0.392051641,
+            0.385876928,
+            0.392518475,
+            0.381523815,
+            0.406023024,
+            0.388787322
+          ]
+        },
+        "cpu_median": {
+          "before": 0.37795099999999593,
+          "after": 0.39120899999998926
+        },
+        "ratio": 1.0350786213027443
+      },
+      {
+        "suite": "broader",
+        "case": "token-pipeline",
+        "size": 50000,
+        "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+        "cpu_seconds": {
+          "before": [
+            0.6095949999999988,
+            0.6015620000000155,
+            0.5815939999999955,
+            0.5890019999999936,
+            0.5960000000000178,
+            0.5807290000000052,
+            0.6111360000000019
+          ],
+          "after": [
+            0.6130359999999939,
+            0.6060249999999883,
+            0.6073339999999945,
+            0.6153350000000017,
+            0.5978469999999874,
+            0.6052690000000069,
+            0.605606999999992
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.610454106,
+            0.602341248,
+            0.582365648,
+            0.589754083,
+            0.596731434,
+            0.581404308,
+            0.612009156
+          ],
+          "after": [
+            0.613796986,
+            0.606796686,
+            0.608210199,
+            0.616019239,
+            0.598586517,
+            0.606001356,
+            0.606300102
+          ]
+        },
+        "cpu_median": {
+          "before": 0.5960000000000178,
+          "after": 0.6060249999999883
+        },
+        "ratio": 1.0168204697986076
+      },
+      {
+        "suite": "broader",
+        "case": "name-table",
+        "size": 50000,
+        "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+        "cpu_seconds": {
+          "before": [
+            0.1405979999999829,
+            0.1356049999999982,
+            0.14565499999999076,
+            0.15094900000001132,
+            0.13683899999999483,
+            0.14002900000001262,
+            0.13954899999998815
+          ],
+          "after": [
+            0.14261299999999721,
+            0.1405250000000109,
+            0.16962200000001815,
+            0.1736349999999902,
+            0.1462009999999907,
+            0.14771899999999505,
+            0.14253900000001352
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.14125373,
+            0.136195006,
+            0.146306352,
+            0.151666211,
+            0.137507885,
+            0.14080889,
+            0.140187079
+          ],
+          "after": [
+            0.143300765,
+            0.141129411,
+            0.170393259,
+            0.174378523,
+            0.146881548,
+            0.14848547,
+            0.14309346
+          ]
+        },
+        "cpu_median": {
+          "before": 0.14002900000001262,
+          "after": 0.1462009999999907
+        },
+        "ratio": 1.0440765841359827
+      },
+      {
+        "suite": "broader",
+        "case": "optional-arguments",
+        "size": 50000,
+        "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+        "cpu_seconds": {
+          "before": [
+            0.3893629999999888,
+            0.37146699999999555,
+            0.37808099999999456,
+            0.3718939999999833,
+            0.37965800000000627,
+            0.37818700000001115,
+            0.3817189999999897
+          ],
+          "after": [
+            0.3815869999999961,
+            0.3738870000000105,
+            0.38042099999999834,
+            0.3831780000000151,
+            0.38439300000000287,
+            0.389805999999993,
+            0.3793420000000083
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.390161248,
+            0.372151629,
+            0.378770429,
+            0.372633293,
+            0.380297595,
+            0.37892949,
+            0.382684794
+          ],
+          "after": [
+            0.382347099,
+            0.374810273,
+            0.381142065,
+            0.383887103,
+            0.385124014,
+            0.39058465,
+            0.380152242
+          ]
+        },
+        "cpu_median": {
+          "before": 0.37818700000001115,
+          "after": 0.3815869999999961
+        },
+        "ratio": 1.008990261431474
+      },
+      {
+        "suite": "broader",
+        "case": "numeric-references",
+        "size": 50000,
+        "sha256": "206a513f80deda086ff5a3aab60583087b02a97a04f82d64c300b74d73e829d6",
+        "cpu_seconds": {
+          "before": [
+            0.13084600000000535,
+            0.13101200000001256,
+            0.13039399999999546,
+            0.12736799999998993,
+            0.13261600000001295,
+            0.13068300000000477,
+            0.13451499999999328
+          ],
+          "after": [
+            0.14953400000000272,
+            0.1338779999999815,
+            0.1376070000000027,
+            0.13725800000000277,
+            0.13487199999998722,
+            0.1301250000000067,
+            0.13412300000000243
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.131600529,
+            0.131772188,
+            0.131084592,
+            0.128054206,
+            0.133318545,
+            0.131387941,
+            0.135188223
+          ],
+          "after": [
+            0.150297557,
+            0.134506955,
+            0.138343299,
+            0.137914147,
+            0.135554383,
+            0.13077739,
+            0.134826899
+          ]
+        },
+        "cpu_median": {
+          "before": 0.13084600000000535,
+          "after": 0.13487199999998722
+        },
+        "ratio": 1.0307689956130237
+      },
+      {
+        "suite": "broader",
+        "case": "register-meanings",
+        "size": 50000,
+        "sha256": "24750a08547351fdd4247fac77f5996f945870a1a40c7e94fff3a4070e8f6e57",
+        "cpu_seconds": {
+          "before": [
+            0.11709400000000869,
+            0.11145500000002073,
+            0.10882099999999184,
+            0.11738099999999463,
+            0.11639200000001892,
+            0.11281599999999514,
+            0.11262800000000084
+          ],
+          "after": [
+            0.11379999999999768,
+            0.1113059999999848,
+            0.11232200000000603,
+            0.11259799999999132,
+            0.1294290000000018,
+            0.11570999999999287,
+            0.11676499999998668
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.117833575,
+            0.112111056,
+            0.109591793,
+            0.118269117,
+            0.117191464,
+            0.113542513,
+            0.113415821
+          ],
+          "after": [
+            0.114582427,
+            0.11203058,
+            0.113156013,
+            0.113476161,
+            0.13018637,
+            0.116439194,
+            0.117477791
+          ]
+        },
+        "cpu_median": {
+          "before": 0.11281599999999514,
+          "after": 0.11379999999999768
+        },
+        "ratio": 1.0087221670685238
+      }
+    ]
+  },
+  "confirmations": {
+    "date": "2026-10-14T00:54:35.405608+00:00",
+    "cpu": 0,
+    "binary_sha256": {
+      "before": "672268cfc80210b4a171b6c3b8f94eb8487e243a8a6dd40609bdedaab1ff523d",
+      "after": "f58d8e844de239b8694bf925b76e60e1ce4924efe51c742d6aa3a7689b6f52df"
+    },
+    "sources": {
+      "crates/umber/src/lib.rs": "0c18c5b6ecea5c7469f88c25d6904efa0e62ac099823f880ab2eb7c89ffa6bd0",
+      "crates/umber/src/names.rs": "c1d96808691a4347653c7aaca688ceebb4e04d1056d08e1522c678cd143207a5",
+      "crates/umber/src/values.rs": "2edcb8f1b78575021610b6c379753eb000c9c6fbbf4fda39110961911c23d667",
+      "crates/umber/src/scalars.rs": "a4a0278182eb754e5b5526a6bb40c45bd15f9dccccb189ea5c2be2eb77a0342f",
+      "crates/umber/src/input.rs": "d19c85b069152cc64d80d53ce745fc677d7f6b8420d27538707dd0a78fa7ec3b",
+      "crates/umber/src/lists.rs": "3e2618ce8a4fb085cbae3eb4d9ab3826f252959ea2e4d38c856633c3e1df2076",
+      "crates/umber/src/expression.rs": "ee779c5f7a4ac27dd6e14273c11a4a542a90cdaa27fa2cb3ae01f71a23b2c18c",
+      "crates/umber/src/define.rs": "2e535d87c7af3d8592a3ee5a3e636e60b5404ddc5e0a4f305edc369d9498feca",
+      "crates/umber/src/token.rs": "7ce73342aa908694eb28cdf0a0445811f0c33e47d663e98137fb8aa2c9a24e9a",
+      "crates/umber/src/execute.rs": "37bc978ce57ace86b8324d53cd36428c361e39f3353975544a86bf15d98210db",
+      "crates/umber/src/main.rs": "59db890728d034cc1b1c689230077a63c84173a1b84254c7af1990158c5c5106",
+      "crates/umber/src/expand.rs": "26807f79d15a12137aeb28c1e443dc60b8bdb359c95d71c2f13eb4b2d183d239",
+      "crates/umber/src/convert.rs": "b00b7b21ecaf82efd6543a1e31907066ae47e9ebc0c1d26f6022ffff09777e02",
+      "crates/umber/src/scan.rs": "13130f2379f18af40a38525e8d56efca5b249a67f0f701c581c2a76665c79eba",
+      "crates/umber/src/delimit.rs": "772eef6139fbe48849f90c7c41593f414b3243fed489083d42240e2e341c3411",
+      "crates/umber/src/condition.rs": "6b646c42756c6422a28f805a8a132cb0739a5913452f5aa4c68186e19df960d7",
+      "crates/umber/src/macros.rs": "dea499efd46bac135342f5717ec58a413e4f7a00ae686507495858ccb8ecdfa5"
+    },
+    "repeats": 21,
+    "complete": true,
+    "samples": [
+      {
+        "suite": "core",
+        "case": "raw",
+        "size": 1000000,
+        "sha256": "da1fe7e4cb29c08f024b338c7fe3d6046c1d2d76fe81b2c40e63d8fd85463719",
+        "cpu_seconds": {
+          "before": [
+            0.23008599999999996,
+            0.21863100000000002,
+            0.21890300000000007,
+            0.22772599999999965,
+            0.21099600000000063,
+            0.22296300000000002,
+            0.20850499999999972,
+            0.2150449999999995,
+            0.22082100000000038,
+            0.21125799999999995,
+            0.21205000000000052,
+            0.21248800000000045,
+            0.2115689999999999,
+            0.20814800000000044,
+            0.20741799999999966,
+            0.20883699999999994,
+            0.2494860000000001,
+            0.2219869999999995,
+            0.2179840000000013,
+            0.24399200000000043,
+            0.22122500000000045
+          ],
+          "after": [
+            0.213441,
+            0.223846,
+            0.20486300000000002,
+            0.21026900000000004,
+            0.21682199999999963,
+            0.20531100000000002,
+            0.23479800000000006,
+            0.21889000000000047,
+            0.2184670000000004,
+            0.2089269999999992,
+            0.21160900000000016,
+            0.21265799999999935,
+            0.20930499999999963,
+            0.23175599999999985,
+            0.20006600000000052,
+            0.21437799999999996,
+            0.20729299999999995,
+            0.20617899999999967,
+            0.2108799999999995,
+            0.2232719999999997,
+            0.2164559999999991
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.230792728,
+            0.219396514,
+            0.219699281,
+            0.228566598,
+            0.211780874,
+            0.223749935,
+            0.209219384,
+            0.215802561,
+            0.221549271,
+            0.212439287,
+            0.21274601,
+            0.213144825,
+            0.212240298,
+            0.208828532,
+            0.208065163,
+            0.209537323,
+            0.250248794,
+            0.222645497,
+            0.218836612,
+            0.24480736,
+            0.221956345
+          ],
+          "after": [
+            0.214125618,
+            0.224508156,
+            0.205580599,
+            0.211091148,
+            0.21757151,
+            0.206104026,
+            0.235509756,
+            0.219734437,
+            0.21918441,
+            0.209570162,
+            0.212236649,
+            0.213449091,
+            0.210165189,
+            0.232424247,
+            0.200760059,
+            0.215022624,
+            0.208017818,
+            0.206923415,
+            0.211633989,
+            0.224052736,
+            0.217145703
+          ]
+        },
+        "cpu_median": {
+          "before": 0.2179840000000013,
+          "after": 0.21265799999999935
+        },
+        "ratio": 0.9755670140927687
+      },
+      {
+        "suite": "broader",
+        "case": "token-pipeline",
+        "size": 50000,
+        "sha256": "ea1ac5e701d1d76d635dbc02407b64b69f413580b5dae0fc7eb1aa962439def0",
+        "cpu_seconds": {
+          "before": [
+            0.5931429999999995,
+            0.582396000000001,
+            0.6297559999999987,
+            0.5808520000000001,
+            0.5785170000000015,
+            0.56982,
+            0.6027069999999988,
+            0.6275410000000043,
+            0.5791749999999958,
+            0.5960190000000019,
+            0.5862079999999992,
+            0.5879309999999975,
+            0.5807360000000017,
+            0.5857130000000019,
+            0.5940619999999974,
+            0.589464999999997,
+            0.5953429999999997,
+            0.5853440000000028,
+            0.6027989999999974,
+            0.5790249999999943,
+            0.6000580000000042
+          ],
+          "after": [
+            0.6248430000000003,
+            0.6770969999999998,
+            0.6250600000000013,
+            0.6324329999999989,
+            0.6079309999999971,
+            0.6081530000000015,
+            0.5858540000000012,
+            0.6269549999999988,
+            0.5910210000000014,
+            0.6142469999999989,
+            0.5993460000000006,
+            0.6308539999999994,
+            0.6001219999999989,
+            0.6204660000000004,
+            0.6249390000000012,
+            0.5930170000000032,
+            0.6011959999999981,
+            0.6118270000000017,
+            0.6093440000000001,
+            0.5962390000000042,
+            0.5870010000000008
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.593867386,
+            0.583100703,
+            0.632216236,
+            0.581521978,
+            0.579229799,
+            0.57065271,
+            0.60338086,
+            0.628410577,
+            0.580138438,
+            0.596743508,
+            0.587115118,
+            0.588670772,
+            0.581449926,
+            0.586416326,
+            0.594854087,
+            0.590303642,
+            0.596130897,
+            0.586049856,
+            0.603516138,
+            0.579727954,
+            0.600826237
+          ],
+          "after": [
+            0.62561297,
+            0.677787016,
+            0.625779062,
+            0.633204744,
+            0.608608111,
+            0.609065989,
+            0.586603443,
+            0.627767682,
+            0.591765676,
+            0.615025154,
+            0.600099429,
+            0.63143023,
+            0.600862697,
+            0.62127598,
+            0.625723984,
+            0.593890912,
+            0.602070511,
+            0.612570007,
+            0.610006045,
+            0.597014264,
+            0.587792959
+          ]
+        },
+        "cpu_median": {
+          "before": 0.5879309999999975,
+          "after": 0.6093440000000001
+        },
+        "ratio": 1.0364209405525524
+      },
+      {
+        "suite": "broader",
+        "case": "name-table",
+        "size": 50000,
+        "sha256": "3bfcdda45bdcebdc59723946e55f44133af76b7ee08251929441fb997a9a3191",
+        "cpu_seconds": {
+          "before": [
+            0.13064399999999665,
+            0.13406900000000377,
+            0.14293599999999884,
+            0.13697899999999663,
+            0.1356219999999979,
+            0.16041400000000294,
+            0.13725900000000024,
+            0.1314570000000046,
+            0.141405000000006,
+            0.1483129999999946,
+            0.1498279999999994,
+            0.1359860000000026,
+            0.14101099999999178,
+            0.15622300000000422,
+            0.13910800000000023,
+            0.13404700000000247,
+            0.13873399999999236,
+            0.16131500000000898,
+            0.13807899999999051,
+            0.13346899999999806,
+            0.13546300000000144
+          ],
+          "after": [
+            0.143691000000004,
+            0.14724899999999508,
+            0.14467100000000244,
+            0.13854200000000105,
+            0.13378100000000615,
+            0.14655799999999175,
+            0.16724800000000073,
+            0.13903399999999522,
+            0.14163299999999168,
+            0.1473710000000068,
+            0.1415980000000019,
+            0.1485190000000003,
+            0.14744300000000976,
+            0.145709999999994,
+            0.13832000000000022,
+            0.13910299999999864,
+            0.15122700000000577,
+            0.192541999999996,
+            0.14820100000000025,
+            0.15024199999999865,
+            0.14326500000000664
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.131316001,
+            0.134711981,
+            0.143583958,
+            0.137777865,
+            0.13631393,
+            0.161121296,
+            0.137972304,
+            0.132124923,
+            0.142126024,
+            0.149060561,
+            0.150490632,
+            0.136691683,
+            0.141641127,
+            0.157011757,
+            0.139924335,
+            0.134762526,
+            0.139464529,
+            0.162025771,
+            0.138775847,
+            0.134134812,
+            0.13609083
+          ],
+          "after": [
+            0.144359212,
+            0.1480097,
+            0.145328282,
+            0.139247352,
+            0.134552981,
+            0.147272894,
+            0.167853055,
+            0.139684075,
+            0.142368084,
+            0.148075148,
+            0.142336843,
+            0.149254381,
+            0.148280373,
+            0.146399906,
+            0.139013656,
+            0.139850909,
+            0.151982366,
+            0.193364432,
+            0.148828148,
+            0.151067582,
+            0.143977175
+          ]
+        },
+        "cpu_median": {
+          "before": 0.13807899999999051,
+          "after": 0.145709999999994
+        },
+        "ratio": 1.0552654639735515
+      },
+      {
+        "suite": "broader",
+        "case": "optional-arguments",
+        "size": 50000,
+        "sha256": "b750fdb3dac3597793a9c33b59c89e38dd99b18c835672465e190d1372f54096",
+        "cpu_seconds": {
+          "before": [
+            0.3748629999999977,
+            0.3784090000000049,
+            0.37750799999999884,
+            0.38081500000000545,
+            0.3788579999999939,
+            0.3909320000000065,
+            0.3800109999999961,
+            0.3780220000000014,
+            0.3823369999999997,
+            0.38109999999999644,
+            0.37935099999999977,
+            0.38601500000000044,
+            0.39267700000000616,
+            0.37338100000000907,
+            0.3733739999999983,
+            0.37263199999999586,
+            0.37509399999999715,
+            0.37629799999999847,
+            0.3874580000000023,
+            0.3664129999999943,
+            0.3736910000000009
+          ],
+          "after": [
+            0.380671999999997,
+            0.39918200000000326,
+            0.3860769999999931,
+            0.3943080000000023,
+            0.39079800000000375,
+            0.3848549999999946,
+            0.3981720000000024,
+            0.37903299999999973,
+            0.3828579999999988,
+            0.3818020000000004,
+            0.4006129999999999,
+            0.4003099999999975,
+            0.3970279999999917,
+            0.39279200000000003,
+            0.3841119999999947,
+            0.3726260000000039,
+            0.38980800000000926,
+            0.38154699999999764,
+            0.3848820000000046,
+            0.3956699999999955,
+            0.3798969999999997
+          ]
+        },
+        "seconds": {
+          "before": [
+            0.375562771,
+            0.379138705,
+            0.378300303,
+            0.381613067,
+            0.379529794,
+            0.391638392,
+            0.380821039,
+            0.37880107,
+            0.383026292,
+            0.381711638,
+            0.38012873,
+            0.386752729,
+            0.393365027,
+            0.374077775,
+            0.373977187,
+            0.37344473,
+            0.375751615,
+            0.377061184,
+            0.388262537,
+            0.367120565,
+            0.374436558
+          ],
+          "after": [
+            0.381330259,
+            0.400109462,
+            0.386700993,
+            0.395001836,
+            0.391637056,
+            0.385480436,
+            0.398840702,
+            0.379771974,
+            0.383611374,
+            0.382508866,
+            0.401362784,
+            0.400999755,
+            0.39776927,
+            0.393499954,
+            0.38469246,
+            0.373389122,
+            0.390566816,
+            0.382240514,
+            0.385463242,
+            0.396534208,
+            0.380653956
+          ]
+        },
+        "cpu_median": {
+          "before": 0.3784090000000049,
+          "after": 0.3860769999999931
+        },
+        "ratio": 1.02026378865193
+      }
+    ]
+  },
+  "memory": {
+    "date": "2026-10-14T00:55:36.923202+00:00",
+    "cpu": 0,
+    "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "generator_sha256": "8c9b186c0ec4708cd3aaa3eefdff92688027ea6d3d5d19d85eeff4fa03493af9",
+    "runner_sha256": "7315ef188a38707b8329286406864e0abb81c8bdf2949e3cbb91a26482506eef",
+    "umber_binary_sha256": "f58d8e844de239b8694bf925b76e60e1ce4924efe51c742d6aa3a7689b6f52df",
+    "allocation_binary_sha256": "8ed50088d7082546bbff1409dd64958c06f72ca328e9f9d7593ce4ecc0584e24",
+    "scope": "Full-process CPU/wall medians; allocator requests cover engine construction/execution and exclude the compact host input. Heap peaks are requested bytes, not RSS. pdfTeX memory is not measured by this adapter.",
+    "repeats": 7,
+    "complete": true,
+    "samples": [
+      {
+        "case": "churn",
+        "size": 1000,
+        "bytes": 845,
+        "sha256": "4379862776f5aba9c4b23db6fa5222f871e95340dfaafada503ed32154966bbd",
+        "seconds": {
+          "umber": [
+            0.004664758,
+            0.004833105,
+            0.004441654,
+            0.004267452,
+            0.005497987,
+            0.005995597,
+            0.00471716
+          ],
+          "pdftex": [
+            0.011543777,
+            0.012301015,
+            0.01170675,
+            0.014044528,
+            0.012804469,
+            0.01378965,
+            0.013876126
+          ],
+          "baseline": [
+            0.0046073,
+            0.004505017,
+            0.004481697,
+            0.004683057,
+            0.00564188,
+            0.005382635,
+            0.005069898
+          ]
+        },
+        "median": {
+          "umber": 0.00471716,
+          "pdftex": 0.012804469,
+          "baseline": 0.004683057
+        },
+        "ratio": 0.3683995017677031,
+        "ratio_to_baseline": 1.007282209035679,
+        "cpu_seconds": {
+          "umber": [
+            0.0043410000000000115,
+            0.004378000000000007,
+            0.004191999999999987,
+            0.004032000000000008,
+            0.004864000000000007,
+            0.005420999999999981,
+            0.004388000000000003
+          ],
+          "pdftex": [
+            0.011185999999999995,
+            0.011802999999999994,
+            0.011322000000000013,
+            0.013475000000000015,
+            0.012096999999999997,
+            0.01317299999999999,
+            0.01321300000000003
+          ],
+          "baseline": [
+            0.004271999999999998,
+            0.004252999999999993,
+            0.004179000000000002,
+            0.0044179999999999775,
+            0.005094999999999988,
+            0.004866000000000009,
+            0.004525000000000001
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.004378000000000007,
+          "pdftex": 0.012096999999999997,
+          "baseline": 0.0044179999999999775
+        },
+        "cpu_ratio": 0.36190791105232767,
+        "cpu_ratio_to_baseline": 0.9909461294703552,
+        "allocation": {
+          "allocations": 7218,
+          "requested_bytes": 951036,
+          "peak_bytes": 90738
+        },
+        "baseline_allocation": {
+          "allocations": 7218,
+          "requested_bytes": 958692,
+          "peak_bytes": 98394
+        }
+      },
+      {
+        "case": "churn",
+        "size": 10000,
+        "bytes": 846,
+        "sha256": "1b0646abbbe322258dd5e14f532acacf3336b55a53be8e7da42955f480ad8b61",
+        "seconds": {
+          "umber": [
+            0.034100314,
+            0.032627479,
+            0.032599516,
+            0.040517394,
+            0.044192484,
+            0.033541824,
+            0.03199989
+          ],
+          "pdftex": [
+            0.074943969,
+            0.072280893,
+            0.074403669,
+            0.099186938,
+            0.072482018,
+            0.079302793,
+            0.068431014
+          ],
+          "baseline": [
+            0.036769468,
+            0.032500475,
+            0.03704022,
+            0.038645681,
+            0.034250998,
+            0.033677536,
+            0.031892087
+          ]
+        },
+        "median": {
+          "umber": 0.033541824,
+          "pdftex": 0.074403669,
+          "baseline": 0.034250998
+        },
+        "ratio": 0.4508087363272367,
+        "ratio_to_baseline": 0.979294793103547,
+        "cpu_seconds": {
+          "umber": [
+            0.03342600000000001,
+            0.032082000000000055,
+            0.03189399999999998,
+            0.03974400000000011,
+            0.043531999999999904,
+            0.03291199999999983,
+            0.03164599999999984
+          ],
+          "pdftex": [
+            0.07409400000000005,
+            0.07156699999999994,
+            0.07373399999999997,
+            0.09830799999999995,
+            0.07174900000000006,
+            0.07862100000000005,
+            0.0677770000000002
+          ],
+          "baseline": [
+            0.03605699999999995,
+            0.031947999999999976,
+            0.036455000000000015,
+            0.03792099999999998,
+            0.03361700000000001,
+            0.03319899999999998,
+            0.031392000000000087
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.03291199999999983,
+          "pdftex": 0.07373399999999997,
+          "baseline": 0.03361700000000001
+        },
+        "cpu_ratio": 0.44636124447337516,
+        "cpu_ratio_to_baseline": 0.9790284677395312,
+        "allocation": {
+          "allocations": 71912,
+          "requested_bytes": 8618943,
+          "peak_bytes": 90740
+        },
+        "baseline_allocation": {
+          "allocations": 71912,
+          "requested_bytes": 8626599,
+          "peak_bytes": 98396
+        }
+      },
+      {
+        "case": "churn",
+        "size": 50000,
+        "bytes": 846,
+        "sha256": "8e0496ca1109a8bc6cc81a223d929e2afa7782192b4fa580474849afebf835f7",
+        "seconds": {
+          "umber": [
+            0.156710599,
+            0.165375161,
+            0.161760431,
+            0.15624995,
+            0.163736858,
+            0.160582175,
+            0.156418375
+          ],
+          "pdftex": [
+            0.346343144,
+            0.342633281,
+            0.328623061,
+            0.334134194,
+            0.330707365,
+            0.343204678,
+            0.338447954
+          ],
+          "baseline": [
+            0.156727929,
+            0.161378363,
+            0.158450649,
+            0.162991091,
+            0.157947639,
+            0.15107596,
+            0.155906013
+          ]
+        },
+        "median": {
+          "umber": 0.160582175,
+          "pdftex": 0.338447954,
+          "baseline": 0.157947639
+        },
+        "ratio": 0.4744663783667015,
+        "ratio_to_baseline": 1.0166798061476563,
+        "cpu_seconds": {
+          "umber": [
+            0.1559740000000005,
+            0.16472700000000007,
+            0.160771,
+            0.1555920000000004,
+            0.16308200000000017,
+            0.1599269999999997,
+            0.15573700000000024
+          ],
+          "pdftex": [
+            0.345599,
+            0.34186799999999984,
+            0.32775800000000066,
+            0.3329020000000007,
+            0.3299569999999994,
+            0.3424610000000001,
+            0.33769199999999966
+          ],
+          "baseline": [
+            0.15574999999999983,
+            0.1607459999999996,
+            0.15775699999999926,
+            0.16219599999999978,
+            0.15728099999999934,
+            0.15036300000000047,
+            0.15509600000000034
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.1599269999999997,
+          "pdftex": 0.33769199999999966,
+          "baseline": 0.15728099999999934
+        },
+        "cpu_ratio": 0.47358835862264986,
+        "cpu_ratio_to_baseline": 1.0168233925267538,
+        "allocation": {
+          "allocations": 359480,
+          "requested_bytes": 42701119,
+          "peak_bytes": 90740
+        },
+        "baseline_allocation": {
+          "allocations": 359480,
+          "requested_bytes": 42708775,
+          "peak_bytes": 98396
+        }
+      },
+      {
+        "case": "live-growth",
+        "size": 100,
+        "bytes": 489,
+        "sha256": "9d10d5ddb0c4b10a183569420ac46a7de82028a99a0cda028144f32f3d21443d",
+        "seconds": {
+          "umber": [
+            0.001641983,
+            0.002130603,
+            0.001503469,
+            0.001480672,
+            0.00143017,
+            0.001712111,
+            0.001521886
+          ],
+          "pdftex": [
+            0.005150265,
+            0.006167627,
+            0.00562205,
+            0.005240378,
+            0.004902231,
+            0.005452792,
+            0.005211744
+          ],
+          "baseline": [
+            0.001533575,
+            0.001576481,
+            0.001607005,
+            0.001418369,
+            0.001675391,
+            0.001557724,
+            0.001606235
+          ]
+        },
+        "median": {
+          "umber": 0.001521886,
+          "pdftex": 0.005240378,
+          "baseline": 0.001576481
+        },
+        "ratio": 0.29041530973529006,
+        "ratio_to_baseline": 0.9653690720027708,
+        "cpu_seconds": {
+          "umber": [
+            0.0013399999999998968,
+            0.0016530000000001266,
+            0.0012650000000000716,
+            0.0012559999999997018,
+            0.0012149999999993,
+            0.0014210000000005607,
+            0.0012599999999993727
+          ],
+          "pdftex": [
+            0.004773000000000138,
+            0.005612999999999424,
+            0.005203999999999986,
+            0.004813999999999652,
+            0.004586000000000645,
+            0.005080999999999669,
+            0.004726999999999926
+          ],
+          "baseline": [
+            0.0012930000000004327,
+            0.0012720000000001619,
+            0.0013600000000000279,
+            0.001206999999999958,
+            0.0013630000000004472,
+            0.0012780000000001124,
+            0.0013810000000002987
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.0012650000000000716,
+          "pdftex": 0.004813999999999652,
+          "baseline": 0.0012930000000004327
+        },
+        "cpu_ratio": 0.2627752388866147,
+        "cpu_ratio_to_baseline": 0.9783449342611356,
+        "allocation": {
+          "allocations": 245,
+          "requested_bytes": 141552,
+          "peak_bytes": 118778
+        },
+        "baseline_allocation": {
+          "allocations": 245,
+          "requested_bytes": 149208,
+          "peak_bytes": 126434
+        }
+      },
+      {
+        "case": "live-growth",
+        "size": 1000,
+        "bytes": 490,
+        "sha256": "c72f1e0d62a6b49c501c9bdbb7e5ce3dd9fa7fe36d35804649ace93d9eceb6d6",
+        "seconds": {
+          "umber": [
+            0.00380179,
+            0.00407043,
+            0.003429386,
+            0.003452675,
+            0.003390424,
+            0.003715381,
+            0.003805974
+          ],
+          "pdftex": [
+            0.008486276,
+            0.009640777,
+            0.009785431,
+            0.009116709,
+            0.009562936,
+            0.008702876,
+            0.00855267
+          ],
+          "baseline": [
+            0.00386181,
+            0.003446261,
+            0.00392339,
+            0.003342356,
+            0.003364324,
+            0.003849209,
+            0.003915213
+          ]
+        },
+        "median": {
+          "umber": 0.003715381,
+          "pdftex": 0.009116709,
+          "baseline": 0.003849209
+        },
+        "ratio": 0.40753532881218424,
+        "ratio_to_baseline": 0.9652323373451531,
+        "cpu_seconds": {
+          "umber": [
+            0.003496000000001054,
+            0.0036450000000005645,
+            0.0031929999999995573,
+            0.0032209999999999184,
+            0.003144000000000702,
+            0.0033880000000001687,
+            0.0034770000000001744
+          ],
+          "pdftex": [
+            0.00805800000000012,
+            0.009160999999998864,
+            0.009306999999999732,
+            0.008643000000000178,
+            0.00910299999999964,
+            0.008326000000000278,
+            0.00819499999999973
+          ],
+          "baseline": [
+            0.003469999999999196,
+            0.0032010000000006755,
+            0.0034809999999998453,
+            0.00309399999999993,
+            0.003114000000000061,
+            0.003422999999999732,
+            0.0035479999999994405
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.0033880000000001687,
+          "pdftex": 0.008643000000000178,
+          "baseline": 0.003422999999999732
+        },
+        "cpu_ratio": 0.3919935207682632,
+        "cpu_ratio_to_baseline": 0.9897750511248712,
+        "allocation": {
+          "allocations": 2160,
+          "requested_bytes": 1050299,
+          "peak_bytes": 836484
+        },
+        "baseline_allocation": {
+          "allocations": 2159,
+          "requested_bytes": 1038467,
+          "peak_bytes": 834412
+        }
+      },
+      {
+        "case": "live-growth",
+        "size": 2500,
+        "bytes": 490,
+        "sha256": "d9593c88db3693875dd55181ac7784c3a6b93d4ed8614b9e8622bab656f79435",
+        "seconds": {
+          "umber": [
+            0.006773094,
+            0.007253034,
+            0.010099486,
+            0.008756125,
+            0.006937377,
+            0.007262383,
+            0.007476047
+          ],
+          "pdftex": [
+            0.016137335,
+            0.015225578,
+            0.017857652,
+            0.017910345,
+            0.015602337,
+            0.015172486,
+            0.015460289
+          ],
+          "baseline": [
+            0.007641282,
+            0.006942181,
+            0.008621204,
+            0.008254624,
+            0.007163492,
+            0.007819687,
+            0.007528721
+          ]
+        },
+        "median": {
+          "umber": 0.007262383,
+          "pdftex": 0.015602337,
+          "baseline": 0.007641282
+        },
+        "ratio": 0.4654676411617054,
+        "ratio_to_baseline": 0.9504142105997396,
+        "cpu_seconds": {
+          "umber": [
+            0.006440999999999697,
+            0.006889999999999397,
+            0.009482000000000212,
+            0.008084000000000202,
+            0.006581999999999866,
+            0.00679799999999986,
+            0.007070000000000576
+          ],
+          "pdftex": [
+            0.015413000000000565,
+            0.01471,
+            0.01682699999999926,
+            0.017079000000000732,
+            0.014968000000000536,
+            0.014520000000000977,
+            0.014777999999999736
+          ],
+          "baseline": [
+            0.007166999999999923,
+            0.006645000000000678,
+            0.007919000000000231,
+            0.0076659999999995065,
+            0.0067269999999997054,
+            0.007248999999998951,
+            0.007016000000000133
+          ]
+        },
+        "cpu_median": {
+          "umber": 0.006889999999999397,
+          "pdftex": 0.014968000000000536,
+          "baseline": 0.007166999999999923
+        },
+        "cpu_ratio": 0.46031533939064334,
+        "cpu_ratio_to_baseline": 0.9613506348541189,
+        "allocation": {
+          "allocations": 5333,
+          "requested_bytes": 2588971,
+          "peak_bytes": 2042852
+        },
+        "baseline_allocation": {
+          "allocations": 5332,
+          "requested_bytes": 2573027,
+          "peak_bytes": 2038732
+        }
+      }
+    ],
+    "baseline_binary_sha256": "672268cfc80210b4a171b6c3b8f94eb8487e243a8a6dd40609bdedaab1ff523d",
+    "baseline_allocation_binary_sha256": "d8cb8fd3b050911d93b0671b232b883529c3ebcc87d5e2d9a540d0815e1bce03"
+  },
+  "allocation_diagnostics": [
+    {
+      "suite": "core",
+      "case": "raw",
+      "size": 1000000,
+      "before": {
+        "allocations": 17,
+        "requested_bytes": 55081,
+        "peak_bytes": 46774
+      },
+      "after": {
+        "allocations": 17,
+        "requested_bytes": 47425,
+        "peak_bytes": 39118
+      }
+    },
+    {
+      "suite": "core",
+      "case": "bodies",
+      "size": 1000000,
+      "before": {
+        "allocations": 31,
+        "requested_bytes": 72601,
+        "peak_bytes": 64214
+      },
+      "after": {
+        "allocations": 31,
+        "requested_bytes": 64945,
+        "peak_bytes": 56558
+      }
+    },
+    {
+      "suite": "core",
+      "case": "integers",
+      "size": 1000000,
+      "before": {
+        "allocations": 30,
+        "requested_bytes": 72481,
+        "peak_bytes": 64094
+      },
+      "after": {
+        "allocations": 30,
+        "requested_bytes": 64825,
+        "peak_bytes": 56438
+      }
+    },
+    {
+      "suite": "core",
+      "case": "parameters",
+      "size": 1000000,
+      "before": {
+        "allocations": 40,
+        "requested_bytes": 73489,
+        "peak_bytes": 64974
+      },
+      "after": {
+        "allocations": 40,
+        "requested_bytes": 65833,
+        "peak_bytes": 57318
+      }
+    },
+    {
+      "suite": "core",
+      "case": "file-parameters",
+      "size": 1000000,
+      "before": {
+        "allocations": 29,
+        "requested_bytes": 72361,
+        "peak_bytes": 64038
+      },
+      "after": {
+        "allocations": 29,
+        "requested_bytes": 64705,
+        "peak_bytes": 56382
+      }
+    },
+    {
+      "suite": "core",
+      "case": "long-parameters",
+      "size": 1000000,
+      "before": {
+        "allocations": 42,
+        "requested_bytes": 74250,
+        "peak_bytes": 65342
+      },
+      "after": {
+        "allocations": 42,
+        "requested_bytes": 66594,
+        "peak_bytes": 57686
+      }
+    },
+    {
+      "suite": "core",
+      "case": "delimiters",
+      "size": 1000000,
+      "before": {
+        "allocations": 33,
+        "requested_bytes": 72649,
+        "peak_bytes": 64262
+      },
+      "after": {
+        "allocations": 33,
+        "requested_bytes": 64993,
+        "peak_bytes": 56606
+      }
+    },
+    {
+      "suite": "core",
+      "case": "groups",
+      "size": 1000000,
+      "before": {
+        "allocations": 31,
+        "requested_bytes": 72609,
+        "peak_bytes": 64222
+      },
+      "after": {
+        "allocations": 31,
+        "requested_bytes": 64953,
+        "peak_bytes": 56566
+      }
+    },
+    {
+      "suite": "core",
+      "case": "source-integers",
+      "size": 1000000,
+      "before": {
+        "allocations": 30,
+        "requested_bytes": 72369,
+        "peak_bytes": 63982
+      },
+      "after": {
+        "allocations": 30,
+        "requested_bytes": 64713,
+        "peak_bytes": 56326
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "gentle-text",
+      "size": 50000,
+      "before": {
+        "allocations": 152076,
+        "requested_bytes": 18235569,
+        "peak_bytes": 99350
+      },
+      "after": {
+        "allocations": 152076,
+        "requested_bytes": 18227913,
+        "peak_bytes": 91694
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "gentle-calendar",
+      "size": 50000,
+      "before": {
+        "allocations": 100810,
+        "requested_bytes": 12155161,
+        "peak_bytes": 98598
+      },
+      "after": {
+        "allocations": 100810,
+        "requested_bytes": 12147505,
+        "peak_bytes": 90942
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "gentle-contents",
+      "size": 50000,
+      "before": {
+        "allocations": 159316,
+        "requested_bytes": 18701093,
+        "peak_bytes": 100572
+      },
+      "after": {
+        "allocations": 159316,
+        "requested_bytes": 18693437,
+        "peak_bytes": 92916
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "gentle-records",
+      "size": 50000,
+      "before": {
+        "allocations": 117122,
+        "requested_bytes": 13218429,
+        "peak_bytes": 109400
+      },
+      "after": {
+        "allocations": 117122,
+        "requested_bytes": 13210773,
+        "peak_bytes": 101744
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "stored-records",
+      "size": 50000,
+      "before": {
+        "allocations": 146231,
+        "requested_bytes": 16481389,
+        "peak_bytes": 109920
+      },
+      "after": {
+        "allocations": 146231,
+        "requested_bytes": 16473733,
+        "peak_bytes": 102264
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "token-pipeline",
+      "size": 50000,
+      "before": {
+        "allocations": 394008,
+        "requested_bytes": 44941701,
+        "peak_bytes": 120104
+      },
+      "after": {
+        "allocations": 394008,
+        "requested_bytes": 44934045,
+        "peak_bytes": 112448
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "name-table",
+      "size": 50000,
+      "before": {
+        "allocations": 110592,
+        "requested_bytes": 33107113,
+        "peak_bytes": 20159014
+      },
+      "after": {
+        "allocations": 110593,
+        "requested_bytes": 33131265,
+        "peak_bytes": 20167230
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "optional-arguments",
+      "size": 50000,
+      "before": {
+        "allocations": 145400,
+        "requested_bytes": 16426755,
+        "peak_bytes": 109456
+      },
+      "after": {
+        "allocations": 145400,
+        "requested_bytes": 16419099,
+        "peak_bytes": 101800
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "numeric-references",
+      "size": 50000,
+      "before": {
+        "allocations": 101104,
+        "requested_bytes": 12199329,
+        "peak_bytes": 133326
+      },
+      "after": {
+        "allocations": 101104,
+        "requested_bytes": 12191673,
+        "peak_bytes": 125670
+      }
+    },
+    {
+      "suite": "broader",
+      "case": "register-meanings",
+      "size": 50000,
+      "before": {
+        "allocations": 100883,
+        "requested_bytes": 12159609,
+        "peak_bytes": 98598
+      },
+      "after": {
+        "allocations": 100883,
+        "requested_bytes": 12151953,
+        "peak_bytes": 90942
+      }
+    }
+  ]
+}
