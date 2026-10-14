@@ -42,18 +42,14 @@ impl Engine<'_> {
     ) -> Result<()> {
         let first = self.packets[packet as usize].arguments[argument].first;
         if first.empty() && raw.origin.is_none() {
-            self.packets[packet as usize].arguments[argument].first = Span {
-                store: SINGLE,
-                start: raw.token.0,
-                end: raw.token.0 + 1,
-            };
+            self.packets[packet as usize].arguments[argument].first = Span::single(raw.token);
             return Ok(());
         }
         if let Some(span) = raw.origin {
             return self.capture_span(packet, argument, span, builder);
         }
-        if first.store == SINGLE && !first.empty() {
-            self.promote_single(packet, argument, builder)?;
+        if let Some(token) = first.single_token() {
+            self.promote_single(packet, argument, token, builder)?;
         }
         let span = self.materialize_token(raw.token, builder)?;
         self.packets[packet as usize].arguments[argument].append(span);
@@ -68,8 +64,8 @@ impl Engine<'_> {
         builder: &mut Option<crate::values::Builder>,
     ) -> Result<()> {
         let first = self.packets[packet as usize].arguments[argument].first;
-        if first.store == SINGLE && !first.empty() {
-            self.promote_single(packet, argument, builder)?;
+        if let Some(token) = first.single_token() {
+            self.promote_single(packet, argument, token, builder)?;
         }
         if self.packets[packet as usize].arguments[argument].append(span) {
             // Appending metadata leaves the input owner alive through this call.
@@ -82,13 +78,9 @@ impl Engine<'_> {
         &mut self,
         packet: u32,
         argument: usize,
+        token: Token,
         builder: &mut Option<crate::values::Builder>,
     ) -> Result<()> {
-        let token = Token(
-            self.packets[packet as usize].arguments[argument]
-                .first
-                .start,
-        );
         let span = self.materialize_token(token, builder)?;
         self.packets[packet as usize].arguments[argument].first = span;
         Ok(())
@@ -167,12 +159,10 @@ impl Engine<'_> {
                 return false;
             };
             let sequence = &self.packets[parent as usize].arguments[(token.byte() - 1) as usize];
-            // A delimiter trim can empty an inline word; it then holds no token.
-            if sequence.first.store != SINGLE || sequence.first.empty() {
+            let Some(token) = sequence.first.single_token() else {
                 return false;
-            }
-            // SINGLE is constructed only for a sequence containing one word.
-            Token(sequence.first.start)
+            };
+            token
         } else {
             token
         };
@@ -189,11 +179,7 @@ impl Engine<'_> {
         cursor.next = unsafe { second.add(1) };
         // Initial grouped capture has an empty argument. Character words and
         // interned control-sequence identities need no token backing owner.
-        self.packets[packet as usize].arguments[argument].first = Span {
-            store: SINGLE,
-            start: token.0,
-            end: token.0 + 1,
-        };
+        self.packets[packet as usize].arguments[argument].first = Span::single(token);
         true
     }
     #[inline(never)]
@@ -234,12 +220,11 @@ impl Engine<'_> {
         else {
             return Ok(());
         };
-        if self.packets[packet as usize].arguments[argument]
+        if let Some(token) = self.packets[packet as usize].arguments[argument]
             .first
-            .store
-            == SINGLE
+            .single_token()
         {
-            self.promote_single(packet, argument, builder)?;
+            self.promote_single(packet, argument, token, builder)?;
         }
         // Both paths acquired the invocation's unpublished builder. Chunk
         // growth preserves its initialized words and their final coordinates.

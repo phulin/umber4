@@ -291,9 +291,9 @@ impl Engine<'_> {
         if span.end - span.start != 1 || !sequence.rest.is_empty() {
             return None;
         }
-        if span.store == SINGLE {
+        if let Some(token) = span.single_token() {
             return Some(Raw {
-                token: Token(span.start),
+                token,
                 origin: None,
                 suppress: false,
             });

@@ -247,8 +247,6 @@ impl ArenaRange {
 }
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Span {
-    // SINGLE encodes an inline token in start with end = start + 1. It is
-    // confined to a one-token sequence and promoted before another range joins.
     pub store: u32,
     pub start: u32,
     pub end: u32,
@@ -256,6 +254,23 @@ pub(crate) struct Span {
 impl Span {
     pub fn empty(self) -> bool {
         self.start == self.end
+    }
+    // SINGLE encodes an inline token in start with end = start + 1. It is
+    // confined to a one-token sequence and promoted before another range joins.
+    pub fn single(token: Token) -> Self {
+        Self {
+            store: SINGLE,
+            start: token.0,
+            end: token.0 + 1,
+        }
+    }
+    // A delimiter trim can empty an inline word; it then holds no token.
+    pub fn single_token(self) -> Option<Token> {
+        if self.store == SINGLE && !self.empty() {
+            Some(Token(self.start))
+        } else {
+            None
+        }
     }
 }
 #[derive(Default)]
