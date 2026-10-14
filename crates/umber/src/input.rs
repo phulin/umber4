@@ -446,20 +446,19 @@ impl Engine<'_> {
         }
     }
     #[inline]
-    pub(crate) fn back(&mut self, token: Token) {
+    pub(crate) fn push_inline(&mut self, tokens: [Token; 2], len: u8, suppress: bool) {
         self.sources.push(Source::Inline {
-            tokens: [token, Token(0)],
+            tokens,
             position: 0,
-            len: 1,
-            suppress: false,
+            len,
+            suppress,
         });
     }
+    #[inline]
+    pub(crate) fn back(&mut self, token: Token) {
+        self.push_inline([token, Token(0)], 1, false);
+    }
     pub(crate) fn insert_pair(&mut self, first: Token, second: Token) {
-        self.sources.push(Source::Inline {
-            tokens: [first, second],
-            position: 0,
-            len: 2,
-            suppress: false,
-        });
+        self.push_inline([first, second], 2, false);
     }
 }

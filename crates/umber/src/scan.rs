@@ -41,6 +41,7 @@ impl Engine<'_> {
             if token.is_parameter() {
                 return Ok(false);
             }
+            // Engine::resolve would borrow the engine across this cursor.
             let meaning = if token.is_cs() {
                 self.bindings[token.id()].meaning()
             } else {

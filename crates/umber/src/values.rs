@@ -89,6 +89,12 @@ pub(crate) struct Tokens {
     pub len: u32,
 }
 impl Tokens {
+    fn last(&self) -> Option<&Piece> {
+        self.rest.last().or(self.first.as_ref())
+    }
+    fn last_mut(&mut self) -> Option<&mut Piece> {
+        self.rest.last_mut().or(self.first.as_mut())
+    }
     #[inline]
     fn piece(&self, position: u32) -> &Piece {
         let first = self.first.as_ref().unwrap();
@@ -181,7 +187,7 @@ impl Builder {
         let piece = self.pool.reserve(requested, self.tokens.len);
         self.next = piece.base;
         self.remaining = piece.capacity;
-        if let Some(last) = self.tokens.rest.last_mut().or(self.tokens.first.as_mut()) {
+        if let Some(last) = self.tokens.last_mut() {
             if Rc::ptr_eq(&last.page, &piece.page)
                 && last.base.wrapping_add(last.capacity as usize) == piece.base
             {
@@ -198,12 +204,7 @@ impl Builder {
     }
     pub fn finish(mut self, definition: Option<Definition>) -> Owner {
         if self.remaining != 0 {
-            let last = self
-                .tokens
-                .rest
-                .last_mut()
-                .or(self.tokens.first.as_mut())
-                .unwrap();
+            let last = self.tokens.last_mut().unwrap();
             if self.pool.rewind(last, self.remaining) {
                 last.capacity -= self.remaining;
             }
@@ -267,7 +268,7 @@ impl Slot {
         let tokens = std::mem::take(&mut value.tokens);
         value.definition = None;
         if let Some(pool) = self.pool.upgrade() {
-            if let Some(last) = tokens.rest.last().or(tokens.first.as_ref()) {
+            if let Some(last) = tokens.last() {
                 // No reader remains. Reuse the whole final reservation only
                 // if later reservations have already left the bump tail.
                 pool.rewind(last, last.capacity);
