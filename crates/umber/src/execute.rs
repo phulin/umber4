@@ -200,7 +200,7 @@ impl Engine<'_> {
         }
     }
     #[inline]
-    fn update_integer(
+    pub(crate) fn update_integer(
         &mut self,
         target: Target,
         global: bool,
@@ -287,7 +287,7 @@ impl Engine<'_> {
             }
         }
     }
-    fn print_token(&mut self, token: Token, output: &mut Vec<u8>) {
+    pub(crate) fn print_token(&mut self, token: Token, output: &mut Vec<u8>) {
         self.token_text(token, true, |_, byte| {
             Self::print_byte(byte, output);
             Ok(())

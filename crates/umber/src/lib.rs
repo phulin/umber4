@@ -1,3 +1,7 @@
+#[cfg(feature = "producer")]
+mod producer;
+#[cfg(feature = "producer")]
+pub use producer::Stats as ProducerStats;
 mod condition;
 mod convert;
 mod define;

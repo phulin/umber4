@@ -6,7 +6,14 @@ fn main() {
     };
     let result = std::fs::read(path)
         .map_err(|e| e.to_string())
-        .and_then(|bytes| umber::Engine::new(&bytes).run().map_err(|e| e.to_string()));
+        .and_then(|bytes| {
+            let engine = umber::Engine::new(&bytes);
+            #[cfg(feature = "producer")]
+            let result = engine.run_producer();
+            #[cfg(not(feature = "producer"))]
+            let result = engine.run();
+            result.map_err(|e| e.to_string())
+        });
     match result {
         Ok(outcome) => {
             let mut output = std::io::stdout().lock();

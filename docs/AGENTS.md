@@ -26,6 +26,7 @@ Read the root `AGENTS.md` first.
   DVI/PDF resources, and direct serialization.
 - `formats.md` develops bootstrap, Umber format export/read, shared semantic
   baselines, and document startup.
+- `producer.md` records the isolated producer-driven expansion experiment.
 - `performance.md` develops native/Wasm hot paths, allocation experiments,
   comparable upstream measurements, and compatibility evidence.
 - `mvp.md` defines the first executable expansion/register slice, supported

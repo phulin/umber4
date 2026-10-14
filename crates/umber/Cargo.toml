@@ -5,6 +5,7 @@ edition = "2024"
 
 [features]
 native-profile = []
+producer = []
 
 [dependencies]
 memchr = "2.8"

@@ -25,6 +25,13 @@ Use `--cases`, `--sizes`, and `--repeats` for focused runs. Both accept
 suite's baseline must support its primitive set. Default reports live under
 `target/`. Reviewed measurements live in `results/`.
 
+`producer.py` adds scanner handoff, bounded tail-loop, and nested-body kernels
+for the opt-in `producer` experiment. Its
+[design and reproduction commands](../docs/producer.md) identify the supported
+primitive subset and ordinary-release baseline. The
+[retained comparison](results/producer-experiment.json) includes five supported
+core kernels and these three additions; it does not cover the full MVP.
+
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.
 It retains largest-size CPU samples, longer confirmations, both memory workloads

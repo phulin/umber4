@@ -55,7 +55,11 @@ fn main() {
     // The immutable host input precedes this interval and is released after it.
     // The single-threaded engine owns all allocations made during the interval.
     ACTIVE.store(true, Relaxed);
-    let result = umber::Engine::new(&bytes).run();
+    let engine = umber::Engine::new(&bytes);
+    #[cfg(feature = "producer")]
+    let result = engine.run_producer();
+    #[cfg(not(feature = "producer"))]
+    let result = engine.run();
     ACTIVE.store(false, Relaxed);
     let outcome = result.expect("execute source");
     for message in outcome.messages {

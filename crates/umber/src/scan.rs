@@ -2,7 +2,7 @@ use crate::{Engine, Error, Result, scalars::Target, token::*};
 
 impl Engine<'_> {
     #[inline(always)]
-    fn digit(token: Token, radix: i32) -> i32 {
+    pub(crate) fn digit(token: Token, radix: i32) -> i32 {
         let digit = token.0.wrapping_sub(Token::other(b'0').0);
         if digit < 10 {
             return digit as i32;
