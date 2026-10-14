@@ -253,7 +253,7 @@ impl Engine<'_> {
             self.save.push(Save::Tokens(index, old));
         }
     }
-    fn close_group(&mut self, kind: bool) -> Result<()> {
+    pub(crate) fn close_group(&mut self, kind: bool) -> Result<()> {
         if self.level == 0 {
             return Err(Error::Group);
         }

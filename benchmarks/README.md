@@ -29,8 +29,11 @@ suite's baseline must support its primitive set. Default reports live under
 for the opt-in `producer` experiment. Its
 [design and reproduction commands](../docs/producer.md) identify the supported
 primitive subset and ordinary-release baseline. The
-[retained comparison](results/producer-experiment.json) includes five supported
-core kernels and these three additions; it does not cover the full MVP.
+[original comparison](results/producer-experiment.json) and
+[optimized comparison](results/producer-optimized.json) include five supported
+core kernels and these three additions. The optimized report retains longer,
+nine-repeat native confirmation and allocation/depth diagnostics; neither covers
+the full MVP.
 
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.

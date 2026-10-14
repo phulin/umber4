@@ -16,7 +16,7 @@ conversion and case-change output; `expand.rs` dispatches expansion;
 assignments, groups, and deferred tokens; `tests.rs` and `extended_tests.rs`
 contain semantic fixtures; `scan_tests.rs` checks operand cursor boundaries and
 rollback; `names_tests.rs` checks spelling chunk publication and retention;
-`producer.rs` and `producer_scan.rs` implement the opt-in producer experiment;
+`producer.rs`, `producer_consume.rs`, and `producer_scan.rs` implement the opt-in producer experiment;
 `producer_tests.rs` checks its supported semantics and stack bounds.
 `main.rs` is the native file/message adapter. Keep
 host access out of the portable library.

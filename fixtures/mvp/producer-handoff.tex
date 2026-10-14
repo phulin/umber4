@@ -15,4 +15,12 @@
 \message{UMBER:\the\count0/\number\count1/\ifnum\count0>0 YES\else NO\fi:END}
 \count0=0\relax
 \def\step{\advance\count0by1\relax\ifnum\count0<50000 \let\next\step\else\let\next\relax\fi\next}
-\step\message{UMBER:\the\count0:END}\end
+\step\message{UMBER:\the\count0:END}
+\count0=0\relax
+\def\step{\advance\count0by1\relax\ifnum\count0<3 \let\next\step\def\step{\message{UMBER:REPLACED:END}}\else\let\next\relax\fi\next}
+\step\message{UMBER:\the\count0:END}
+\count0=1\relax\count1=2\relax\count2=7\relax
+\count3=-\count\count\count0\relax\count4=\number\number123\relax
+\let\A\advance\let\C\count\def\by{b}\def\why{y}\A\C0\by\why\C2\relax
+\iffalse\iftrue\count0=999\else\count0=998\fi\else\ifnum\count3<0\relax\else\count0=997\fi\fi
+\message{UMBER:\the\count0/\the\count3/\the\count4:END}\end

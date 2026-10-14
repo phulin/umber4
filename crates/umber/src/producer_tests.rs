@@ -45,6 +45,22 @@ fn replacement_and_group_restoration_retain_live_body() {
     );
 }
 #[test]
+fn self_tail_alias_retains_body_across_redefinition() {
+    let stats = compare(
+        r"\def\step{\advance\count0by1\relax\ifnum\count0<3 \let\next\step\def\step{\message{REPLACED}}\else\let\next\relax\fi\next}\step\message{\the\count0}\end",
+        &[b"REPLACED", b"2"],
+    );
+    assert_eq!(stats.max_producer_depth, 1);
+    assert_eq!(stats.tail_calls, 2);
+}
+#[test]
+fn nested_integers_and_split_keyword_resume_their_consumers() {
+    compare(
+        r"\count0=1\relax\count1=2\relax\count2=7\relax\count3=-\count\count\count0\relax\count4=\number\number123\relax\let\A\advance\let\C\count\def\by{b}\def\why{y}\A\C0\by\why\C2\relax\iffalse\iftrue\count0=999\else\count0=998\fi\else\ifnum\count3<0\relax\else\count0=997\fi\fi\message{\the\count0/\the\count3/\the\count4}\end",
+        &[b"8/-7/123"],
+    );
+}
+#[test]
 fn integer_consumers_and_nested_conditionals_preserve_order() {
     compare(
         r"\count0=\iftrue12\else99\fi 3\relax\count1=-\count0\relax\advance\count0by7\multiply\count0by2\divide\count0by5\message{\the\count0/\number\count1/\ifnum\count0>0 YES\else NO\fi}\end",
