@@ -13,9 +13,9 @@ impl Engine<'_> {
             (read.meaning.command, read.meaning.value)
         } else if read.meaning.command == cmd::RELAX
             && read.meaning.value == 257
-            && (258..514).contains(&read.token.id())
+            && let Some(byte) = read.token.active_byte()
         {
-            (13, (read.token.id() - 258) as i32)
+            (13, i32::from(byte))
         } else {
             (cmd::RELAX, 256)
         }

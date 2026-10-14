@@ -69,12 +69,12 @@ impl Engine<'_> {
             }
             return Ok(());
         }
-        let id = token.id();
-        if (258..514).contains(&id) {
-            return emit(self, (id - 258) as u8);
+        if let Some(byte) = token.active_byte() {
+            return emit(self, byte);
         }
+        let id = token.id();
         let escape = self.scalars[Target::ESCAPECHAR].value;
-        if id == 1 {
+        if id == NULL_CS as usize {
             for word in [b"csname".as_slice(), b"endcsname"] {
                 if (0..=255).contains(&escape) {
                     emit(self, escape as u8)?;
@@ -294,17 +294,17 @@ impl Engine<'_> {
         self.opening_brace()?;
         let mut output = Generated::default();
         self.scan_raw_body(|engine, mut token| {
-            let active = token.is_cs() && (258..514).contains(&token.id());
-            if !token.is_cs() || active {
-                let byte = if active {
-                    (token.id() - 258) as u8
-                } else {
-                    token.byte()
-                };
+            let byte = if token.is_cs() {
+                token.active_byte()
+            } else {
+                Some(token.byte())
+            };
+            if let Some(byte) = byte {
                 let code = engine.scalars[Target::casecode(which, byte as usize)].value;
                 if code != 0 {
-                    token = if active {
-                        Token::cs(258 + code as u32)
+                    // Case codes are validated bytes.
+                    token = if token.is_cs() {
+                        Token::active(code as u8)
                     } else {
                         Token::character(token.cat(), code as u8)
                     };

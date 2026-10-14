@@ -65,8 +65,8 @@ impl<'a> Engine<'a> {
         let mut engine = Self {
             file: input::FileInput::new(source),
             names: Box::new(Names::new()),
-            bindings: vec![Binding::default(); 514],
-            binding_owners: vec![None; 514],
+            bindings: vec![Binding::default(); NAMED_BASE as usize],
+            binding_owners: vec![None; NAMED_BASE as usize],
             scalars: Scalars::default(),
             token_registers: std::array::from_fn(|_| TokenValue::default()),
             after_assignment: None,

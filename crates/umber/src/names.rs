@@ -1,9 +1,12 @@
-use crate::{Error, Result, token::CS};
+use crate::token::{CS, NAMED_BASE, NULL_CS, SINGLE_BASE};
+use crate::{Error, Result};
 use std::cell::UnsafeCell;
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
 
-const NAMED_BASE: usize = 514;
+const NULL: usize = NULL_CS as usize;
+const SINGLE: usize = SINGLE_BASE as usize;
+const NAMED: usize = NAMED_BASE as usize;
 static BYTE_NAMES: [[u8; 1]; 256] = {
     let mut names = [[0]; 256];
     let mut byte = 0;
@@ -33,27 +36,27 @@ impl Names {
         }
     }
     pub fn len(&self) -> usize {
-        NAMED_BASE + self.spellings.len()
+        NAMED + self.spellings.len()
     }
     pub fn spelling(&self, id: usize) -> &[u8] {
         // Both fixed symbol ranges encode their byte directly in the ID.
         // Multi-byte spellings are initialized immutable ranges in bytes.
         match id {
             0 => b"relax",
-            1 => b"",
-            2..=513 => &BYTE_NAMES[(id - 2) & 255],
+            NULL => b"",
+            SINGLE..NAMED => &BYTE_NAMES[(id - SINGLE) & 255],
             // SAFETY: every named entry is published after its complete range
             // is initialized. bytes owns that stable chunk for Names' lifetime;
             // this view's borrow ends before Names can be dropped.
-            _ => unsafe { self.spellings[id - NAMED_BASE].as_ref() },
+            _ => unsafe { self.spellings[id - NAMED].as_ref() },
         }
     }
     pub fn intern(&mut self, name: &[u8]) -> Result<u32> {
         if name.is_empty() {
-            return Ok(1);
+            return Ok(NULL_CS);
         }
         if name.len() == 1 {
-            return Ok(2 + u32::from(name[0]));
+            return Ok(SINGLE_BASE + u32::from(name[0]));
         }
         let mut hash = Self::HASH_START;
         for &b in name {
@@ -76,11 +79,11 @@ impl Names {
                 let id = bucket as u32;
                 #[cfg(feature = "native-profile")]
                 // SAFETY: occupied buckets hold IDs assigned after appending
-                // their spelling. Subtracting NAMED_BASE selects that entry;
+                // their spelling. Subtracting NAMED selects that entry;
                 // rehashing preserves IDs and entries are never removed.
-                let spelling = unsafe { self.spellings.get_unchecked(id as usize - NAMED_BASE) };
+                let spelling = unsafe { self.spellings.get_unchecked(id as usize - NAMED) };
                 #[cfg(not(feature = "native-profile"))]
-                let spelling = &self.spellings[id as usize - NAMED_BASE];
+                let spelling = &self.spellings[id as usize - NAMED];
                 // SAFETY: occupied buckets refer to initialized immutable
                 // ranges retained by bytes. This view ends before insertion.
                 if unsafe { spelling.as_ref() } == name {

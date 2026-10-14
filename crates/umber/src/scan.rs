@@ -172,16 +172,13 @@ impl Engine<'_> {
             }
         };
         let value = if read.token == Token::other(b'`') {
-            let raw = self.next_raw()?;
-            let value = if !raw.token.is_cs() {
-                i32::from(raw.token.byte())
-            } else if (2..258).contains(&raw.token.id()) {
-                (raw.token.id() - 2) as i32
-            } else if (258..514).contains(&raw.token.id()) {
-                (raw.token.id() - 258) as i32
+            let token = self.next_raw()?.token;
+            let byte = if token.is_cs() {
+                token.single_byte().or(token.active_byte())
             } else {
-                return Err(Error::Number);
+                Some(token.byte())
             };
+            let value = i32::from(byte.ok_or(Error::Number)?);
             let read = self.next_expanded()?;
             if read.meaning.command != cmd::SPACE {
                 self.back(read.token);

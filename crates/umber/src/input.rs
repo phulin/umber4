@@ -145,7 +145,7 @@ impl<'a> FileInput<'a> {
                 0 => {
                     if self.position == self.line.len() {
                         self.state = 2;
-                        return Ok(Token::cs(1));
+                        return Ok(Token::cs(NULL_CS));
                     }
                     let (first, cat) = self.classified(cats);
                     if cat == 11 {
@@ -161,16 +161,15 @@ impl<'a> FileInput<'a> {
                             self.position += 1;
                         }
                         self.state = 2;
-                        let id = if self.position - start == 1 {
-                            2 + u32::from(first)
+                        return Ok(if self.position - start == 1 {
+                            Token::single(first)
                         } else {
-                            names.intern_hashed(&self.line[start..self.position], hash)?
-                        };
-                        return Ok(Token::cs(id));
+                            Token::cs(names.intern_hashed(&self.line[start..self.position], hash)?)
+                        });
                     }
                     self.position += 1;
                     self.state = if cat == 10 { 2 } else { 1 };
-                    return Ok(Token::cs(2 + u32::from(first)));
+                    return Ok(Token::single(first));
                 }
                 5 => {
                     self.position = self.line.len();
@@ -193,7 +192,7 @@ impl<'a> FileInput<'a> {
                 }
                 13 => {
                     self.state = 1;
-                    return Ok(Token::cs(258 + u32::from(b)));
+                    return Ok(Token::active(b));
                 }
                 14 => {
                     self.position = self.line.len();

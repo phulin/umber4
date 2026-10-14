@@ -3,6 +3,13 @@ pub(crate) const PARAM: u32 = 1 << 23;
 pub(crate) const SINGLE: u32 = u32::MAX - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
 pub(crate) const CHUNK_BITS: u32 = 12;
+// Control-sequence IDs follow TeX's layout: the frozen relax, the empty name,
+// one single-character name and one active character per byte, then interned
+// multi-byte names.
+pub(crate) const NULL_CS: u32 = 1;
+pub(crate) const SINGLE_BASE: u32 = 2;
+pub(crate) const ACTIVE_BASE: u32 = SINGLE_BASE + 256;
+pub(crate) const NAMED_BASE: u32 = ACTIVE_BASE + 256;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -13,6 +20,20 @@ impl Token {
     }
     pub fn cs(id: u32) -> Self {
         Self(CS | id)
+    }
+    pub fn single(byte: u8) -> Self {
+        Self::cs(SINGLE_BASE + u32::from(byte))
+    }
+    pub fn active(byte: u8) -> Self {
+        Self::cs(ACTIVE_BASE + u32::from(byte))
+    }
+    pub fn single_byte(self) -> Option<u8> {
+        let offset = self.0.wrapping_sub(CS + SINGLE_BASE);
+        (offset < 256).then_some(offset as u8)
+    }
+    pub fn active_byte(self) -> Option<u8> {
+        let offset = self.0.wrapping_sub(CS + ACTIVE_BASE);
+        (offset < 256).then_some(offset as u8)
     }
     pub fn is_cs(self) -> bool {
         self.0 >= CS
