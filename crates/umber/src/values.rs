@@ -138,9 +138,11 @@ impl Tokens {
             let (second, _, b_end) = other.window(b, b + end - a);
             let count = (a_end - a).min(b_end - b) as usize;
             // SAFETY: both immutable windows contain count initialized words.
+            // Token is a transparent u32 with derived equality; comparing the
+            // integers lets the slice comparison use bcmp.
             if unsafe {
-                std::slice::from_raw_parts(first, count)
-                    != std::slice::from_raw_parts(second, count)
+                std::slice::from_raw_parts(first.cast::<u32>(), count)
+                    != std::slice::from_raw_parts(second.cast::<u32>(), count)
             } {
                 return false;
             }
