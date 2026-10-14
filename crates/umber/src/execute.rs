@@ -35,7 +35,6 @@ impl Engine<'_> {
             _ => global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
         };
         let result = match read.meaning.command {
-            cmd::RELAX | cmd::SPACE | cmd::PAR if !global => Ok(()),
             cmd::BEGIN | cmd::BEGIN_GROUP if !global => {
                 self.level = self.level.checked_add(1).ok_or(Error::Capacity)?;
                 self.save
