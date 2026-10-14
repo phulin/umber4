@@ -45,9 +45,9 @@ impl Engine<'_> {
         tokens.push(Token(PARAM | 255))?;
         let body_start = tokens.len();
         let uses_parameters = if expanded {
-            self.scan_body::<true>(Some(parameters), |_, token| tokens.push(token))?
+            self.scan_body::<true>(Some(parameters), &mut tokens)?
         } else {
-            self.scan_body::<false>(Some(parameters), |_, token| tokens.push(token))?
+            self.scan_body::<false>(Some(parameters), &mut tokens)?
         };
         if let Some(token) = brace_tail {
             tokens.push(token)?;

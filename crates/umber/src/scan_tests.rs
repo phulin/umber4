@@ -20,6 +20,22 @@ fn expanded_names_preserve_identity_at_buffer_boundaries() {
 }
 
 #[test]
+fn character_runs_refill_builders_from_files_and_windows() {
+    // File lines, stored lists, and expanded windows each carry runs past
+    // several builder reservations and one page before their closing brace.
+    let text: String = (0..5000)
+        .map(|index| if index % 997 == 996 { b' ' } else { b"ab1.Z9"[index % 6] } as char)
+        .collect();
+    let source = format!(
+        r"\catcode123=1 \catcode125=2\relax
+\def\a{{{text}}}\toks0={{{text}}}\edef\b{{\a}}\edef\c{{\the\toks0}}
+\message{{\a}}\message{{\b}}\message{{\c}}\end"
+    );
+    let outcome = Engine::new(source.as_bytes()).run().unwrap();
+    assert_eq!(outcome.messages, [text.as_bytes(); 3]);
+}
+
+#[test]
 fn list_destination_failure_preserves_file_progress_and_lexical_state() {
     use crate::{scalars::Target, token::Token};
     let mut engine = Engine::new(b"{abc XYZ}");
@@ -28,7 +44,7 @@ fn list_destination_failure_preserves_file_progress_and_lexical_state() {
     engine.opening_brace().unwrap();
     let mut consumed = 0;
     assert_eq!(
-        engine.scan_raw_body(|_, _| {
+        engine.scan_raw_body(&mut |_: &mut Engine, _: Token| {
             consumed += 1;
             if consumed == 3 {
                 Err(Error::Capacity)

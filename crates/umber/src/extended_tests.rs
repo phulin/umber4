@@ -303,7 +303,10 @@ fn conversion_operand_errors_precede_destination_capacity() {
             engine.execute(read).unwrap();
         }
         engine.opening_brace().unwrap();
-        let result = engine.scan_body::<true>(Some(0), |_, _| Err(Error::Capacity));
+        let result = engine
+            .scan_body::<true>(Some(0), &mut |_: &mut Engine, _: crate::token::Token| {
+                Err(Error::Capacity)
+            });
         assert_eq!(result, Err(expected));
     }
 }

@@ -231,7 +231,7 @@ impl Engine<'_> {
             cmd::DETOKENIZE => {
                 self.opening_brace()?;
                 let mut emission = Ok(());
-                self.scan_raw_body(|engine, token| {
+                self.scan_raw_body(&mut |engine: &mut Self, token: Token| {
                     engine.token_text(token, true, |engine, byte| {
                         if DEFER_EMISSION {
                             // A direct destination error follows operand scan
@@ -277,7 +277,7 @@ impl Engine<'_> {
     pub(crate) fn change_case(&mut self, which: usize) -> Result<()> {
         self.opening_brace()?;
         let mut output = Generated::default();
-        self.scan_raw_body(|engine, mut token| {
+        self.scan_raw_body(&mut |engine: &mut Self, mut token: Token| {
             let byte = if token.is_cs() {
                 token.active_byte()
             } else {

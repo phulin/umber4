@@ -33,7 +33,9 @@ impl Engine<'_> {
             cmd::UNEXPANDED => {
                 self.opening_brace()?;
                 let mut output = crate::convert::Generated::default();
-                self.scan_raw_body(|engine, token| engine.generated_token(&mut output, token))?;
+                self.scan_raw_body(&mut |engine: &mut Self, token: Token| {
+                    engine.generated_token(&mut output, token)
+                })?;
                 self.finish_generated(output)
             }
             cmd::EXPANDAFTER => {
@@ -91,7 +93,7 @@ impl Engine<'_> {
             return Ok(());
         }
         let mut output = crate::convert::Generated::default();
-        self.emit_number(value, &mut |engine, token| {
+        self.emit_number(value, &mut |engine: &mut Self, token: Token| {
             engine.generated_token(&mut output, token)
         })?;
         self.finish_generated(output)

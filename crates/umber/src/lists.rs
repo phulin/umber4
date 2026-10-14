@@ -1,11 +1,48 @@
-use crate::{Engine, Error, Result, token::*};
+use crate::{Engine, Error, Result, token::*, values::Builder};
 
 pub(crate) enum Internal {
     Integer(i32),
     Tokens(Option<crate::values::Owner>),
 }
 
-impl Engine<'_> {
+/// A list destination. Token builders take each character run in place;
+/// other destinations receive every token in reading order.
+pub(crate) trait Emit<'a> {
+    fn token(&mut self, engine: &mut Engine<'a>, token: Token) -> Result<()>;
+    #[inline(always)]
+    fn builder(&mut self) -> Option<&mut Builder> {
+        None
+    }
+}
+impl<'a, F: FnMut(&mut Engine<'a>, Token) -> Result<()>> Emit<'a> for F {
+    #[inline(always)]
+    fn token(&mut self, engine: &mut Engine<'a>, token: Token) -> Result<()> {
+        self(engine, token)
+    }
+}
+impl<'a> Emit<'a> for Builder {
+    #[inline(always)]
+    fn token(&mut self, _: &mut Engine<'a>, token: Token) -> Result<()> {
+        self.push(token)
+    }
+    #[inline(always)]
+    fn builder(&mut self) -> Option<&mut Builder> {
+        Some(self)
+    }
+}
+
+// A character that neither changes depth nor introduces a parameter.
+#[inline(always)]
+fn body_character(token: Token) -> bool {
+    // Space, letter, and other-character words form one common range.
+    #[cfg(feature = "native-profile")]
+    if (10 << 8..13 << 8).contains(&token.0) {
+        return true;
+    }
+    token.0 < 16 << 8 && !matches!(token.cat(), 1 | 2 | 6)
+}
+
+impl<'a> Engine<'a> {
     pub(crate) fn toks_index(&mut self, read: Read) -> Result<usize> {
         match read.meaning.command {
             cmd::TOKS => self.scan_index(),
@@ -27,12 +64,12 @@ impl Engine<'_> {
     pub(crate) fn scan_body<const EXPANDED: bool>(
         &mut self,
         parameters: Option<u8>,
-        mut emit: impl FnMut(&mut Self, Token) -> Result<()>,
+        emit: &mut impl Emit<'a>,
     ) -> Result<bool> {
         let mut depth = 1;
         let mut uses_parameters = false;
         loop {
-            self.emit_characters(&mut emit)?;
+            self.emit_characters(emit)?;
             let read = if EXPANDED {
                 loop {
                     let read = self.next_token()?;
@@ -44,22 +81,22 @@ impl Engine<'_> {
                             Internal::Tokens(owner) => {
                                 if let Some(owner) = owner {
                                     for position in 0..owner.tokens.len {
-                                        emit(self, owner.tokens.get(position))?;
+                                        emit.token(self, owner.tokens.get(position))?;
                                     }
                                 }
                             }
-                            Internal::Integer(value) => self.emit_number(value, &mut emit)?,
+                            Internal::Integer(value) => self.emit_number(value, emit)?,
                         },
                         cmd::NUMBER => self.with_expansion(|engine| {
                             let value = engine.scan_int()?;
-                            engine.emit_number(value, &mut emit)
+                            engine.emit_number(value, emit)
                         })?,
                         cmd::STRING | cmd::MEANING | cmd::ROMAN | cmd::DETOKENIZE => {
                             self.with_expansion(|engine| {
                                 let mut nonempty = false;
                                 engine.conversion::<true>(read, |engine, byte| {
                                     nonempty = true;
-                                    emit(engine, Token::string_character(byte))
+                                    emit.token(engine, Token::string_character(byte))
                                 })?;
                                 if nonempty {
                                     engine.check_source_limit()?;
@@ -69,7 +106,7 @@ impl Engine<'_> {
                         }
                         cmd::UNEXPANDED => {
                             self.opening_brace()?;
-                            self.scan_raw_body(&mut emit)?;
+                            self.scan_raw_body(emit)?;
                         }
                         _ if read.meaning.is_macro() => {
                             self.begin_macro(read.meaning.value as u32)?;
@@ -98,28 +135,25 @@ impl Engine<'_> {
                     self.next_token()?
                 };
                 if next.meaning.command == 6 {
-                    emit(self, next.token)?;
+                    emit.token(self, next.token)?;
                 } else if !next.token.is_cs()
                     && next.token.cat() == 12
                     && (b'1'..b'1' + count).contains(&next.token.byte())
                 {
-                    emit(self, Token(PARAM | u32::from(next.token.byte() - b'0')))?;
+                    emit.token(self, Token(PARAM | u32::from(next.token.byte() - b'0')))?;
                     uses_parameters = true;
                 } else {
                     return Err(Error::Syntax);
                 }
             } else {
-                emit(self, read.token)?;
+                emit.token(self, read.token)?;
             }
         }
     }
-    pub(crate) fn scan_raw_body(
-        &mut self,
-        mut emit: impl FnMut(&mut Self, Token) -> Result<()>,
-    ) -> Result<()> {
+    pub(crate) fn scan_raw_body(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
         let mut depth = 1;
         loop {
-            self.emit_characters(&mut emit)?;
+            self.emit_characters(emit)?;
             let token = self.next_raw()?.token;
             if token.is_begin() {
                 depth += 1;
@@ -130,35 +164,31 @@ impl Engine<'_> {
                     return Ok(());
                 }
             }
-            emit(self, token)?;
+            emit.token(self, token)?;
         }
     }
-    pub(crate) fn emit_number(
-        &mut self,
-        value: i32,
-        emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
-    ) -> Result<()> {
+    pub(crate) fn emit_number(&mut self, value: i32, emit: &mut impl Emit<'a>) -> Result<()> {
         // Preserve the general expansion path's source limit even though this
         // scanner needs no additional source for the generated characters.
         self.check_source_limit()?;
         if value < 0 {
-            emit(self, Token::other(b'-'))?;
+            emit.token(self, Token::other(b'-'))?;
         }
         self.decimal_digits(value.unsigned_abs(), &mut |engine, byte| {
-            emit(engine, Token::other(byte))
+            emit.token(engine, Token::other(byte))
         })
     }
     // These destination emitters append only: they preserve sources and the
     // immutable window backing. A new output chunk can move arena descriptors,
     // while the boxed input chunk itself stays at its original address.
     #[inline]
-    fn emit_characters(
-        &mut self,
-        emit: &mut impl FnMut(&mut Self, Token) -> Result<()>,
-    ) -> Result<()> {
+    fn emit_characters(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
         if self.sources.is_empty() {
+            if let Some(tokens) = emit.builder() {
+                return self.file.read_characters(self.scalars.catcodes(), tokens);
+            }
             while let Some(token) = self.file.read_character(self.scalars.catcodes()) {
-                emit(self, token)?;
+                emit.token(self, token)?;
             }
             return Ok(());
         }
@@ -166,40 +196,32 @@ impl Engine<'_> {
             return Ok(());
         };
         let (mut next, end) = (cursor.next, cursor.end);
-        while next != end {
+        let read = || {
+            if next == end {
+                return None;
+            }
             // SAFETY: this installed window contains initialized immutable
             // tokens; its source retains the backing throughout emission.
             let token = unsafe { next.read() };
-            #[cfg(feature = "native-profile")]
-            // Space, letter, and other-character words form one common range.
-            // The remaining categories retain the structural/parameter check.
-            if !(10 << 8..13 << 8).contains(&token.0)
-                && (token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2 | 6))
-            {
-                break;
-            }
-            #[cfg(not(feature = "native-profile"))]
-            if token.0 >= 16 << 8 || matches!(token.cat(), 1 | 2 | 6) {
-                break;
+            if !body_character(token) {
+                return None;
             }
             // SAFETY: next is within this window and advances at most to end.
             next = unsafe { next.add(1) };
-            let result = emit(self, token);
-            if result.is_err() {
-                if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
-                    cursor.next = next;
-                }
-                return result;
-            }
-        }
+            Some(token)
+        };
+        let result = match emit.builder() {
+            Some(tokens) => tokens.extend_with(read),
+            None => std::iter::from_fn(read).try_for_each(|token| emit.token(self, token)),
+        };
         if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
             cursor.next = next;
         }
-        Ok(())
+        result
     }
     pub(crate) fn store_body(&mut self) -> Result<crate::values::Owner> {
         let mut tokens = self.values.builder()?;
-        self.scan_raw_body(|_, token| tokens.push(token))?;
+        self.scan_raw_body(&mut tokens)?;
         Ok(tokens.finish(None))
     }
 }

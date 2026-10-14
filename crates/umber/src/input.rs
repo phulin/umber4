@@ -1,4 +1,4 @@
-use crate::{Engine, Error, Result, names::Names, token::*};
+use crate::{Engine, Error, Result, names::Names, token::*, values::Builder};
 
 // Installed token sources, including generated text, share one nesting limit.
 const MAX_SOURCES: usize = 10000;
@@ -110,25 +110,40 @@ impl<'a> FileInput<'a> {
         self.state = 1;
         Some(i32::from(digit))
     }
+    // Letters and other characters need no lexical state beyond their byte.
+    #[inline(always)]
+    fn character(cats: &[Integer; 256], byte: u8) -> Option<Token> {
+        let cat = cats[byte as usize].value as u8;
+        matches!(cat, 11 | 12).then(|| Token::character(cat, byte))
+    }
     #[inline]
     pub fn read_character_except<const EXCEPT: bool>(
         &mut self,
         cats: &[Integer; 256],
         except: Token,
     ) -> Option<Token> {
-        if let Some(&byte) = self.line.get(self.position) {
-            let cat = cats[byte as usize].value as u8;
-            if matches!(cat, 11 | 12) {
-                let token = Token::character(cat, byte);
-                if EXCEPT && token == except {
-                    return None;
-                }
-                self.position += 1;
-                self.state = 1;
-                return Some(token);
-            }
+        let token = Self::character(cats, *self.line.get(self.position)?)?;
+        if EXCEPT && token == except {
+            return None;
         }
-        None
+        self.position += 1;
+        self.state = 1;
+        Some(token)
+    }
+    /// Tokenizes the characters read_character would return directly into
+    /// a builder, keeping the line position local for the whole run.
+    #[inline]
+    pub fn read_characters(&mut self, cats: &[Integer; 256], tokens: &mut Builder) -> Result<()> {
+        let (line, mut position, mut state) = (self.line.as_slice(), self.position, self.state);
+        let result = tokens.extend_with(|| {
+            let token = Self::character(cats, *line.get(position)?)?;
+            position += 1;
+            state = 1;
+            Some(token)
+        });
+        self.position = position;
+        self.state = state;
+        result
     }
     pub fn read(
         &mut self,

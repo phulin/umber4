@@ -187,6 +187,28 @@ impl Builder {
         }
         Ok(())
     }
+    /// Appends tokens from `next` until it returns None, exactly as repeated
+    /// pushes would. The cursor stays local, so writes through it cannot force
+    /// the producer's state back to memory between tokens.
+    #[inline(always)]
+    pub fn extend_with(&mut self, mut next: impl FnMut() -> Option<Token>) -> Result<()> {
+        let (mut cursor, mut limit) = (self.next, self.limit);
+        while let Some(token) = next() {
+            if cursor == limit {
+                self.next = cursor;
+                self.grow()?;
+                (cursor, limit) = (self.next, self.limit);
+            }
+            // SAFETY: as in push, the cursor stays inside this builder's
+            // reservation and initializes each word before passing it.
+            unsafe {
+                cursor.write(token);
+                cursor = cursor.add(1);
+            }
+        }
+        self.next = cursor;
+        Ok(())
+    }
     #[inline(never)]
     fn grow(&mut self) -> Result<()> {
         let len = self.len();

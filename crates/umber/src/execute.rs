@@ -163,7 +163,7 @@ impl Engine<'_> {
             cmd::MESSAGE if !global => {
                 self.opening_brace()?;
                 let mut bytes = Vec::new();
-                self.scan_body::<true>(None, |engine, token| {
+                self.scan_body::<true>(None, &mut |engine: &mut Self, token: Token| {
                     engine.print_token(token, &mut bytes);
                     Ok(())
                 })?;
