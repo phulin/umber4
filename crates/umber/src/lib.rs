@@ -5,6 +5,7 @@ mod delimit;
 mod execute;
 mod expand;
 mod expression;
+mod file;
 mod input;
 mod lists;
 mod macros;
@@ -42,7 +43,7 @@ pub struct Outcome {
     pub messages: Vec<Vec<u8>>,
 }
 pub struct Engine<'a> {
-    pub(crate) file: input::FileInput<'a>,
+    pub(crate) file: file::FileInput<'a>,
     pub(crate) names: Box<Names>,
     pub(crate) bindings: Vec<Binding>,
     pub(crate) binding_owners: Vec<Option<values::Owner>>,
@@ -63,7 +64,7 @@ pub struct Engine<'a> {
 impl<'a> Engine<'a> {
     pub fn new(source: &'a [u8]) -> Self {
         let mut engine = Self {
-            file: input::FileInput::new(source),
+            file: file::FileInput::new(source),
             names: Box::new(Names::new()),
             bindings: vec![Binding::default(); NAMED_BASE as usize],
             binding_owners: vec![None; NAMED_BASE as usize],

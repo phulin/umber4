@@ -219,10 +219,15 @@ impl Engine<'_> {
         if !global && level > 0 && old.level != level {
             save.push(Save::Integer(target, old));
         }
-        *slot = Integer {
+        let value = Integer {
             value,
             level: if global { 0 } else { level },
         };
+        if target.is_catcode() {
+            self.set_category(target, value);
+        } else {
+            *slot = value;
+        }
         Ok(())
     }
     pub(crate) fn assign_meaning(&mut self, id: usize, meaning: Meaning, global: bool) {
@@ -279,9 +284,13 @@ impl Engine<'_> {
                     }
                 }
                 Save::Integer(target, old) => {
-                    let slot = &mut self.scalars[target];
-                    if slot.level != 0 {
-                        *slot = old;
+                    if self.scalars[target].level == 0 {
+                        continue;
+                    }
+                    if target.is_catcode() {
+                        self.set_category(target, old);
+                    } else {
+                        self.scalars[target] = old;
                     }
                 }
             }

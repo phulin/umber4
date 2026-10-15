@@ -21,17 +21,18 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn scan_digit_window(&mut self, radix: i32, value: &mut i32) -> Result<bool> {
-        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+        let Some((next, end)) = crate::input::token_window(&mut self.sources, &mut self.file)
+        else {
             return Ok(false);
         };
-        while cursor.next != cursor.end {
-            // SAFETY: the source retains this initialized immutable window.
+        while *next != end {
+            // SAFETY: the window retains its initialized immutable tokens.
             // This scan neither replaces sources nor changes backing storage.
-            let token = unsafe { cursor.next.read() };
+            let token = unsafe { next.read() };
             let digit = Self::digit(token, radix);
             if digit < radix {
                 // SAFETY: next is before end in the same allocation.
-                cursor.next = unsafe { cursor.next.add(1) };
+                *next = unsafe { next.add(1) };
                 *value = value
                     .checked_mul(radix)
                     .and_then(|v| v.checked_add(digit))
@@ -58,8 +59,8 @@ impl Engine<'_> {
             // backed token would. Inline sources retain the ordinary reader's
             // one-read suppression handling.
             if meaning.command == cmd::SPACE {
-                // SAFETY: the terminating token is inside this source window.
-                cursor.next = unsafe { cursor.next.add(1) };
+                // SAFETY: the terminating token is inside this window.
+                *next = unsafe { next.add(1) };
             }
             return Ok(true);
         }
@@ -115,22 +116,19 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn literal_digit(&mut self) -> Option<i32> {
-        if self.sources.is_empty() {
-            return self.file.literal_digit(self.scalars.catcodes());
-        }
-        let cursor = self.sources.last_mut().and_then(Source::cursor_mut)?;
-        if cursor.next == cursor.end {
+        let (next, end) = self.token_window()?;
+        if *next == end {
             return None;
         }
-        // SAFETY: this source retains its initialized immutable window. Peeking
+        // SAFETY: this window retains its initialized immutable tokens. Peeking
         // neither changes sources nor retires their backing storage.
-        let digit = Self::digit(unsafe { cursor.next.read() }, 10);
+        let digit = Self::digit(unsafe { next.read() }, 10);
         if digit >= 10 {
             return None;
         }
         // SAFETY: next is before end in the same allocation. A literal digit
         // needs no expansion or meaning lookup; the suffix uses the usual scan.
-        cursor.next = unsafe { cursor.next.add(1) };
+        *next = unsafe { next.add(1) };
         Some(digit)
     }
     // Keep the suffix loop out of the general scanner's recursive stack frame.

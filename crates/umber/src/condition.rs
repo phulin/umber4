@@ -137,23 +137,19 @@ impl Engine<'_> {
     }
     #[inline]
     fn skip_characters(&mut self) {
-        if self.sources.is_empty() {
-            while self.file.read_character(self.scalars.catcodes()).is_some() {}
-            return;
-        }
-        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+        let Some((next, end)) = self.token_window() else {
             return;
         };
-        while cursor.next != cursor.end {
-            // SAFETY: the cursor retains its initialized immutable window.
+        while *next != end {
+            // SAFETY: the window retains its initialized immutable tokens.
             // This loop advances only; it neither allocates nor retires input.
-            let token = unsafe { cursor.next.read() };
+            let token = unsafe { next.read() };
             if token.0 >= 16 << 8 {
                 break;
             }
             // Ordinary characters cannot be conditional commands. Parameter
             // markers and control sequences keep the ordinary read path.
-            cursor.next = unsafe { cursor.next.add(1) };
+            *next = unsafe { next.add(1) };
         }
     }
     pub(crate) fn scan_name(&mut self) -> Result<u32> {

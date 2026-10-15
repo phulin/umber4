@@ -68,13 +68,26 @@ impl Names {
     // lexer hashes consumed, translated letters; intern hashes its whole slice.
     #[cfg_attr(feature = "native-profile", inline(never))]
     pub fn intern_hashed(&mut self, name: &[u8], hash: u64) -> Result<u32> {
+        match self.probe(name, hash) {
+            Ok(id) => Ok(id),
+            Err(slot) => self.insert(name, u64::from(hash as u32), slot),
+        }
+    }
+    /// Finds an interned multi-byte name without inserting it.
+    #[inline]
+    pub fn lookup_hashed(&self, name: &[u8], hash: u64) -> Option<u32> {
+        self.probe(name, hash).ok()
+    }
+    // Returns the name's ID, or the empty bucket where it would be inserted.
+    #[inline(always)]
+    fn probe(&self, name: &[u8], hash: u64) -> std::result::Result<u32, usize> {
         let mask = self.buckets.len() - 1;
         let mut slot = hash as usize & mask;
         let fragment = u64::from(hash as u32);
         loop {
             let bucket = self.buckets[slot];
             if bucket == 0 {
-                return self.insert(name, fragment, slot);
+                return Err(slot);
             }
             if bucket >> 32 == fragment {
                 let id = bucket as u32;

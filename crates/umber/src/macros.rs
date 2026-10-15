@@ -74,7 +74,7 @@ impl Engine<'_> {
         Ok(())
     }
     #[inline(never)]
-    fn promote_single(
+    pub(crate) fn promote_single(
         &mut self,
         packet: u32,
         argument: usize,
@@ -181,70 +181,6 @@ impl Engine<'_> {
         // interned control-sequence identities need no token backing owner.
         self.packets[packet as usize].arguments[argument].first = Span::single(token);
         true
-    }
-    // Returns the number of captured tokens. Skipped spaces advance the line
-    // without a token, so the caller cannot count line positions instead.
-    #[inline(never)]
-    pub(crate) fn capture_file_characters<const RETAIN: bool, const EXCEPT: bool>(
-        &mut self,
-        packet: u32,
-        argument: usize,
-        builder: &mut Option<crate::values::Builder>,
-        except: Token,
-    ) -> Result<usize> {
-        if !RETAIN {
-            let mut count = 0;
-            while self
-                .file
-                .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
-                .is_some()
-            {
-                count += 1;
-            }
-            return Ok(count);
-        }
-        let Some(first) = self
-            .file
-            .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
-        else {
-            return Ok(0);
-        };
-        self.capture_raw(
-            packet,
-            argument,
-            Raw {
-                token: first,
-                origin: None,
-                suppress: false,
-            },
-            builder,
-        )?;
-        let Some(token) = self
-            .file
-            .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
-        else {
-            return Ok(1);
-        };
-        if let Some(token) = self.packets[packet as usize].arguments[argument]
-            .first
-            .single_token()
-        {
-            self.promote_single(packet, argument, token, builder)?;
-        }
-        // Both paths acquired the invocation's unpublished builder. Chunk
-        // growth preserves its initialized words and their final coordinates.
-        let tokens = builder.as_mut().unwrap();
-        let start = tokens.len();
-        tokens.push(token)?;
-        self.file
-            .read_characters::<EXCEPT>(self.scalars.catcodes(), except, tokens)?;
-        let end = tokens.len();
-        self.packets[packet as usize].arguments[argument].append(Span {
-            store: tokens.id(),
-            start,
-            end,
-        });
-        Ok(1 + (end - start) as usize)
     }
     #[inline(never)]
     fn begin_macro_with_arguments<const RETAIN: bool>(

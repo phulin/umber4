@@ -75,6 +75,54 @@ impl Engine<'_> {
         }
         Ok(count)
     }
+    // File lookahead lives in a transient buffer, so retained runs are copied
+    // into the invocation's builder rather than captured as spans.
+    #[inline(never)]
+    fn capture_file_characters<const RETAIN: bool, const EXCEPT: bool>(
+        &mut self,
+        packet: u32,
+        argument: usize,
+        builder: &mut Option<crate::values::Builder>,
+        except: Token,
+    ) -> Result<usize> {
+        let first = self.file.next;
+        // SAFETY: the lookahead window holds initialized tokens, and capture
+        // neither refills nor rewinds it.
+        let next = unsafe { character_end::<EXCEPT>(first, self.file.end, except) };
+        self.file.next = next;
+        // SAFETY: first and next belong to the same lookahead buffer.
+        let run = unsafe { std::slice::from_raw_parts(first, next.offset_from(first) as usize) };
+        let Some((&token, rest)) = run.split_first().filter(|_| RETAIN) else {
+            return Ok(run.len());
+        };
+        let raw = Raw {
+            token,
+            origin: None,
+            suppress: false,
+        };
+        self.capture_raw(packet, argument, raw, builder)?;
+        if rest.is_empty() {
+            return Ok(1);
+        }
+        if let Some(token) = self.packets[packet as usize].arguments[argument]
+            .first
+            .single_token()
+        {
+            self.promote_single(packet, argument, token, builder)?;
+        }
+        // Both paths acquired the invocation's unpublished builder. Chunk
+        // growth preserves its initialized words and their final coordinates.
+        let tokens = builder.as_mut().unwrap();
+        let start = tokens.len();
+        tokens.extend(rest)?;
+        let end = tokens.len();
+        self.packets[packet as usize].arguments[argument].append(Span {
+            store: tokens.id(),
+            start,
+            end,
+        });
+        Ok(run.len())
+    }
     #[inline(never)]
     pub(crate) fn capture_argument<const DELIMITED: bool, const RETAIN: bool>(
         &mut self,

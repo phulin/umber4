@@ -75,9 +75,14 @@ unsafe fn copy_body_run(
     while unsafe { end.offset_from(run_end) } >= 4 {
         // SAFETY: four initialized immutable words remain in this window.
         let words = unsafe { run_end.cast::<[Token; 4]>().read() };
-        let stops = words.map(|token| u32::from(!body_character(token)));
-        if stops[0] | stops[1] | stops[2] | stops[3] != 0 {
-            break;
+        // Spaces, letters, and other characters form one range; a block of
+        // them needs no exact test.
+        let other = words.map(|token| u32::from(token.0.wrapping_sub(10 << 8) >= 3 << 8));
+        if other[0] | other[1] | other[2] | other[3] != 0 {
+            let stops = words.map(|token| u32::from(!body_character(token)));
+            if stops[0] | stops[1] | stops[2] | stops[3] != 0 {
+                break;
+            }
         }
         // SAFETY: all four words precede end in the same window.
         run_end = unsafe { run_end.add(4) };
@@ -230,29 +235,16 @@ impl<'a> Engine<'a> {
             emit.token(engine, Token::other(byte))
         })
     }
-    // These destination emitters append only: they preserve sources and the
-    // immutable window backing. A new output chunk can move arena descriptors,
-    // while the boxed input chunk itself stays at its original address.
+    // These destination emitters append only: they preserve sources, the file
+    // lookahead, and the immutable window backing. A new output chunk can move
+    // arena descriptors, while the boxed input chunk itself stays in place.
     #[inline]
     fn emit_characters(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
-        if self.sources.is_empty() {
-            if let Some(tokens) = emit.builder() {
-                let cats = self.scalars.catcodes();
-                return self
-                    .file
-                    .read_characters::<false>(cats, Token(u32::MAX), tokens);
-            }
-            while let Some(token) = self.file.read_character(self.scalars.catcodes()) {
-                emit.token(self, token)?;
-            }
-            return Ok(());
-        }
-        let Some(cursor) = self.sources.last().and_then(Source::cursor) else {
+        let Some((&mut mut next, end)) = self.token_window() else {
             return Ok(());
         };
-        let (mut next, end) = (cursor.next, cursor.end);
         // SAFETY: this installed window contains initialized immutable tokens;
-        // its source retains the backing throughout emission.
+        // its source or the file lookahead retains them throughout emission.
         let result = match emit.builder() {
             Some(tokens) => unsafe {
                 // Short runs copy word by word. One that continues past them
@@ -271,8 +263,8 @@ impl<'a> Engine<'a> {
             None => std::iter::from_fn(|| unsafe { next_body_character(&mut next, end) })
                 .try_for_each(|token| emit.token(self, token)),
         };
-        if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
-            cursor.next = next;
+        if let Some((cursor, _)) = self.token_window() {
+            *cursor = next;
         }
         result
     }

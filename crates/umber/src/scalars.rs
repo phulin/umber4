@@ -16,6 +16,9 @@ impl Target {
     pub fn catcode(index: usize) -> Self {
         Self(256 + index as u16)
     }
+    pub fn is_catcode(self) -> bool {
+        (256..512).contains(&self.0)
+    }
     pub fn parameter(index: usize) -> Self {
         Self(513 + index as u16)
     }
