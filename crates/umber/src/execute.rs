@@ -206,15 +206,18 @@ impl Engine<'_> {
         global: bool,
         update: impl FnOnce(i32) -> Result<i32>,
     ) -> Result<()> {
-        // Resolve the slot once. Split the mutable save stack from the scalar
-        // tables so the same slot handles the read, saved value, and write.
+        let value = update(self.scalars[target].value)?;
+        self.assign_integer(target, global, value);
+        Ok(())
+    }
+    #[inline(always)]
+    pub(crate) fn assign_integer(&mut self, target: Target, global: bool, value: i32) {
         let level = self.level;
         let save = &mut self.save;
         let slot = &mut self.scalars[target];
         let old = *slot;
-        let value = update(old.value)?;
         if !global && old.value == value {
-            return Ok(());
+            return;
         }
         if !global && level > 0 && old.level != level {
             save.push(Save::Integer(target, old));
@@ -223,7 +226,6 @@ impl Engine<'_> {
             value,
             level: if global { 0 } else { level },
         };
-        Ok(())
     }
     pub(crate) fn assign_meaning(&mut self, id: usize, meaning: Meaning, global: bool) {
         let old = self.bindings[id];

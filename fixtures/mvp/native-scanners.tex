@@ -1,0 +1,21 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\count1=0\relax
+\def\inner{\count0=}\def\outer{\inner123\relax\advance\count1by2\relax}
+\outer\message{UMBER:\the\count0/\the\count1:END}
+\let\O={\def\leaf{\message\O UMBER:A}\def\middle{\leaf B}\def\outer{\middle C}
+\outer D:END}
+\def\prefix{\global}\def\setter{\prefix\count0=}{\setter7\relax}
+\message{UMBER:\the\count0:END}
+\def\endset{\count1=}\def\inner{12\relax\endset7}\def\outer{\inner8\relax}
+\count0=\outer\message{UMBER:\the\count0/\the\count1:END}
+\def\endset{\count1=\number}\def\value{12\relax\endset7}
+\count0=\value\relax\message{UMBER:\the\count0/\the\count1:END}
+\def\value{12\relax\def\value{NEW}\message{UMBER:OLD:END}}
+\count0=\value\message{UMBER:\value/\the\count0:END}
+\count0=\number\number-123\relax
+\message{UMBER:\number0/\number2147483647/\number-2147483647/\the\count0:END}
+\count0=0\relax\def\by{b}\def\why{y}\def\index{0}\def\n{3}
+\advance\count\index\by\why\n\relax\advance\count0bY4\relax
+\message{UMBER:\the\count0:END}
+\def\inner{12\relax\end}\def\outer{\inner\message{UMBER:UNREACHABLE:END}}
+\count0=\outer

@@ -16,8 +16,9 @@ conversion and case-change output; `expand.rs` dispatches expansion;
 assignments, groups, and deferred tokens; `tests.rs` and `extended_tests.rs`
 contain semantic fixtures; `scan_tests.rs` checks operand cursor boundaries and
 rollback; `names_tests.rs` checks spelling chunk publication and retention;
-`producer.rs` owns the opt-in recursive producer loop; `producer_consume.rs` owns
-consumer transitions; `producer_scan.rs` owns integer scanning and bounded scalar windows;
+`producer.rs` owns the opt-in native execution loop; `producer_input.rs` owns
+borrowed native frames and pending input ranges; `producer_scan.rs` owns native
+operand scanners and expansion; `producer_execute.rs` owns primitive execution;
 `producer_tests.rs` checks its supported semantics and stack bounds.
 `main.rs` is the native file/message adapter. Keep
 host access out of the portable library.
@@ -25,4 +26,4 @@ host access out of the portable library.
 `examples/allocations.rs` is a separate native diagnostic adapter. Its allocator
 counters cover engine construction and execution, excluding the host input buffer.
 
-`examples/producer_stats.rs` reports the producer experiment's call and consumer depths.
+`examples/producer_stats.rs` reports native-call/integer depths and pending input counts.

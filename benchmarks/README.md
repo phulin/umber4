@@ -25,8 +25,8 @@ Use `--cases`, `--sizes`, and `--repeats` for focused runs. Both accept
 suite's baseline must support its primitive set. Default reports live under
 `target/`. Reviewed measurements live in `results/`.
 
-`producer.py` adds scanner handoff, bounded tail-loop, and nested-body kernels
-for the opt-in `producer` experiment. Its
+`producer.py` adds scanner handoff, bounded tail-loop, nested-body, conversion,
+definition, and message kernels for the opt-in `producer` experiment. Its
 [design and reproduction commands](../docs/producer.md) identify the supported
 primitive subset and ordinary-release baseline. The
 [original comparison](results/producer-experiment.json),
@@ -34,9 +34,18 @@ primitive subset and ordinary-release baseline. The
 [scalar-parser comparison](results/producer-scalars.json), and
 [handoff comparison](results/producer-handoff.json) include five supported core
 kernels and these three additions. The handoff report compares the original
-baseline, two preceding producers, the current producer, and native pdfTeX in
+baseline, two preceding producers, `6a6ca50`, and native pdfTeX in
 nine rounds, retaining samples and allocation/depth diagnostics. These reports
 cover the producer's supported subset.
+
+The [native scanner cutover](results/producer-native-scanners.json) removes the
+producer's operation-state machine. Its nine-round comparison retains the same
+eight kernels and reports the three new scanner workloads separately. It uses
+11.5% more CPU than the preceding producer across those eight kernels and 19.0%
+less than the original interpreter. All eleven kernels beat native pdfTeX.
+Allocation request counts match the preceding producer; pending-input storage
+adds 96 fixed bytes. The report retains native stack measurements, ownership and
+page-boundary checks, exact orchestration, and source/compiler/binary identities.
 
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.

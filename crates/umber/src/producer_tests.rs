@@ -12,7 +12,7 @@ fn compare(source: &str, expected: &[&[u8]]) -> Stats {
     stats
 }
 #[test]
-fn scanner_completion_changes_consumer_inside_live_body() {
+fn scanner_completion_leaves_unread_body_for_execution() {
     compare(
         r"\def\value{123\relax\message{\the\count0}}\count0=\value\end",
         &[b"123"],
@@ -23,7 +23,7 @@ fn scanner_completion_changes_consumer_inside_live_body() {
     );
 }
 #[test]
-fn body_exhaustion_keeps_the_consumer_for_parent_input() {
+fn body_exhaustion_scanners_read_parent_input() {
     compare(
         r"\def\set{\count0=}\set 123\message{\the\count0}\end",
         &[b"123"],
@@ -50,18 +50,18 @@ fn self_tail_alias_retains_body_across_redefinition() {
         r"\def\step{\advance\count0by1\relax\ifnum\count0<3 \let\next\step\def\step{\message{REPLACED}}\else\let\next\relax\fi\next}\step\message{\the\count0}\end",
         &[b"REPLACED", b"2"],
     );
-    assert_eq!(stats.max_producer_depth, 1);
+    assert_eq!(stats.max_native_depth, 1);
     assert_eq!(stats.tail_calls, 2);
 }
 #[test]
-fn nested_integers_and_split_keyword_resume_their_consumers() {
+fn nested_integers_and_split_keyword_scan_across_macros() {
     compare(
         r"\count0=1\relax\count1=2\relax\count2=7\relax\count3=-\count\count\count0\relax\count4=\number\number123\relax\let\A\advance\let\C\count\def\by{b}\def\why{y}\A\C0\by\why\C2\relax\iffalse\iftrue\count0=999\else\count0=998\fi\else\ifnum\count3<0\relax\else\count0=997\fi\fi\message{\the\count0/\the\count3/\the\count4}\end",
         &[b"8/-7/123"],
     );
 }
 #[test]
-fn scalar_windows_share_signed_internal_values_and_group_restoration() {
+fn native_assignments_share_values_and_group_restoration() {
     compare(
         r"\count2=7\relax\let\C\count\let\A\advance\def\work{\C0=-\C2\relax\A\C0by-\C2\relax\multiply\C0by-2\relax\divide\C0by7\relax}\work\message{\the\count0}{\global\work}\message{\the\count0}\end",
         &[b"4", b"-7"],
@@ -79,14 +79,14 @@ fn file_index_completion_preserves_expansion_and_character_scanning() {
     );
 }
 #[test]
-fn internal_completion_reads_suspended_parents_in_order() {
+fn nested_internal_counts_complete_in_order() {
     compare(
         r"\count0=1\relax\count1=2\relax\count2=7\relax\ifnum\count\count0<\count\count\count0 \message{LESS}\else\message{WRONG}\fi\message{\the\count\count0/\number-\count\count\count0/\number\number\count\count0}\end",
         &[b"LESS", b"2/-7/2"],
     );
 }
 #[test]
-fn scalar_windows_consume_only_inert_operand_terminators() {
+fn native_assignments_preserve_operand_terminators() {
     compare(
         r"\let\R\relax\def\work{\count0=12\R\advance\count0by3\R\global\count1=\count0\R}\work\message{\the\count0/\the\count1}\end",
         &[b"15/15"],
@@ -102,7 +102,7 @@ fn scalar_windows_consume_only_inert_operand_terminators() {
     );
 }
 #[test]
-fn scalar_windows_defer_expansions_and_incomplete_windows() {
+fn native_assignments_cross_expansion_and_page_boundaries() {
     for (source, expected) in [
         (
             r"\def\more{34}\def\work{\count0=12\more\relax}\work\message{\the\count0}\end",
@@ -129,7 +129,7 @@ fn scalar_windows_defer_expansions_and_incomplete_windows() {
     }
 }
 #[test]
-fn scalar_window_rejection_preserves_supported_errors() {
+fn native_assignments_preserve_supported_errors() {
     for (body, error) in [
         (r"\count0=2147483648\relax", Error::Overflow),
         (r"\count256=1\relax", Error::Number),
@@ -151,7 +151,7 @@ fn scalar_window_rejection_preserves_supported_errors() {
     }
 }
 #[test]
-fn integer_consumers_and_nested_conditionals_preserve_order() {
+fn native_numbers_and_nested_conditionals_preserve_order() {
     compare(
         r"\count0=\iftrue12\else99\fi 3\relax\count1=-\count0\relax\advance\count0by7\multiply\count0by2\divide\count0by5\message{\the\count0/\number\count1/\ifnum\count0>0 YES\else NO\fi}\end",
         &[b"52/-123/YES"],
@@ -163,10 +163,10 @@ fn long_tail_loop_uses_one_native_producer_frame() {
         r"\def\step{\advance\count0by1\relax\ifnum\count0<50000 \let\next\step\else\let\next\relax\fi\next}\step\message{\the\count0}\end",
         &[b"50000"],
     );
-    assert_eq!(stats.max_producer_depth, 1);
+    assert_eq!(stats.max_native_depth, 1);
     assert_eq!(stats.macro_calls, 50000);
     assert_eq!(stats.tail_calls, 49999);
-    assert!(stats.max_consumer_depth <= 3, "{stats:?}");
+    assert!(stats.max_integer_depth <= 3, "{stats:?}");
 }
 #[test]
 fn windows_cross_chunks_and_native_depth_is_checked() {
@@ -205,4 +205,109 @@ fn unsupported_facilities_are_rejected() {
             Err(Error::Unsupported)
         ));
     }
+}
+
+#[test]
+fn native_scanners_cross_several_callers_and_prefixes() {
+    compare(
+        r"\def\inner{\count0=}\def\outer{\inner123\relax\advance\count1by2\relax}\outer\message{\the\count0/\the\count1}\end",
+        &[b"123/2"],
+    );
+    compare(
+        r"\let\O={\def\leaf{\message\O A}\def\middle{\leaf B}\def\outer{\middle C}\outer D}\end",
+        &[b"ABCD"],
+    );
+    compare(
+        r"\def\prefix{\global}\def\setter{\prefix\count0=}{\setter7\relax}\message{\the\count0}\end",
+        &[b"7"],
+    );
+}
+#[test]
+fn pending_ancestor_ranges_can_end_under_a_native_scanner() {
+    compare(
+        r"\def\endset{\count1=}\def\value{12\relax\endset7}\count0=\value8\relax\message{\the\count0/\the\count1}\end",
+        &[b"12/78"],
+    );
+    compare(
+        r"\def\endset{\count1=\number}\def\value{12\relax\endset7}\count0=\value\relax\message{\the\count0/\the\count1}\end",
+        &[b"12/7"],
+    );
+}
+#[test]
+fn pending_body_owners_survive_redefinition_and_execute_their_suffix() {
+    compare(
+        r"\def\value{12\relax\def\value{NEW}\message{OLD}}\count0=\value\message{\value/\the\count0}\end",
+        &[b"OLD", b"NEW/12"],
+    );
+}
+#[test]
+fn decimal_expansion_precedes_its_backed_terminator() {
+    compare(
+        r"\count0=\number\number-123\relax\message{\number0/\number2147483647/\number-2147483647/\the\count0}\end",
+        &[b"0/2147483647/-2147483647/-123"],
+    );
+}
+#[test]
+fn repeated_empty_expansions_keep_native_scanner_depth_bounded() {
+    let source = format!(
+        r"\def\empty{{}}\def\minus{{-}}\count0={}{}7\relax\message{{\the\count0}}\end",
+        r"\empty".repeat(1024),
+        r"\minus".repeat(1024),
+    );
+    let stats = compare(&source, &[b"7"]);
+    assert_eq!(stats.max_native_depth, 0);
+    assert_eq!(stats.max_integer_depth, 1);
+    assert!(stats.max_pending_sources <= 3, "{stats:?}");
+}
+#[test]
+fn native_scanner_recursion_has_a_checked_limit() {
+    for source in [
+        format!(r"\message{{{}0}}\end", r"\number".repeat(300)),
+        format!(r"\message{{{}\count0}}\end", r"\the".repeat(300)),
+        r"\def\again{\the\again}\message{\again}\end".into(),
+    ] {
+        assert_eq!(
+            Engine::new(format!("{BOOT}{source}").as_bytes())
+                .run_producer()
+                .err(),
+            Some(Error::Capacity)
+        );
+    }
+}
+
+#[test]
+fn nested_decimal_expansion_releases_terminators_as_they_are_read() {
+    let source = format!(r"\message{{{}7}}\end", r"\number".repeat(200));
+    let stats = compare(&source, &[b"7"]);
+    assert_eq!(stats.max_integer_depth, 200);
+    assert!(stats.max_pending_sources <= 3, "{stats:?}");
+}
+
+#[test]
+fn resumed_native_bodies_can_read_suspended_ancestor_ranges() {
+    compare(
+        r"\def\endset{\count1=}\def\inner{12\relax\endset7}\def\outer{\inner8\relax}\count0=\outer\message{\the\count0/\the\count1}\end",
+        &[b"12/78"],
+    );
+}
+
+#[test]
+fn native_keywords_cross_a_retained_page_boundary() {
+    let source = format!(
+        r"\def\work{{{}\advance\count0bY7\relax}}\work\message{{\the\count0}}\end",
+        r"\relax".repeat(4091),
+    );
+    compare(&source, &[b"7"]);
+    compare(
+        r"\def\why{y}\def\by{b}\def\work{\advance\count0\by\why3\relax}\work\advance\count0 4\relax\message{\the\count0}\end",
+        &[b"7"],
+    );
+}
+
+#[test]
+fn native_end_drops_unread_ancestor_input() {
+    compare(
+        r"\def\inner{12\relax\end}\def\outer{\inner\message{UNREACHABLE}}\count0=\outer",
+        &[],
+    );
 }

@@ -99,6 +99,36 @@ impl<'a> FileInput<'a> {
     pub fn position(&self) -> usize {
         self.position
     }
+    #[cfg(feature = "producer")]
+    #[inline]
+    pub(crate) fn take_literal<const KEYWORD: bool>(
+        &mut self,
+        cats: &[Integer; 256],
+        word: &[u8],
+    ) -> bool {
+        let Some(bytes) = self.line.get(self.position..self.position + word.len()) else {
+            return false;
+        };
+        if !bytes.iter().zip(word).all(|(&byte, &wanted)| {
+            if KEYWORD {
+                matches!(cats[byte as usize].value, 11 | 12) && byte.eq_ignore_ascii_case(&wanted)
+            } else {
+                cats[byte as usize].value == 12 && byte == wanted
+            }
+        }) {
+            return false;
+        }
+        self.position += word.len();
+        self.state = 1;
+        true
+    }
+    #[cfg(feature = "producer")]
+    #[inline]
+    pub(crate) fn peek_character(&self, cats: &[Integer; 256]) -> Option<Token> {
+        let &byte = self.line.get(self.position)?;
+        let cat = cats[byte as usize].value as u8;
+        matches!(cat, 11 | 12).then(|| Token::character(cat, byte))
+    }
     #[inline]
     pub fn literal_digit(&mut self, cats: &[Integer; 256]) -> Option<i32> {
         let &byte = self.line.get(self.position)?;
