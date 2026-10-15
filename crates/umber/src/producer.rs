@@ -72,7 +72,7 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
             back: None,
             parent: std::ptr::null_mut(),
         };
-        self.execute_input(&mut input, 0)?;
+        self.execute_input::<false>(&mut input, 0)?;
         debug_assert!(self.engine.sources.is_empty());
         Ok((
             Outcome {
@@ -119,31 +119,38 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
         if TRACE {
             self.stats.max_native_depth = self.stats.max_native_depth.max(usize::from(depth) + 1);
         }
-        self.execute_input(&mut input, depth + 1)
+        self.execute_input::<true>(&mut input, depth + 1)
     }
     #[inline(always)]
-    fn execute_input(&mut self, input: &mut Frame, depth: u16) -> Result<()> {
+    fn execute_input<const BODY: bool>(&mut self, input: &mut Frame, depth: u16) -> Result<()> {
         while !self.ended {
-            if input.back.is_none()
-                && self.owns_pending(input)
-                && let Some(Pending {
-                    source: Source::Body(body),
-                    ..
-                }) = self.pending.last()
-            {
-                if body.next == body.end && body.window_end == body.limit {
-                    self.pending.pop();
-                } else {
-                    self.resume(input, depth)?;
+            let read = if BODY && input.back.is_none() && !self.owns_pending(input) {
+                let Some(read) = self.body_tokens(input, depth)? else {
+                    break;
+                };
+                read
+            } else {
+                if input.back.is_none()
+                    && self.owns_pending(input)
+                    && let Some(Pending {
+                        source: Source::Body(body),
+                        ..
+                    }) = self.pending.last()
+                {
+                    if body.next == body.end && body.window_end == body.limit {
+                        self.pending.pop();
+                    } else {
+                        self.resume(input, depth)?;
+                    }
+                    continue;
                 }
-                continue;
-            }
-            let Some(token) = self.local(input)? else {
-                break;
-            };
-            let read = Read {
-                token,
-                meaning: self.engine.resolve(token),
+                let Some(token) = self.local(input)? else {
+                    break;
+                };
+                Read {
+                    token,
+                    meaning: self.engine.resolve(token),
+                }
             };
             if read.meaning.is_macro() {
                 let id = read.meaning.value as u32;
@@ -160,6 +167,59 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
             }
         }
         Ok(())
+    }
+    #[inline(always)]
+    fn body_tokens(&mut self, input: &mut Frame, depth: u16) -> Result<Option<Read>> {
+        let body = input.body.as_ref().unwrap();
+        let (mut next, mut end) = (body.next, body.end);
+        loop {
+            if next == end {
+                let body = input.body.as_mut().unwrap();
+                body.next = next;
+                if !body.refill() {
+                    return Ok(None);
+                }
+                (next, end) = (body.next, body.end);
+            }
+            // SAFETY: the frame owns this initialized immutable token window.
+            // Its cursor is published before any child or scanner can read it.
+            let token = unsafe { next.read() };
+            next = unsafe { next.add(1) };
+            let read = Read {
+                token,
+                meaning: self.engine.resolve(token),
+            };
+            if read.meaning.is_macro() {
+                let id = read.meaning.value as u32;
+                if TRACE {
+                    self.stats.macro_calls += 1;
+                }
+                let body = input.body.as_mut().unwrap();
+                body.next = next;
+                if next == end && body.window_end == body.limit {
+                    if body.owner.id == id {
+                        body.restart();
+                    } else {
+                        *body = Body::new(self.engine.values.get(id));
+                    }
+                    if TRACE {
+                        self.stats.tail_calls += 1;
+                    }
+                } else {
+                    self.produce(id, input, depth)?;
+                    if self.ended {
+                        return Ok(None);
+                    }
+                }
+                // A child can consume its caller's body, but creates pending
+                // input only in its own scope and drains it before returning.
+                let body = input.body.as_ref().unwrap();
+                (next, end) = (body.next, body.end);
+            } else if !matches!(read.meaning.command, cmd::RELAX | cmd::SPACE | cmd::PAR) {
+                input.body.as_mut().unwrap().next = next;
+                return Ok(Some(read));
+            }
+        }
     }
     #[inline(always)]
     fn tail(&mut self, input: &mut Frame, id: u32) -> bool {

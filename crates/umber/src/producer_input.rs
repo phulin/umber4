@@ -24,7 +24,7 @@ impl Body {
         }
     }
     #[inline(never)]
-    fn refill(&mut self) -> bool {
+    pub(super) fn refill(&mut self) -> bool {
         if self.window_end == self.limit {
             return false;
         }

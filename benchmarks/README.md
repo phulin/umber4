@@ -47,6 +47,15 @@ Allocation request counts match the preceding producer; pending-input storage
 adds 96 fixed bytes. The report retains native stack measurements, ownership and
 page-boundary checks, exact orchestration, and source/compiler/binary identities.
 
+The [body cursor follow-up](results/producer-body-cursor.json) keeps native body
+execution on a local cursor between child/scanner calls. Its nine-round,
+five-engine comparison uses 8.6% less CPU than the scanner cutover across the
+same eight kernels, leaving 3.1% more CPU than the producer with consumers.
+Macro bodies improve 26.6% and nested bodies 15.0% against the cutover; handoffs
+regress 4.9%. All eleven kernels beat native pdfTeX. Allocation and diagnostic
+call/depth/input counts exactly match the cutover, with unchanged native macro
+stack use. The change adds 60 production lines.
+
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.
 It retains largest-size CPU samples, longer confirmations, both memory workloads
