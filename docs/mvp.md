@@ -16,8 +16,9 @@ changes, and integer expressions. The table below records the original baseline.
 
 Use byte-oriented INITEX input and its initial category table. Programs explicitly
 set the category codes of braces and `#` before defining macros, just as the same
-source must do in native INITEX. Tokenize lazily so assignments can change later
-characters on the current line. Prepare physical lines, handle comments/spaces,
+source must do in native INITEX. Assignments must change later characters on the
+current line; the reader's line lookahead is discarded when they do. Prepare
+physical lines, handle comments/spaces,
 control words/symbols, active characters, and `^^` translation through one reader.
 
 The initial primitives are:

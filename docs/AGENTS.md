@@ -10,8 +10,8 @@ Read the root `AGENTS.md` first.
   ownership transfers by semantic lifetime.
 - `execution.md` develops primitive dispatch, meanings, assignment restoration,
   modes, and paragraph handoff.
-- `input.md` develops lazy character scanning, name lookup, operand scanners,
-  and retained file cursors.
+- `input.md` develops character scanning, line lookahead and its invalidation,
+  name lookup, operand scanners, and retained file cursors.
 - `checkpoints.md` develops paragraph handoff, heterogeneous snapshots,
   in-memory restore, and conservative prefix restart after edits.
 - `resources.md` develops native/Wasm byte acquisition, shared input buffers,

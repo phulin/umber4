@@ -1,8 +1,10 @@
 # Character input and scanners
 
-This proposal supplies the file side of [expansion.md](expansion.md). The reader
-tokenizes lazily with the current character tables. Stored token lists already
-have frozen category codes and use the shared sequence cursor instead.
+This proposal supplies the file side of [expansion.md](expansion.md). Each file
+token takes the character tables in force when it is consumed. The reader lexes
+ahead within the current line and discards that lookahead when those tables
+change (section 3). Stored token lists already have frozen category codes and use
+the shared sequence cursor instead.
 
 ## 1. Immutable bytes, mutable cursor
 
@@ -54,8 +56,9 @@ The `^^` translation is part of character scanning, before the resulting
 character is finally categorized. It can alter control-sequence spelling or
 produce a character with a different category. Use a small explicit scanner with
 the upstream ordering and reclassification behavior. This is a good place to
-share tiny helpers between normal character input and control-word scanning,
-without tokenizing ahead of execution. Control-word lookahead can reduce a `^^`
+share tiny helpers between normal character input and control-word scanning.
+Translation never runs ahead of execution: line lookahead stops before a `^^`
+pair it would translate. Control-word lookahead can reduce a `^^`
 sequence in the first nonletter after the name. That reduction is committed to
 the prepared line before the control sequence executes. Keep such rewrites in
 the line's owned buffer, making a shared line writable on this rare path; retain
@@ -71,28 +74,58 @@ The pdfTeX-specific translations and extended primitives come from the
 
 ## 3. Category changes apply immediately
 
-Keep character tables in directly indexed arrays. Each character is classified
-when it is consumed. For example, a category-code assignment can change a later
-character on the same already-loaded line. A whole-file or whole-line token cache
-would require a different invalidation model and would complicate this basic path.
+Keep character tables in directly indexed arrays. A token is classified with the
+tables in force when it is consumed, so a category-code assignment can change a
+later character on the same already-loaded line.
 
-A safe fast path scans bytes while each remains in a simple category class, using
-the live table and exiting at an escape, active character, space, translated
-superscript, or other special action. It can produce character tokens directly
-into an argument or definition destination when the caller is capturing them.
-It does not expand commands or skip assignment opportunities across tokens.
+Producing one token per reader call gives that directly, but every token then pays
+a full call, dispatch, and return around a few category loads. On a line of
+integer assignments and conditionals, replaying the same tokens from a stored
+body took a third of the time of reading them from the file that way. The reader
+therefore lexes ahead within the current prepared line:
 
-Initially use a straightforward single-character reader. Measure control-word
-lookup, category loads, line preparation, and capture before adding a literal-run
-optimization. The token reader is also the source of brace accounting and scanner
-context checks, so a capture fast path shares those operations rather than
-introducing a second set of input semantics.
+- When its lookahead is exhausted, the reader loads the next line if the current
+  one is consumed, then lexes the rest of the current line into a reusable token
+  buffer. Before each buffered token it records the line position and lexical
+  state from which that token was lexed, and it records the same pair after the
+  last token.
+- Consumers read the buffer as an ordinary token window. Character runs, argument
+  scans, digit runs, and conditional skipping share the window paths, so file
+  input needs no separate byte-level fast paths.
+- Lookahead stops before a token whose effect must follow the execution of
+  earlier tokens. That token, and only that token, is read on the committed path
+  described in section 2 before lookahead resumes. The stops are:
+  - a `^^` pair that would be translated, including in control-word lookahead,
+    since translation rewrites the prepared line;
+  - an invalid character, whose error follows the execution of earlier tokens;
+  - a control word whose name is not yet interned, so names enter the table in
+    consumption order and a capacity failure occurs at the same token;
+  - the end of the prepared line. The next line is loaded, applying the
+    then-current `\endlinechar`, only when a token is needed after the last one.
+
+Lookahead is exact. A token depends only on the prepared line, the position,
+the lexical state, and the category table. Lookahead never rewrites the line,
+inserts a name, or loads a line, so while the table is unchanged each buffered
+token equals the one a lazy reader would produce when it is consumed. Any write
+to a category code, including a group-end restoration, discards the unconsumed
+lookahead and restores the position and state recorded before its first token.
+Reading then continues lazily under the new table. Blanks, ignored characters, and
+comments lexed after the last buffered token are reconsumed the same way. For
+example, `\catcode37=12 %` reads the `%` as an other character after the
+assignment executes, although lookahead first passed it as a comment.
+
+The rewind is the only invalidation. Ordinary reads never compare an epoch or
+recheck the table; a category write is rare and pays for it by relexing at most
+the rest of the current line. Tokens already
+returned are unaffected, as are tokens put back into input, which keep their
+identities as in TeX.
 
 ## 4. Control-sequence lookup
 
 The interner stores compact names once and maps their byte spelling to stable
 IDs. Control-word scanning can hash as it reads and look up the resulting name
-without allocating a temporary string in the common case. A plain contiguous
+without allocating a temporary string in the common case. Line lookahead only
+looks names up; insertion happens on the committed path. A plain contiguous
 name can be a borrowed range in the line; a translated spelling uses a reusable
 small scratch buffer. A new spelling is written into process-owned name storage
 only when lookup misses.
@@ -178,7 +211,9 @@ The e-TeX additions are defined in the
 ## 7. Checkpoint representation and useful comparisons
 
 A file snapshot copies cursor, lexical state, and EOF flags and retains the exact current
-prepared line and resource version. Usually only a few lines are active; an
+prepared line and resource version. Its position and state are those recorded
+before the first unconsumed lookahead token; the lookahead buffer is derived and
+is rebuilt after restore. Usually only a few lines are active; an
 immutable owned line is a simple initial representation. Live readers can reuse
 unique line-buffer capacity, while a retained line is replaced when reading the
 next one. Resource bytes remain shared.
