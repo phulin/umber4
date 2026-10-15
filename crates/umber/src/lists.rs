@@ -75,9 +75,14 @@ unsafe fn copy_body_run(
     while unsafe { end.offset_from(run_end) } >= 4 {
         // SAFETY: four initialized immutable words remain in this window.
         let words = unsafe { run_end.cast::<[Token; 4]>().read() };
-        let stops = words.map(|token| u32::from(!body_character(token)));
-        if stops[0] | stops[1] | stops[2] | stops[3] != 0 {
-            break;
+        // Spaces, letters, and other characters form one range; a block of
+        // them needs no exact test.
+        let other = words.map(|token| u32::from(token.0.wrapping_sub(10 << 8) >= 3 << 8));
+        if other[0] | other[1] | other[2] | other[3] != 0 {
+            let stops = words.map(|token| u32::from(!body_character(token)));
+            if stops[0] | stops[1] | stops[2] | stops[3] != 0 {
+                break;
+            }
         }
         // SAFETY: all four words precede end in the same window.
         run_end = unsafe { run_end.add(4) };
