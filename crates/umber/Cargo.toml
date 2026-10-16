@@ -5,6 +5,13 @@ edition = "2024"
 
 [features]
 native-profile = []
+# The whole-file lexer prototype in docs/fast-lexing.md and its comparison
+# runner. The engine never uses it.
+lexing-prototype = []
+
+[[example]]
+name = "lexing"
+required-features = ["lexing-prototype"]
 
 [dependencies]
 memchr = "2.8"

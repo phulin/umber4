@@ -21,3 +21,10 @@ host access out of the portable library.
 
 `examples/allocations.rs` is a separate native diagnostic adapter. Its allocator
 counters cover engine construction and execution, excluding the host input buffer.
+
+`lexing/`, built only with the `lexing-prototype` feature, is the whole-file lexer
+prototype from `docs/fast-lexing.md`: `scan.rs` splits lines and runs the shared
+state machine, `simd.rs` builds AVX2 masks and writes runs, `hash.rs` holds the
+name hashes, `line.rs` lexes fallback lines, and `tests.rs` compares every lexer
+with `FileInput::read`. The engine does not use it. `examples/lexing.rs` checks
+and times the lexers on source files.

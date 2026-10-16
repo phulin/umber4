@@ -6,6 +6,9 @@ mod execute;
 mod expand;
 mod expression;
 mod input;
+#[cfg(feature = "lexing-prototype")]
+#[doc(hidden)]
+pub mod lexing;
 mod lists;
 mod macros;
 mod names;
