@@ -176,3 +176,21 @@ target/release/examples/allocations target/benchmark/expansion/gentle-records-50
 
 This counts requests during engine construction and execution. Host input bytes,
 Rust stack, allocator overhead, and native pdfTeX memory are outside that counter.
+
+## Lexer prototype
+
+`crates/umber/examples/lexing.rs` compares the whole-file lexers in
+[fast-lexing.md](../docs/fast-lexing.md) with the current file reader. It checks
+every lexer's tokens and name count against the first lexer listed before timing,
+then rotates the lexer order across warm and cold repetitions. It lexes in
+process and does not involve pdfTeX.
+
+```bash
+cargo build --release --example lexing --features lexing-prototype
+target/release/examples/lexing --report target/benchmark/fast-lexing.json \
+  gentle=plain:.tools/corpus/gentle.tex
+```
+
+The [lexer report](results/fast-lexing.json) retains the TeX Live corpus cases,
+samples, token mixes, and file hashes; fast-lexing.md section 8 gives the corpus
+setup and full command.

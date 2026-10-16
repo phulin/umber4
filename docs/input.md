@@ -120,6 +120,10 @@ the rest of the current line. Tokens already
 returned are unaffected, as are tokens put back into input, which keep their
 identities as in TeX.
 
+[fast-lexing.md](fast-lexing.md) measures whole-file lexing under a fixed table,
+with SIMD classification and in-place name hashing, and proposes lookahead
+beyond the current line.
+
 ## 4. Control-sequence lookup
 
 The interner stores compact names once and maps their byte spelling to stable
