@@ -2,26 +2,18 @@ use super::*;
 impl Body {
     #[inline(always)]
     pub(super) fn new(owner: values::Owner) -> Self {
-        let range = owner.definition().body;
-        let (next, end, window_end) = if range.start == range.end {
-            (std::ptr::null(), std::ptr::null(), range.end)
-        } else {
-            owner.tokens.window(range.start, range.end)
-        };
+        let (next, end, window_end, limit) = owner.body_window();
         Self {
             owner,
             next,
             end,
             window_end,
-            limit: range.end,
+            limit,
         }
     }
     #[inline(always)]
     pub(super) fn restart(&mut self) {
-        let start = self.owner.definition().body.start;
-        if start != self.limit {
-            (self.next, self.end, self.window_end) = self.owner.tokens.window(start, self.limit);
-        }
+        (self.next, self.end, self.window_end, self.limit) = self.owner.body_window();
     }
     #[inline(never)]
     pub(super) fn refill(&mut self) -> bool {
@@ -55,6 +47,21 @@ impl Body {
             self.next = self.next.add(word.len());
         }
         true
+    }
+    #[inline(always)]
+    pub(super) fn skip_inert(&mut self, resolve: impl Fn(Token) -> Meaning) {
+        let mut next = self.next;
+        while next != self.end {
+            // SAFETY: the owner retains this immutable initialized window.
+            // Meaning lookup cannot modify it, and the first active token stays
+            // unread for the ordinary dispatcher.
+            let token = unsafe { next.read() };
+            if !matches!(resolve(token).command, cmd::RELAX | cmd::SPACE | cmd::PAR) {
+                break;
+            }
+            next = unsafe { next.add(1) };
+        }
+        self.next = next;
     }
     #[inline(always)]
     fn next(&mut self) -> Option<Token> {
@@ -243,83 +250,155 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
         word: &[u8],
     ) -> bool {
         if input.back.is_some() {
-            return false;
+            return self.backed_literal::<KEYWORD>(input, word);
         }
-        if self.owns_pending(input) {
-            return match &mut self.pending.last_mut().unwrap().source {
-                Source::Body(body) => body.take_literal::<KEYWORD>(word),
-                _ => false,
-            };
+        self.literal_tail::<KEYWORD>(input, word)
+    }
+    #[inline(never)]
+    fn backed_literal<const KEYWORD: bool>(&mut self, input: &mut Frame, word: &[u8]) -> bool {
+        let token = input.back.unwrap();
+        let matches = if KEYWORD {
+            token.cat() != 10 && !token.is_cs() && token.byte().eq_ignore_ascii_case(&word[0])
+        } else {
+            token == Token::other(word[0])
+        };
+        if matches && (word.len() == 1 || self.literal_tail::<KEYWORD>(input, &word[1..])) {
+            input.back = None;
+            true
+        } else {
+            false
         }
-        if let Some(body) = &mut input.body {
-            return body.take_literal::<KEYWORD>(word);
-        }
-        self.engine
-            .file
-            .take_literal::<KEYWORD>(self.engine.scalars.catcodes(), word)
     }
     #[inline(always)]
-    pub(super) fn literal_digits(
+    fn literal_tail<const KEYWORD: bool>(&mut self, input: &mut Frame, word: &[u8]) -> bool {
+        if self.owns_pending(input) {
+            match &mut self.pending.last_mut().unwrap().source {
+                Source::Body(body) => body.take_literal::<KEYWORD>(word),
+                _ => false,
+            }
+        } else if let Some(body) = &mut input.body {
+            body.take_literal::<KEYWORD>(word)
+        } else {
+            self.engine
+                .file
+                .take_literal::<KEYWORD>(self.engine.scalars.catcodes(), word)
+        }
+    }
+    #[inline(always)]
+    // None completes the number. A returned Read is already consumed; input
+    // exhaustion continues through raw, including borrowed callers.
+    pub(super) fn integer_token(
         &mut self,
         input: &mut Frame,
         value: &mut i32,
         digits: &mut bool,
-    ) -> Result<Option<Token>> {
+    ) -> Result<Option<Read>> {
         if let Some(token) = input.back {
-            return Ok(Some(token));
-        }
-        if self.owns_pending(input) {
-            return self.pending_digits(value, digits);
-        }
-        if let Some(body) = &mut input.body {
-            return body.digits(value, digits);
-        }
-        let mut accumulated = *value;
-        while let Some(digit) = self
-            .engine
-            .file
-            .literal_digit(self.engine.scalars.catcodes())
-        {
-            accumulated = match scan::append(accumulated, digit) {
-                Ok(value) => value,
-                Err(error) => {
-                    *value = accumulated;
-                    return Err(error);
-                }
+            let read = Read {
+                token,
+                meaning: self.engine.resolve(token),
             };
-            *digits = true;
+            return Ok(observed(read, *digits, || {
+                input.back = None;
+            }));
         }
-        *value = accumulated;
-        Ok(self
-            .engine
-            .file
-            .peek_character(self.engine.scalars.catcodes()))
-    }
-    #[inline(never)]
-    fn pending_digits(&mut self, value: &mut i32, digits: &mut bool) -> Result<Option<Token>> {
-        match &mut self.pending.last_mut().unwrap().source {
-            Source::Body(body) => body.digits(value, digits),
-            Source::Digits(bits) => {
-                let mut rest = *bits;
-                let mut accumulated = *value;
-                while rest != 15 && rest & 15 < 10 {
-                    let digit = (rest & 15) as i32;
-                    rest >>= 4;
-                    accumulated = match scan::append(accumulated, digit) {
-                        Ok(value) => value,
-                        Err(error) => {
-                            *bits = rest;
-                            *value = accumulated;
-                            return Err(error);
-                        }
-                    };
-                    *digits = true;
-                }
-                *bits = rest;
-                *value = accumulated;
-                Ok((rest != 15).then(|| Token::other(b'-')))
+        let pending = self.owns_pending(input);
+        let body = if pending {
+            match &mut self.pending.last_mut().unwrap().source {
+                Source::Body(body) => Some(body),
+                _ => None,
             }
-            Source::Token(token) => Ok(Some(*token)),
+        } else {
+            input.body.as_mut()
+        };
+        if let Some(body) = body {
+            if let Some(token) = body.digits(value, digits)? {
+                let read = Read {
+                    token,
+                    meaning: self.engine.resolve(token),
+                };
+                return Ok(observed(read, *digits, || {
+                    // SAFETY: digits observed this initialized window token.
+                    body.next = unsafe { body.next.add(1) };
+                }));
+            }
+        } else if pending {
+            match &mut self.pending.last_mut().unwrap().source {
+                Source::Digits(bits) => {
+                    let mut rest = *bits;
+                    let mut accumulated = *value;
+                    while rest != 15 && rest & 15 < 10 {
+                        let digit = (rest & 15) as i32;
+                        rest >>= 4;
+                        accumulated = match scan::append(accumulated, digit) {
+                            Ok(value) => value,
+                            Err(error) => {
+                                *bits = rest;
+                                *value = accumulated;
+                                return Err(error);
+                            }
+                        };
+                        *digits = true;
+                    }
+                    *bits = rest;
+                    *value = accumulated;
+                    if rest != 15 {
+                        let token = Token::other(b'-');
+                        let read = Read {
+                            token,
+                            meaning: self.engine.resolve(token),
+                        };
+                        return Ok(observed(read, *digits, || {
+                            *bits >>= 4;
+                        }));
+                    }
+                }
+                Source::Token(token) => {
+                    let read = Read {
+                        token: *token,
+                        meaning: self.engine.resolve(*token),
+                    };
+                    return Ok(observed(read, *digits, || {
+                        self.pending.pop();
+                    }));
+                }
+                Source::Body(_) => unreachable!(),
+            }
+        } else {
+            if let Some(token) =
+                self.engine
+                    .file
+                    .literal_digits(self.engine.scalars.catcodes(), value, digits)?
+            {
+                let read = Read {
+                    token,
+                    meaning: self.engine.resolve(token),
+                };
+                // Source lookahead fixes the token's category before an
+                // assignment can change it. Stored ranges already do this.
+                self.engine.file.consume_character();
+                if *digits {
+                    input.unread(token);
+                    return Ok(None);
+                }
+                return Ok(Some(read));
+            }
         }
+        self.raw(input).map(Some)
+    }
+}
+// A batched digit scan has already observed this token in the selected input.
+// Leave a nonspace numeric terminator there; otherwise consume it through the
+// same input, without a second route lookup or meaning resolution.
+#[inline(always)]
+fn observed(read: Read, digits: bool, consume: impl FnOnce()) -> Option<Read> {
+    if digits && !read.meaning.expandable() {
+        if read.meaning.command == cmd::SPACE {
+            consume();
+        }
+        None
+    } else {
+        consume();
+        Some(read)
     }
 }

@@ -20,7 +20,13 @@ impl Engine<'_> {
         radix
     }
     #[inline(always)]
-    fn accumulate(value: i32, radix: i32, digit: i32) -> Result<i32> {
+    pub(crate) fn accumulate(value: i32, radix: i32, digit: i32) -> Result<i32> {
+        // In this range every decimal digit fits, so one range check replaces
+        // the two checked arithmetic operations. Other inputs retain them.
+        #[cfg(feature = "producer")]
+        if radix == 10 && value as u32 <= (i32::MAX as u32 - 9) / 10 && (digit as u32) < 10 {
+            return Ok(value * 10 + digit);
+        }
         value
             .checked_mul(radix)
             .and_then(|v| v.checked_add(digit))

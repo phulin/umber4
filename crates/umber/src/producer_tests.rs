@@ -79,6 +79,64 @@ fn file_index_completion_preserves_expansion_and_character_scanning() {
     );
 }
 #[test]
+fn source_integer_scanning_preserves_progress_and_categories() {
+    let letter = |byte| Token::character(11, byte);
+    for (source, expected, next) in [
+        ("123X", Ok(123), letter(b'X')),
+        ("-123X", Ok(-123), letter(b'X')),
+        ("0000000007X", Ok(7), letter(b'X')),
+        ("2147483647X", Ok(i32::MAX), letter(b'X')),
+        ("2147483648X", Err(Error::Overflow), letter(b'X')),
+        ("21474836470X", Err(Error::Overflow), letter(b'X')),
+        ("7  X", Ok(7), Token::other(b'X')),
+        ("7% ignored\n8X", Ok(78), letter(b'X')),
+        ("7\n8X", Ok(7), Token::other(b'8')),
+        ("123^^34X", Ok(1234), letter(b'X')),
+    ] {
+        let mut producer = Producer::<false>::new(Engine::new(source.as_bytes()));
+        producer.engine.scalars[Target::catcode(b'^' as usize)].value = 7;
+        let mut input = Frame {
+            body: None,
+            back: None,
+            parent: std::ptr::null_mut(),
+        };
+        assert_eq!(producer.integer(&mut input, 0), expected, "{source}");
+        // A category assignment after scanning must preserve the lookahead's
+        // original token, including when it was found in a source digit run.
+        producer
+            .engine
+            .assign_integer(Target::catcode(b'X' as usize), false, 12);
+        let next = if expected.is_err() {
+            Token::other(b'X')
+        } else {
+            next
+        };
+        assert_eq!(producer.raw(&mut input).unwrap().token, next, "{source}");
+    }
+}
+#[test]
+fn source_digit_runs_cross_expansion_and_line_boundaries() {
+    compare(
+        "\\def\\more{45}\\count0=12^^33\\more67\\relax\\count1=0000000007\\relax\\message{\\the\\count0/\\the\\count1}\\end",
+        &[b"1234567/7"],
+    );
+    compare(
+        "\\endlinechar=-1\\relax\n\\count0=12\n34\\relax\\message{\\the\\count0}\\end",
+        &[b"1234"],
+    );
+    compare(
+        r"\catcode49=13\def1{2}\count0=111\relax\message{\the\count0}\end",
+        &[b"222"],
+    );
+}
+#[test]
+fn pending_suffix_observes_redefined_inert_commands() {
+    compare(
+        r"\def\value{12\relax\let\relax\message\relax{ACTIVE}}\count0=\value\message{\the\count0}\end",
+        &[b"ACTIVE", b"12"],
+    );
+}
+#[test]
 fn nested_internal_counts_complete_in_order() {
     compare(
         r"\count0=1\relax\count1=2\relax\count2=7\relax\ifnum\count\count0<\count\count\count0 \message{LESS}\else\message{WRONG}\fi\message{\the\count\count0/\number-\count\count\count0/\number\number\count\count0}\end",
@@ -284,7 +342,7 @@ fn nested_decimal_expansion_releases_terminators_as_they_are_read() {
 }
 
 #[test]
-fn resumed_native_bodies_can_read_suspended_ancestor_ranges() {
+fn pending_bodies_can_read_suspended_ancestor_ranges() {
     compare(
         r"\def\endset{\count1=}\def\inner{12\relax\endset7}\def\outer{\inner8\relax}\count0=\outer\message{\the\count0/\the\count1}\end",
         &[b"12/78"],

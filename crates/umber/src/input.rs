@@ -129,6 +129,50 @@ impl<'a> FileInput<'a> {
         let cat = cats[byte as usize].value as u8;
         matches!(cat, 11 | 12).then(|| Token::character(cat, byte))
     }
+    #[cfg(feature = "producer")]
+    #[inline]
+    pub(crate) fn consume_character(&mut self) {
+        debug_assert!(self.position < self.line.len());
+        self.position += 1;
+        self.state = 1;
+    }
+    #[cfg(feature = "producer")]
+    #[inline]
+    pub(crate) fn literal_digits(
+        &mut self,
+        cats: &[Integer; 256],
+        value: &mut i32,
+        digits: &mut bool,
+    ) -> Result<Option<Token>> {
+        let mut position = self.position;
+        let mut accumulated = *value;
+        let mut found = *digits;
+        while let Some(&byte) = self.line.get(position) {
+            let digit = byte.wrapping_sub(b'0');
+            if digit >= 10 || cats[byte as usize].value != 12 {
+                break;
+            }
+            position += 1;
+            accumulated = match Engine::accumulate(accumulated, 10, i32::from(digit)) {
+                Ok(next) => next,
+                Err(error) => {
+                    self.position = position;
+                    self.state = 1;
+                    *value = accumulated;
+                    *digits = found;
+                    return Err(error);
+                }
+            };
+            found = true;
+        }
+        if position != self.position {
+            self.position = position;
+            self.state = 1;
+        }
+        *value = accumulated;
+        *digits = found;
+        Ok(self.peek_character(cats))
+    }
     #[inline]
     pub fn literal_digit(&mut self, cats: &[Integer; 256]) -> Option<i32> {
         let &byte = self.line.get(self.position)?;

@@ -84,35 +84,11 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
     }
     #[inline(never)]
     fn produce(&mut self, id: u32, parent: &mut Frame, depth: u16) -> Result<()> {
-        self.body(parent, depth, |producer| {
-            Body::new(producer.engine.values.get(id))
-        })
-    }
-    #[inline(never)]
-    fn resume(&mut self, parent: &mut Frame, depth: u16) -> Result<()> {
-        self.body(parent, depth, |producer| {
-            let Pending {
-                source: Source::Body(body),
-                ..
-            } = producer.pending.pop().unwrap()
-            else {
-                unreachable!()
-            };
-            body
-        })
-    }
-    #[inline(always)]
-    fn body(
-        &mut self,
-        parent: &mut Frame,
-        depth: u16,
-        init: impl FnOnce(&mut Self) -> Body,
-    ) -> Result<()> {
         if depth == 128 {
             return Err(Error::Capacity);
         }
         let mut input = Frame {
-            body: Some(init(self)),
+            body: Some(Body::new(self.engine.values.get(id))),
             back: None,
             parent,
         };
@@ -132,17 +108,9 @@ impl<'a, const TRACE: bool> Producer<'a, TRACE> {
             } else {
                 if input.back.is_none()
                     && self.owns_pending(input)
-                    && let Some(Pending {
-                        source: Source::Body(body),
-                        ..
-                    }) = self.pending.last()
+                    && let Source::Body(body) = &mut self.pending.last_mut().unwrap().source
                 {
-                    if body.next == body.end && body.window_end == body.limit {
-                        self.pending.pop();
-                    } else {
-                        self.resume(input, depth)?;
-                    }
-                    continue;
+                    body.skip_inert(|token| self.engine.resolve(token));
                 }
                 let Some(token) = self.local(input)? else {
                     break;

@@ -56,6 +56,15 @@ regress 4.9%. All eleven kernels beat native pdfTeX. Allocation and diagnostic
 call/depth/input counts exactly match the cutover, with unchanged native macro
 stack use. The change adds 60 production lines.
 
+The [operand and call follow-up](results/producer-operands.json) batches source
+digits, executes unread suffixes in place, and caches definition entry windows.
+Its nine-round comparison uses 3.1% less CPU than `8b7f789`, bringing aggregate
+CPU within 0.2% of `6a6ca50` across the same eight kernels. Literal source
+execution regresses 7.5%; handoffs improve 7.6%. Native macro activations shrink
+from 192 to 160 bytes and text/rodata shrinks 2.3%. Allocation counts match;
+headers add 8 bytes each. The report retains source-category lookahead checks,
+thirty oracle messages, eleven Miri cases, and twenty exploratory variants.
+
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.
 It retains largest-size CPU samples, longer confirmations, both memory workloads

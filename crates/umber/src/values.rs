@@ -213,6 +213,20 @@ impl Builder {
         // unpublished slots, and the builder exposes token copies and IDs only.
         // Moving the completed descriptor leaves every token cell in place.
         let value = unsafe { &mut *self.owner.0.value.get() };
+        #[cfg(feature = "producer")]
+        {
+            (value.body_start, value.body_window_end) = if let Some(definition) = &definition {
+                let range = definition.body;
+                if range.start == range.end {
+                    (std::ptr::null(), range.end)
+                } else {
+                    let (start, _, end) = self.tokens.window(range.start, range.end);
+                    (start, end)
+                }
+            } else {
+                (std::ptr::null(), 0)
+            };
+        }
         value.tokens = self.tokens;
         value.definition = definition;
         self.owner.0.published.set(true);
@@ -224,8 +238,28 @@ pub(crate) struct Value {
     pub id: u32,
     pub tokens: Tokens,
     definition: Option<Definition>,
+    #[cfg(feature = "producer")]
+    body_start: *const Token,
+    #[cfg(feature = "producer")]
+    body_window_end: u32,
 }
 impl Value {
+    #[cfg(feature = "producer")]
+    #[inline]
+    pub fn body_window(&self) -> (*const Token, *const Token, u32, u32) {
+        let range = self.definition().body;
+        let end = if range.start == range.end {
+            self.body_start
+        } else {
+            // SAFETY: publication cached the first initialized body window.
+            // An external Owner retains its immutable tokens and backing page.
+            unsafe {
+                self.body_start
+                    .add((self.body_window_end - range.start) as usize)
+            }
+        };
+        (self.body_start, end, self.body_window_end, range.end)
+    }
     #[inline]
     pub fn definition(&self) -> &Definition {
         self.definition.as_ref().unwrap()
@@ -300,6 +334,10 @@ impl Values {
                     id,
                     tokens: Tokens::default(),
                     definition: None,
+                    #[cfg(feature = "producer")]
+                    body_start: std::ptr::null(),
+                    #[cfg(feature = "producer")]
+                    body_window_end: 0,
                 }),
                 published: Cell::new(false),
                 registered: Cell::new(true),

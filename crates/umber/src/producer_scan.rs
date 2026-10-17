@@ -1,9 +1,6 @@
 use super::*;
 pub(super) fn append(value: i32, digit: i32) -> Result<i32> {
-    value
-        .checked_mul(10)
-        .and_then(|v| v.checked_add(digit))
-        .ok_or(Error::Overflow)
+    Engine::accumulate(value, 10, digit)
 }
 pub(super) fn index(value: i32) -> Result<usize> {
     if !(0..=255).contains(&value) {
@@ -44,7 +41,7 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
             }
         }
     }
-    #[inline(always)]
+    #[inline(never)]
     pub(super) fn integer(&mut self, input: &mut Frame, depth: u16) -> Result<i32> {
         if depth == 256 {
             return Err(Error::Capacity);
@@ -56,20 +53,9 @@ impl<const TRACE: bool> Producer<'_, TRACE> {
         let mut negative = false;
         let mut digits = false;
         loop {
-            let next = self.literal_digits(input, &mut value, &mut digits)?;
-            if digits
-                && let Some(token) = next
-                && Engine::digit(token, 10) >= 10
-            {
-                let meaning = self.engine.resolve(token);
-                if !meaning.expandable() {
-                    if meaning.command == cmd::SPACE {
-                        self.raw(input)?;
-                    }
-                    return Ok(if negative { -value } else { value });
-                }
-            }
-            let read = self.raw(input)?;
+            let Some(read) = self.integer_token(input, &mut value, &mut digits)? else {
+                return Ok(if negative { -value } else { value });
+            };
             if read.meaning.expandable() {
                 self.expand(input, read, depth + 1)?;
                 continue;
