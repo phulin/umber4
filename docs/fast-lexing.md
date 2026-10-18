@@ -255,14 +255,36 @@ become per-line fallbacks or markers:
 
 ### 5.2 Names
 
-A lookahead pass must not insert names, so that IDs follow consumption order and
-a capacity failure occurs at the same token. It may look up names that already
-exist. Their IDs are stable, so those tokens remain valid after any later
-regime change. The prototype inserts while lexing; that is equivalent here only
-because every token is consumed in lex order. Lookups cost as much as stage 1
-(section 3.3), so a faster lookup path pays off in both designs. Options are an
-inlined probe for short names and the `Names` table using the 64-bit hash that
-the pass already computed.
+Name IDs are assigned in insertion order, so insertions must follow consumption
+order, as on the committed path. A capacity failure then occurs at the same
+token, and names lexed ahead but discarded at a regime change never enter the
+table. A lookahead pass on the main thread may look up names that already exist.
+Their IDs are stable, so those tokens remain valid after any later regime
+change. A miss leaves a marker (section 5.1). The prototype inserts while
+lexing; that is equivalent here only because every token is consumed in lex
+order.
+
+Lookup costs about as much as stage 1 (section 3.3), but most lookups repeat an
+earlier one. The retained report's token mix and name counts give:
+
+| Case       | Multi-letter control words | Distinct names | Occurrences per name |
+| ---------- | -------------------------: | -------------: | -------------------: |
+| `kernel`   |                     30,535 |          2,953 |                 10.3 |
+| `expl3`    |                     45,233 |          7,753 |                  5.8 |
+| `packages` |                    100,924 |          7,531 |                 13.4 |
+| `pgf`      |                    141,640 |          8,811 |                 16.1 |
+| `gentle`   |                      6,640 |            390 |                 17.0 |
+
+Distinct names are the table's size after a cold lex of the whole case, less the
+514 fixed identities. They include `\par`, which every session interns first,
+and a directory case shares one table across its files. A table local to the
+lexer can resolve every repeat without the global table, which lets a worker
+thread keep most lookups off the main thread (section 6). On a single thread,
+local IDs would replace each repeated global probe with a local probe and a
+translation, which saves nothing unless the local table is much faster.
+Main-thread lookahead should instead make the global lookup cheaper: inline the
+probe for short names, and let `Names` use the 64-bit hash that the pass already
+computed.
 
 ### 5.3 Regime IDs and byte-sensitive invalidation
 
@@ -296,14 +318,39 @@ of chunks ahead of the reader:
 
 - **The reader never waits.** If the next chunk is not ready, or its regime
   does not match, the reader lexes lazily itself and the worker skips ahead.
-- **The worker never interns.** It emits spelling markers with hashes, and the
-  main thread performs lookups. Concurrent reads of a table that the main thread
-  is growing would need a concurrent name table, which is out of scope.
-- **Amdahl.** The main thread keeps name lookup (14–17% of `avx2` instructions
-  on macro code), regime checks, and consumption, which it performs in any
-  design. A worker could therefore move at most about 83–86% of the lexing
-  instructions off the main thread, after a single-threaded pass has already
-  made them 1.3–2.9× cheaper.
+- **The worker numbers names locally.** It cannot probe the global table while
+  the main thread grows it, and it must not insert. Instead it interns each
+  control-word spelling in a table of its own, which assigns dense _local IDs_
+  in first-occurrence order and stores each spelling once with its 64-bit hash.
+  A chunk holds ordinary `u32` tokens whose multi-letter names carry local IDs.
+  Single-character and active identities are fixed, so they are already global.
+  Each chunk also lists the spellings and hashes of the local IDs it introduces.
+  The main thread therefore learns of a local ID before any token uses it, and
+  the threads share nothing but the queue. If the local table fills, the worker
+  stops and the reader continues lazily.
+- **The main thread translates on consumption.** It keeps a dense array from
+  local to global IDs, and each multi-letter name leaving a chunk costs one
+  array load. At the first consumption of a local ID the entry is empty. The
+  main thread then looks the spelling up in the global table with the stored
+  hash, inserts it if missing, and fills the entry. Insertions therefore happen
+  at the same tokens as on the committed path, and names in chunks discarded at
+  a regime change never reach the global table. Local IDs need not be
+  reproducible, because nothing outside the worker and the array observes them.
+- **Lifetime.** The local table can span every file the worker lexes in a run,
+  so a name first seen in one file is a repeat in the next. A table per source
+  would make chunks self-contained for retention, at the cost of one first
+  lookup per name per file. The process interner is append-only and survives
+  checkpoint restore ([storage.md](storage.md) and
+  [checkpoints.md](checkpoints.md) section 4), so a filled entry never becomes
+  stale within a process.
+- **Amdahl.** If the main thread looked up every name, lookup (14–17% of `avx2`
+  instructions on macro code) would cap the share of lexing instructions that a
+  worker could move at about 83–86%. With local IDs the main thread performs one
+  global lookup per distinct name instead of one per occurrence, 5.8–17 times
+  fewer in section 5.2's cases. Hashing, probing, and spelling comparison for
+  repeats move to the worker. The main thread keeps translation, first lookups,
+  regime checks, and consumption, which it performs in any design. The new cap
+  depends on the translation and queue costs, which are not yet measured.
 - **WebAssembly.** Wasm threads need shared memory, which browsers allow only
   in [cross-origin isolated](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SharedArrayBuffer#security_requirements)
   pages, so the portable path must not depend on a worker. Stage 1 ports to
@@ -311,11 +358,33 @@ of chunks ahead of the reader:
   with `i8x16.swizzle`, which returns zero for indices of 16 or more, and
   `i8x16.bitmask`.
 
+Three alternatives would give the worker IDs without a local table. Each fails
+a requirement:
+
+- **Source positions.** An ID built from a source number and the offset of a
+  name's first occurrence needs no coordination. But a control sequence's
+  identity is its spelling. The same name in two files needs one ID, which
+  occurrence comes first depends on consumption order, and a name built by
+  `\csname` has no position. Positions would also make the dense meaning array
+  sparse. Within a worker, any numbering that gives each spelling one value
+  works, and a dense counter keeps the translation array dense.
+- **Hashes.** A 64-bit hash of the spelling needs no table. But it does not fit
+  the 24-bit ID of a `u32` token, so tokens would double in size. Every meaning
+  lookup, including those for names replayed from macro bodies, would become a
+  hash-map probe instead of an array index. Two spellings with equal hashes
+  would silently become one control sequence. Detecting that requires comparing
+  each new spelling with a stored one, which is the table again.
+- **A shared table.** A concurrent table would let the worker look names up
+  directly. But it must stay readable while the main thread grows it, and the
+  worker's misses must still return to the main thread for insertion.
+
 A worker pays off most when its results are retained: lexed chunks keyed by
 resource identity and regime could be reused after checkpoint restore and across
-incremental runs, provided that their name markers are resolved after the restored
-name table. That benefit belongs to [checkpoints.md](checkpoints.md) and
-needs its own measurements.
+incremental runs. A retained chunk keeps its local IDs along with the local
+table and translation array they index. Within a process the array stays valid,
+so a restored run translates names it has already resolved without any lookup.
+That benefit belongs to [checkpoints.md](checkpoints.md) and needs its own
+measurements.
 
 ## 7. Recommendations and next steps
 
@@ -343,6 +412,9 @@ Untested prototype ideas:
 - **Cheaper stage 1.** Use fewer masks, or classify incrementally in
   cache-sized blocks just ahead of stage 2 rather than over the whole file.
 - **Faster lookup.** Inline the short-name probe and reuse the 64-bit hash.
+- **Local IDs on one thread.** Lexing with a local table, then translating in a
+  separate pass, would measure translation cost and first lookups before any
+  thread exists.
 
 ## 8. Reproduction
 

@@ -13,7 +13,8 @@ Read the root `AGENTS.md` first.
 - `input.md` develops character scanning, line lookahead and its invalidation,
   name lookup, operand scanners, and retained file cursors.
 - `fast-lexing.md` measures a whole-file lexer prototype under fixed category
-  codes and proposes cross-line lookahead, regime IDs, and a lexing thread.
+  codes and proposes cross-line lookahead, regime IDs, and a lexing thread with
+  worker-local name IDs.
 - `checkpoints.md` develops paragraph handoff, heterogeneous snapshots,
   in-memory restore, and conservative prefix restart after edits.
 - `resources.md` develops native/Wasm byte acquisition, shared input buffers,
