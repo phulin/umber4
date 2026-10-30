@@ -1,7 +1,8 @@
 # Native expansion measurements
 
-The shared-token-store comparison below uses `dc64762` as its baseline, with the
-restored custom name table and unchanged dependencies. The earlier reclamation
+The bounded-token-allocation comparison uses `e88cad7` as its baseline. The
+historical shared-token-store comparison uses `dc64762`, with the restored custom
+name table and unchanged dependencies. The earlier reclamation
 sweeps measure `a7f8be0`; subsequent sections retain the representation,
 structural, and name/scanner comparisons with their original baselines.
 
@@ -18,6 +19,63 @@ suite and -10.0% on the broader suite, using geometric means of paired
 ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
+
+## Bounded token allocation classes
+
+The first allocator revision gives durable definitions/register values and
+transient captures/generated input separate active 4,096-token blocks over the
+same storage mechanism. The shared cache retains at most sixteen empty complete
+block records, reusing their ownership counters with the token backing. There can
+also be one active block per class, plus blocks retained by actual semantic owners.
+Existing input ranges retain their original owners; class does not trigger release
+or copying. Value-header slabs and reusable variable metadata remain later work.
+
+The [paired report](../benchmarks/results/token-allocation-classes.json)
+compares `ad5c07b` with `e88cad7`: seven alternating full-process repetitions after
+warmup, nine core cases at 100,000 iterations, nine broader cases at 10,000 records,
+and the existing bounded churn/live-growth sizes. Both use ordinary release with
+fat LTO on an AMD EPYC 7642, rustc 1.98.1, and pdfTeX
+3.141592653-2.6-1.40.25 (TeX Live 2023/Debian). Checksums are validated in every run.
+
+| CPU versus baseline | Change |
+| ------------------- | -----: |
+| Core geometric mean | -1.9% |
+| Broader geometric mean | +0.7% |
+| Fixed-state churn, 50,000 iterations | +2.0% |
+
+Core/broader case ratios range from -4.9% to +4.9%; these short bounded samples
+include process overhead and code-placement effects. They do not establish small
+CPU changes or whole-document performance. Assembly inspection places class
+selection in builder growth, with no class lookup on each token write.
+
+Across the nine 10,000-record broader workloads, allocation requests drop 62.1%
+from 37,696 to 14,303; cumulative requested bytes drop from 7.70 MB to 6.42 MB.
+The supplemental register-meaning diagnostic is recorded separately.
+
+| Allocation workload | Requests before | Requests after |
+| ------------------- | --------------: | -------------: |
+| Gentle contents, 10,000 | 10,683 | 989 |
+| Gentle records, 10,000 | 5,095 | 1,766 |
+| Stored records, 10,000 | 5,112 | 2,186 |
+| Token pipeline, 10,000 | 8,817 | 4,441 |
+| Fixed-state churn, 50,000 | 9,161 | 4,579 |
+
+Core allocation counts are unchanged. Churn's requested heap peak remains bounded
+through 50,000 replacements, increasing from 90,012 to 90,076 bytes. Some mixed
+cases retain an extra active block: stored records at 10,000 increase from 93,448
+to 109,824 bytes. At 2,500 retained definitions, live-growth peaks at 2,075,764 bytes
+versus 2,058,500. Counters exclude host input, stack, allocator overhead, and pdfTeX
+memory. Parameter/fallback arrays and multi-piece descriptors still allocate
+repeatedly, and live value-header growth still allocates individual shared records.
+
+All 70 debug/release tests and 75 release all-feature tests pass, as do rustfmt,
+Clippy with warnings denied, and the release Wasm library build. The native oracle
+matches 748 messages and 26 rejection cases. All sixteen value tests pass Miri
+with `native-profile`, including counter reuse across classes, bounded cached
+versus checked-out retention, escaping values, and registry teardown. A warmed
+fixed live set with mixed durable/transient survivors creates no further token
+pages or value headers after warmup. Historical sections below retain their
+original inputs, baselines, and allocation counts.
 
 ## Shared token storage
 
