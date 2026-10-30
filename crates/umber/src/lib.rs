@@ -15,6 +15,7 @@ mod names;
 mod scalars;
 mod scan;
 mod token;
+mod value_metadata;
 mod values;
 use names::Names;
 use scalars::{Scalars, Target};

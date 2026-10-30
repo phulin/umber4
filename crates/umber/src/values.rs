@@ -5,6 +5,8 @@ use std::rc::{Rc, Weak};
 
 const WORDS: usize = 1 << CHUNK_BITS;
 const CACHE_CHUNKS: usize = 16;
+use crate::value_metadata::{Buffer, Store};
+
 type Cells = [UnsafeCell<MaybeUninit<Token>>; WORDS];
 
 /// Expected retention selects a bump tail, never the release boundary.
@@ -19,6 +21,9 @@ struct Pool {
     active: [RefCell<Option<(PageOwner, usize)>>; 2],
     free: RefCell<Vec<Rc<Page>>>,
     ids: RefCell<Vec<u32>>,
+    pieces: Rc<Store<Piece>>,
+    parameters: Rc<Store<Parameter>>,
+    failures: Rc<Store<usize>>,
     #[cfg(test)]
     created: Cell<usize>,
 }
@@ -110,10 +115,11 @@ struct Piece {
     start: u32,
     capacity: u32,
 }
+#[repr(C)]
 #[derive(Default)]
 pub(crate) struct Tokens {
     first: Option<Piece>,
-    rest: Vec<Piece>,
+    rest: Buffer<Piece>,
     pub len: u32,
 }
 impl Tokens {

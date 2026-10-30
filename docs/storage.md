@@ -74,14 +74,14 @@ exclusively. Publication returns token descriptors without moving token words;
 failed builders return them before last-owner release. Release drops all page
 owners and clears metadata lengths before making the slot reusable. Capacity stays
 with the slot until registry teardown or, for surviving owners, final release.
-Headers share stable slabs; variable metadata still uses per-slot vectors until
-the typed block revision below is implemented.
+Headers share stable slabs, and variable metadata shares typed size-class pages.
 
 ### MVP stable header slabs
 
 The MVP header representation uses fixed slabs of 64 value slots. The
 registry retains each slab and assigns dense IDs to its initialized slots; growing
-the directory never moves a slot. Each slot embeds its non-atomic external-owner
+the dense non-owning pointer directory never moves a slot. ID lookup remains one
+checked pointer load. Each slot embeds its non-atomic external-owner
 count. An `Owner` remains one pointer to the slot, so reading a value or a token
 window does not resolve another table. Cloning increments only the slot count.
 The first owner of a checked-out slot retains its slab once, and final-owner
@@ -97,6 +97,27 @@ have outstanding views. Final slab release occurs after the releasing owner has
 finished accessing its slot. Slabs retain the weak token-pool link once, rather
 than once per value. Capacity growth remains proportional to the largest live
 header set, with at most 63 unused slots in its final slab.
+
+### MVP typed metadata blocks
+
+Token piece descriptors, parameter records, and delimiter fallback entries use
+three independent typed stores. Each growable buffer has the same 24-byte size as
+a native `Vec`: pointer, `u32` length/capacity, and a shared store owner. Buffers
+retain their cleared capacity in their value slots. A store divides stable typed
+pages into equal power-of-two blocks, starting at four elements; buffers acquire a
+free block and transfer initialized elements when growing. Common blocks share
+pages of up to 4 KiB and at most 64 blocks. Arrays larger than that use one backing
+allocation per large block. Length, rounding, byte size, and growth are checked.
+
+Only a buffer owns its initialized prefix. Growing transfers those elements and
+returns the previous block without dropping the moved values. Clearing sets the
+published length to zero before dropping the previous prefix, and final buffer
+release clears all initialized elements before recycling the block. Pages contain
+`UnsafeCell<MaybeUninit<T>>`; typed ownership handles keep the store alive after
+registry teardown. Free blocks contain no live values. Stores retain metadata
+pages to each size class's high-water capacity, while buffers retain their largest
+blocks just as the prior per-slot vectors did;
+there is no cache of independently allocated empty metadata objects.
 
 An immutable token store allocates stable blocks, initially by bump reservation.
 Builders initialize destination cells and publish ranges without moving tokens.

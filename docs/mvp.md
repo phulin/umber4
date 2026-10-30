@@ -109,14 +109,18 @@ retention case justifies it.
 
 Value IDs/headers and packet capacity are reused. Each value slot also retains
 cleared multi-piece descriptor capacity and definition metadata: parameter records
-name ranges in one flat fallback vector. Builders edit unpublished metadata and
+name ranges in one flat fallback array. Builders edit unpublished metadata and
 return descriptor storage on completion or failure. Releasing the last owner drops
 all page owners before reusing the slot; no old token blocks remain in cleared
 metadata. Fixed-state metadata churn reuses warmed capacity, including transitions
 to fewer parameters and shorter delimiters. Capacity follows each slot's high-water
-mark until teardown. Growing the live header set still allocates individual shared
-records; denser header slabs and size-class pooling remain future layout work.
-Historical counts in [mvp-results.md](mvp-results.md) are not a zero-allocation claim.
+mark until teardown. Headers occupy stable 64-slot slabs with embedded non-atomic
+owner counts; a dense non-owning directory preserves direct ID lookup. Variable
+metadata acquires equal-capacity blocks from three typed page stores, so growing
+live definitions shares backing allocations too. Ordinary blocks share pages;
+arrays larger than 4 KiB can receive individual large backing blocks. Store pages
+retain their class high-water capacity until the last buffer owner disappears.
+Historical counts in [mvp-results.md](mvp-results.md) include their original layouts.
 
 Publication transfers initialized storage without flattening. Failed builders
 release their reservations. Reused IDs cannot become visible until old owners and

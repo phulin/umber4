@@ -3,10 +3,11 @@ use std::ptr::NonNull;
 
 const SLOTS: usize = 64;
 
+#[repr(C)]
 pub(crate) struct Value {
-    pub id: u32,
     pub tokens: Tokens,
     pub(super) definition: Definition,
+    pub id: u32,
 }
 impl Value {
     #[inline]
@@ -15,10 +16,11 @@ impl Value {
     }
 }
 
+#[repr(C)]
 pub(super) struct Slot {
-    pub(super) value: UnsafeCell<Value>,
-    pub(super) published: Cell<bool>,
     owners: Cell<usize>,
+    pub(super) published: Cell<bool>,
+    pub(super) value: UnsafeCell<Value>,
     slab: NonNull<Slab>,
 }
 struct Slab {
@@ -43,8 +45,15 @@ impl SlabOwner {
                 slots.add(index).write(Slot {
                     value: UnsafeCell::new(Value {
                         id: first + index as u32,
-                        tokens: Tokens::default(),
-                        definition: Definition::default(),
+                        tokens: Tokens {
+                            rest: Buffer::new(&pool.pieces),
+                            ..Tokens::default()
+                        },
+                        definition: Definition {
+                            parameters: Buffer::new(&pool.parameters),
+                            failure: Buffer::new(&pool.failures),
+                            ..Definition::default()
+                        },
                     }),
                     published: Cell::new(false),
                     owners: Cell::new(0),
@@ -94,10 +103,13 @@ impl Clone for Owner {
     #[inline]
     fn clone(&self) -> Self {
         let slot = self.slot();
-        if slot.owners.get() == usize::MAX {
+        // As in Rc, abort immediately if the embedded count wraps. Publishing
+        // the increment first permits one in-memory increment on native paths.
+        let owners = slot.owners.get().wrapping_add(1);
+        slot.owners.set(owners);
+        if owners == 0 {
             std::process::abort();
         }
-        slot.owners.set(slot.owners.get() + 1);
         Self(self.0)
     }
 }
@@ -153,30 +165,41 @@ impl Slot {
 pub(crate) struct Values {
     pub(super) pool: Rc<Pool>,
     slabs: Vec<SlabOwner>,
-    pub(super) len: usize,
+    slots: Vec<NonNull<Slot>>,
 }
 impl Values {
     pub(super) fn slot(&self, id: u32) -> &Slot {
-        assert!((id as usize) < self.len);
-        &self.slabs[id as usize / SLOTS].slab().slots[id as usize % SLOTS]
+        // SAFETY: the registry owns every slab named by this dense directory.
+        unsafe { self.slots[id as usize].as_ref() }
+    }
+    #[cfg(test)]
+    pub(super) fn len(&self) -> usize {
+        self.slots.len()
     }
     #[cfg(test)]
     pub(super) fn slots(&self) -> impl Iterator<Item = &Slot> {
-        self.slabs
-            .iter()
-            .flat_map(|owner| owner.slab().slots.iter())
-            .take(self.len)
+        self.slots.iter().map(|slot| {
+            // SAFETY: the registry retains every slot's slab.
+            unsafe { slot.as_ref() }
+        })
     }
     pub fn builder(&mut self, class: Class) -> Result<Builder> {
-        let id = self.pool.ids.borrow_mut().pop().unwrap_or(self.len as u32);
+        let id = self
+            .pool
+            .ids
+            .borrow_mut()
+            .pop()
+            .unwrap_or(self.slots.len() as u32);
         if id >= SINGLE {
             return Err(Error::Capacity);
         }
-        if id as usize == self.len {
-            if self.len.is_multiple_of(SLOTS) {
+        if id as usize == self.slots.len() {
+            if self.slots.len().is_multiple_of(SLOTS) {
                 self.slabs.push(SlabOwner::new(&self.pool, id));
             }
-            self.len += 1;
+            let slab = self.slabs.last().unwrap().slab();
+            let slot = &slab.slots[self.slots.len() % SLOTS];
+            self.slots.push(NonNull::from(slot));
         }
         let slot = self.slot(id);
         debug_assert_eq!(slot.owners.get(), 0);
@@ -221,6 +244,6 @@ impl Values {
     #[cfg(test)]
     pub fn retained(&self) -> (usize, usize, usize) {
         let live = self.slots().filter(|slot| slot.published.get()).count();
-        (live, self.len, self.pool.free.borrow().len())
+        (live, self.slots.len(), self.pool.free.borrow().len())
     }
 }

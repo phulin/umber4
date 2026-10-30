@@ -349,8 +349,8 @@ pub(crate) struct Definition {
     pub body: ArenaRange,
     pub long: bool,
     pub uses_parameters: bool,
-    pub parameters: Vec<Parameter>,
-    pub failure: Vec<usize>,
+    pub parameters: crate::value_metadata::Buffer<Parameter>,
+    pub failure: crate::value_metadata::Buffer<usize>,
 }
 impl Definition {
     pub fn clear(&mut self) {

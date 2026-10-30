@@ -157,7 +157,9 @@ fixed names and token registers, retains aliases, and saves/restores local value
 `live-growth` retains a new definition on each iteration. `metadata` alternates
 nine-, one-, and zero-parameter definitions with overlapping delimiters and
 multiblock token payloads; its 10, 100, and 1,000 iterations distinguish initial
-capacity growth from warmed reuse. All validate their results in TeX and time the
+capacity growth from warmed reuse. `live-metadata` retains a distinct
+nine-parameter definition with overlapping delimiters each iteration, exercising
+metadata backing growth independently of fixed-state reuse. All validate their results in TeX and time the
 same source in both interpreters. Churn defaults to
 1,000, 10,000, and 50,000 iterations; live growth uses 100, 1,000, and 2,500 to fit
 the native INITEX oracle's configured memory capacity. The input stays compact

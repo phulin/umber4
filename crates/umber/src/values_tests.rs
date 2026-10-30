@@ -172,7 +172,7 @@ fn slots_recycle_after_last_owner_and_page_cache_is_bounded() {
     for _ in 0..100 {
         drop(value(&mut values, 20, b'Y'));
     }
-    assert!(values.len <= 2);
+    assert!(values.len() <= 2);
 }
 
 #[test]
@@ -324,10 +324,10 @@ fn warm_mixed_survivors_reuse_complete_page_records() {
         durable = class_value(&mut values, Class::Durable, 1000, b'D');
         transient = class_value(&mut values, Class::Transient, 1000, b'T');
         if iteration == 15 {
-            warm = Some((values.pool.created.get(), values.len));
+            warm = Some((values.pool.created.get(), values.len()));
         }
     }
-    assert_eq!(warm.unwrap(), (values.pool.created.get(), values.len));
+    assert_eq!(warm.unwrap(), (values.pool.created.get(), values.len()));
     assert!(values.pool.created.get() <= 6);
     assert!(values.pool.free.borrow().len() <= CACHE_CHUNKS);
     assert_eq!(survivor.tokens.get(96), Token::other(b'S'));
@@ -462,7 +462,7 @@ fn failed_builder_returns_metadata_and_can_outlive_registry() {
     assert_eq!(owner.tokens.get(0), Token::other(b'Y'));
     drop(owner);
     assert_eq!(alias.definition().parameters[0].delimiter.end, 1);
-    assert_eq!(alias.definition().failure, [0]);
+    assert_eq!(&*alias.definition().failure, &[0]);
     assert_eq!(alias.tokens.get(0), Token::other(b'Y'));
 }
 

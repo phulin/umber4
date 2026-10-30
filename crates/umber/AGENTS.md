@@ -5,6 +5,8 @@ Read the root guidance. `src/lib.rs` owns the driver and document state;
 source descriptors; `names.rs` owns name lookup and immutable spelling bytes;
 `values.rs` owns the shared token builder and backing chunks;
 `value_headers.rs` owns stable value-header slabs and their shared owners;
+`value_metadata.rs` owns typed metadata blocks and buffers, with focused tests in
+`value_metadata_tests.rs`;
 `values_tests.rs` and `memory_tests.rs` check reclamation and semantic ownership;
 `input.rs` supplies lazy character input and token cursors;
 `define.rs` builds macro definitions; `macros.rs` builds invocation packets and
