@@ -1,6 +1,7 @@
 # Native expansion measurements
 
-The bounded-token-allocation comparison uses `e88cad7` as its baseline. The
+The metadata-reuse comparison uses `80facd9` as its baseline checkout (engine
+source `ad5c07b`). The bounded-token-allocation comparison uses `e88cad7`. The
 historical shared-token-store comparison uses `dc64762`, with the restored custom
 name table and unchanged dependencies. The earlier reclamation
 sweeps measure `a7f8be0`; subsequent sections retain the representation,
@@ -19,6 +20,72 @@ suite and -10.0% on the broader suite, using geometric means of paired
 ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
+
+## Reusable token metadata
+
+The second bounded allocator revision retains cleared multi-piece descriptors in
+value slots and reuses parameter descriptors with one flat delimiter-fallback
+vector. Failed builders return their storage; final-owner release clears all page
+owners before slot reuse. Ordinary invocation fields precede cold fallback storage.
+Individual shared-header allocations on live-set growth remain; denser slabs and
+size-class pooling remain future layout work.
+
+The [paired report](../benchmarks/results/token-metadata-reuse.json) measures
+`317c54d` against the preceding allocator build. It uses ordinary release, fat LTO,
+rustc 1.98.1, AMD EPYC 7642, and pdfTeX 3.141592653-2.6-1.40.25 (TeX Live
+2023/Debian). Seven alternating repetitions cover nine core cases at 100,000
+iterations, nine broader cases at 10,000 records, and the memory workloads.
+Nine-repeat confirmations use 1,000,000 iterations for the affected core cases.
+
+| CPU versus preceding allocator | Change |
+| ------------------------------ | -----: |
+| Core geometric mean | +2.3% |
+| Broader geometric mean | +0.1% |
+| Parameters, longer confirmation | +6.9% |
+| Groups, longer confirmation | +1.3% |
+| Delimiters, longer confirmation | +5.3% |
+| Fixed-state churn, 50,000 | +2.0% |
+| Focused metadata, 1,000 | -3.4% |
+
+The core regression remains a tradeoff; broader CPU is near flat. Moving hot
+fields ahead of fallback capacity reduced the initial layout cost. Generated
+x86-64 code reads body/prefix fields at slot offsets `0x54`/`0x50`, versus
+`0x80`/`0x88` before that correction. Ordinary delimiter fallback retains one checked
+array index; profile builds retain their cached immutable slice. Token writes gain
+no ownership bookkeeping. These bounded expansion measurements include complete
+process overhead and do not establish whole-document or Wasm runtime performance.
+
+| Allocation workload | Requests before | Requests after |
+| ------------------- | --------------: | -------------: |
+| Nine broader workloads, 10,000 each | 14,303 | 2,835 |
+| Fixed-state churn, 1,000 | 128 | 44 |
+| Fixed-state churn, 50,000 | 4,579 | 44 |
+| Focused metadata, 10 | 121 | 65 |
+| Focused metadata, 100 | 752 | 66 |
+| Focused metadata, 1,000 | 7,060 | 66 |
+
+Broader allocation requests fall 80.2%, and cumulative requested bytes fall from
+6.42 MB to 5.38 MB. The focused metadata workload alternates nine-, one-, and
+zero-parameter definitions, overlapping delimiters, and multiblock values. Its
+counts include setup: the plateau at 66 requests and 167,994 requested bytes from
+100 to 1,000 iterations distinguishes initial capacity growth from warmed reuse.
+This does not claim allocation-free execution everywhere. Source lines stay below
+the native oracle's line-buffer limit.
+
+Metadata retains per-slot high-water capacity. At 2,500 live-growth definitions,
+requests remain 2,835, while peak requested heap grows from 2,075,764 to 2,160,148
+bytes (+4.1%) because headers carry more reusable metadata. Churn peaks at 90,876
+bytes versus 90,076; focused metadata peaks at 158,214 versus 157,486. Counters
+exclude host input, stack, allocator overhead, and pdfTeX memory.
+
+All 73 debug/release tests and 78 release all-feature tests pass, as do formatting,
+Clippy with warnings denied, and the release Wasm library build. The native oracle
+matches 748 messages and 26 rejection cases. Focused Miri checks cover failed
+builders and published metadata surviving registry teardown, multiblock descriptor
+reuse with a durable survivor, and alternating overlapping delimiter definitions
+on the ordinary fallback path. Independent read-only reviews found no lifetime,
+layout, or bounds issues. The validated clean build and measured CLI have identical
+execution-text hashes.
 
 ## Bounded token allocation classes
 

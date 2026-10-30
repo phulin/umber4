@@ -40,6 +40,12 @@ The [name/scanner comparison](results/name-scanner-simplification.json) retains
 the `c154e34` experiment against `e0007e5`. Its timings include the subsequently
 reverted `hashbrown` table and describe that historical build.
 
+The [metadata reuse comparison](results/token-metadata-reuse.json) measures cleared
+value-slot descriptor and parameter/fallback capacity against the preceding token
+allocator. It retains core/broader CPU samples, longer affected-case confirmations,
+and actual allocation counts, including the warm metadata plateau and remaining
+core CPU/live-header memory costs.
+
 An optional native profile build uses the same generators for compiler training:
 
 ```bash
