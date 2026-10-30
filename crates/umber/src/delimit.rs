@@ -91,7 +91,7 @@ impl Engine<'_> {
         };
         #[cfg(feature = "native-profile")]
         let failure = if DELIMITED {
-            definition.parameters[argument].failure.as_ref()
+            definition.failure(argument)
         } else {
             &[]
         };
@@ -168,7 +168,8 @@ impl Engine<'_> {
                     #[cfg(feature = "native-profile")]
                     let fallback = failure[matched - 1];
                     #[cfg(not(feature = "native-profile"))]
-                    let fallback = definition.parameters[argument].failure[matched - 1];
+                    let fallback = definition.failure
+                        [definition.parameters[argument].failure_start + matched - 1];
                     matched = fallback;
                 }
                 if matched == length {

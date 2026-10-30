@@ -338,18 +338,35 @@ pub(crate) struct TokenValue {
     pub owner: Option<crate::values::Owner>,
     pub level: u16,
 }
+// Keep invocation fields ahead of cold fallback storage. The default Rust
+// layout put body/prefix fields beyond another cache line after adding vectors.
+#[repr(C)]
+#[derive(Default)]
 pub(crate) struct Definition {
     // The owning value contains the full prefix, parameter markers, separator,
     // and replacement text. body selects the executable part of that value.
     pub prefix_end: u32,
     pub body: ArenaRange,
-    pub parameters: Box<[Parameter]>,
     pub long: bool,
     pub uses_parameters: bool,
+    pub parameters: Vec<Parameter>,
+    pub failure: Vec<usize>,
+}
+impl Definition {
+    pub fn clear(&mut self) {
+        self.parameters.clear();
+        self.failure.clear();
+    }
+    #[cfg(feature = "native-profile")]
+    pub fn failure(&self, argument: usize) -> &[usize] {
+        let parameter = &self.parameters[argument];
+        let length = (parameter.delimiter.end - parameter.delimiter.start) as usize;
+        &self.failure[parameter.failure_start..parameter.failure_start + length]
+    }
 }
 pub(crate) struct Parameter {
     pub delimiter: ArenaRange,
-    pub failure: Box<[usize]>,
+    pub failure_start: usize,
 }
 #[derive(Default)]
 pub(crate) struct Packet {

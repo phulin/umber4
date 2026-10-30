@@ -284,6 +284,6 @@ impl<'a> Engine<'a> {
     pub(crate) fn store_body(&mut self) -> Result<crate::values::Owner> {
         let mut tokens = self.values.builder(crate::values::Class::Durable)?;
         self.scan_raw_body(&mut tokens)?;
-        Ok(tokens.finish(None))
+        Ok(tokens.finish())
     }
 }

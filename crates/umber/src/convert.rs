@@ -36,7 +36,7 @@ impl Engine<'_> {
     }
     pub(crate) fn finish_generated(&mut self, output: Generated) -> Result<()> {
         if let Some(tokens) = output.buffer {
-            self.push_tokens(tokens.finish(None), 0)
+            self.push_tokens(tokens.finish(), 0)
         } else if let Some(token) = output.first {
             self.check_source_limit()?;
             self.back(token);

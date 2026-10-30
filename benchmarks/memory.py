@@ -1,7 +1,8 @@
 """Same-source ownership workloads with compact input and measured heap peaks.
 
 churn replaces a fixed working set; live-growth retains a new binding each time.
-Both execute all iterations in TeX rather than growing the host input file.
+metadata alternates parameter/fallback metadata and multiblock definitions.
+All execute their iterations in TeX rather than growing the host input file.
 """
 
 import argparse
@@ -15,8 +16,9 @@ import subprocess
 
 from mvp import BOOT, ROOT, measure, reference
 
-CASES = ("churn", "live-growth")
+CASES = ("churn", "live-growth", "metadata")
 PAYLOAD = "abcdefgh " * 8
+METADATA_PAYLOAD = (PAYLOAD * 14 + "\n") * 5
 
 
 def program(case, size):
@@ -30,13 +32,22 @@ def program(case, size):
                 r"{\def\actual{discarded}\toks0={local}\global\toks2=\toks1}"
                 r"\edef\actual{\the\toks2}\def\wanted{" + PAYLOAD + "}"
                 r"\ifx\actual\wanted\else\message{UMBER:BAD:END}\end\fi")
+    elif case == "metadata":
+        payload = METADATA_PAYLOAD
+        work = (r"\def\actual##1abab##2xyxy##3##4##5##6##7##8##9{##9##1##2}"
+                r"\edef\result{\actual AababBxyxyCDEFGHI}\def\small{IAB}"
+                r"\ifx\result\small\else\message{UMBER:BAD:END}\end\fi"
+                r"\def\actual##1aba{##1}\edef\result{\actual Qaba}\def\small{Q}"
+                r"\ifx\result\small\else\message{UMBER:BAD:END}\end\fi"
+                r"\def\actual{" + payload + r"}\edef\result{\actual}"
+                r"\ifx\result\wanted\else\message{UMBER:BAD:END}\end\fi")
     elif case == "live-growth":
         work = (r"\expandafter\def\csname field\the\count0\endcsname{" + PAYLOAD + "}"
                 r"\edef\actual{\csname field\number\count0\endcsname}"
                 r"\ifx\actual\wanted\else\message{UMBER:BAD:END}\end\fi")
     else:
         raise ValueError(case)
-    source = (BOOT + r"\def\wanted{" + PAYLOAD + "}\n"
+    source = (BOOT + r"\def\wanted{" + (METADATA_PAYLOAD if case == "metadata" else PAYLOAD) + "}\n"
               + r"\def\step{" + work + r"\advance\count0by1\relax"
               + r"\ifnum\count0<" + str(size) + r" \expandafter\step\fi}"
               + "\n" + r"\step\message{UMBER:\the\count0:END}\end" + "\n")
@@ -93,7 +104,11 @@ def main():
         if path:
             report[label + "_binary_sha256"] = digest(path)
     for case in args.cases:
-        sizes = args.sizes or ([1000, 10000, 50000] if case == "churn" else [100, 1000, 2500])
+        sizes = args.sizes or {
+            "churn": [1000, 10000, 50000],
+            "live-growth": [100, 1000, 2500],
+            "metadata": [10, 100, 1000],
+        }[case]
         for size in sizes:
             source, expected = program(case, size)
             path = folder / f"{case}-{size}.tex"

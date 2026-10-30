@@ -113,9 +113,7 @@ impl Engine<'_> {
     #[inline(always)]
     pub(crate) fn finish_capture(&mut self, packet: u32, builder: Option<crate::values::Builder>) {
         if let Some(tokens) = builder {
-            self.packets[packet as usize]
-                .owners
-                .push(tokens.finish(None));
+            self.packets[packet as usize].owners.push(tokens.finish());
         }
     }
     #[inline(always)]

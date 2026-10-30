@@ -265,7 +265,7 @@ fn short_integer_terminators_and_progress_cross_windows() {
             for word in words {
                 tokens.push(word).unwrap();
             }
-            let owner = tokens.finish(None);
+            let owner = tokens.finish();
             engine.push_tokens(owner, start).unwrap();
             assert_eq!(engine.scan_int(), result, "padding {padding}, case {case}");
             for word in rest {
@@ -332,7 +332,7 @@ fn keyword_matches_and_rollback_cross_arena_windows() {
                 tokens.push(word).unwrap();
             }
             tokens.push(letter(b'X')).unwrap();
-            let owner = tokens.finish(None);
+            let owner = tokens.finish();
             engine.push_tokens(owner, start).unwrap();
             assert_eq!(engine.scan_keyword(b"by").unwrap(), matched);
             if !matched {

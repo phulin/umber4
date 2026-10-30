@@ -107,10 +107,15 @@ it does not move or relabel the block. Newly built definitions and register valu
 write into durable storage. Small-copy promotion remains optional when a concrete
 retention case justifies it.
 
-Value IDs/headers and packet capacity are reused, but value-header growth still
-allocates individual shared records. Definition parameter/fallback vectors and
-multi-piece value descriptors can still allocate on repeated construction; moving
-those variable records into reusable stores remains the next allocator work.
+Value IDs/headers and packet capacity are reused. Each value slot also retains
+cleared multi-piece descriptor capacity and definition metadata: parameter records
+name ranges in one flat fallback vector. Builders edit unpublished metadata and
+return descriptor storage on completion or failure. Releasing the last owner drops
+all page owners before reusing the slot; no old token blocks remain in cleared
+metadata. Fixed-state metadata churn reuses warmed capacity, including transitions
+to fewer parameters and shorter delimiters. Capacity follows each slot's high-water
+mark until teardown. Growing the live header set still allocates individual shared
+records; denser header slabs and size-class pooling remain future layout work.
 Historical counts in [mvp-results.md](mvp-results.md) are not a zero-allocation claim.
 
 Publication transfers initialized storage without flattening. Failed builders

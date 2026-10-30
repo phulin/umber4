@@ -191,7 +191,7 @@ fn arena_windows_retain_whole_chunk_access() {
     for index in 0..4100 {
         builder.push(Token::other(index as u8)).unwrap();
     }
-    let value = builder.finish(None);
+    let value = builder.finish();
     let (first, end, next) = value.tokens.window(4094, 4100);
     assert_eq!(next, 4096);
     let mut neighbor = values.builder(crate::values::Class::Transient).unwrap();

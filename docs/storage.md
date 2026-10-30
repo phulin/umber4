@@ -67,6 +67,16 @@ making a slot available again. Large arrays receive appropriately sized blocks.
 Non-atomic counters in these records implement shared ownership where needed;
 there is no separate system allocation for each counter or wrapper.
 
+The MVP reuses capacity in existing value slots for token piece descriptors,
+parameter descriptors, and one flat delimiter-fallback array. An unpublished
+builder takes the cleared token descriptor storage and edits its slot's metadata
+exclusively. Publication returns token descriptors without moving token words;
+failed builders return them before last-owner release. Release drops all page
+owners and clears metadata lengths before making the slot reusable. Capacity stays
+with the slot until registry teardown or, for surviving owners, final release.
+Growing the live header set still allocates individual shared records; denser
+slabs and size-class pooling remain proposed layout improvements.
+
 An immutable token store allocates stable blocks, initially by bump reservation.
 Builders initialize destination cells and publish ranges without moving tokens.
 A failed builder releases its reservations and owners. Tail reservations rewind

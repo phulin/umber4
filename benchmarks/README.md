@@ -148,8 +148,11 @@ generated-input, and executable hashes. Exact input files remain under
 
 `memory.py` adds compact-source lifetime workloads. `churn` repeatedly replaces
 fixed names and token registers, retains aliases, and saves/restores local values.
-`live-growth` retains a new definition on each iteration. Both validate their
-results in TeX and time the same source in both interpreters. Churn defaults to
+`live-growth` retains a new definition on each iteration. `metadata` alternates
+nine-, one-, and zero-parameter definitions with overlapping delimiters and
+multiblock token payloads; its 10, 100, and 1,000 iterations distinguish initial
+capacity growth from warmed reuse. All validate their results in TeX and time the
+same source in both interpreters. Churn defaults to
 1,000, 10,000, and 50,000 iterations; live growth uses 100, 1,000, and 2,500 to fit
 the native INITEX oracle's configured memory capacity. The input stays compact
 while execution grows. Its allocation adapter excludes the host input buffer and

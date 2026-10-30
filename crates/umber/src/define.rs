@@ -59,45 +59,45 @@ impl Engine<'_> {
         // Each parameter marker already lives in the immutable signature.
         // Walk between markers to build metadata directly in its final slice.
         let mut delimiter_start = prefix_end + 1;
-        let parameter_data = (0..parameters)
-            .map(|_| {
-                let start = delimiter_start;
-                let mut end = start;
-                while end < body_start - 1 {
-                    let token = tokens.get(end);
-                    if token.is_parameter() {
-                        break;
-                    }
-                    end += 1;
+        for _ in 0..parameters {
+            let start = delimiter_start;
+            let mut end = start;
+            while end < body_start - 1 {
+                let token = tokens.get(end);
+                if token.is_parameter() {
+                    break;
                 }
-                delimiter_start = end + 1;
-                let span = ArenaRange { start, end };
-                let len = (span.end - span.start) as usize;
-                let mut failure = vec![0; len].into_boxed_slice();
-                let mut matched = 0;
-                for index in 1..len {
-                    let token = tokens.get(span.start + index as u32);
-                    while matched > 0 && tokens.get(span.start + matched as u32) != token {
-                        matched = failure[matched - 1];
-                    }
-                    if tokens.get(span.start + matched as u32) == token {
-                        matched += 1;
-                    }
-                    failure[index] = matched;
+                end += 1;
+            }
+            delimiter_start = end + 1;
+            let span = ArenaRange { start, end };
+            let len = (span.end - span.start) as usize;
+            let failure_start = tokens.definition_mut().failure.len();
+            tokens
+                .definition_mut()
+                .failure
+                .resize(failure_start + len, 0);
+            let mut matched = 0;
+            for index in 1..len {
+                let token = tokens.get(span.start + index as u32);
+                while matched > 0 && tokens.get(span.start + matched as u32) != token {
+                    matched = tokens.definition_mut().failure[failure_start + matched - 1];
                 }
-                Parameter {
-                    delimiter: span,
-                    failure,
+                if tokens.get(span.start + matched as u32) == token {
+                    matched += 1;
                 }
-            })
-            .collect();
-        let owner = tokens.finish(Some(Definition {
-            prefix_end,
-            body,
-            parameters: parameter_data,
-            long,
-            uses_parameters,
-        }));
+                tokens.definition_mut().failure[failure_start + index] = matched;
+            }
+            tokens.definition_mut().parameters.push(Parameter {
+                delimiter: span,
+                failure_start,
+            });
+        }
+        tokens.definition_mut().prefix_end = prefix_end;
+        tokens.definition_mut().body = body;
+        tokens.definition_mut().long = long;
+        tokens.definition_mut().uses_parameters = uses_parameters;
+        let owner = tokens.finish();
         let id = owner.id;
         self.assign_meaning(
             cs,

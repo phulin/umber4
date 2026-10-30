@@ -187,7 +187,7 @@ pub(crate) struct Builder {
     tokens: Tokens,
     pool: Rc<Pool>,
     class: Class,
-    owner: Owner,
+    owner: Option<Owner>,
     base: *mut Token,
     next: *mut Token,
     limit: *mut Token,
@@ -195,7 +195,7 @@ pub(crate) struct Builder {
 }
 impl Builder {
     pub fn id(&self) -> u32 {
-        self.owner.id
+        self.owner.as_ref().unwrap().id
     }
     pub fn len(&self) -> u32 {
         self.start + Self::words(self.base, self.next)
@@ -297,7 +297,13 @@ impl Builder {
         // SAFETY: positions before the cursor are initialized.
         unsafe { self.tokens.read(position) }
     }
-    pub fn finish(mut self, definition: Option<Definition>) -> Owner {
+    pub fn definition_mut(&mut self) -> &mut Definition {
+        let owner = self.owner.as_ref().unwrap();
+        // SAFETY: the unpublished builder is the sole external owner and never
+        // exposes a Value view. Metadata stays in the slot even on failed builds.
+        unsafe { &mut (*owner.0.value.get()).definition }
+    }
+    pub fn finish(mut self) -> Owner {
         self.tokens.len = self.len();
         let remaining = Self::words(self.next, self.limit);
         if remaining != 0 {
@@ -309,23 +315,38 @@ impl Builder {
         // SAFETY: only this builder owns the unpublished value. get refuses
         // unpublished slots, and the builder exposes token copies and IDs only.
         // Moving the completed descriptor leaves every token cell in place.
-        let value = unsafe { &mut *self.owner.0.value.get() };
-        value.tokens = self.tokens;
-        value.definition = definition;
-        self.owner.0.published.set(true);
-        self.owner
+        self.return_storage();
+        let owner = self.owner.take().unwrap();
+        owner.0.published.set(true);
+        owner
+    }
+    fn return_storage(&mut self) {
+        let owner = self.owner.as_ref().unwrap();
+        // SAFETY: an unpublished builder is the sole external owner. No view
+        // of this slot's contents is exposed until finish marks it published.
+        let value = unsafe { &mut *owner.0.value.get() };
+        value.tokens = std::mem::take(&mut self.tokens);
+    }
+}
+impl Drop for Builder {
+    fn drop(&mut self) {
+        if self.owner.is_some() {
+            // Owner::drop then releases reservations and clears metadata through
+            // the same path as a published value, retaining reusable capacity.
+            self.return_storage();
+        }
     }
 }
 
 pub(crate) struct Value {
     pub id: u32,
     pub tokens: Tokens,
-    definition: Option<Definition>,
+    definition: Definition,
 }
 impl Value {
     #[inline]
     pub fn definition(&self) -> &Definition {
-        self.definition.as_ref().unwrap()
+        &self.definition
     }
 }
 struct Slot {
@@ -362,14 +383,20 @@ impl Slot {
         // SAFETY: called only by the last external owner. All borrowed views
         // have ended, and registered headers retain no reader of their contents.
         let value = unsafe { &mut *self.value.get() };
-        let tokens = std::mem::take(&mut value.tokens);
-        value.definition = None;
-        if let Some(pool) = self.pool.upgrade() {
-            if let Some(last) = tokens.last() {
-                // No reader remains. Reuse the whole final reservation only
-                // if later reservations have already left the bump tail.
-                pool.rewind(last, last.capacity);
-            }
+        value.definition.clear();
+        let pool = self.pool.upgrade();
+        if let Some(pool) = &pool
+            && let Some(last) = value.tokens.last()
+        {
+            // No reader remains. Reuse the whole final reservation only
+            // if later reservations have already left the bump tail.
+            pool.rewind(last, last.capacity);
+        }
+        // Release page owners before exposing this cleared slot for reuse.
+        value.tokens.first = None;
+        value.tokens.rest.clear();
+        value.tokens.len = 0;
+        if let Some(pool) = pool {
             pool.ids.borrow_mut().push(value.id);
         }
     }
@@ -396,7 +423,7 @@ impl Values {
                 value: UnsafeCell::new(Value {
                     id,
                     tokens: Tokens::default(),
-                    definition: None,
+                    definition: Definition::default(),
                 }),
                 published: Cell::new(false),
                 registered: Cell::new(true),
@@ -405,11 +432,14 @@ impl Values {
         }
         // Free IDs name cleared headers with only the registry reference.
         let slot = Rc::clone(&self.slots[id as usize]);
+        // SAFETY: a free slot has no external owner or published views. The
+        // builder takes its cleared storage and exclusively owns it until finish.
+        let value = unsafe { &mut *slot.value.get() };
         Ok(Builder {
-            tokens: Tokens::default(),
+            tokens: std::mem::take(&mut value.tokens),
             pool: Rc::clone(&self.pool),
             class,
-            owner: Owner(slot),
+            owner: Some(Owner(slot)),
             base: std::ptr::null_mut(),
             next: std::ptr::null_mut(),
             limit: std::ptr::null_mut(),

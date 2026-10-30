@@ -9,7 +9,7 @@ fn class_value(values: &mut Values, class: Class, count: usize, byte: u8) -> Own
     for _ in 0..count {
         builder.push(Token::other(byte)).unwrap();
     }
-    builder.finish(None)
+    builder.finish()
 }
 
 #[test]
@@ -26,7 +26,7 @@ fn builder_reads_and_publication_cover_only_initialized_words() {
             std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| builder.get(length))).is_err()
         );
     }
-    let owner = builder.finish(None);
+    let owner = builder.finish();
     assert_eq!(owner.tokens.len, 4097);
     assert_eq!(owner.tokens.get(4096), Token::other(0));
 }
@@ -38,7 +38,7 @@ fn builder_id_is_stable_and_unpublished_until_finish() {
     let id = builder.id();
     builder.push(Token::other(b'A')).unwrap();
     assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| values.get(id))).is_err());
-    let owner = builder.finish(None);
+    let owner = builder.finish();
     assert_eq!(owner.id, id);
     assert_eq!(values.get(id).tokens.get(0), Token::other(b'A'));
 }
@@ -112,7 +112,7 @@ fn owners_and_unpublished_builders_survive_registry_drop() {
     drop(values);
     drop(original);
     assert_eq!(alias.tokens.get(63), Token::other(b'A'));
-    let completed = builder.finish(None);
+    let completed = builder.finish();
     assert_eq!(completed.tokens.get(0), Token::other(b'B'));
     drop(alias);
     assert_eq!(completed.tokens.get(0), Token::other(b'B'));
@@ -129,8 +129,8 @@ fn published_windows_survive_interleaved_builders_and_reuse() {
         a.push(Token::other(index as u8)).unwrap();
         b.push(Token::other((index + 3) as u8)).unwrap();
     }
-    let a = a.finish(None);
-    let b = b.finish(None);
+    let a = a.finish();
+    let b = b.finish();
     for index in 0..8200 {
         assert_eq!(a.tokens.get(index), Token::other(index as u8));
         assert_eq!(b.tokens.get(index), Token::other((index + 3) as u8));
@@ -196,7 +196,7 @@ fn publication_returns_only_the_unused_bump_tail() {
     first.push(Token::other(b'A')).unwrap();
     let mut second = values.builder(Class::Transient).unwrap();
     second.push(Token::other(b'B')).unwrap();
-    let first = first.finish(None);
+    let first = first.finish();
     assert_eq!(
         values.pool.active[Class::Transient as usize]
             .borrow()
@@ -205,7 +205,7 @@ fn publication_returns_only_the_unused_bump_tail() {
             .1,
         128
     );
-    let second = second.finish(None);
+    let second = second.finish();
     assert_eq!(
         values.pool.active[Class::Transient as usize]
             .borrow()
@@ -349,7 +349,7 @@ fn both_classes_keep_unpublished_and_published_owners_after_teardown() {
     unfinished.push(Token::other(b'U')).unwrap();
     drop(values);
     drop(unfinished);
-    let completed = building.finish(None);
+    let completed = building.finish();
     drop(transient);
     assert_eq!(durable.tokens.get(96), Token::other(b'D'));
     assert_eq!(completed.tokens.get(0), Token::other(b'B'));
@@ -404,4 +404,106 @@ fn bounded_cache_releases_excess_records_and_has_no_teardown_cycle() {
     );
     drop(values);
     assert!(pages.iter().all(|page| page.strong_count() == 0));
+}
+
+#[test]
+fn multiblock_metadata_reuses_capacity_without_retaining_old_pages() {
+    let mut values = Values::default();
+    let survivor = class_value(&mut values, Class::Durable, 97, b'S');
+    let first = value(&mut values, WORDS * 3, b'A');
+    let id = first.id;
+    let descriptors = first.tokens.rest.as_ptr();
+    let capacity = first.tokens.rest.capacity();
+    drop(first);
+    // SAFETY: the registered free slot is unpublished and has no external owner.
+    let cleared = unsafe { &*values.slots[id as usize].value.get() };
+    assert!(cleared.tokens.first.is_none());
+    assert!(cleared.tokens.rest.is_empty());
+    assert_eq!(cleared.tokens.rest.capacity(), capacity);
+    for _ in 0..16 {
+        let next = value(&mut values, WORDS * 3, b'B');
+        assert_eq!(next.id, id);
+        assert_eq!(next.tokens.rest.as_ptr(), descriptors);
+        assert_eq!(next.tokens.get((WORDS * 3 - 1) as u32), Token::other(b'B'));
+    }
+    assert_eq!(survivor.tokens.get(96), Token::other(b'S'));
+}
+
+#[test]
+fn failed_builder_returns_metadata_and_can_outlive_registry() {
+    let mut values = Values::default();
+    let mut failed = values.builder(Class::Durable).unwrap();
+    failed.extend(&[Token::other(b'X'); WORDS * 2]).unwrap();
+    failed.definition_mut().parameters.push(Parameter {
+        delimiter: ArenaRange { start: 0, end: 3 },
+        failure_start: 0,
+    });
+    failed.definition_mut().failure.extend([0, 0, 1]);
+    let id = failed.id();
+    let pieces = failed.tokens.rest.as_ptr();
+    let parameters = failed.definition_mut().parameters.as_ptr();
+    let failures = failed.definition_mut().failure.as_ptr();
+    drop(failed);
+    let mut next = values.builder(Class::Durable).unwrap();
+    assert_eq!(next.id(), id);
+    assert!(next.tokens.first.is_none());
+    assert!(next.tokens.rest.is_empty());
+    assert!(next.definition_mut().parameters.is_empty());
+    assert!(next.definition_mut().failure.is_empty());
+    assert_eq!(next.tokens.rest.as_ptr(), pieces);
+    assert_eq!(next.definition_mut().parameters.as_ptr(), parameters);
+    assert_eq!(next.definition_mut().failure.as_ptr(), failures);
+    next.push(Token::other(b'Y')).unwrap();
+    next.definition_mut().parameters.push(Parameter {
+        delimiter: ArenaRange { start: 0, end: 1 },
+        failure_start: 0,
+    });
+    next.definition_mut().failure.push(0);
+    drop(values);
+    let owner = next.finish();
+    let alias = owner.clone();
+    assert_eq!(owner.tokens.get(0), Token::other(b'Y'));
+    drop(owner);
+    assert_eq!(alias.definition().parameters[0].delimiter.end, 1);
+    assert_eq!(alias.definition().failure, [0]);
+    assert_eq!(alias.tokens.get(0), Token::other(b'Y'));
+}
+
+#[test]
+fn alternating_definition_metadata_reaches_a_fixed_capacity() {
+    let mut previous = None;
+    for iterations in [20, 200] {
+        let source = format!(
+            r"\catcode123=1 \catcode125=2 \catcode35=6\relax
+\def\step{{
+\def\actual##1abab##2xyxy##3##4##5##6##7##8##9{{##9##1##2}}
+\edef\result{{\actual aababBxxyxyCDEFGHI}}
+\def\wanted{{IaBx}}\ifx\result\wanted\else\undefined\fi
+\def\actual##1aba{{##1}}\edef\result{{\actual aaba}}
+\def\wanted{{a}}\ifx\result\wanted\else\undefined\fi
+\def\actual{{zero}}\advance\count0by1\relax
+\ifnum\count0<{iterations} \expandafter\step\fi}}
+\step\end"
+        );
+        let mut engine = crate::Engine::new(source.as_bytes());
+        engine.run_input().unwrap();
+        let capacities: Vec<_> = engine
+            .values
+            .slots
+            .iter()
+            .map(|slot| {
+                // SAFETY: this test reads initialized slots with no engine mutation.
+                let value = unsafe { &*slot.value.get() };
+                (
+                    value.definition.parameters.capacity(),
+                    value.definition.failure.capacity(),
+                )
+            })
+            .collect();
+        if let Some(previous) = &previous {
+            assert_eq!(&capacities, previous);
+        }
+        previous = Some(capacities);
+        assert_eq!(engine.scalars.counts()[0].value, iterations);
+    }
 }
