@@ -83,8 +83,9 @@ alongside the [pdfTeX implementation](https://github.com/TeX-Live/texlive-source
 
 A paragraph break performed while entering a display does not yield from the
 middle of `init_math`. The primitive returns after establishing its math group;
-that open group excludes a checkpoint. A later eligible paragraph returns to the
-normal outer handoff. No display-layout locals need resumable representation.
+that unfinished math construction excludes a checkpoint. Once execution returns to
+eligible external vertical mode, the driver can take a checkpoint. Display-layout
+locals have already disappeared.
 
 ## 4. Alignment state and templates
 
@@ -155,11 +156,10 @@ Temporary atoms, unused choice lists, and alignment measurement records can be
 released once their last operation completes. Group save records release their
 binding owners separately from the resulting list.
 
-All unfinished math/alignment construction has an open semantic group. Therefore
-the fixed end-of-paragraph/no-open-groups checkpoint excludes its construction
-state. Converted inline math and completed rows are ordinary retained TeX nodes;
-they follow the node-store snapshot rules. A missing resource still unwinds and
-replays from the preceding checkpoint, rather than suspending conversion.
+Unfinished math/alignment construction excludes checkpoint eligibility. Ordinary
+assignment groups alone do not. Once conversion/finalization returns to eligible
+external vertical mode, completed material follows the node-store snapshot rules.
+A missing resource unwinds and replays from the preceding checkpoint.
 
 ## 7. Focused compatibility and cost checks
 

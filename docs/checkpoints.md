@@ -1,33 +1,37 @@
-# Paragraph checkpoints and restart
+# Quiescent checkpoints and restart
 
 This proposal develops the in-memory checkpoint boundary in
 [architecture.md](architecture.md). A checkpoint resumes ordinary execution from
 the outer loop. It does not serialize Rust calls, scanners, or the expansion
 machine's intermediate work.
 
-## 1. The boundary is fixed
+## 1. Eligibility and cadence
 
-The boundary is the end of a paragraph with no open groups. Line breaking and
-synchronous paragraph-finishing work have returned, their working memory has
-been released, and the driver is about to request the next command. Closing a
-group alone does not create a checkpoint. A paragraph ending inside a group is
-ineligible; execution continues to a later eligible paragraph.
+A checkpoint is eligible when all of the following hold:
 
-The outer driver owns the handoff. Paragraph finishing reports completion to it
-through ordinary return values. If page building installs an output routine,
-that routine's semantic group is open and prevents a checkpoint at this handoff.
-The interpreter continues executing it through the same loop. Nested scanners
-and expansion helpers never call the scheduler.
+- Control is at the outer driver, before requesting the next command; no
+  already-read command or unfinished scanner remains in a Rust local.
+- The semantic nest is in external vertical mode, with no unfinished paragraph,
+  box, math, alignment, insertion construction, or output routine.
+- Operation scratch has been released. Persistent owners and all pending input
+  are represented in document state.
 
-This makes the boundary simple to recognize without preserving scanner progress.
-It does not imply empty input or a finished page. A file can still be open, a
-macro body can have remaining tokens, and a conditional can span paragraphs.
-Those are persistent TeX state.
+Ordinary brace and `\begingroup` assignment groups may remain open. Their boundary
+records, saved values, assignment levels, and after-group tokens are snapshot
+state. Construction groups remain excluded. This permits paragraphs inside ordinary
+LaTeX environments without making scanners resumable.
 
-Initialization also provides a restart root before document execution, after the
-chosen format is ready. It is the fallback when an edit or resource request
-precedes the first paragraph checkpoint. Completion returns a result normally;
-it does not introduce another mid-execution yield point.
+Paragraph completion is the preferred cadence. The driver can also checkpoint
+after an output routine closes, after returning to eligible vertical mode from a
+completed construct, or during preamble assignments. A coarse work budget requests
+another checkpoint; eligibility determines when it can actually be taken. Closing
+an arbitrary group does not by itself establish eligibility. Nested helpers never
+create snapshots.
+
+An unfinished page, open file, remaining macro body, or conditional stack is valid
+persistent state. Initialization supplies a restart root after format setup, before
+document execution. It remains the fallback for work preceding the first eligible
+checkpoint. Completion returns a result normally.
 
 ## 2. Retain roots according to their storage
 
@@ -40,13 +44,14 @@ The checkpoint has a compact scalar state and owners for subsystem roots:
 | Mutable nodes and unfinished page state       | Retain the node-store root and list roots                                 |
 | Pending token input                           | Copy cursor positions; share immutable sequences and argument packets     |
 | File and read-stream input                    | Copy positions and lexical state; retain current lines and resource views |
-| Conditional nesting and other semantic stacks | Copy their compact entries                                                |
+| Ordinary groups and conditional stacks        | Copy compact records and retain saved payload owners                     |
 | Document backend and generated streams        | Retain their versioned roots, handle positions, and buffers               |
 | Completed pages and diagnostics               | Retain immutable prefixes                                                 |
 
-The group restoration stack and paragraph algorithm scratch are empty at this
-boundary. Process identities and reusable immutable resources are outside the
-snapshot; rollback preserves them. Restored meanings and input cursors retain
+Operation scratch is empty at this boundary. Ordinary group save records can be
+nonempty and retain their saved owners independently of the live stack. Session
+identities and reusable immutable resources are outside the snapshot; rollback
+preserves them. Restored meanings and input cursors retain
 their immutable definitions and token values. [storage.md](storage.md) defines the
 table, node, and token ownership rather than assigning every state field the
 same persistence strategy.
@@ -54,7 +59,9 @@ same persistence strategy.
 Start by copying the small root directories as well as their scalar metadata.
 If directory copying dominates checkpoint cost, change that directory's
 representation. Snapshot creation does not traverse all nodes or recopy all
-replacement tokens.
+replacement tokens. Append-only output and descriptor histories share blocks and
+retain an endpoint, rather than copying their whole prefix into each checkpoint.
+Snapshot records and copied arrays use reusable allocation blocks.
 
 ## 3. Pending input is not a continuation
 
@@ -93,7 +100,7 @@ Immutable definitions and token lists follow the retained roots. Dropping younge
 checkpoints and the abandoned live state releases their owners; values shared
 with an older checkpoint remain allocated. Empty backing chunks return to a
 bounded reuse pool. Repeated preamble execution can therefore reclaim obsolete
-values even before the first paragraph checkpoint, while names remain available
+values even before the first eligible checkpoint, while names remain available
 for replay.
 
 Output pages, diagnostics, and generated-file contents become the checkpoint's
@@ -169,11 +176,23 @@ their prefixes rather than duplicating their effects. Immutable resources fetche
 for the abandoned suffix stay cached for the replay. Request identity includes
 the logical operation and input view needed to supply the same answer.
 
-Scheduler yields and cooperative cancellation occur only at checkpoint handoffs.
-Running the browser engine in a worker handles long intervals without a boundary;
-terminating a worker is a host action, not a resumable interpreter state.
-Checkpoint retention may be less frequent than eligible boundaries, but a yield
-retains the state from that boundary.
+Normal scheduler yields occur at eligible handoffs and retain that boundary's
+state. Cancellation checks are independent: expansion dispatch and long scanning,
+skipping, layout, and output loops check at coarse work intervals. An interruption
+unwinds ordinary calls and restores the last checkpoint; it creates no new resume
+point. Keep per-token host calls and clock reads out of these checks.
+
+A host can expose a cancellation flag when its execution environment supports it.
+Otherwise a configured work limit can terminate an attempt and return control.
+Browser message delivery alone cannot interrupt synchronous Wasm in the same
+worker. Worker termination remains a fallback. A work-limit interruption is not
+an automatic replay loop: repeating an unchanged budget before any new checkpoint
+would repeatedly discard the same work. The caller must change the limit/input or
+stop that attempt.
+
+Prepared bundles and prefetching dependencies from the previous successful run
+reduce sequential resource misses. Prefetch does not count as a TeX observation;
+only executed resource operations affect restart validation.
 
 ## 7. Retention and cost
 
@@ -189,9 +208,9 @@ Allocation between checkpoints remains linear and mostly bump-based;
 snapshot sharing changes only the stores that are subsequently mutated.
 
 The useful correctness comparison is a resumed run versus a fresh run on the
-same edited input view and retained run environment. Include a macro spanning
-paragraphs, a conditional spanning
-paragraphs, a saved box, a partially accumulated page, a generated file read back,
-an append after a source's observed EOF, and several missing resources discovered
-before the first paragraph or during shipout. These cases expose
-the retained roots directly without changing the checkpoint boundary.
+same edited input view and retained run environment. Include a macro and a
+conditional spanning paragraphs, an ordinary open group with local/global/local
+assignments and after-group tokens, a saved box, an unfinished page, generated-file
+readback, an append after observed EOF, and resource misses before the first
+checkpoint or during shipout. Check interruption during paragraph-free expansion
+and long scans separately from successful checkpoint creation.

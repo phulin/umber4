@@ -12,7 +12,7 @@ answer or an ordinary error/request. It does not suspend a scanner.
 
 Acquire the chosen Umber format and its startup resources during setup, before
 creating the initialization restart root. Pending setup acquisition returns to
-the host directly; paragraph-checkpoint replay applies after document execution
+the host directly; checkpoint replay applies after document execution
 starts.
 
 The native adapter can search configured paths and load files synchronously.
@@ -21,6 +21,12 @@ is absent from that bundle but can be acquired, it returns a request; the sessio
 unwinds, restores its preceding checkpoint, and returns control to the host.
 The host supplies the answer and replay enters the normal execution loop.
 See [checkpoints.md](checkpoints.md).
+
+Prepare the format's normal resource bundle before execution and prefetch resources
+used by the previous successful run. Acquired bytes remain cached across replay;
+prefetching creates no TeX input observation. Sequential misses before a checkpoint
+can otherwise repeat an increasing preamble prefix. Replay remains the fallback
+for new dependencies, without speculative execution of TeX.
 
 Missing, pending acquisition, and found-empty are different outcomes. TeX's
 file-existence checks and EOF behavior require that distinction. An adapter's
@@ -66,13 +72,16 @@ its next-write position is that offset plus the pending length. Readers retain
 their consumed position, refill position, buffered window, and EOF state.
 
 Represent visible file contents as retained immutable byte ranges followed by a
-uniquely owned `Vec<u8>` tail. Ordinary appends write into that tail. A checkpoint
-moves a changed, nonempty tail into shared ownership and starts a fresh tail;
-it retains range descriptors and lengths rather than copying accumulated bytes.
-Freeze the vector without shrinking or repacking its allocation. Finalized
+uniquely owned pooled byte-block tail. Ordinary appends write into that tail. A
+checkpoint moves a changed, nonempty tail into shared ownership and obtains another
+pooled tail; it retains descriptors and lengths instead of copying accumulated
+bytes. Freeze initialized bytes without shrinking or repacking their allocation. Finalized
 stream/page publication can also seal a tail after its patches finish, then start
-a fresh unique tail. A flat range list is sufficient initially, using the same
-byte owners as page output.
+a fresh unique tail. Range descriptors themselves use shared append blocks with an
+endpoint per file version, using the same mechanism as page records. A branch
+shares complete blocks and copies at most its partial descriptor tail. Copying a
+growing flat range list at every checkpoint would make retained metadata quadratic
+in checkpoint count despite sharing all byte payloads.
 
 Writes wholly within the unique tail update it directly. This includes PDF
 stream-length patches during normal output; see
@@ -82,15 +91,25 @@ a unique contiguous buffer, then applies the change there. Truncation installs
 empty contents without copying the old prefix. This gives unusual alias overwrites
 a simple cold path while normal append and tail patching remain direct.
 
-The selected host profile determines when pending writer bytes become visible.
+The initial logical I/O profile is deterministic byte-oriented batch I/O. Readers
+refill in 4 KiB windows; writers commit full 4 KiB buffers and flush the remainder
+on close or an explicit flush/seek. Large writes follow the same block rule.
+Text line preparation recognizes LF, CRLF, and CR as described in [input.md](input.md).
+Path resolution and queried metadata are adapter-supplied answers. This fixes
+Umber's visibility contract on native and Wasm; it does not claim identical
+buffering to every host libc. Alias fixtures must use a matching reference profile
+before claiming exact compatibility for those cases. Buffer size is a profile
+constant, not discovered from filesystem block sizes during replay.
+
+The profile determines when pending writer bytes become visible.
 `\immediate\write` executes immediately but does not inherently flush.
 Close flushes; seek/flush operations preserve the profile's visibility points.
 At an append flush, transfer a completed buffer into a compatible unique tail,
 preserving writable stream headers until their patches finish. Otherwise copy
 only those pending bytes into the tail. Pending writer bytes and visible file
 bytes are separate state. Checkpoint sealing changes ownership only: it leaves
-pending writes unflushed. Copy small handle buffers and retain their immutable
-range owners at checkpoints.
+pending writes unflushed. Copy small handle buffers into pooled snapshot storage
+and retain their immutable range owners at checkpoints. Handle records and byte-owner metadata are pooled too.
 
 `\openout` truncates the shared file at its execution point. Other handles keep
 their offsets, pending bytes, and read-ahead. A writer flushing at an offset beyond
@@ -180,8 +199,9 @@ primitives implemented by the layout engine.
 
 Keep native and Wasm on the same Rust engine and data layout wherever practical.
 Byte loading, publication, and job scheduling are adapter responsibilities.
-The browser runs the engine in a worker and returns at checkpoints; Rust's
-`wasm32-unknown-unknown` target provides containers and allocation but not ordinary
+The browser runs the engine in a worker and normally yields at eligible checkpoints;
+interruption unwinds to the last checkpoint as described in
+[checkpoints.md](checkpoints.md). Rust's `wasm32-unknown-unknown` target provides containers and allocation but not ordinary
 filesystem services.
 See the [Rust target documentation](https://doc.rust-lang.org/stable/rustc/platform-support/wasm32-unknown-unknown.html).
 

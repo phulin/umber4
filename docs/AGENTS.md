@@ -5,7 +5,7 @@ Read the root `AGENTS.md` first.
 - `architecture.md` is the high-level design proposal. It records goals,
   recommended boundaries, tradeoffs, and unresolved design questions.
 - `expansion.md` develops the input and expansion loops, token-source cursors,
-  argument capture and lifetime, and their paragraph-checkpoint behavior.
+  argument capture and lifetime, and their checkpoint behavior.
 - `storage.md` proposes stores, allocation primitives, mutable roots, and
   ownership transfers by semantic lifetime.
 - `execution.md` develops primitive dispatch, meanings, assignment restoration,
@@ -13,9 +13,8 @@ Read the root `AGENTS.md` first.
 - `input.md` develops character scanning, line lookahead and its invalidation,
   name lookup, operand scanners, and retained file cursors.
 - `fast-lexing.md` measures a whole-file lexer prototype under fixed category
-  codes and proposes cross-line lookahead, regime IDs, and a lexing thread with
-  worker-local name IDs.
-- `checkpoints.md` develops paragraph handoff, heterogeneous snapshots,
+  codes and explores deferred cross-line lookahead and worker lexing experiments.
+- `checkpoints.md` defines quiescent driver handoff, heterogeneous snapshots,
   in-memory restore, and conservative prefix restart after edits.
 - `resources.md` develops native/Wasm byte acquisition, shared input buffers,
   generated-file append storage, stream handles, diagnostics, and replay.
@@ -30,11 +29,11 @@ Read the root `AGENTS.md` first.
 - `formats.md` develops bootstrap, Umber format export/read, shared semantic
   baselines, and document startup.
 - `performance.md` develops native/Wasm hot paths, allocation experiments,
-  comparable upstream measurements, and compatibility evidence.
+  comparable upstream measurements, and compatibility checks.
 - `mvp.md` defines the first executable expansion/register slice, supported
   primitives, compatibility fixtures, and same-source performance comparison.
 - `mvp-results.md` records the implemented slice, native measurements, allocation
-  evidence, and reproduction commands.
+  measurements, and reproduction commands.
 - `expansion-mvp.md` specifies the broader parsing/expansion slice and corpus
   benchmark contracts.
 - Distinguish requirements, proposed choices, measured results, and open questions.

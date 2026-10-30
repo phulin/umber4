@@ -9,8 +9,8 @@ boundary in [checkpoints.md](checkpoints.md).
 
 Create the profile's primitive identities, initial meanings, character tables,
 default parameters, null font, and other initial values through compact bootstrap
-tables. Primitive IDs are canonical process identities; their initial meanings
-are values in the format/document state.
+tables. Primitive IDs have canonical reserved roles within each session; their
+initial meanings are values in the format/document state.
 
 Initialization mode executes format-building TeX with the same expansion,
 assignment, grouping, and layout code as ordinary documents. It enables the
@@ -28,7 +28,7 @@ Resource acquisition for setup precedes the document's initialization restart
 root. A pending request returns to the host; the format build restarts from
 bootstrap with the newly supplied resources. Reuse the setup environment and
 ordered answer history, rewinding its consumption cursor. Drop abandoned mutable
-state, diagnostics, and generated output with the temporary stores; process
+state, diagnostics, and generated output with the temporary stores; session
 interning and acquired resources remain available. Reading an exported format
 makes this rebuilding unnecessary for ordinary startup.
 
@@ -59,6 +59,11 @@ Release setup scratch and wholly unreferenced segments where practical. Export
 writes the retained semantic data; overwritten setup history need not become a
 permanent part of the file.
 
+A completed in-memory baseline owns an immutable name-ID prefix. Each new session
+adopts that prefix unchanged and appends new names to its own extension. Shared
+baseline tokens therefore use the same IDs in every adopting session; loading a
+new baseline starts fresh roots rather than mixing unrelated ID namespaces.
+
 Each document gets independent mutable roots over the baseline, using the
 per-type storage in [storage.md](storage.md). Small tables can copy eagerly;
 larger table/node chunks become writable on mutation. Immutable definitions and
@@ -76,7 +81,7 @@ regenerated from its TeX sources.
 
 File-local identities describe ordinary names, active characters, single-character
 control sequences, frozen commands, and permanent font selectors. Ordinary names
-resolve through the process interner when loading. Private commands map by their
+resolve into the baseline name directory when loading. Private commands map by their
 reserved role; permanent selectors map by font identity, independently of their
 printable spelling. A token captured from `\the\font` must keep selecting its
 original font after the named selector changes.
@@ -97,7 +102,7 @@ The writer can enumerate retained objects and stream their records and immutable
 ranges directly to the output builder. The reader resolves IDs and initializes
 records in their final stores. Rewrite token identities directly into destination
 chunks while decoding; remapping is a one-time startup cost. Encoded counts size
-file-ID maps and object stores; meanings install at the mapped process IDs, with
+file-ID maps and object stores; meanings install at the mapped baseline IDs, with
 undefined gaps remaining lazy. Use compact fixups where forward references need
 them. An intermediate tree of decoded objects adds no value here.
 
@@ -115,7 +120,7 @@ documents identically.
 
 The document gets an initialization restart root before reading its first source
 tokens. That root is the fallback for an edit or missing resource before the first
-eligible paragraph. Later checkpoints and rollback use the same live stores and
+eligible checkpoint. Later checkpoints and rollback use the same live stores and
 outer loop as [execution.md](execution.md).
 
 ## 5. Cache identity and ownership
@@ -133,14 +138,15 @@ the baseline, dropping its old document checkpoints, and creating a new
 initialization root. Ordinary document edits can reuse the same baseline.
 
 Modest format storage can have cache/process lifetime. Larger or multiple formats
-can use shared owners and ordinary cache eviction. The process interner remains
-append-only even after eviction; each document supplies the meanings for its IDs,
-with default-undefined behavior for identities beyond its table.
+can use shared owners and ordinary cache eviction. The session interner remains
+append-only across restores and releases at session teardown. Cache entries must
+not retain a dead session's name extension. Baseline-owned names remain available
+with their shared token data. Restored meanings beyond their table remain undefined.
 
 ## 6. Useful comparisons
 
 Build plain TeX and real pdfLaTeX formats from source. Export and reload each in a
-fresh process with a different interner history, then compare document behavior
+fresh process and after unrelated sessions, then compare document behavior
 against the source-built baseline and upstream INITEX/format loading. Include
 private commands, captured font selectors, shared definitions, mutable font
 aliases, hyphenation, saved boxes, and pending PDF forms.

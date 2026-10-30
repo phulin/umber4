@@ -23,8 +23,8 @@ The traversal writes commands or content bytes directly into the page's output
 chunks. It records resource references as needed, without constructing a second
 heap graph of every glyph placement. A small typed placement helper can share
 dimension logic between backends, while each backend has its own compact emission
-path. Preserve nested-box offsets, running rules, leaders, and selected page
-dimensions.
+path. Output bytes and resource descriptors use pooled append storage. Preserve
+nested-box offsets, running rules, leaders, and selected page dimensions.
 
 The main DVI/PDF file uses the same versioned file/handle contract as generated
 streams. Open, truncate, and obtain destination acceptance at the upstream
@@ -55,8 +55,9 @@ extensions, in the
 A completed page owns emitted content chunks, its count-register values and
 dimensions, and immutable resource references. The document backend owns page
 ordering, font/object numbering, resource-use state, and the other data required
-for final serialization. Mutable backend tables follow the heterogeneous snapshot
-choices in [storage.md](storage.md).
+for final serialization. Mutable backend tables use pooled COW records from
+[storage.md](storage.md). Page/resource descriptors use shared append blocks and
+an endpoint, so each checkpoint does not copy the growing page history.
 Running links/threads, color stacks, and output-mode/init flags also belong to
 backend roots across pages. Continuation payloads own their retained data after
 the originating page nodes disappear; any retained node IDs use the matching

@@ -188,8 +188,10 @@ The resulting lines outlive the paragraph scratch arena.
 
 Once the lines and diagnostics are produced, release all active/passive records,
 word work buffers, and pass scratch. Return to execution and page building through
-ordinary calls. At the outer no-open-groups paragraph handoff, no line-breaker
-continuation survives; the resulting nodes can remain on the unfinished page.
+ordinary calls. At an eligible outer-driver handoff, the resulting nodes can
+remain on the unfinished page, and ordinary group save records can remain live.
+Long line-breaking/hyphenation loops support coarse interruption checks that unwind
+to the last checkpoint and release their scratch.
 
 ## 9. What to measure and compare
 

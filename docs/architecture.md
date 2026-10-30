@@ -26,21 +26,23 @@ and arenas matched to the lifetimes of TeX objects. Take checkpoints at quiescen
 boundaries where temporary execution state has already disappeared. Resume by
 restoring the persistent document state and entering the same outer driver loop.
 
-The quiescence boundary is the end of a paragraph with no open groups. Paragraph
-working memory has been released and group-local bindings have been restored
-before a snapshot is taken. This keeps the execution model simple and reduces
-the state that checkpoints retain.
+Checkpoint eligibility is a property of machine state: the outer driver is about
+to read a command in external vertical mode, no construction or output routine is
+unfinished, and operation scratch is empty. Ordinary assignment groups may remain
+open; their save records are explicit state. Paragraph endings are the preferred
+cadence, with additional opportunities after output routines and during preamble
+execution. [checkpoints.md](checkpoints.md) defines the predicate and scheduling.
 
-Execution proceeds linearly between checkpoints, making bump allocation a natural
-fit for much of the data created along the way. Storage choices follow each
-object's lifetime and mutability: process-lifetime interned names, rewindable
-scratch, immutable append storage, copied tables, copy-on-write data, and
-reference-counted heap objects can all coexist. The [storage design](storage.md)
-develops the approach for each type.
+The system allocator supplies backing chunks and occasional capacity growth.
+Ordinary interpretation creates and releases objects through reusable stores
+selected by semantic lifetime. This applies to headers and descriptors as well as
+tokens and nodes: no routine system allocation per invocation, definition, glyph,
+or break candidate. [storage.md](storage.md) defines the storage contract.
 
 Build data directly in its destination storage and reuse existing immutable
-ranges. Transfers can move ownership of storage while leaving its contents
-in place.
+ranges. Transfers can move ownership without moving contents. Copy a small escaping
+range when retaining its backing would keep disproportionate dead storage alive;
+zero-copy is an optimization, not a semantic requirement.
 
 ## 3. System boundaries
 
@@ -63,7 +65,8 @@ provide resources and expose the session to their callers. Layout and output are
 modules with direct access to the data they need; crate boundaries can follow as
 those interfaces become clear.
 
-The portable implementation uses ordinary Rust containers and allocation.
+The portable implementation uses the same lifetime-based stores on both targets.
+Reusable Rust containers remain suitable for stacks, tables, and chunk directories.
 Filesystem access and resource acquisition belong to the adapters. For the
 browser target, `wasm32-unknown-unknown`, Rust's standard library provides
 containers but lacks working filesystem and thread-spawn services.
@@ -74,8 +77,8 @@ See the [Rust target documentation](https://doc.rust-lang.org/stable/rustc/platf
 Scanning a number, matching macro arguments, expanding a command, constructing a
 paragraph, and running an output routine should primarily be Rust functions with
 local variables and ordinary calls. Their progress is encoded in the Rust stack.
-The outer interpreter loop regains control when an operation finishes. At the
-end of a paragraph, it can take a checkpoint when no groups remain open.
+The outer interpreter loop regains control when an operation finishes. It considers
+checkpoint eligibility there, after consuming any already-read command.
 
 Keep persistent data where TeX itself needs it: current meanings, registers,
 source positions, saved values for groups, and unfinished page material. Token
@@ -117,12 +120,13 @@ definitions, working data, and output into bump regions as they are produced.
 Objects with different lifetimes or mutation patterns can use different stores.
 The following are the main expected lifetimes.
 
-### Process lifetime: identities and reusable immutable data
+### Session lifetime: identities; cache lifetime: reusable immutable data
 
 Intern control-sequence names and other useful canonical token identities in a
-process-owned append-only store. Common names are small and likely to recur
-across documents and edits. Character tokens can usually be encoded directly;
-individual token occurrences remain in their containing lists or input buffers.
+session-owned append-only store. Names remain stable across edits and restores
+within that session. Session-created names release at session teardown; baseline
+names live with the format cache. Character tokens are encoded directly; token
+occurrences remain in their containing lists or input buffers.
 
 Interned identities remain stable when execution rolls back. If an edit occurs
 20% into a document, names discovered in the remaining 80% stay available and can
@@ -130,9 +134,12 @@ be reused during recompilation. A checkpoint captures document-specific meanings
 while the interner continues growing independently. An identity introduced after
 a checkpoint starts with the default meaning when that checkpoint is restored.
 
-Loaded font metrics, immutable font bytes, and reusable format data are also good
-candidates for process-owned caches. The process pays for each useful immutable
-resource once and subsequent compilations share it.
+Loaded font metrics, immutable font bytes, and reusable format data can use bounded
+process caches. Cache lifetime is separate from session identity lifetime. A shared
+in-memory format carries an immutable name-ID prefix adopted by its sessions, so
+its token bodies can be shared without rewriting IDs. New names belong to each
+session's extension. Loading a format file constructs that baseline and remaps its
+file-local names once. Process-wide mutable interning is not required.
 
 ### Call and invocation lifetime: scanning and expansion scratch
 
@@ -150,9 +157,10 @@ The scratch region then rewinds as part of returning from the operation.
 
 ### Group lifetime: local bindings and restoration data
 
-The save stack records the values restored when a group ends. Group-local
-restoration records and temporary construction buffers can occupy a stack arena:
-closing the group restores bindings and rewinds its storage in the same operation.
+The save stack records the values restored when a group ends. Live restoration
+records use reusable stack storage. A checkpoint copies ordinary group records
+and retains their saved owners in snapshot storage; closing the live group cannot
+invalidate that copy. Temporary construction buffers use marked scratch.
 
 The values named by those bindings have their own lifetimes. A macro replacement
 list lives in the definition store, so an invocation can keep reading it after
@@ -178,19 +186,20 @@ Immutable macro bodies and token lists are built in stable bump-allocated chunks
 Bindings, saved values, active sources, captured ranges, and checkpoints retain
 the values they need. Redefinition changes a table entry and releases its old
 owner; an active invocation or retained checkpoint keeps the old body available.
-After the last owner disappears, its metadata is reclaimed and empty chunks can
-be recycled. The MVP uses non-atomic shared ownership at these boundaries, while
-token loops advance ordinary pointers. Builders publish their destination
-storage without copying it. [storage.md](storage.md) develops the allocator and
-its lifetime rules.
+After the last owner disappears, its metadata and reservations become reusable.
+Non-atomic ownership counters live in pooled headers; token loops advance ordinary
+pointers. Durable definitions and transient expansion data use separate allocation
+classes over the same allocator implementation. Builders publish destination
+storage directly. The MVP's remaining allocation work is described in
+[mvp.md](mvp.md); [storage.md](storage.md) defines the intended final model.
 
 Boxes, marks, insertions, and unfinished page lists belong to stores organized
 around their semantic owners. A box register owns its box until replacement or
 transfer; page construction owns material until it is shipped or transferred;
 marks can remain useful on later pages. Much of this material can be bump-allocated
-as execution proceeds. Values that are mutated or shared across checkpoints may
-use copy-on-write storage, explicit copies, or reference-counted heap allocation
-for now. [storage.md](storage.md) develops these choices by data type.
+as execution proceeds. Mutable nodes and tables use chunk-level copy-on-write;
+uncommon payloads use typed pooled records or larger dedicated blocks. Shared
+ownership does not require an individually heap-allocated wrapper.
 
 ### Page and result lifetime: completed output
 
@@ -200,9 +209,9 @@ result and relevant checkpoints. The interpreter's page-building storage can the
 be recycled as that work completes. Saved boxes and other independently owned
 material continue in their own stores.
 
-These lifetimes suggest a mix of allocation primitives: bump regions,
-rewindable scratch arenas, dense arrays, copy-on-write storage, and individually
-allocated shared objects where those are convenient.
+These lifetimes use a small set of allocation primitives: scratch arenas, pooled
+headers and metadata blocks, immutable token storage, mutable COW chunks, and
+append storage. Growing their backing capacity may call the system allocator.
 A custom arena layout or bump allocator may use unsafe code in a narrow primitive.
 Its documentation should explain why its allocation layout, references, and
 reclamation are valid, so callers can use a simple API with clear lifetimes.
@@ -211,23 +220,24 @@ See [storage.md](storage.md) for allocation and mutable roots and
 
 ## 6. Quiescent checkpoints
 
-Take checkpoints at the end of a paragraph with no open groups. Paragraph work
-has finished and group restoration is complete. File input positions and
-unfinished page material persist as ordinary document state.
+Take checkpoints at eligible outer-driver boundaries, preferably after paragraphs.
+Layout work has finished. File input positions, ordinary group save records, and
+unfinished page material persist as document state.
 
 Replacement-list cursors and their argument storage can also remain as pending
 input. Their checkpoint behavior is developed in [expansion.md](expansion.md).
 
-This boundary defines the checkpoint's contents. Group-local restoration storage
-and paragraph working memory are empty by construction. Persistent data uses
+This boundary defines the checkpoint's contents. Operation and paragraph scratch
+are empty; ordinary group restoration records need not be. Persistent data uses
 representations suited to its lifetime and mutability:
 
 | Kind of data                               | Possible approach                                                 |
 | ------------------------------------------ | ----------------------------------------------------------------- |
-| Process-lifetime identities and resources  | Keep available across rollback                                    |
+| Session identities and cached resources    | Keep available across rollback                                    |
 | Immutable definitions and completed output | Retain their existing storage                                     |
 | Small mutable values and tables            | Copy at the boundary                                              |
-| Larger mutable or shared objects           | Copy-on-write, explicit copies, or reference-counted heap objects |
+| Group and conditional stacks               | Copy records and retain saved owners                              |
+| Larger mutable nodes and tables            | Share pooled chunks; copy on first mutation                       |
 
 Each store can make its own choice. Bump allocation handles much of the linear
 construction work, while snapshot sharing and mutation are handled where each
@@ -241,21 +251,23 @@ restart using this boundary.
 
 ## 7. Scheduling at checkpoint boundaries
 
-The interpreter runs uninterrupted between checkpoint boundaries. At a boundary
-it can retain a snapshot and yield to the host; resumption enters the outer loop
-with the checkpoint state. Host-visible scheduling and cooperative cancellation
-use these same boundaries.
+Normal scheduling retains a checkpoint at an eligible boundary and yields to the
+host. Cadence follows completed paragraphs and a coarse work budget for other
+eligible boundaries. Run browser compilation in a worker.
 
-Checkpoint cadence follows paragraph endings with no open groups. Run browser
-compilation in a worker; the host regains control at these boundaries. Scheduling
-keeps the same ordinary-call execution model as native compilation.
+Cancellation is independent of eligibility. Coarse checks in expansion and long
+scans/layout loops can return an interruption through ordinary calls. The session
+discards the incomplete attempt back to its last checkpoint; it cannot resume at
+the interrupted instruction. A portable work limit also bounds attempts when the
+host cannot expose an asynchronous cancellation flag.
 
 Native adapters can resolve resources synchronously. For asynchronous browser
 acquisition, an unresolved resource can return an ordinary error/request through
 the Rust calls. The session restores the preceding checkpoint and yields there;
 once the resource arrives, execution repeats from that checkpoint. The request
 records what the host needs to fetch, while the checkpoint supplies the restart
-state.
+state. Prepared resource bundles and prefetching previously used dependencies keep
+this replay path exceptional during ordinary browser use.
 
 ## 8. Resources and output
 
@@ -285,7 +297,7 @@ and its checkpoint behavior are working.
 ## 9. Memory use over a session
 
 Bulk allocation makes memory behavior largely a question of store sizes and
-lifetimes. Paragraph scratch is reused; process interners and resource caches
+lifetimes. Paragraph scratch is reused; session interners and bounded resource caches
 accumulate reusable data; definitions live through their semantic owners; output
 and snapshots live as long as the application keeps them.
 
@@ -295,11 +307,11 @@ snapshot. The application can retain more checkpoints around the part of a
 document being edited and fewer elsewhere. We can choose a simple initial policy
 and refine it from measurements.
 
-Measure the cost of long edit sessions as well as individual compilations.
-Process-lifetime identities are a deliberate investment in reuse. Larger values,
-such as successive macro bodies or saved node versions, may benefit from shorter
-storage generations if their retained size becomes significant. Those choices
-can evolve independently of the interner and scratch allocators.
+Separate transient expansion allocations from durable definitions so a small
+survivor does not routinely retain a chunk of dead invocation data. Checkpoint
+metadata and output descriptors share append blocks as well as byte payloads;
+retaining a growing output prefix must not repeatedly copy its complete history.
+Bound empty-block caches and release session identities at session teardown.
 
 ## 10. Performance and correctness during development
 
@@ -322,8 +334,8 @@ with the interpreter as it starts compiling ordinary documents.
 ## 11. Detailed subsystem proposals
 
 The deep dives share ordinary Rust execution, in-place construction, semantic
-lifetimes, and the fixed paragraph/no-open-groups checkpoint boundary. Each is a
-design proposal; representation costs remain implementation measurements.
+lifetimes, and the quiescent outer-driver checkpoint predicate. Layout and
+checkpointing remain proposals; the expansion/register slice is implemented.
 
 | Area                                                | Design                                   |
 | --------------------------------------------------- | ---------------------------------------- |
@@ -338,10 +350,10 @@ design proposal; representation costs remain implementation measurements.
 | Native/Wasm resources, streams, and replay          | [resources.md](resources.md)             |
 | Ordered shipout and DVI/PDF serialization           | [output.md](output.md)                   |
 | Bootstrap, Umber format export/read, and startup    | [formats.md](formats.md)                 |
-| Native/Wasm execution and performance evidence      | [performance.md](performance.md)         |
+| Native/Wasm execution and performance methodology   | [performance.md](performance.md)         |
 
 The [expansion/register MVP](mvp.md) exercises the central representations and
-provides [native performance evidence](mvp-results.md). Paragraph and page construction bring in
-working arenas and retained nodes; real formats and output routines connect those
-paths. Use their executable evidence to refine the proposed structures before
-broadening compatibility.
+provides [native measurements](mvp-results.md). The next architectural slice should
+connect paragraph/page construction to snapshot, mutation, and restore, including
+pending macro input and saved bindings. That exercises the storage model before
+broader format and backend compatibility.

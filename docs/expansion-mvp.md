@@ -64,115 +64,37 @@ execution continuations.
 ## Storage and control flow
 
 Primitive registration, meaning serialization, and assignment/conditional
-classification share one command inventory, including the value-indexed names of
-arithmetic operations and integer parameters.
-Generated expansion output is an owned input source; it needs no macro argument
-packet. Its writer lives on the Rust stack and publishes its value only after
-the operand scan has completed. Character-run and literal-number fast paths stay
-separate where their cursor behavior or measured cost requires it.
+classification share one command inventory. Expansion, conversion, and expression
+scanning use ordinary Rust calls. Generated output installs an owned token source
+only when a later reader needs it; expanded-list scanners can emit conversion
+results directly into their final destination.
 
-Argument packets reuse their descriptor slots and backing-owner vectors. Grouped
-and delimited arguments share traversal and capture; their stopping rules
-specialize at compile time. Delimiter matching retains its prefix-fallback table
-and outer-group removal.
+Definitions and token-register values retain immutable token storage. Aliases,
+save records, installed input, and captured ranges preserve that storage through
+replacement. All list sources use the same cursor/window traversal. Argument
+cursors borrow their body packet while it remains beneath them; forwarded ranges
+acquire their own backing owner before the enclosing source can retire.
 
-All list input uses one cursor containing its backing ID, logical end position,
-read pointers, and any following-span coordinates. Standalone roots retain their
-immutable value; argument cursors borrow the body packet beneath them. Definitions,
-materialized arguments, and generated output share one chunk pool and value-ID
-space. Builders reserve reusable headers before writing and publish completed
-descriptors without moving token words. Source installation and retirement handle
-ownership; reading advances the cursor.
+Parameters and delimiter fallback tables are definition-owned metadata. Packets
+reuse argument and span capacity. Empty/singleton output stays inline. The allocation
+revision in [mvp.md](mvp.md) moves remaining object metadata into pooled storage and
+separates durable and transient token allocation classes. The shared cursor API
+does not require mixing those lifetimes in one bump tail.
 
-Each definition starts at logical token zero, stores its tokens in signature
-order, and caches its prefix end and body range. Each parameter descriptor owns
-its delimiter range and immutable fallback slice. One immutable slice holds the
-descriptors and its length supplies the arity; the empty slice needs no allocation.
-The stored signature already delimits every parameter. Once the body is complete,
-walk those markers to construct the descriptors and matcher tables in their final
-storage.
+The interner stores stable spelling bytes in session-owned chunks, with a compact
+probe table and dense spelling directory. Source and dynamically built names use
+the same identity lookup. The current MVP owns one interner per engine; a future
+session keeps it across restores and releases it at session teardown.
 
-The lexer hashes each spelling as it is consumed. Name lookup packs hash
-fragments and dense IDs into its probe table; growth reuses those fragments.
-Stable spelling bytes and identity lifetime remain the interner's responsibility.
+Scalar tables retain integer values and assignment levels. Token registers own
+values with their group levels; temporary internal quantities retain only the
+value. Group restoration and local/global ownership behavior follow
+[execution.md](execution.md). Scanner fast paths must preserve the same token
+consumption and errors as the complete reader.
 
-Immutable token-register values own stable token chunks. Register copies and
-save entries retain the same value; an active source independently retains its
-backing through later assignments. A source for a standalone span carries its
-span, owner, and cursor without manufacturing a macro header. Replacing the last
-owner releases the payload and makes its descriptor slot reusable. Future
-checkpoints retain these same immutable values through their table roots.
-
-A token register stores its complete immutable owner and assignment level. Its
-input range comes from that owner when installed; the register carries no separate
-cached span. Reading an internal token-list quantity retains only its owner,
-without carrying the register's group level into expansion.
-
-List scanners use destination-specific Rust functions:
-definitions and register values append token words into their destination arena;
-messages append formatted bytes into their output buffer. Raw insertions within
-expanded scans use that destination directly. Avoid building an intermediate
-token list just to print a message or preserve an unexpanded group.
-
-Within an installed token window, scan consecutive ordinary characters using
-Rust pointer locals and emit them directly. Braces, parameter tokens, and control
-sequences return to the surrounding scanner for nesting, substitution, and
-expansion. Destination emitters only append output; they preserve the installed
-source and its immutable backing, including while destination storage grows.
-Window exhaustion returns to the existing cursor refill and source retirement.
-
-Expanded list scanners can emit conversion output directly into their
-destination. Decimal output consists entirely of other-character tokens;
-`\string`, `\meaning`, `\romannumeral`, and `\detokenize` produce other-character
-and space tokens. This output needs no further expansion, group balancing, or
-parameter interpretation. Read operands with the existing scanners and
-expansion-depth accounting. Emit digits in reading order using bounded ordinary
-Rust calls; text conversion shares its byte emitter with general expansion.
-General expansion installs a token source when later input consumers need one.
-The expression scanner passes an already-read leading decimal digit directly to
-the shared numeric suffix scanner.
-
-Scalar tables share an array of integer values and group levels. A compact target
-identifies its slot directly; assignment uses that slot for the read, save, and
-write. Token registers and meanings retain their own representations. When
-general expansion needs a token source, generated conversion and decimal output
-append to an unpublished chunk builder and publish one value at completion.
-Decimal digits are emitted in reading order with bounded Rust calls, sharing the
-same emitter as direct list expansion and register-meaning text. Numbers that fit
-in the existing two-token inline source use it directly. Empty generated output
-installs no source, and singleton output stays inline.
-
-Token-arena chunks have their fixed size in the Rust type. Per-word appending
-uses a small inline gate; allocation remains in a separate growth helper. Common
-control-sequence name assembly uses stack scratch space, spilling once for long
-names. Fixed single-byte control names derive their spelling from their IDs and
-use a static byte table. Spelling handles use an array indexed directly by
-control-sequence ID; the lookup table retains hashes alongside IDs. Interned identities
-retain their existing session lifetime.
-
-Store newly interned multi-byte spellings in stable byte chunks owned by the
-interner. A dense spelling descriptor points directly to its initialized immutable
-range. Reuse the unused suffix for subsequent names; large spellings receive
-larger chunks. Construct each new spelling once in that final storage, then
-publish its ID into the lookup table. Chunk and descriptor growth preserve
-earlier spellings, including during serialization that interns more names.
-
-An integer scan can read its first literal decimal digit directly from the
-loaded file line using the current category table. The cursor consumes that
-character and enters the middle-of-line state. The existing suffix scanner then
-reads further digits and the expanded terminator; signs, other radices, and
-expandable operands retain the general scanner.
-
-Integer entry uses a small Rust function to select the literal decimal suffix
-scanner or the general recursive scanner for signs, other radices, and internal
-quantities. Literal operands avoid setting up the general scanner's saved
-registers and temporary reads. Both scanners continue on the Rust stack.
-
-Expanded definitions and token-register replacements release obsolete immutable
-values. Compact-source memory workloads distinguish replacement of a fixed live
-working set from deliberate live growth; the allocator retains a bounded cache
-of empty chunks. The first MVP's constant-storage loops remain a separate
-regression set.
+Implementation tuning history and measured comparisons belong in
+[mvp-results.md](mvp-results.md). Common validation and timing methodology lives in
+[performance.md](performance.md).
 
 ## Corpus and measurements
 

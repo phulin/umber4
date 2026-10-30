@@ -1,142 +1,122 @@
 # Storage and semantic lifetimes
 
-This proposal develops the allocation choices in [architecture.md](architecture.md).
-The useful unit of ownership is usually a definition, invocation, list, resource,
-or checkpoint. Token and node loops should operate on compact values without
-allocating or updating reference counts for each element.
+This document defines the storage contract for the interpreter. The MVP implements
+immutable token storage and reusable invocation packets; node stores, snapshots,
+and output storage remain proposals. [mvp.md](mvp.md) separates the current slice
+from the remaining allocator changes.
 
-## 1. Stores with different jobs
+## 1. Allocation contract
 
-| Data                                      | Owner and representation                              | Reclamation                               |
-| ----------------------------------------- | ----------------------------------------------------- | ----------------------------------------- |
-| Control-sequence identities               | Process interner; append-only bytes and dense IDs     | Process exit                              |
-| Font files and parsed metrics             | Immutable resource cache keyed by resource version    | Cache or process lifetime                 |
-| Live font parameters and settings         | Document-owned font tables and derived caches         | Last document/checkpoint root             |
-| Macro definitions and durable token lists | Immutable values in reusable token chunks             | Last semantic owner                       |
-| Invocation arguments                      | Immutable token chunks and small sequence descriptors | Last consuming input source or checkpoint |
-| Group restoration records                 | Reusable stack vector                                 | Group exit                                |
-| Scalar scanner work                       | Rust locals                                           | Function return                           |
-| Line-breaking and packing work            | Reusable scratch arrays or marked bump region         | Operation return                          |
-| Mutable TeX nodes and tables              | Document-owned stores with snapshot sharing           | Last document/checkpoint root             |
-| Shipped output                            | Immutable page records and resource references        | Last retained result/checkpoint           |
+The system allocator supplies backing chunks and occasional capacity growth.
+Objects are constructed and reclaimed through reusable stores selected by their
+semantic lifetimes. Once capacity covers a fixed working set, repeating that work
+must not require system allocations per definition, invocation, glyph, candidate,
+or metadata record. Live growth and unusually large objects can acquire more
+backing blocks; this is not a fixed maximum-memory engine.
 
-Definitions and durable lists have explicit owners. A binding, saved group value,
-active source, retained argument range, or checkpoint keeps the immutable value
-alive. Replacement releases the old owner, while saving/restoring transfers
-ownership where possible. Macro bodies contain control-sequence identities, so
-recursive expansion does not form an ownership cycle between definitions.
+Headers, counters, delimiter tables, span descriptors, and ownership records follow
+this rule too. A token arena surrounded by individually allocated metadata is not
+finished. Reusable Rust vectors are suitable for stacks, dense directories, and
+working arrays. Their capacity grows with peak simultaneous demand, not cumulative
+execution. Empty-block caches are bounded.
 
-The MVP uses non-atomic shared ownership for each complete value. Reading a
-token changes only its cursor. An executing macro retains its definition before
-argument scanning can retire an enclosing source; a captured range independently
-retains its backing value. Token-register insertion retains the selected value
-while its scanner or input source consumes it. Builders own unpublished storage
-and release it on failure. Definition headers, delimiter metadata, and token
-payloads are reclaimed together when their last semantic owner disappears.
+| Data | Storage and lifetime |
+| ---- | -------------------- |
+| Control-sequence identities | Session-owned append-only spelling chunks and dense IDs |
+| Format tokens and immutable resources | Immutable baseline/cache blocks, released with their last owner |
+| Definitions and durable token lists | Durable token blocks and pooled value/metadata records |
+| Arguments and generated expansion input | Transient token blocks and pooled packets, retained until consumed or escaped |
+| Group restoration records | Reusable live stack; snapshot-owned copies of records and saved owners |
+| Scanner and layout scratch | Rust locals, reusable arrays, or nested arena marks |
+| Mutable nodes and large tables | Stable-ID stores with pooled COW chunks |
+| Shipped output and diagnostics | Immutable append blocks, including their descriptors |
 
-Definitions, materialized arguments, and generated token lists use the same
-chunk pool and reusable value headers in the MVP. A builder reserves
-its value ID before writing, so captured ranges already name their final storage.
-The slot remains unpublished until the completed token descriptor is transferred
-into it. Publication moves descriptors and owners; token words stay in place.
+Use the same allocation mechanisms with separate active blocks for format,
+durable-document, and transient-expansion data. Do not put every invocation in a
+separate chunk, and do not mix all lifetimes into one active bump tail. Allocation
+class describes expected retention; actual semantic owners decide reclamation.
 
-The registry retains one reference to each header for reuse. External owners keep
-its published contents alive; releasing the last external owner clears the value
-and returns its ID. Dropping the registry releases its references while external
-owners continue to retain their values. Builders keep the chunk pool alive during
-construction, and chunks themselves remain owned by the values that use them.
-The common invocation path reuses both headers and chunk cells. Once a value's
-last owner disappears, its final reservation can return to the bump pointer if
-it is still the tail; intervening live reservations keep their own cells.
+Definitions may outlive bindings through aliases, saved values, input sources,
+captured ranges, or checkpoints. Arguments can outlive their invocation when a
+new definition captures them. No group or invocation rewind may invalidate those
+owners. Tokens refer to control-sequence IDs, not owning definition pointers, so
+recursive macro names do not create ownership cycles.
 
-Stable backing chunks use bump allocation during construction and return to a
-bounded reuse pool after their last value disappears. Builders write in place;
-publishing a value transfers its backing and does not flatten or copy tokens.
-An unused reservation suffix returns immediately when it remains the current
-bump tail; later interleaved reservations keep their own cells.
-The registry and empty headers retain their high-water capacity. Chunk size and
-reservation policy remain measured choices, including the space retained by
-small surviving ranges. Names remain append-only across rollback; their mutable
-meanings belong to document tables.
+## 2. Allocation primitives
 
-The memory regression workload repeatedly overwrites a fixed set of definitions
-and token registers using compact source. Engine storage should reach a plateau
-as iteration count grows. A separate workload deliberately grows live state.
-Keep live payload, reserved chunk capacity, allocator requests, and host input
-distinct when interpreting measurements. Retain CPU comparisons against the
-previous implementation alongside the memory results.
+Keep a small set of concrete stores rather than a universal allocator interface.
 
-## 2. Three allocation primitives
+A scratch arena owns aligned chunks and nested marks. Its fast path stores values
+without destructors; owned resources stay in locals or explicit owner records.
+Returning from an operation releases owners before rewinding. Live argument data
+belongs to the token store, not to scratch that the scanner rewinds on return.
 
-Use ordinary Rust containers for tables, stacks, and reusable working arrays.
-Introduce custom allocation only where bulk construction or stable layout helps.
+Pooled slabs hold stable value headers, packet records, chunk headers, and small
+metadata. Size-class blocks hold variable-length arrays such as parameter tables,
+delimiter fallback tables, and span lists. Common empty/singleton cases stay
+inline. The pool reuses initialized capacity and releases external owners before
+making a slot available again. Large arrays receive appropriately sized blocks.
+Non-atomic counters in these records implement shared ownership where needed;
+there is no separate system allocation for each counter or wrapper.
 
-A scratch arena owns aligned chunks and supports nested marks. A function drops
-its live values before rewinding to its mark. Restrict the fast path to values
-without destructors; owned resources remain in ordinary locals or an explicit
-owner alongside the arena. Nested calls consume a suffix and return it together.
+An immutable token store allocates stable blocks, initially by bump reservation.
+Builders initialize destination cells and publish ranges without moving tokens.
+A failed builder releases its reservations and owners. Tail reservations rewind
+when possible; other dead ranges become reusable through the store's block/free
+range policy. Keep durable and transient active blocks separate. A large immutable
+value may span blocks without requiring a contiguous copy at publication.
 
-An immutable append store allocates stable chunks. Builders reserve space in the
-destination, initialize it, and publish an immutable range. Growing the store adds
-a chunk rather than relocating published contents. A partially built value has
-one builder owner; completion transfers its storage and descriptor in place.
-Keep raw arena ranges as plain token/cell data where possible. Headers and
-auxiliary owners needing destruction use ordinary containers alongside the
-chunks, so releasing a value also drops its initialized owners.
+A mutable node store uses compact cells, bump allocation for new space, and free
+ranges for discarded nodes. Snapshot roots share chunks; mutation first makes the
+relevant chunk writable. Temporary math atoms have their own allocation class
+within the same node-ID domain, so their disappearance does not leave holes among
+long-lived results. Table blocks use the same ownership boundary.
 
-Reusable headers keep an initialized value behind `UnsafeCell`. Registry
-references carry no view of its contents. A builder is the sole external owner
-until publication; after publication, views borrow an owner. Releasing the last
-external owner empties the header before its ID becomes reusable. Short token
-and window queries read without changing reference counts; their temporary views
-stay inside those non-reentrant queries. Raw cursor windows remain protected by
-their source or packet owner. This confines header mutation to construction and
-reclamation, with immutable reads between them.
+Append stores hold output bytes, page records, and descriptor sequences in pooled
+blocks. A retained prefix is a block root and endpoint. Branching after restore
+shares complete blocks and copies at most the bounded partial tail; it never
+copies all preceding descriptors simply to append. Byte and descriptor blocks
+both release when their last retained prefix disappears.
 
-Token chunks can hold `UnsafeCell<MaybeUninit<Token>>` cells. The uninitialized
-array is valid storage; appending constructs each token before publishing its
-index. Reads and cursor windows cover only the initialized prefix. These cells
-have token size and alignment through
-[MaybeUninit's layout guarantee](https://doc.rust-lang.org/std/mem/union.MaybeUninit.html#layout),
-and boxed chunks keep their addresses as the directory grows. Dropping a chunk
-releases its allocation; token words own no resources. This permits direct
-allocation without first filling the chunk.
+The unsafe layer covers aligned allocation, initialization, stable views, and
+reclamation. Published token cells may use `UnsafeCell<MaybeUninit<Token>>`;
+only initialized ranges are readable. Headers are mutable during construction and
+reclamation, and read views borrow a live owner. Stable slab/block addresses must
+survive directory growth. Slot reuse requires all external owners and views to be
+gone. APIs should expose builders, compact IDs, and scoped views rather than ask
+callers to coordinate raw pointers. See
+[MaybeUninit's layout guarantee](https://doc.rust-lang.org/std/mem/union.MaybeUninit.html#layout).
 
-Interned spelling bytes use an append store owned by the interner. Pack new
-spellings into stable byte chunks, with one contiguous range per name. A spelling longer
-than the normal chunk size receives a sufficiently large chunk. Initialize its
-complete range before publishing its dense-ID descriptor; later insertions write
-only disjoint suffixes. Byte cells can use `UnsafeCell<MaybeUninit<u8>>`, so shared
-views of published prefixes coexist with construction in unused cells. The
-interner owns every chunk and releases them together. The MVP's engine owns that
-interner for its run; the full interpreter retains it across checkpoint restores.
-Symbol spellings continue to use static bytes. Mutable meanings remain separate.
-
-A mutable node store allocates compact cells in chunks, with bump allocation for
-new space and reusable free ranges for material TeX discards. Its snapshot roots
-retain the chunks needed by older states. It shares the arena's bulk allocation
-benefit while permitting replacement and mutation of long-lived boxes and lists.
-
-The narrow unsafe layer, if needed, covers aligned chunk allocation, initialization,
-and direct cursor access. Its documentation explains which ranges are initialized,
-what keeps their addresses stable, why mutable borrows are exclusive, and when a
-chunk can be recycled. Callers get builders, IDs, and scoped views; they do not
-manually coordinate raw-pointer reclamation.
+Session spelling storage uses append-only byte blocks, one contiguous range per
+name. Session teardown releases its extension; restoring a checkpoint does not.
+A shared in-memory format owns an immutable name-ID prefix adopted unchanged by
+each new session. This keeps shared baseline token IDs valid. Format-file decoding
+remaps file-local names into that prefix once; new source/dynamic names append to
+the session extension. Changing baselines starts fresh document/session roots.
 
 ## 3. Immutable token sequences
 
 Keep the span/sequence representation from [expansion.md](expansion.md). A sequence
 contains one contiguous range in the common case and several ranges when existing
 input and newly written tokens are mixed. Retaining a compatible range changes
-ownership metadata, not its token words. A transform writes only the tokens it
-actually changes into destination storage.
+ownership metadata, not its token words. A transform writes changed tokens into
+destination storage. Small escaping slices may also be copied to avoid retaining
+disproportionate backing storage.
 
 Stored ranges retain their immutable backing values at source and packet
 boundaries; those values own their chunks. A completed argument packet owns its
 sequence descriptors and retains each backing value once. A child packet acquires
 the value behind a forwarded range, so the enclosing packet can die without
 creating a chain of packet owners. Repeated occurrences of a parameter reread
-the same immutable sequence.
+the same immutable sequence. Descriptors should name backing token blocks directly
+where practical; avoid chains of composite values retaining entire producers.
+
+At a lifetime extension, retain a substantial existing range or copy a small
+range into its new owner's allocation class. Coalesce adjacent spans and allow
+bounded coalescing copies when descriptor fragmentation costs more than the tokens.
+These policies affect storage only: token identity, category codes, order, and
+scan failure behavior stay unchanged. Begin with inline singleton arguments and
+separate allocation classes; add thresholds only for a demonstrated retention case.
 
 New file tokens are materialized once, directly in the packet's chunks. Definitions
 are built directly in their owned destination storage. An argument can mix owned new
@@ -178,10 +158,18 @@ Engine-private frozen commands and permanent font selectors also have distinct
 reserved identities; printable spelling does not merge them with user names.
 Their compact tokens still use the same direct meaning-table path.
 
-Table payloads use compact handles to immutable definitions, other values, or
-document nodes. Shared owners belong to a block or store root where possible.
-Cloning a table block therefore copies entries in bulk; it should not turn a
-meaning lookup into a heap access to an individually allocated entry.
+Table entries contain compact payload handles. Each physical table block retains
+the immutable owners used by its entries. Sharing that block at a checkpoint
+increments the block owner only. Making a writable copy copies entries and retains
+their payload owners once for the new physical block. Replacing an entry in a
+unique block releases its previous owner and retains or transfers the new one.
+Dropping the block releases its remaining owners. Repeated overwrites must not
+accumulate a historical owner list. Meaning reads never touch these counters.
+
+Snapshot save records independently own saved values. Restoring a group transfers
+those values back to live bindings, applying the local/global rules in
+[execution.md](execution.md). Sharing a snapshot must not make its save records
+subject to a live stack rewind.
 
 ## 5. Mutable nodes and snapshot roots
 
@@ -189,7 +177,7 @@ TeX's live lists need mutable links and fields: box dimensions can change, an
 unboxed list can be spliced, and page building can separate material at a chosen
 break. A document node store makes those operations direct. Start with chunked
 storage and stable numeric node IDs, with a null ID reserved. IDs identify a cell
-in a store version; they are not process-global identities like control sequences.
+in a store version; control-sequence identities instead belong to the session.
 
 The live root holds the chunk directory, allocation state, and list roots.
 A checkpoint retains its own root and shares initialized chunks. Before modifying
@@ -212,13 +200,13 @@ Keep large uncommon payloads out of the common cell. A Rust enum is a useful fir
 executable representation; a packed layout is justified by size and generated-code
 measurements. This choice can change without changing the list ownership model.
 
-For a first implementation, uncommon immutable shared payloads can be
-reference-counted heap objects retained by chunk owners. Mutable external
-payloads have their own copy-on-write owner or are copied before mutation;
-semantic list copying likewise gives them independent mutable state. Immutable
-glue specifications are small values, while tokens and resources already have
-their dedicated stores. Chunk cloning retains the external owners its initialized
-cells need. Reclamation releases them in bulk or through ordinary destruction.
+Uncommon payloads use typed pooled records or dedicated large blocks. Immutable
+glue specifications are small values; tokens and resources have dedicated stores.
+Each physical node chunk retains the external payload owners its live cells need,
+using the same share/copy/replace/release rules as table blocks. Reusing a cell
+releases its previous external owners. Mutable external payloads have matching
+COW roots or are copied before mutation, including during semantic list copying.
+Sharing a containing chunk never permits mutation of an older payload version.
 
 This proposal makes node mutation and snapshots concrete without requiring every
 TeX object to use the same technique. An isolated large object may use its own
@@ -263,8 +251,13 @@ state cannot leave a host-held node ID referring into a later run.
 Every root carrying node IDs is restored with its matching node-store version,
 including backend objects such as pending PDF forms that still own TeX boxes.
 
-The main experiments are table-block and node-chunk size, the cost of directory
-copies, and the live material retained by checkpoints. Start by copying small
-roots and sharing large chunks; change the store that dominates measured cost.
-This keeps allocation and snapshot design adjustable without changing TeX's
-ownership transitions or the expansion loop.
+Snapshot records and COW copies draw from reusable blocks too. Initially copy
+small mutable root directories and compact stacks; share large data chunks and
+append-only descriptor blocks. A full output history must not be recopied into
+each checkpoint. Root release is proportional to released records/blocks, and
+belongs in restore latency as well as memory accounting.
+
+Check fixed-working-set reuse, mixed transient/durable survivors, and repeated
+snapshot/mutation/restore. Count backing allocations, metadata, copied bytes, and
+retained capacity separately. [performance.md](performance.md) defines the common
+measurement method.

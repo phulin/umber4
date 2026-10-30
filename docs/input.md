@@ -131,7 +131,7 @@ IDs. Control-word scanning can hash as it reads and look up the resulting name
 without allocating a temporary string in the common case. Line lookahead only
 looks names up; insertion happens on the committed path. A plain contiguous
 name can be a borrowed range in the line; a translated spelling uses a reusable
-small scratch buffer. A new spelling is written into process-owned name storage
+small scratch buffer. A new spelling is written into session-owned name storage
 only when lookup misses.
 
 The MVP uses its own packed name table for probing and growth. Entries retain a
@@ -181,7 +181,7 @@ Exhausting a token sequence pops that input source. Exhausting a file follows
 TeX's file-ending behavior, including outer validity, `\endinput`, and e-TeX's
 `\everyeof` insertion. EOF handling can install an immutable token sequence and
 later resume closing the file. Those pending source cursors are semantic input
-state and can be copied at a paragraph checkpoint.
+state and can be copied at a quiescent checkpoint.
 
 Retain the global pending `\endinput` force-EOF flag and each file's EOF-hook phase.
 `\def\stop{\endinput A\par}\stop` can reach a checkpoint before the forced
@@ -217,9 +217,8 @@ The e-TeX additions are defined in the
 A file snapshot copies cursor, lexical state, and EOF flags and retains the exact current
 prepared line and resource version. Its position and state are those recorded
 before the first unconsumed lookahead token; the lookahead buffer is derived and
-is rebuilt after restore. Usually only a few lines are active; an
-immutable owned line is a simple initial representation. Live readers can reuse
-unique line-buffer capacity, while a retained line is replaced when reading the
+is rebuilt after restore. Usually only a few lines are active; retain them as
+pooled immutable lines. Live readers reuse unique line-buffer capacity, while a retained line is replaced when reading the
 next one. Resource bytes remain shared.
 
 Examples that distinguish the design include a category-code change on the same

@@ -4,7 +4,9 @@ This document explores a fast path for file input that holds while category code
 `\endlinechar` stay unchanged. It extends the line lookahead in
 [input.md](input.md) section 3 and reports a measured prototype. The engine
 does not use the prototype. Sections 1–4 describe and measure what is built.
-Sections 5–7 are proposals and open questions.
+Sections 5–7 are experiments and open questions, not required runtime architecture.
+Line-local batching and portable hashing come first. Cross-line caches and a lexing
+thread remain deferred until full-engine profiles justify their complexity.
 
 ## 1. What a fixed table allows
 
@@ -339,10 +341,10 @@ of chunks ahead of the reader:
 - **Lifetime.** The local table can span every file the worker lexes in a run,
   so a name first seen in one file is a repeat in the next. A table per source
   would make chunks self-contained for retention, at the cost of one first
-  lookup per name per file. The process interner is append-only and survives
+  lookup per name per file. The session interner is append-only and survives
   checkpoint restore ([storage.md](storage.md) and
   [checkpoints.md](checkpoints.md) section 4), so a filled entry never becomes
-  stale within a process.
+  stale within a session.
 - **Amdahl.** If the main thread looked up every name, lookup (14–17% of `avx2`
   instructions on macro code) would cap the share of lexing instructions that a
   worker could move at about 83–86%. With local IDs the main thread performs one
@@ -381,7 +383,7 @@ a requirement:
 A worker pays off most when its results are retained: lexed chunks keyed by
 resource identity and regime could be reused after checkpoint restore and across
 incremental runs. A retained chunk keeps its local IDs along with the local
-table and translation array they index. Within a process the array stays valid,
+table and translation array they index. Within a session the array stays valid,
 so a restored run translates names it has already resolved without any lookup.
 That benefit belongs to [checkpoints.md](checkpoints.md) and needs its own
 measurements.

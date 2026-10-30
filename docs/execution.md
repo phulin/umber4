@@ -143,6 +143,10 @@ continues to consume tokens for a box or output routine. Semantic nesting suppli
 their current mode and ending action. Expansion-order primitives and scanners
 still use ordinary nested Rust calls where needed.
 
+Ordinary assignment groups can remain open at checkpoints. Snapshot copies retain
+their saved values and after-group tokens independently of the reusable live stack.
+Construction groups still prevent eligibility until their finishing action returns.
+
 ## 5. Arithmetic and scanning
 
 Use explicit integer routines for TeX's arithmetic. Dimensions are scaled integer
@@ -162,22 +166,22 @@ Expression primitives can use local stacks or recursion for nested parentheses.
 Their intermediate state is gone when the primitive returns. The storage and
 checkpoint design does not impose resumable expression frames.
 
-## 6. Paragraph handoff
+## 6. Driver handoff
 
-After a paragraph finishes, return to the outer execution loop before considering
-a checkpoint. No open groups means the group restoration stack is empty and there
-is no unfinished box, alignment, or math construction. An unfinished page and
-pending file or replacement-list cursors remain ordinary state.
+Checkpoint eligibility is checked at the outer loop before reading a command,
+after any already-read command has been consumed. The driver must be in external
+vertical mode with no unfinished construction or output routine and no operation
+scratch. Ordinary assignment groups may remain open; their save records, levels,
+and pending tokens are snapshot state. See [checkpoints.md](checkpoints.md).
 
-Page building may have installed an output routine before returning. That routine
-runs in its semantic group through the same loop. A checkpoint is considered only
-after the paragraph's synchronous finishing work has returned and the no-open-
-groups condition holds; an output routine already active prevents it.
+Paragraph completion requests a handoff. If page building installed an output
+routine, execution continues through that routine first. Its closing action can
+provide the next eligible handoff without waiting for another paragraph. A coarse
+work budget also requests handoffs during eligible preamble/vertical execution.
 
-A paragraph that ends with groups still open supplies no checkpoint. The next
-eligible paragraph uses the same boundary; closing a group by itself is not a
-yield point. [checkpoints.md](checkpoints.md) develops the handoff and retained
-state.
+Cancellation checks can return through scanners and execution independently of
+eligibility. An interrupted attempt restores the last checkpoint; it does not
+preserve the interrupted call's locals.
 
 ## 7. Compatibility examples that shape the design
 
@@ -188,5 +192,4 @@ copying a saved box exercises node ownership. Output routines exercise mode and
 group transitions while a page remains unfinished.
 
 Use these small cases alongside actual format loading and paragraph construction.
-They give concrete evidence for the state representation without introducing a
-second abstract machine or a separate execution protocol.
+These cases exercise the state representation and ownership transitions.

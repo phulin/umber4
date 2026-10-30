@@ -3,8 +3,8 @@
 This slice makes the execution path in [expansion.md](expansion.md) and
 [execution.md](execution.md) executable. It runs small TeX programs that expand
 macros and change integer state, then report their result with `\message`.
-Shipout, fonts, layout, format files, and document checkpoints come later. There
-is no paragraph handoff yet, so this slice has no scheduler yield point.
+Shipout, fonts, layout, format files, and document checkpoints come later. This
+slice has no checkpoint or scheduler yield implementation yet.
 
 The slice is implemented in [crates/umber](../crates/umber/). Its
 [native measurements](mvp-results.md) record the tested behavior, optimization
@@ -17,7 +17,8 @@ changes, and integer expressions. The table below records the original baseline.
 Use byte-oriented INITEX input and its initial category table. Programs explicitly
 set the category codes of braces and `#` before defining macros, just as the same
 source must do in native INITEX. Assignments must change later characters on the
-current line; the reader's line lookahead is discarded when they do. Prepare
+current line. The current implementation reads lazily; line-local lookahead is
+proposed in [input.md](input.md). Prepare
 physical lines, handle comments/spaces,
 control words/symbols, active characters, and `^^` translation through one reader.
 
@@ -63,137 +64,60 @@ append-only byte interner supplies stable names for a run. Definition tokens are
 built directly in stable chunks retained by their immutable value. Common token
 sources read one contiguous span; source changes do the ownership work.
 
-Definition prefixes, delimiters, and bodies use pairs of arena coordinates.
-Their storage is fixed by the definition's lifetime; a general input span adds
-the arena store ID only when installing a source. The complete signature runs
-from the prefix's start through the body's end, including its parameter marker
-and any brace-tail token. Derive those bounds when comparing or serializing a
-definition instead of retaining another range in every definition record. Each
-definition keeps its coordinates, flags, and immutable parameter slice. The
-slice's length supplies the arity, at most nine; an empty slice needs no allocation.
-Delimiter ranges and failure tables are built after the signature is complete.
-The value and its metadata remain live through bindings, saved values, active
-sources, and captured ranges.
-Stored argument scans pass their retained windows to a small character-run leaf.
-It tests four initialized words together
-and advances only when all are ordinary characters; a scalar tail stops at the
-first structural word or window end. The surrounding Rust frame keeps brace
-depth and parameter handling local. The execution loop borrows the engine;
-its owning caller constructs the outcome and releases the engine after that
-loop returns.
+Definitions retain their flags, literal parameter prefix, delimiters, and body
+coordinates. Their stored signature preserves parameter marker spelling and the
+final `#{` convention for equality and serialization. Delimiter metadata is built
+after the signature, and stays live with the definition. Expanded-list destinations
+write token values or formatted message bytes directly.
 
-Invocation packets own argument sequences and retain their backing values.
-Existing token ranges are retained; newly scanned source tokens are built in
-the packet's inline slot or capture buffer. A captured range retains its backing
-directly, so retiring a parent does not invalidate it. Reuse packet capacity,
-value headers, and token chunks. Reusing a packet with the same argument count takes a small inline
-path; resizing and allocation use a separate helper. Parameter-free invocation
-retains the existing body without allocation. Retire
-exhausted sources before installing a successor.
+Invocation packets own argument sequences and their backing owners. Existing
+ranges are retained; a singleton can stay inline. File tokens materialize directly
+in capture storage. Parameter-free calls install the selected body without a
+packet. Bodies that ignore parameters still scan and validate every argument but
+need not retain the captures. Retire exhausted sources before installing a
+successor, after any forwarded ranges have acquired their new owner.
 
-Definitions record whether their replacement tokens substitute any parameter.
-Calls always scan and validate all arguments. A body using no parameters can
-consume the arguments without retaining a packet or capture storage. Select this
-scanning mode once per invocation; the token loops use the same matching rules.
-Delimited matching runs in a separate Rust function, keeping its local matching
-state and group trimming out of the common undelimited scanner.
-The native profile build caches the immutable delimiter failure table's raw
-parts in this Rust frame. Its allocation remains live with the definition;
-matching borrows it only for each checked fallback lookup. Reader and capture
-calls change other stores, and growing the value registry preserves the
-table's allocation. Ordinary release retains direct metadata lookup, selected
-by measurements of the surrounding execution paths.
-When no delimiter prefix is pending, file input scans character runs up to a
-possible first delimiter word. Inside a group, the run follows the group's
-ordinary character rules. Runs append into the existing capture buffer; their
-consumed length updates group-trimming counters at the boundary. Partial matches,
-braces, control sequences, and source transitions use the surrounding matcher.
-Retained stored input scans ordinary token runs within an immutable window,
-recording one range at each boundary. A run stops before a possible first
-delimiter word, a brace, a control sequence, or parameter substitution. An inline
-word is promoted through the ordinary capture path before looking ahead, so
-promotion precedes later matching errors. Partial prefixes and window transitions
-return to the ordinary reader and matcher.
+Stored-token windows let argument, numeric, and list scanners advance direct
+pointers through ordinary runs. Structural tokens, expansion, substitutions, and
+source changes return to the complete reader. Fast paths preserve token consumption,
+current meanings, one-read suppression, and failure order. Backing storage remains
+owned while a raw cursor window is installed.
 
-Grouped arguments scan an immutable source window directly, retaining one range
-at its boundary. Ordinary character words use one range classification before
-advancing the pointer; braces, control sequences, and parameter words take the
-structural path. Parameter substitution and source advancement resume this scan
-at the next window. One-token arguments stored as ranges return the existing
-token and range directly while the body retains their owner, avoiding a temporary
-input source.
+Grouping uses a reused save stack, preserving local/global/local restoration and
+the extended profile's identical-local-assignment behavior. Saved values transfer
+ownership where possible. Control-sequence tokens keep identities; meanings are
+resolved when read. Macro equality compares flags and complete signatures, with
+immutable-window comparisons and no temporary flattened list.
 
-A single newly read token fits directly in its argument packet as a token value.
-Substitution carries that identity without backing ownership. If another token
-or range follows, move the first value into capture storage and continue building
-there; borrowed ranges retain their existing backing. This keeps single-token
-arguments small without changing the construction path for larger arguments.
+## Allocation target for this slice
 
-When grouped capture finishes with exactly one token and an empty destination,
-keep that word directly in the packet as well. The source window already supplies
-its value; repeated substitution then reads the packet's value. Larger and mixed
-captures continue retaining their immutable ranges.
-Retained arguments beginning with an ordinary character followed by a closing
-brace in the same window can finish capture directly. An inline parameter word
-qualifies when it supplies an ordinary character. The invocation keeps the
-resulting word in its inline slot. Discarded arguments use the window scanner
-directly.
+[storage.md](storage.md) defines the final requirement: fixed-working-set execution
+reuses backing capacity, including metadata. The current implementation already
+reuses value IDs, headers, packet capacity, and 4,096-token chunks, but still uses
+individually allocated shared headers and some boxed/variable metadata. Historical
+counts in [mvp-results.md](mvp-results.md) are not a zero-allocation claim.
 
-Grouped arguments from source bytes append ordinary character runs directly into
-the uniquely owned capture buffer, recording one contiguous range per run.
-Buffer lookup and range bookkeeping happen at run boundaries. A first word stays
-inline until more content follows; discarded arguments scan runs without storage.
-Special categories and line changes retain the ordinary reader's scanning rules.
+The MVP revision should retain its token-window and semantic ownership APIs while
+moving headers, block-owner records, parameter/fallback arrays, and span metadata
+into reusable stores. Durable definitions/register values and transient captures/
+generated input use separate active allocation classes over one storage mechanism.
+A class never overrides an escaped value's actual owners. Single-token arguments
+stay inline; larger ranges remain immutable and can be retained across producer
+replacement. Small-copy promotion is optional when a concrete retention case
+justifies it.
 
-File bytes are already resident in the native adapter. Ordinary bytes are
-classified inline using the live category table. The rare superscript translation
-path rewrites the prepared line, including committed control-word lookahead;
-token construction remains lazy across executed assignments.
-A newly interned name extends the dense meaning table through a separate growth
-helper, keeping allocation and initialization out of ordinary reader loops.
-Control-word scanning computes the interner hash from each consumed letter byte.
-Superscript translation commits that byte to the prepared line before hashing.
-Single-byte names use their fixed symbol ID; multi-byte names enter the shared
-lookup with the hash of their completed spelling. Dynamic name construction uses
-the same hash operation.
-List scanners consume ordinary letter and other-character runs directly from the
-current source line and emit into their destination. Special categories and line
-transitions return to the complete reader. Each emitted byte advances the cursor
-and sets the lexical state before emission, preserving consumption on failure.
+Publication transfers initialized storage without flattening. Failed builders
+release their reservations. Reused IDs cannot become visible until old owners and
+views have disappeared. Preserve the existing ability for a retained value or
+builder to outlive its registry by retaining the necessary allocator backing at
+store/slab granularity. No per-token ownership operation is introduced.
 
-Keep grouping in a reused save stack, preserving local/global/local restoration
-and the extended profile's identical-local-assignment behavior. Character tokens
-keep their captured category codes. Backing up a token preserves identity, while
-its next read resolves its current meaning and any one-read suppression is spent.
-
-After the first digit, integer scans can walk literal digits in a stored-token
-window. They resolve the following token's current command: a terminating space
-is consumed, while an unexpandable nonspace token remains at its cursor for the
-next operation. Expansion, parameter substitution, suppression, and source
-transitions use the ordinary reader. Numeric progress stays on the Rust stack.
-
-The immutable-value allocator uses 4,096-token boxed chunks with bump
-reservations during construction and a bounded cache for recycled chunks.
-Definitions, captured tokens, and generated output share this allocator and its
-reusable value headers. Builders reserve their final IDs before writing;
-publication transfers the completed descriptor without copying token words.
-IDs return to a free list after their last external owner disappears.
-Published tokens are immutable; fresh suffix writes use `UnsafeCell` and chunk
-addresses remain stable when descriptors grow. A source window covers initialized
-cells in one chunk.
-Builders grow while uniquely owned; publication gives their consumers shared
-ownership and makes the value immutable. A child retains that value before
-the parent source can retire. Source pointers remain valid through those semantic
-owners. Checked name and storage indices preserve the compact token layout.
-
-Macro equality keeps the meaning, command, flag, and length shortcuts, then
-compares signature ranges by immutable chunk windows. Tokens have a transparent
-32-bit word layout, allowing direct word-slice equality. Each step compares the
-shorter current window and advances both ranges, without copying or allocating.
-
-Start with ordinary Rust storage. If direct cursor access needs a small unsafe
-primitive, document its initialized bounds, stable backing owner, and source
-retirement rules. Keep that mechanism independent of TeX dispatch.
+Validate repeated replacement of fixed live state, mixed short-lived work with
+durable survivors, active definitions during redefinition, forwarded arguments,
+and registry teardown. Count system allocations separately from reusable-store
+operations; check CPU throughput as well as retained capacity. This slice does not
+add layout, checkpoint roots, or a browser scheduler merely to exercise allocation.
+The next architectural slice connects those owners to real paragraph/page state.
 
 ## Compatibility before timing
 

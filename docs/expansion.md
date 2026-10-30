@@ -3,8 +3,8 @@
 This design develops the execution path in [architecture.md](architecture.md).
 Expansion is driven by ordinary Rust calls. A compact input stack holds the
 token sources that TeX is consuming, while scanner progress and primitive
-execution remain in local variables and control flow. Checkpoints occur at the
-end of a paragraph with no open groups.
+execution remain in local variables and control flow. Checkpoints occur at eligible
+quiescent outer-driver boundaries, usually after paragraphs.
 
 Build new data in its destination storage and reuse existing token ranges where
 possible. Argument capture, definition construction, and primitive results should
@@ -72,7 +72,7 @@ See [TeX's input and expansion code](https://github.com/TeX-Live/texlive-source/
 A character token carries its character and category code, which directly
 determine its command. A control-sequence token, including an active-character
 identity, carries an interned ID; a direct table lookup supplies its current
-meaning. The process interner keeps IDs available across rollback; the document's
+meaning. The session interner keeps IDs available across rollback; the document's
 meaning table supplies the restored interpretation.
 
 Engine-private frozen commands and permanent font selectors use reserved
@@ -257,9 +257,11 @@ or capture chunk, so consumed packet records can retire independently. The MVP
 uses non-atomic shared ownership at these transitions; token reads advance plain
 pointers without updating reference counts.
 
-Chunk-backed bump allocation fits the construction of new tokens and packet
-metadata. Finish by retaining or transferring these chunks in place. Reusable
-chunks preserve capacity across invocations. Newly built token spans become
+Transient token blocks and pooled packet/descriptor records supply new arguments.
+Durable definitions use a separate allocation class over the same store mechanism.
+An escaping argument retains its backing or copies a small range into durable
+storage according to [storage.md](storage.md). Completed chunks transfer in place;
+reusable chunks preserve capacity across invocations. Newly built token spans become
 immutable when published to input; cursor movement only changes read positions.
 The detailed storage design can choose the allocation mechanism while keeping
 span reads and ownership transfers the same.
@@ -328,11 +330,12 @@ Recoverable diagnostics and inserted recovery tokens are handled where a scanner
 detects the problem. Missing resources and fatal outcomes return through the
 Rust calls to the session, which can restart from its retained checkpoint.
 
-## 9. The paragraph checkpoint boundary
+## 9. Pending input at checkpoints
 
-The established boundary remains the end of a paragraph with no open groups.
-The expansion loop has delivered the paragraph-ending command and paragraph
-work has completed. Active Rust scanner and expansion calls have returned.
+At an eligible outer-driver boundary, scanner and expansion calls have returned.
+Paragraph completion is a common opportunity. Ordinary open assignment groups
+retain their save records; unfinished construction remains excluded by the
+predicate in [checkpoints.md](checkpoints.md).
 
 Pending replacement input can span that boundary:
 
@@ -350,11 +353,10 @@ temporary values have already disappeared through normal returns.
 Immutable definition and argument storage can be shared with the checkpoint.
 Cursor positions are small copied values. Source ownership keeps a retained
 packet available after execution finishes consuming its own copy of the cursor.
-Paragraph scratch is released independently of this input storage.
-
-This also keeps parameter substitution cheap across a checkpoint: it reads the
-same ranges as before. Host yields occur at the paragraph boundary; expansion
-and argument matching run as ordinary calls between those yields.
+Paragraph scratch is released independently of this input storage. Parameter
+substitution reads the same ranges after restore. Cancellation can unwind expansion
+between checkpoints; it discards the incomplete attempt rather than preserving
+argument-matcher locals.
 
 ## 10. First implementation and measurements
 

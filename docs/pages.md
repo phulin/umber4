@@ -124,24 +124,20 @@ and assignment staging; [resources.md](resources.md) covers immediate/deferred I
 
 ## 6. Checkpoint handoff
 
-An eligible paragraph has completed line construction and synchronous page work
-and returned to the outer driver with no open groups. Its current page can remain
-unfinished. Retain page scalars, contribution/current-page roots, marks, insertion
-state, last-node caches, discard-list owners, and the matching node-store version
-through their existing stores. The selected break's saved goal remains distinct
-from the current goal after later insertions.
+After paragraph line construction and synchronous page work return, the driver
+can checkpoint if it is in external vertical mode with no unfinished construction
+or output routine. Ordinary assignment groups can remain open. Retain page scalars,
+contribution/current-page roots, marks, insertion state, last-node caches, discard
+owners, and the matching node-store version. The selected break's saved goal
+remains distinct from the current goal after later insertions.
 
-If page breaking installed an output routine, that open group makes the handoff
-ineligible. The routine executes to completion through the normal loop. Closing
-it does not create a delayed yield point; a later eligible paragraph supplies
-the next checkpoint. Paragraphs inside boxes, alignments, and output routines
-likewise cannot yield.
+An active output routine prevents eligibility. Closing it can provide an eligible
+handoff immediately, after its finishing/page-building work returns; another
+paragraph is not required. Checkpoints may retain unfinished pages, and shipout
+alone does not establish eligibility. [checkpoints.md](checkpoints.md) owns the
+complete predicate and cadence.
 
-This preserves a plain page-builder call path and the user-selected boundary.
-There is no requirement for every shipped page to have a checkpoint or every
-checkpoint to have a shipped page.
-
-## 7. Useful evidence
+## 7. Page-specific checks
 
 Compare page break positions, dimensions, marks, insertion boxes, output penalties,
 dead cycles, and the TeX-visible state after output. Use forced breaks, leading
