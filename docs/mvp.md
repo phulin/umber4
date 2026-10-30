@@ -172,13 +172,15 @@ integer assignments, repeated/nested parameters, delimiter matching, and grouped
 local/global writes. Results must agree before their timing counts. Measure
 allocations separately in a diagnostic run so counters stay out of normal loops.
 
-Optimize whichever actual path loses to pdfTeX. Inspect release instructions for
-token loads, meaning resolution, cursor push/pop, argument construction, and
-assignment dispatch. Remove redundant classification, token copies, allocations,
-and oversized source records before adding specialization. Rerun the relevant
+Use these synthetic workloads to diagnose costs and ownership behavior, not as
+architectural acceptance gates or a mandate to remove every per-case CPU
+regression. Prioritize exact semantics, clear ownership, reusable lifetime-based
+storage, and future quiescent checkpoint boundaries. Defer extensive tuning until
+representative layout, output, and checkpoint paths mature. Rerun the relevant
 semantic fixtures after changing a representation or fast path.
 
-Completion means a working, tested slice and measured pdfTeX-comparable throughput
-across these core workloads. Record the oracle/compiler versions, source generator,
-machine, timing variation, and remaining costs. These results establish the core
-loop's performance; full-document performance still requires layout and output.
+Completion means a working, tested slice with explicit ownership and storage
+contracts. Historical measurements retain their oracle/compiler versions, source
+generator, machine, timing variation, and remaining costs. Full-document
+performance still requires layout and output; native pdfTeX remains the eventual
+performance baseline.

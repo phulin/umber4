@@ -38,6 +38,11 @@ tools and worktree caches checkout-local.
 - Prefer principled architecture, clean code, and fast implementations. Refactor
   areas that become difficult to understand; cross-cutting changes are appropriate
   when they produce a cleaner design.
+- Prioritize exact TeX semantics, clear ownership, semantic-lifetime storage, and
+  quiescent checkpoint boundaries. Synthetic benchmarks are diagnostic tools,
+  not architectural acceptance gates or a requirement to eliminate every per-case
+  CPU regression. Defer extensive optimization until the architecture and
+  representative full-document paths mature.
 - For complex features, write technical documentation in `docs/` before
   implementation. Do not commit temporary task plans or notes.
 - Treat Umber3 as reference material, not an inherited architecture or correctness

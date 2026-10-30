@@ -6,6 +6,13 @@ excessive snapshot or retention costs. [mvp-results.md](mvp-results.md) records
 historical expansion/register measurements; those do not establish layout,
 checkpoint, or browser runtime performance.
 
+Architecture comes first: preserve exact TeX semantics, clear ownership,
+semantic-lifetime allocation of headers and buffers, in-place construction, and
+quiescent checkpoint boundaries. Synthetic microbenchmarks diagnose costs; they
+do not determine architectural acceptance or require eliminating every per-case
+CPU regression. Retain useful allocator and ownership improvements while deferring
+extensive tuning until representative document paths and the architecture mature.
+
 ## 1. Execution costs
 
 Use direct command dispatch, compact values, and ordinary Rust calls. Host access
@@ -14,9 +21,8 @@ readers and dispatch, and expose scoped token/node windows to bulk operations.
 Inspect release instructions when changing hot loops: duplicate classification,
 meaning resolution, chunk lookup, ownership traffic, and allocator calls are the
 main avoidable costs. Measure the complete affected workload before specializing.
-The MVP keeps source, binding, value-directory, and packet-directory roots in an
-explicit compact prefix of the engine. Adding cold pools must not push those
-per-token fields behind unrelated metadata or change their layout implicitly.
+Keep engine state organized by ownership and subsystem boundaries; field layout
+and compiler-specific annotations are implementation choices, not storage contracts.
 
 Line-local lookahead and hashing are bounded input optimizations. Cross-line regime
 caches and worker lexing in [fast-lexing.md](fast-lexing.md) remain experiments until
