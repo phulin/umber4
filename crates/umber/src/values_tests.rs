@@ -48,7 +48,7 @@ fn last_owner_reuses_header_and_initialized_bump_tail() {
     let mut values = Values::default();
     let first = value(&mut values, 32, b'A');
     let id = first.id;
-    let header = Rc::as_ptr(&first.0);
+    let header = std::ptr::from_ref(first.slot());
     let (cells, _, _) = first.tokens.window(0, 32);
     drop(first);
     assert_eq!(
@@ -61,7 +61,7 @@ fn last_owner_reuses_header_and_initialized_bump_tail() {
     );
     let next = value(&mut values, 32, b'B');
     assert_eq!(next.id, id);
-    assert_eq!(Rc::as_ptr(&next.0), header);
+    assert_eq!(std::ptr::from_ref(next.slot()), header);
     assert_eq!(next.tokens.window(0, 32).0, cells);
     assert_eq!(next.tokens.get(31), Token::other(b'B'));
 }
@@ -172,7 +172,7 @@ fn slots_recycle_after_last_owner_and_page_cache_is_bounded() {
     for _ in 0..100 {
         drop(value(&mut values, 20, b'Y'));
     }
-    assert!(values.slots.len() <= 2);
+    assert!(values.len <= 2);
 }
 
 #[test]
@@ -324,13 +324,10 @@ fn warm_mixed_survivors_reuse_complete_page_records() {
         durable = class_value(&mut values, Class::Durable, 1000, b'D');
         transient = class_value(&mut values, Class::Transient, 1000, b'T');
         if iteration == 15 {
-            warm = Some((values.pool.created.get(), values.slots.len()));
+            warm = Some((values.pool.created.get(), values.len));
         }
     }
-    assert_eq!(
-        warm.unwrap(),
-        (values.pool.created.get(), values.slots.len())
-    );
+    assert_eq!(warm.unwrap(), (values.pool.created.get(), values.len));
     assert!(values.pool.created.get() <= 6);
     assert!(values.pool.free.borrow().len() <= CACHE_CHUNKS);
     assert_eq!(survivor.tokens.get(96), Token::other(b'S'));
@@ -416,7 +413,7 @@ fn multiblock_metadata_reuses_capacity_without_retaining_old_pages() {
     let capacity = first.tokens.rest.capacity();
     drop(first);
     // SAFETY: the registered free slot is unpublished and has no external owner.
-    let cleared = unsafe { &*values.slots[id as usize].value.get() };
+    let cleared = unsafe { &*values.slot(id).value.get() };
     assert!(cleared.tokens.first.is_none());
     assert!(cleared.tokens.rest.is_empty());
     assert_eq!(cleared.tokens.rest.capacity(), capacity);
@@ -489,8 +486,7 @@ fn alternating_definition_metadata_reaches_a_fixed_capacity() {
         engine.run_input().unwrap();
         let capacities: Vec<_> = engine
             .values
-            .slots
-            .iter()
+            .slots()
             .map(|slot| {
                 // SAFETY: this test reads initialized slots with no engine mutation.
                 let value = unsafe { &*slot.value.get() };
@@ -506,4 +502,35 @@ fn alternating_definition_metadata_reaches_a_fixed_capacity() {
         previous = Some(capacities);
         assert_eq!(engine.scalars.counts()[0].value, iterations);
     }
+}
+
+#[test]
+fn cross_slab_owners_keep_windows_stable_during_reuse_and_teardown() {
+    let mut values = Values::default();
+    let mut owners: Vec<_> = (0..193)
+        .map(|index| value(&mut values, 3, index as u8))
+        .collect();
+    let survivor = owners.swap_remove(64);
+    let window = survivor.tokens.window(0, 3).0;
+    let survivor_id = survivor.id;
+    drop(owners);
+    for index in 0..193 {
+        let next = value(&mut values, 3, index as u8);
+        assert_ne!(next.id, survivor_id);
+        assert_eq!(survivor.tokens.window(0, 3).0, window);
+    }
+    let mut unfinished = values.builder(Class::Durable).unwrap();
+    unfinished.extend(&[Token::other(b'X'); 5]).unwrap();
+    let mut failed = values.builder(Class::Transient).unwrap();
+    failed.push(Token::other(b'F')).unwrap();
+    let alias = survivor.clone();
+    drop(values);
+    drop(failed);
+    drop(survivor);
+    // SAFETY: alias still retains this immutable initialized window after every
+    // other registry slab and all neighboring occupied slots have been released.
+    assert_eq!(unsafe { *window }, Token::other(64));
+    let completed = unfinished.finish();
+    drop(alias);
+    assert_eq!(completed.tokens.get(4), Token::other(b'X'));
 }

@@ -74,8 +74,29 @@ exclusively. Publication returns token descriptors without moving token words;
 failed builders return them before last-owner release. Release drops all page
 owners and clears metadata lengths before making the slot reusable. Capacity stays
 with the slot until registry teardown or, for surviving owners, final release.
-Growing the live header set still allocates individual shared records; denser
-slabs and size-class pooling remain proposed layout improvements.
+Headers share stable slabs; variable metadata still uses per-slot vectors until
+the typed block revision below is implemented.
+
+### MVP stable header slabs
+
+The MVP header representation uses fixed slabs of 64 value slots. The
+registry retains each slab and assigns dense IDs to its initialized slots; growing
+the directory never moves a slot. Each slot embeds its non-atomic external-owner
+count. An `Owner` remains one pointer to the slot, so reading a value or a token
+window does not resolve another table. Cloning increments only the slot count.
+The first owner of a checked-out slot retains its slab once, and final-owner
+release clears token/definition resources before returning its ID and releasing
+that slab reference. The registry owns a separate slab reference. A surviving
+owner or unpublished builder therefore retains its entire slab after registry
+teardown, without a slab/slot ownership cycle.
+
+Slab allocation, in-place initialization, and final deallocation form a narrow
+unsafe layer. Every slot is initialized before the slab is exposed. Only
+unpublished, exclusively owned builders can mutate contents; cleared slots cannot
+have outstanding views. Final slab release occurs after the releasing owner has
+finished accessing its slot. Slabs retain the weak token-pool link once, rather
+than once per value. Capacity growth remains proportional to the largest live
+header set, with at most 63 unused slots in its final slab.
 
 An immutable token store allocates stable blocks, initially by bump reservation.
 Builders initialize destination cells and publish ranges without moving tokens.

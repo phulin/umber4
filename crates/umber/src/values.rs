@@ -301,7 +301,7 @@ impl Builder {
         let owner = self.owner.as_ref().unwrap();
         // SAFETY: the unpublished builder is the sole external owner and never
         // exposes a Value view. Metadata stays in the slot even on failed builds.
-        unsafe { &mut (*owner.0.value.get()).definition }
+        unsafe { &mut (*owner.slot().value.get()).definition }
     }
     pub fn finish(mut self) -> Owner {
         self.tokens.len = self.len();
@@ -317,14 +317,14 @@ impl Builder {
         // Moving the completed descriptor leaves every token cell in place.
         self.return_storage();
         let owner = self.owner.take().unwrap();
-        owner.0.published.set(true);
+        owner.slot().published.set(true);
         owner
     }
     fn return_storage(&mut self) {
         let owner = self.owner.as_ref().unwrap();
         // SAFETY: an unpublished builder is the sole external owner. No view
         // of this slot's contents is exposed until finish marks it published.
-        let value = unsafe { &mut *owner.0.value.get() };
+        let value = unsafe { &mut *owner.slot().value.get() };
         value.tokens = std::mem::take(&mut self.tokens);
     }
 }
@@ -338,156 +338,10 @@ impl Drop for Builder {
     }
 }
 
-pub(crate) struct Value {
-    pub id: u32,
-    pub tokens: Tokens,
-    definition: Definition,
-}
-impl Value {
-    #[inline]
-    pub fn definition(&self) -> &Definition {
-        &self.definition
-    }
-}
-struct Slot {
-    value: UnsafeCell<Value>,
-    published: Cell<bool>,
-    registered: Cell<bool>,
-    pool: Weak<Pool>,
-}
+#[path = "value_headers.rs"]
+mod headers;
+pub(crate) use headers::{Owner, Value, Values};
 
-// The registry owns one reference per reusable header. External owners retain
-// initialized contents; only an unpublished Builder can change those contents.
-#[derive(Clone)]
-pub(crate) struct Owner(Rc<Slot>);
-impl std::ops::Deref for Owner {
-    type Target = Value;
-    fn deref(&self) -> &Value {
-        // SAFETY: Owners are created after initialization. A returned view
-        // borrows this owner, so the last owner cannot disappear during its use.
-        unsafe { &*self.0.value.get() }
-    }
-}
-impl Drop for Owner {
-    #[inline]
-    fn drop(&mut self) {
-        if Rc::strong_count(&self.0) == 1 + usize::from(self.0.registered.get()) {
-            self.0.release();
-        }
-    }
-}
-impl Slot {
-    #[inline(never)]
-    fn release(&self) {
-        self.published.set(false);
-        // SAFETY: called only by the last external owner. All borrowed views
-        // have ended, and registered headers retain no reader of their contents.
-        let value = unsafe { &mut *self.value.get() };
-        value.definition.clear();
-        let pool = self.pool.upgrade();
-        if let Some(pool) = &pool
-            && let Some(last) = value.tokens.last()
-        {
-            // No reader remains. Reuse the whole final reservation only
-            // if later reservations have already left the bump tail.
-            pool.rewind(last, last.capacity);
-        }
-        // Release page owners before exposing this cleared slot for reuse.
-        value.tokens.first = None;
-        value.tokens.rest.clear();
-        value.tokens.len = 0;
-        if let Some(pool) = pool {
-            pool.ids.borrow_mut().push(value.id);
-        }
-    }
-}
-
-#[derive(Default)]
-pub(crate) struct Values {
-    pool: Rc<Pool>,
-    slots: Vec<Rc<Slot>>,
-}
-impl Values {
-    pub fn builder(&mut self, class: Class) -> Result<Builder> {
-        let id = self
-            .pool
-            .ids
-            .borrow_mut()
-            .pop()
-            .unwrap_or(self.slots.len() as u32);
-        if id >= SINGLE {
-            return Err(Error::Capacity);
-        }
-        if id as usize == self.slots.len() {
-            self.slots.push(Rc::new(Slot {
-                value: UnsafeCell::new(Value {
-                    id,
-                    tokens: Tokens::default(),
-                    definition: Definition::default(),
-                }),
-                published: Cell::new(false),
-                registered: Cell::new(true),
-                pool: Rc::downgrade(&self.pool),
-            }));
-        }
-        // Free IDs name cleared headers with only the registry reference.
-        let slot = Rc::clone(&self.slots[id as usize]);
-        // SAFETY: a free slot has no external owner or published views. The
-        // builder takes its cleared storage and exclusively owns it until finish.
-        let value = unsafe { &mut *slot.value.get() };
-        Ok(Builder {
-            tokens: std::mem::take(&mut value.tokens),
-            pool: Rc::clone(&self.pool),
-            class,
-            owner: Some(Owner(slot)),
-            base: std::ptr::null_mut(),
-            next: std::ptr::null_mut(),
-            limit: std::ptr::null_mut(),
-            start: 0,
-        })
-    }
-    #[inline]
-    pub fn get(&self, id: u32) -> Owner {
-        let slot = &self.slots[id as usize];
-        assert!(slot.published.get(), "retained published token value");
-        Owner(Rc::clone(slot))
-    }
-    // Used only by the non-reentrant copy/window queries below. Their temporary
-    // view never escapes or runs code that could release an external owner.
-    fn tokens(&self, id: u32) -> &Tokens {
-        let slot = &self.slots[id as usize];
-        assert!(slot.published.get(), "retained published token value");
-        // SAFETY: publication initializes the value, and no owner can disappear
-        // during these queries. Returned raw windows need a caller-held owner.
-        unsafe { &(*slot.value.get()).tokens }
-    }
-    pub fn token(&self, id: u32, position: u32) -> Token {
-        self.tokens(id).get(position)
-    }
-    pub fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
-        self.tokens(span.store).window(start, span.end)
-    }
-}
-
-impl Drop for Values {
-    fn drop(&mut self) {
-        for slot in &self.slots {
-            slot.registered.set(false);
-        }
-    }
-}
-
-#[cfg(test)]
-impl Values {
-    pub fn retained(&self) -> (usize, usize, usize) {
-        let live = self
-            .slots
-            .iter()
-            .filter(|slot| slot.published.get())
-            .count();
-        (live, self.slots.len(), self.pool.free.borrow().len())
-    }
-}
 #[cfg(test)]
 #[path = "values_tests.rs"]
 mod tests;

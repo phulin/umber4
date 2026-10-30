@@ -1,0 +1,226 @@
+use super::*;
+use std::ptr::NonNull;
+
+const SLOTS: usize = 64;
+
+pub(crate) struct Value {
+    pub id: u32,
+    pub tokens: Tokens,
+    pub(super) definition: Definition,
+}
+impl Value {
+    #[inline]
+    pub fn definition(&self) -> &Definition {
+        &self.definition
+    }
+}
+
+pub(super) struct Slot {
+    pub(super) value: UnsafeCell<Value>,
+    pub(super) published: Cell<bool>,
+    owners: Cell<usize>,
+    slab: NonNull<Slab>,
+}
+struct Slab {
+    references: Cell<usize>,
+    pool: Weak<Pool>,
+    slots: [Slot; SLOTS],
+}
+struct SlabOwner(NonNull<Slab>);
+impl SlabOwner {
+    fn new(pool: &Rc<Pool>, first: u32) -> Self {
+        let allocation = Box::<Slab>::new_uninit();
+        let pointer = NonNull::new(Box::into_raw(allocation).cast::<Slab>()).unwrap();
+        // SAFETY: initialize the complete allocation in place before exposing
+        // any slot. The self pointer addresses this stable allocation and is
+        // only dereferenced while a registry or occupied-slot reference exists.
+        unsafe {
+            let raw = pointer.as_ptr();
+            std::ptr::addr_of_mut!((*raw).references).write(Cell::new(1));
+            std::ptr::addr_of_mut!((*raw).pool).write(Rc::downgrade(pool));
+            let slots = std::ptr::addr_of_mut!((*raw).slots).cast::<Slot>();
+            for index in 0..SLOTS {
+                slots.add(index).write(Slot {
+                    value: UnsafeCell::new(Value {
+                        id: first + index as u32,
+                        tokens: Tokens::default(),
+                        definition: Definition::default(),
+                    }),
+                    published: Cell::new(false),
+                    owners: Cell::new(0),
+                    slab: pointer,
+                });
+            }
+        }
+        Self(pointer)
+    }
+    fn slab(&self) -> &Slab {
+        // SAFETY: this handle retains the initialized allocation.
+        unsafe { self.0.as_ref() }
+    }
+    fn retain(slab: &Slab) {
+        // Match Rc's overflow policy without permitting a wrapping counter.
+        if slab.references.get() == usize::MAX {
+            std::process::abort();
+        }
+        slab.references.set(slab.references.get() + 1);
+    }
+}
+impl Drop for SlabOwner {
+    fn drop(&mut self) {
+        let slab = self.slab();
+        let references = slab.references.get();
+        slab.references.set(references - 1);
+        if references == 1 {
+            // SAFETY: no registry or occupied slot remains. No later operation
+            // in this destructor accesses slab; every slot is initialized and
+            // contains no live external owner. Metadata capacity drops here.
+            unsafe { drop(Box::from_raw(self.0.as_ptr())) };
+        }
+    }
+}
+
+// One pointer per semantic owner. Only occupancy transitions retain the slab;
+// repeated aliases change the embedded slot counter alone.
+pub(crate) struct Owner(NonNull<Slot>);
+impl Owner {
+    #[inline]
+    pub(super) fn slot(&self) -> &Slot {
+        // SAFETY: at least this owner keeps the slot occupied and slab alive.
+        unsafe { self.0.as_ref() }
+    }
+}
+impl Clone for Owner {
+    #[inline]
+    fn clone(&self) -> Self {
+        let slot = self.slot();
+        if slot.owners.get() == usize::MAX {
+            std::process::abort();
+        }
+        slot.owners.set(slot.owners.get() + 1);
+        Self(self.0)
+    }
+}
+impl std::ops::Deref for Owner {
+    type Target = Value;
+    #[inline]
+    fn deref(&self) -> &Value {
+        // SAFETY: views borrow a live owner. Mutation is limited to exclusive
+        // unpublished builders and final-owner release, after all views end.
+        unsafe { &*self.slot().value.get() }
+    }
+}
+impl Drop for Owner {
+    #[inline]
+    fn drop(&mut self) {
+        let slot = self.slot();
+        let owners = slot.owners.get();
+        slot.owners.set(owners - 1);
+        if owners == 1 {
+            drop(slot.release());
+        }
+    }
+}
+impl Slot {
+    #[inline(never)]
+    fn release(&self) -> SlabOwner {
+        self.published.set(false);
+        // SAFETY: final external owner has ended all borrowed views. The
+        // registry retains the slab but has no reader of this slot's contents.
+        let value = unsafe { &mut *self.value.get() };
+        // SAFETY: this occupied slot retains the slab through this release.
+        let slab = unsafe { self.slab.as_ref() };
+        value.definition.clear();
+        let pool = slab.pool.upgrade();
+        if let Some(pool) = &pool
+            && let Some(last) = value.tokens.last()
+        {
+            pool.rewind(last, last.capacity);
+        }
+        value.tokens.first = None;
+        value.tokens.rest.clear();
+        value.tokens.len = 0;
+        if let Some(pool) = pool {
+            pool.ids.borrow_mut().push(value.id);
+        }
+        // Return before deallocation: the release call borrows this slot.
+        // Its caller drops the slab reference after that borrow has ended.
+        SlabOwner(self.slab)
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct Values {
+    pub(super) pool: Rc<Pool>,
+    slabs: Vec<SlabOwner>,
+    pub(super) len: usize,
+}
+impl Values {
+    pub(super) fn slot(&self, id: u32) -> &Slot {
+        assert!((id as usize) < self.len);
+        &self.slabs[id as usize / SLOTS].slab().slots[id as usize % SLOTS]
+    }
+    #[cfg(test)]
+    pub(super) fn slots(&self) -> impl Iterator<Item = &Slot> {
+        self.slabs
+            .iter()
+            .flat_map(|owner| owner.slab().slots.iter())
+            .take(self.len)
+    }
+    pub fn builder(&mut self, class: Class) -> Result<Builder> {
+        let id = self.pool.ids.borrow_mut().pop().unwrap_or(self.len as u32);
+        if id >= SINGLE {
+            return Err(Error::Capacity);
+        }
+        if id as usize == self.len {
+            if self.len.is_multiple_of(SLOTS) {
+                self.slabs.push(SlabOwner::new(&self.pool, id));
+            }
+            self.len += 1;
+        }
+        let slot = self.slot(id);
+        debug_assert_eq!(slot.owners.get(), 0);
+        // SAFETY: the registry retains this slab; checkout transfers one new
+        // slab reference to the occupied slot, then constructs its first owner.
+        SlabOwner::retain(unsafe { slot.slab.as_ref() });
+        slot.owners.set(1);
+        let owner = Owner(NonNull::from(slot));
+        // SAFETY: a cleared slot has no external owner or published view.
+        let value = unsafe { &mut *slot.value.get() };
+        Ok(Builder {
+            tokens: std::mem::take(&mut value.tokens),
+            pool: Rc::clone(&self.pool),
+            class,
+            owner: Some(owner),
+            base: std::ptr::null_mut(),
+            next: std::ptr::null_mut(),
+            limit: std::ptr::null_mut(),
+            start: 0,
+        })
+    }
+    #[inline]
+    pub fn get(&self, id: u32) -> Owner {
+        let slot = self.slot(id);
+        assert!(slot.published.get(), "retained published token value");
+        let owner = std::mem::ManuallyDrop::new(Owner(NonNull::from(slot)));
+        Owner::clone(&owner)
+    }
+    fn tokens(&self, id: u32) -> &Tokens {
+        let slot = self.slot(id);
+        assert!(slot.published.get(), "retained published token value");
+        // SAFETY: these non-reentrant queries cannot release an owner. Raw
+        // windows escaping this call require a separate caller-held owner.
+        unsafe { &(*slot.value.get()).tokens }
+    }
+    pub fn token(&self, id: u32, position: u32) -> Token {
+        self.tokens(id).get(position)
+    }
+    pub fn window(&self, span: Span, start: u32) -> (*const Token, *const Token, u32) {
+        self.tokens(span.store).window(start, span.end)
+    }
+    #[cfg(test)]
+    pub fn retained(&self) -> (usize, usize, usize) {
+        let live = self.slots().filter(|slot| slot.published.get()).count();
+        (live, self.len, self.pool.free.borrow().len())
+    }
+}
