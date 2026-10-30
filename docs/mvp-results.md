@@ -1,6 +1,9 @@
 # Native expansion measurements
 
-The final slab/metadata comparison uses `317c54d` (baseline checkout `af5982b`).
+The current execution follow-up compares CPU against the original pre-metadata
+checkout `80facd9` (engine `ad5c07b`) and the completed allocator `706e574`.
+Allocation diagnostics compare against the pre-slab checkout `af5982b` (engine
+`317c54d`). The historical slab/metadata comparison uses that same pre-slab baseline.
 The historical metadata-reuse comparison uses `80facd9` as its baseline checkout (engine
 source `ad5c07b`). The bounded-token-allocation comparison uses `e88cad7`. The
 historical shared-token-store comparison uses `dc64762`, with the restored custom
@@ -22,9 +25,80 @@ ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
 
-## Stable header slabs and typed metadata
+## Allocator execution follow-up
 
-The final allocator build (`706e574`) shares 64-slot value-header slabs with
+The [execution follow-up report](../benchmarks/results/token-execution-followup.json)
+retains the selected complete implementation and its measured tradeoffs. Builders
+construct token descriptors directly in unpublished value slots. Registered slabs
+need no per-object occupancy-counter updates; registry teardown transfers retention
+to occupied slots once. Packets reuse argument/span capacity by arity, and validated
+arity stays in the existing definition-header padding. Checked delimiter fallback
+ranges are resolved once per capture. Macro entry and argument-source installation
+stay outside the token reader, whose frequently used directory roots have explicit
+compact placement. These changes preserve semantic ownership and the completed
+allocator's reusable backing stores.
+
+Seven alternating repetitions cover all nine core cases at 500,000 iterations
+and all nine broader cases at 50,000 records against the original baseline.
+The completed-allocator comparison uses 100,000 core iterations and 10,000 broader
+records. Eleven-repeat confirmations use one million iterations for affected
+stored-token cases and 50,000 iterations for metadata/replacement churn.
+
+| CPU comparison | Change |
+| -------------- | -----: |
+| Core geometric mean versus original `80facd9` | +2.6% |
+| Broader geometric mean versus original | -1.9% |
+| Equal-case geometric mean of both suites versus original | +0.3% |
+| Core geometric mean versus completed allocator `706e574` | -1.7% |
+| Broader geometric mean versus completed allocator | -3.1% |
+| Parameters, longer original-baseline confirmation | +9.0% |
+| Long arguments, longer original-baseline confirmation | +8.2% |
+| Delimiters, longer original-baseline confirmation | -5.9% |
+| Focused metadata, 50,000, versus original | -2.0% |
+| Replacement churn, 50,000, versus original | -2.8% |
+
+The parameter and long-argument penalties remain real CPU tradeoffs. Their paired
+ratio interquartile ranges are 1.059–1.138 and 1.057–1.105, respectively; neither
+is described as a noise-only result. The combined equal-case mean describes this
+bounded suite, without prescribing a workload mix or claiming a general speedup.
+A matched comparison with the preserved macro-entry alternative gives +3.1% core
+CPU and -5.1% broader CPU for the selected build; all broader cases improve, and
+its equal-case combined mean improves 1.1%. Selection retains direct construction
+and its churn improvement rather than choosing a different binary for each case.
+
+| Allocation workload | Requests before | Requests after | Peak after (KiB) | Peak change |
+| ------------------- | --------------: | -------------: | ---------------: | ----------: |
+| Churn, 50,000 | 44 | 43 | 101.5 | +14.4% |
+| Focused metadata, 50,000 | 66 | 80 | 198.0 | +28.2% |
+| Live definitions, 2,500 | 2,835 | 289 | 2,105.1 | -0.2% |
+| Live parameter metadata, 2,500 | 15,381 | 563 | 3,205.5 | +2.8% |
+| Nested long names, 10,000 | 40,040 | 47 | 106.1 | +20.0% |
+| Live packets, 3,000, allocation only | 6,078 | 281 | 1,211.3 | +7.0% |
+
+These allocation comparisons use `af5982b`. Churn stays at 43 requests from 1,000
+through 50,000 iterations; metadata stays at 80 from 10 through 50,000; nested
+long names stay at 47 from 100 through 10,000. Broader requests fall from 2,835 to
+1,067 (-62.4%), while cumulative requested bytes rise from 5.38 MB to 5.55 MB.
+Slab/page slack and per-arity high-water retention remain visible space costs.
+Capacity follows the sum of per-arity peaks, which can exceed the largest single
+simultaneous packet set. Public message vectors remain independently owned result
+allocations. Peaks exclude host input, stack, allocator overhead, RSS, and pdfTeX.
+The native oracle's 60-entry parameter stack limits live-packet timing; the larger
+depth diagnostics above make allocation-only claims.
+
+All 84 debug/release tests and 89 all-feature release tests pass, alongside
+formatting, Clippy, the release Wasm library build, and the native oracle's
+748 messages and 26 rejection cases. Focused Miri passes 18 distinct tests plus
+the native-profile fallback replay; independent reviews found no concrete safety
+defect. Timings use pinned CPU 0, warmed alternating
+process runs, and matched immutable binaries. The VM exposes no frequency/governor
+control; raw distributions are retained. These results concern the implemented
+expansion/register MVP, with no Wasm runtime or full-document claim.
+
+## Historical stable header slabs and typed metadata
+
+The allocator build `706e574`, measured before the follow-up above, shares
+64-slot value-header slabs with
 embedded non-atomic owner counts. Variable token pieces, parameter/fallback arrays,
 packet argument/owner tables, and overflow spans acquire reusable typed blocks.
 Expanded-name scanners retain their 64-byte stack prefix and check out independent
@@ -32,13 +106,13 @@ pooled scratch only on spill; nested scanners and failed scans return that stora
 Dense ID lookup remains one checked pointer load. Owners remain one pointer;
 token windows and hot definition fields remain directly accessible.
 
-The [final paired report](../benchmarks/results/token-slab-metadata.json) retains
+The [historical paired report](../benchmarks/results/token-slab-metadata.json) retains
 seven alternating ordinary-release repetitions at 100,000 core iterations and
 10,000 broader records, all compact-source memory cases, nine repetitions at one million iterations for
 affected cases, actual allocation diagnostics, and executable/source
 identities. It uses rustc 1.98.1, fat LTO, and the same AMD EPYC 7642/pdfTeX
 3.141592653-2.6-1.40.25 host as the preceding metadata work. All numbers below
-measure the final build; earlier intermediate slab/layout trials are excluded.
+measure that historical build; earlier intermediate slab/layout trials are excluded.
 
 | CPU versus preceding metadata allocator | Change |
 | --------------------------------------- | -----: |
@@ -51,9 +125,8 @@ measure the final build; earlier intermediate slab/layout trials are excluded.
 | Long arguments, longer confirmation | +11.4% |
 | Focused metadata, 1,000 iterations | +21.9% |
 
-These regressions remain material. Allocation improvements do not establish CPU
-neutrality; parameters, groups, long arguments, focused metadata, and selected
-broader cases require a separate execution/layout investigation. The scalar-group
+These measured regressions motivated the execution follow-up above. They describe
+that historical build rather than the current result. The scalar-group
 kernel retains its bound macro owners, so final-slot release does not explain its
 regression. The allocator preserves the existing token-loop ownership boundaries.
 
@@ -96,7 +169,7 @@ build's cached delimiter metadata. Read-only review found no concrete ownership
 or aliasing defect. The measured CLI and validated CLI have identical executable
 text and complete binary hashes.
 
-## Reusable token metadata
+## Historical reusable token metadata
 
 The second bounded allocator revision retains cleared multi-piece descriptors in
 value slots and reuses parameter descriptors with one flat delimiter-fallback
@@ -122,7 +195,7 @@ Nine-repeat confirmations use 1,000,000 iterations for the affected core cases.
 | Fixed-state churn, 50,000 | +2.0% |
 | Focused metadata, 1,000 | -3.4% |
 
-The core regression remains a tradeoff; broader CPU is near flat. Moving hot
+That build's core regression was a tradeoff; broader CPU was near flat. Moving hot
 fields ahead of fallback capacity reduced the initial layout cost. Generated
 x86-64 code reads body/prefix fields at slot offsets `0x54`/`0x50`, versus
 `0x80`/`0x88` before that correction. Ordinary delimiter fallback retains one checked

@@ -47,11 +47,19 @@ and actual allocation counts, including the warm metadata plateau and remaining
 core CPU/live-header memory costs.
 
 The [slab and typed-metadata comparison](results/token-slab-metadata.json) retains
-the final header, definition, packet, span, and long-name scratch allocator build.
+the historical `706e574` header, definition, packet, span, and long-name scratch build.
 It includes growing-live-state and warmed allocation diagnostics, full CPU samples,
-longer affected-case confirmations, and the remaining throughput/space regressions.
+longer affected-case confirmations, and that build's throughput/space regressions.
 Large packet-depth diagnostics are allocation-only beyond the native oracle's
 60-entry parameter stack; the paired native cases stay within that bound.
+
+The [execution follow-up](results/token-execution-followup.json) retains the current
+in-place builder, registry-lifetime retention, and arity-specific packet reuse.
+It compares complete core/broader suites with the original pre-metadata build and
+the completed allocator, includes the preserved alternative's full-suite control,
+and retains allocation/peak-memory diagnostics. Original-baseline core CPU rises
+2.6% and broader CPU falls 1.9%; parameter/long-argument penalties remain explicit.
+Allocation plateaus and shared live-state backing are preserved.
 
 An optional native profile build uses the same generators for compiler training:
 
