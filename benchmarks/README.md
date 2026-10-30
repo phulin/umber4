@@ -159,7 +159,10 @@ nine-, one-, and zero-parameter definitions with overlapping delimiters and
 multiblock token payloads; its 10, 100, and 1,000 iterations distinguish initial
 capacity growth from warmed reuse. `live-metadata` retains a distinct
 nine-parameter definition with overlapping delimiters each iteration, exercising
-metadata backing growth independently of fixed-state reuse. All validate their results in TeX and time the
+metadata backing growth independently of fixed-state reuse. `live-packets` retains
+nested argument packets during recursive calls at depths 10, 30, and 50 to fit
+the native INITEX oracle's 60-entry parameter stack; `long-names` repeats nested
+expanded-name scanners beyond their inline prefixes. All validate their results in TeX and time the
 same source in both interpreters. Churn defaults to
 1,000, 10,000, and 50,000 iterations; live growth uses 100, 1,000, and 2,500 to fit
 the native INITEX oracle's configured memory capacity. The input stays compact

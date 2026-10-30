@@ -75,16 +75,24 @@ impl SlabOwner {
         slab.references.set(slab.references.get() + 1);
     }
 }
+impl SlabOwner {
+    #[cold]
+    #[inline(never)]
+    fn deallocate(&self) {
+        // SAFETY: no registry or occupied slot remains. No later operation in
+        // the releasing destructor accesses slab. Every slot is initialized and
+        // contains no live external owner; metadata capacity drops here.
+        unsafe { drop(Box::from_raw(self.0.as_ptr())) };
+    }
+}
 impl Drop for SlabOwner {
+    #[inline]
     fn drop(&mut self) {
         let slab = self.slab();
         let references = slab.references.get();
         slab.references.set(references - 1);
         if references == 1 {
-            // SAFETY: no registry or occupied slot remains. No later operation
-            // in this destructor accesses slab; every slot is initialized and
-            // contains no live external owner. Metadata capacity drops here.
-            unsafe { drop(Box::from_raw(self.0.as_ptr())) };
+            self.deallocate();
         }
     }
 }
@@ -182,6 +190,21 @@ impl Values {
             // SAFETY: the registry retains every slot's slab.
             unsafe { slot.as_ref() }
         })
+    }
+    pub fn packet(&self) -> Packet {
+        Packet {
+            arguments: Buffer::new(&self.pool.arguments),
+            owners: Buffer::new(&self.pool.owners),
+        }
+    }
+    pub fn prepare_packet(&self, packet: &mut Packet, count: usize) {
+        packet.arguments.resize_with(count, || Sequence {
+            rest: Buffer::new(&self.pool.spans),
+            ..Sequence::default()
+        });
+    }
+    pub fn name_buffer(&self) -> Buffer<u8> {
+        Buffer::new(&self.pool.name_bytes)
     }
     pub fn builder(&mut self, class: Class) -> Result<Builder> {
         let id = self

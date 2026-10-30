@@ -104,3 +104,33 @@ fn failed_partial_initialization_keeps_owned_prefix_and_recycles_after_drop() {
     drop(replacement);
     assert_eq!(Rc::strong_count(&owner), 1);
 }
+
+#[test]
+fn removed_and_partially_constructed_elements_keep_exact_ownership() {
+    let store = Rc::new(Store::default());
+    let owner = Rc::new(());
+    let mut buffer = Buffer::new(&store);
+    buffer.resize_with(9, || Rc::clone(&owner));
+    let removed = buffer.remove(3);
+    assert_eq!(buffer.len(), 8);
+    assert_eq!(Rc::strong_count(&owner), 10);
+    drop(removed);
+    drop(buffer.pop());
+    assert_eq!(Rc::strong_count(&owner), 8);
+    let mut remaining = 2;
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        buffer.resize_with(65, || {
+            assert_ne!(remaining, 0, "test construction failure");
+            remaining -= 1;
+            Rc::clone(&owner)
+        });
+    }));
+    assert!(result.is_err());
+    assert_eq!(buffer.len(), 9);
+    assert_eq!(Rc::strong_count(&owner), 10);
+    buffer.resize_with(1, || unreachable!());
+    assert_eq!(Rc::strong_count(&owner), 2);
+    drop(store);
+    drop(buffer);
+    assert_eq!(Rc::strong_count(&owner), 1);
+}

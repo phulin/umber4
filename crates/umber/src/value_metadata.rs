@@ -89,7 +89,7 @@ impl<T> Store<T> {
             .push(pointer);
     }
     #[cfg(test)]
-    fn pages(&self) -> usize {
+    pub(crate) fn pages(&self) -> usize {
         self.buckets.borrow().iter().map(|b| b.pages.len()).sum()
     }
 }
@@ -147,6 +147,13 @@ impl<T> Buffer<T> {
         self.pointer = pointer;
         self.capacity = capacity;
     }
+    pub fn reserve(&mut self, additional: usize) {
+        let extra = u32::try_from(additional).expect("metadata capacity");
+        let length = self.length.checked_add(extra).expect("metadata capacity");
+        if length > self.capacity {
+            self.grow(length);
+        }
+    }
     #[inline]
     pub fn push(&mut self, value: T) {
         let length = self.length.checked_add(1).expect("metadata capacity");
@@ -159,15 +166,73 @@ impl<T> Buffer<T> {
         self.length = length;
     }
     pub fn clear(&mut self) {
-        let length = std::mem::take(&mut self.length);
-        // SAFETY: exactly this initialized prefix belongs to the buffer. Set
-        // length to zero before running destructors, including during unwinding.
+        self.truncate(0);
+    }
+    fn truncate(&mut self, length: u32) {
+        if length >= self.length {
+            return;
+        }
+        let previous = std::mem::replace(&mut self.length, length);
+        // SAFETY: the removed suffix is initialized and no longer exposed by
+        // the buffer, even if a destructor unwinds.
         unsafe {
             std::ptr::drop_in_place(std::ptr::slice_from_raw_parts_mut(
-                self.pointer.as_ptr(),
-                length as usize,
+                self.pointer.as_ptr().add(length as usize),
+                (previous - length) as usize,
             ));
         }
+    }
+    pub fn resize_with(&mut self, length: usize, mut value: impl FnMut() -> T) {
+        let length = u32::try_from(length).expect("metadata capacity");
+        if length > self.capacity {
+            self.grow(length);
+        }
+        while self.length < length {
+            self.push(value());
+        }
+        self.truncate(length);
+    }
+    #[inline]
+    pub fn pop(&mut self) -> Option<T> {
+        if self.length == 0 {
+            return None;
+        }
+        self.length -= 1;
+        // SAFETY: transfer the final initialized element out of the prefix.
+        Some(unsafe { self.pointer.as_ptr().add(self.length as usize).read() })
+    }
+    pub fn remove(&mut self, index: usize) -> T {
+        assert!(index < self.length as usize);
+        // SAFETY: index is initialized and owned exclusively by this buffer.
+        // Transfer it to the result, then move the remaining initialized suffix
+        // over that cell. The former final cell is no longer initialized.
+        unsafe {
+            let pointer = self.pointer.as_ptr().add(index);
+            let value = pointer.read();
+            self.length -= 1;
+            std::ptr::copy(pointer.add(1), pointer, self.length as usize - index);
+            value
+        }
+    }
+    pub fn extend_from_slice(&mut self, values: &[T])
+    where
+        T: Copy,
+    {
+        let extra = u32::try_from(values.len()).expect("metadata capacity");
+        let length = self.length.checked_add(extra).expect("metadata capacity");
+        if length > self.capacity {
+            self.grow(length);
+        }
+        // SAFETY: the disjoint source is initialized and the destination is
+        // this buffer's unused suffix. Publish the new prefix after the copy.
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                values.as_ptr(),
+                self.pointer.as_ptr().add(self.length as usize),
+                values.len(),
+            );
+        }
+        self.length = length;
     }
     pub fn resize(&mut self, length: usize, value: T)
     where
@@ -180,17 +245,7 @@ impl<T> Buffer<T> {
         while self.length < length {
             self.push(value.clone());
         }
-        if length < self.length {
-            let previous = std::mem::replace(&mut self.length, length);
-            // SAFETY: the removed suffix is initialized and no longer exposed
-            // by the buffer, even if a destructor unwinds.
-            unsafe {
-                std::ptr::drop_in_place(std::ptr::slice_from_raw_parts_mut(
-                    self.pointer.as_ptr().add(length as usize),
-                    (previous - length) as usize,
-                ));
-            }
-        }
+        self.truncate(length);
     }
     #[cfg(test)]
     pub fn extend(&mut self, values: impl IntoIterator<Item = T>) {

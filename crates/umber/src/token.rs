@@ -282,7 +282,7 @@ impl Span {
 #[derive(Default)]
 pub(crate) struct Sequence {
     pub first: Span,
-    pub rest: Vec<Span>,
+    pub rest: crate::value_metadata::Buffer<Span>,
 }
 impl Sequence {
     #[inline(always)]
@@ -370,12 +370,12 @@ pub(crate) struct Parameter {
 }
 #[derive(Default)]
 pub(crate) struct Packet {
-    pub arguments: Vec<Sequence>,
-    pub owners: Vec<crate::values::Owner>,
+    pub arguments: crate::value_metadata::Buffer<Sequence>,
+    pub owners: crate::value_metadata::Buffer<crate::values::Owner>,
 }
 impl Packet {
     pub fn clear(&mut self) {
-        for argument in &mut self.arguments {
+        for argument in self.arguments.iter_mut() {
             argument.clear();
         }
         self.owners.clear();

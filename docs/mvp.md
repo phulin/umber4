@@ -107,7 +107,9 @@ it does not move or relabel the block. Newly built definitions and register valu
 write into durable storage. Small-copy promotion remains optional when a concrete
 retention case justifies it.
 
-Value IDs/headers and packet capacity are reused. Each value slot also retains
+Value IDs/headers and packet capacity are reused. Packet argument/owner tables
+and overflow span lists share typed backing blocks, and nested long-name scanners
+reuse checked-out byte scratch after the 64-byte inline prefix. Each value slot also retains
 cleared multi-piece descriptor capacity and definition metadata: parameter records
 name ranges in one flat fallback array. Builders edit unpublished metadata and
 return descriptor storage on completion or failure. Releasing the last owner drops

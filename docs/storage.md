@@ -119,6 +119,48 @@ pages to each size class's high-water capacity, while buffers retain their large
 blocks just as the prior per-slot vectors did;
 there is no cache of independently allocated empty metadata objects.
 
+### MVP packet and scanner metadata
+
+The packet directory and free IDs remain amortized dense vectors. Each packet's
+argument table, retained-owner table, and each argument's overflow span list use
+the same typed block primitive with independent stores for `Sequence`, `Owner`,
+and `Span`. Argument reset retains descriptor capacity, clears spans, and then
+releases retained value owners. Resizing an argument table transfers initialized
+sequences, including their span-buffer ownership; removed sequences release their
+buffers before blocks can be reused. Packet buffers retain their stores and value
+owners through engine field teardown, so destruction order does not invalidate
+unconsumed input.
+
+Expanded-name scanning keeps its 64-byte inline prefix. Long-name scratch uses a
+reusable pool with one buffer per simultaneously nested scanner; nested expansion
+cannot borrow the outer scanner's storage. Both success and scan failure clear
+and return scratch. Retained scratch capacity follows nesting and name high-water
+marks, rather than the number of long control names scanned. Returned diagnostic
+messages remain independently owned byte vectors at the public result boundary.
+
+### MVP allocation boundaries
+
+The remaining system requests supply token pages and their shared records, header
+slabs, typed metadata pages, spelling chunks, and capacity growth of dense
+registries, hash buckets, input lines, and driver stacks. These structures grow
+with retained state or peak simultaneous demand. Fixed-size engine roots allocate
+once. Repeating a warmed fixed workload reuses these stores, including nested
+argument packets and long-name scratch. First long-name spill reserves the inline prefix plus its overflow byte together,
+so it starts in the 128-byte size class and reuses that capacity on later calls.
+
+The MVP's public message result remains `Vec<Vec<u8>>`: each `\message` constructs
+independently owned output bytes and transfers that vector to the result. Those
+adapter/result-boundary allocations are intentionally retained; this revision does
+not redesign public output ownership. The planned append-block diagnostic/output
+stores belong to the later runtime architecture. The optional whole-file lexer
+prototype is separate from the engine and keeps its own benchmark buffers.
+
+Typed pages retain each size class's capacity until its last buffer owner dies;
+a surviving value can retain its entire 64-slot header slab and shared metadata
+stores. Large metadata blocks can allocate individually, and token ranges can pin
+partially occupied pages. These are explicit retention/granularity limits, not
+per-definition or per-invocation allocation on a warmed working set.
+
 An immutable token store allocates stable blocks, initially by bump reservation.
 Builders initialize destination cells and publish ranges without moving tokens.
 A failed builder releases its reservations and owners. Tail reservations rewind

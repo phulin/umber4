@@ -24,6 +24,10 @@ struct Pool {
     pieces: Rc<Store<Piece>>,
     parameters: Rc<Store<Parameter>>,
     failures: Rc<Store<usize>>,
+    arguments: Rc<Store<Sequence>>,
+    owners: Rc<Store<Owner>>,
+    spans: Rc<Store<Span>>,
+    name_bytes: Rc<Store<u8>>,
     #[cfg(test)]
     created: Cell<usize>,
 }
@@ -351,3 +355,7 @@ pub(crate) use headers::{Owner, Value, Values};
 #[cfg(test)]
 #[path = "values_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "value_packets_tests.rs"]
+mod packet_tests;

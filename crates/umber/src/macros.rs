@@ -20,12 +20,11 @@ impl Engine<'_> {
                 return Err(Error::Capacity);
             }
             let id = self.packets.len() as u32;
-            self.packets.push(Packet::default());
+            self.packets.push(self.values.packet());
             id
         };
-        self.packets[id as usize]
-            .arguments
-            .resize_with(count, Sequence::default);
+        self.values
+            .prepare_packet(&mut self.packets[id as usize], count);
         Ok(id)
     }
     pub(crate) fn release_packet(&mut self, id: u32) {

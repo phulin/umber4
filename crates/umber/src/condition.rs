@@ -157,18 +157,18 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn scan_name(&mut self) -> Result<u32> {
-        // Common names stay on the stack; longer names spill once and continue
-        // through the same expansion and validation loop.
+        // Common names stay on the stack. A long-name buffer remains checked
+        // out while nested expansion runs, so nested scanners use disjoint blocks.
         let mut prefix = [0; 64];
         let mut length = 0;
-        let mut spill = Vec::new();
-        loop {
+        let mut spill: Option<crate::value_metadata::Buffer<u8>> = None;
+        let result = (|| loop {
             let read = self.next_expanded()?;
             if read.meaning.command == cmd::ENDCSNAME {
-                return self.intern(if spill.is_empty() {
-                    &prefix[..length]
+                return self.intern(if let Some(spill) = &spill {
+                    spill
                 } else {
-                    &spill
+                    &prefix[..length]
                 });
             }
             if read.token.is_cs() {
@@ -178,12 +178,22 @@ impl Engine<'_> {
                 prefix[length] = read.token.byte();
                 length += 1;
             } else {
-                if spill.is_empty() {
-                    spill.reserve(prefix.len() * 2);
-                    spill.extend_from_slice(&prefix);
+                if spill.is_none() {
+                    let mut buffer = self
+                        .name_spills
+                        .pop()
+                        .unwrap_or_else(|| self.values.name_buffer());
+                    buffer.reserve(prefix.len() + 1);
+                    buffer.extend_from_slice(&prefix);
+                    spill = Some(buffer);
                 }
-                spill.push(read.token.byte());
+                spill.as_mut().unwrap().push(read.token.byte());
             }
+        })();
+        if let Some(mut spill) = spill {
+            spill.clear();
+            self.name_spills.push(spill);
         }
+        result
     }
 }

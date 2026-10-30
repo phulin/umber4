@@ -3,6 +3,7 @@
 churn replaces a fixed working set; live-growth retains a new binding each time.
 metadata alternates parameter/fallback metadata and multiblock definitions.
 live-metadata retains distinct nine-parameter definitions and overlapping delimiters.
+live-packets retains nested invocation packets; long-names repeats nested spilled scanners.
 All execute their iterations in TeX rather than growing the host input file.
 """
 
@@ -17,7 +18,7 @@ import subprocess
 
 from mvp import BOOT, ROOT, measure, reference
 
-CASES = ("churn", "live-growth", "metadata", "live-metadata")
+CASES = ("churn", "live-growth", "metadata", "live-metadata", "live-packets", "long-names")
 PAYLOAD = "abcdefgh " * 8
 METADATA_PAYLOAD = (PAYLOAD * 14 + "\n") * 5
 
@@ -42,6 +43,21 @@ def program(case, size):
                 r"\ifx\result\small\else\message{UMBER:BAD:END}\end\fi"
                 r"\def\actual{" + payload + r"}\edef\result{\actual}"
                 r"\ifx\result\wanted\else\message{UMBER:BAD:END}\end\fi")
+    elif case == "long-names":
+        outer, inner = "a" * 80, "b" * 80
+        work = (r"\expandafter\def\csname " + inner + r"\endcsname{suffix}"
+                r"\expandafter\def\csname " + outer + r"suffix\endcsname{" + PAYLOAD + "}"
+                r"\edef\actual{\csname " + outer + r"\csname " + inner
+                + r"\endcsname\endcsname}"
+                r"\ifx\actual\wanted\else\message{UMBER:BAD:END}\end\fi")
+    elif case == "live-packets":
+        source = (BOOT + r"\def\wanted{" + PAYLOAD + "}\n"
+                  + r"\def\nest#1{\advance\count0by1\relax"
+                  + r"\ifnum\count0<" + str(size) + r" \nest{#1}\fi"
+                  + r"\def\actual{#1}\ifx\actual\wanted\else\message{UMBER:BAD:END}\end\fi}"
+                  + "\n" + r"\nest{" + PAYLOAD + "}\n"
+                  + r"\message{UMBER:\the\count0:END}\end" + "\n")
+        return source.encode(), str(size).encode()
     elif case == "live-metadata":
         work = (r"\expandafter\def\csname field\the\count0\endcsname"
                 r"##1abab##2xyxy##3##4##5##6##7##8##9{##9##1##2" + PAYLOAD + "}"
@@ -116,6 +132,8 @@ def main():
             "live-growth": [100, 1000, 2500],
             "metadata": [10, 100, 1000],
             "live-metadata": [100, 1000, 2500],
+            "live-packets": [10, 30, 50],
+            "long-names": [100, 1000, 10000],
         }[case]
         for size in sizes:
             source, expected = program(case, size)
