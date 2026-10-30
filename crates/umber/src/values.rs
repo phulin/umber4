@@ -123,8 +123,10 @@ struct Piece {
 #[derive(Default)]
 pub(crate) struct Tokens {
     first: Option<Piece>,
-    rest: Buffer<Piece>,
+    // Window checks and the common inline piece share the hot prefix; overflow
+    // descriptor ownership is needed only when that piece does not cover it.
     pub len: u32,
+    rest: Buffer<Piece>,
 }
 impl Tokens {
     fn last(&self) -> Option<&Piece> {
@@ -194,10 +196,11 @@ impl Tokens {
 // reservation limit. Contiguous growth keeps base and start. All three
 // pointers are null before the first reservation.
 pub(crate) struct Builder {
-    tokens: Tokens,
+    // Failure drops this owner before the pool, clearing the unpublished slot
+    // through the same path as a published value. All descriptors stay in place.
+    owner: Owner,
     pool: Rc<Pool>,
     class: Class,
-    owner: Option<Owner>,
     base: *mut Token,
     next: *mut Token,
     limit: *mut Token,
@@ -205,7 +208,17 @@ pub(crate) struct Builder {
 }
 impl Builder {
     pub fn id(&self) -> u32 {
-        self.owner.as_ref().unwrap().id
+        self.owner.id
+    }
+    fn tokens(&self) -> &Tokens {
+        // SAFETY: this unpublished slot is exclusively owned by the builder.
+        // The view borrows the builder, excluding mutation while it is live.
+        unsafe { &(*self.owner.slot().value.get()).tokens }
+    }
+    fn tokens_mut(&mut self) -> &mut Tokens {
+        // SAFETY: no published view or other owner can access this slot. A
+        // mutable builder borrow excludes its temporary descriptor views too.
+        unsafe { &mut (*self.owner.slot().value.get()).tokens }
     }
     pub fn len(&self) -> u32 {
         self.start + Self::words(self.base, self.next)
@@ -286,7 +299,7 @@ impl Builder {
         self.next = piece.base;
         // SAFETY: the reservation lies inside its page's cell allocation.
         self.limit = unsafe { piece.base.add(piece.capacity as usize) };
-        if let Some(last) = self.tokens.last_mut()
+        if let Some(last) = self.tokens_mut().last_mut()
             && Rc::ptr_eq(&last.page.0, &piece.page.0)
             && last.base.wrapping_add(last.capacity as usize) == piece.base
         {
@@ -295,56 +308,40 @@ impl Builder {
         }
         self.base = piece.base;
         self.start = len;
-        if self.tokens.first.is_none() {
-            self.tokens.first = Some(piece);
+        let tokens = self.tokens_mut();
+        if tokens.first.is_none() {
+            tokens.first = Some(piece);
         } else {
-            self.tokens.rest.push(piece);
+            tokens.rest.push(piece);
         }
         Ok(())
     }
     pub fn get(&self, position: u32) -> Token {
         assert!(position < self.len());
         // SAFETY: positions before the cursor are initialized.
-        unsafe { self.tokens.read(position) }
+        unsafe { self.tokens().read(position) }
     }
     pub fn definition_mut(&mut self) -> &mut Definition {
-        let owner = self.owner.as_ref().unwrap();
         // SAFETY: the unpublished builder is the sole external owner and never
         // exposes a Value view. Metadata stays in the slot even on failed builds.
-        unsafe { &mut (*owner.slot().value.get()).definition }
+        unsafe { &mut (*self.owner.slot().value.get()).definition }
     }
-    pub fn finish(mut self) -> Owner {
-        self.tokens.len = self.len();
+    pub fn finish(self) -> Owner {
+        let length = self.len();
         let remaining = Self::words(self.next, self.limit);
+        // SAFETY: this builder alone owns the unpublished slot. Every descriptor
+        // and token before length is initialized; publishing makes them visible
+        // only after the final reservation has been trimmed.
+        let tokens = unsafe { &mut (*self.owner.slot().value.get()).tokens };
+        tokens.len = length;
         if remaining != 0 {
-            let last = self.tokens.last_mut().unwrap();
+            let last = tokens.last_mut().unwrap();
             if self.pool.rewind(last, remaining) {
                 last.capacity -= remaining;
             }
         }
-        // SAFETY: only this builder owns the unpublished value. get refuses
-        // unpublished slots, and the builder exposes token copies and IDs only.
-        // Moving the completed descriptor leaves every token cell in place.
-        self.return_storage();
-        let owner = self.owner.take().unwrap();
-        owner.slot().published.set(true);
-        owner
-    }
-    fn return_storage(&mut self) {
-        let owner = self.owner.as_ref().unwrap();
-        // SAFETY: an unpublished builder is the sole external owner. No view
-        // of this slot's contents is exposed until finish marks it published.
-        let value = unsafe { &mut *owner.slot().value.get() };
-        value.tokens = std::mem::take(&mut self.tokens);
-    }
-}
-impl Drop for Builder {
-    fn drop(&mut self) {
-        if self.owner.is_some() {
-            // Owner::drop then releases reservations and clears metadata through
-            // the same path as a published value, retaining reusable capacity.
-            self.return_storage();
-        }
+        self.owner.slot().published.set(true);
+        self.owner
     }
 }
 

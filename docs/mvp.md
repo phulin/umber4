@@ -109,24 +109,25 @@ retention case justifies it.
 
 Value IDs/headers and packet capacity are reused. Packet argument/owner tables
 and overflow span lists share typed backing blocks, and nested long-name scanners
-reuse checked-out byte scratch after the 64-byte inline prefix. Each value slot also retains
-cleared multi-piece descriptor capacity and definition metadata: parameter records
-name ranges in one flat fallback array. Builders edit unpublished metadata and
-return descriptor storage on completion or failure. Releasing the last owner drops
-all page owners before reusing the slot; no old token blocks remain in cleared
-metadata. Fixed-state metadata churn reuses warmed capacity, including transitions
+reuse checked-out byte scratch after the 64-byte inline prefix. Each value slot
+also retains cleared multi-piece descriptor capacity and definition metadata: parameter records
+name ranges in one flat fallback array. Builders edit descriptors and metadata
+directly in unpublished slots and finish or release them in place. Releasing the
+last owner drops all page owners before reusing the slot; no old token blocks
+remain in cleared metadata. Fixed-state metadata churn reuses warmed capacity, including transitions
 to fewer parameters and shorter delimiters. Capacity follows each slot's high-water
 mark until teardown. Headers occupy stable 64-slot slabs with embedded non-atomic
-owner counts; a dense non-owning directory preserves direct ID lookup. Variable
+owner counts; a dense non-owning directory preserves direct ID lookup. Value
 metadata acquires equal-capacity blocks from three typed page stores, so growing
 live definitions shares backing allocations too. Ordinary blocks share pages;
 arrays larger than 4 KiB can receive individual large backing blocks. Store pages
 retain their class high-water capacity until the last buffer owner disappears.
 Historical counts in [mvp-results.md](mvp-results.md) include their original layouts.
 
-Publication transfers initialized storage without flattening. Failed builders
-release their reservations. Reused IDs cannot become visible until old owners and
-views have disappeared. Preserve the existing ability for a retained value or
+Publication exposes initialized storage without flattening or moving descriptors.
+Failed builders release their reservations. Published readers cannot observe a
+reused value until old owners/views have disappeared and its new contents are complete.
+Preserve the existing ability for a retained value or
 builder to outlive its registry by retaining the necessary allocator backing at
 store/slab granularity. No per-token ownership operation is introduced.
 

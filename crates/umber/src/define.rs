@@ -29,7 +29,8 @@ impl Engine<'_> {
                     brace_tail = Some(next.token);
                     break;
                 }
-                if parameters == 9 || next.token != Token::other(b'1' + parameters) {
+                if parameters == Arity::Nine as u8 || next.token != Token::other(b'1' + parameters)
+                {
                     return Err(Error::Syntax);
                 }
                 if parameters == 0 {
@@ -97,6 +98,7 @@ impl Engine<'_> {
         tokens.definition_mut().body = body;
         tokens.definition_mut().long = long;
         tokens.definition_mut().uses_parameters = uses_parameters;
+        tokens.definition_mut().arity = Arity::new(parameters);
         let owner = tokens.finish();
         let id = owner.id;
         self.assign_meaning(

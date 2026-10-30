@@ -2,34 +2,33 @@ use crate::{Engine, Error, Result, token::*};
 
 impl Engine<'_> {
     #[inline]
-    pub(crate) fn take_packet(&mut self, count: usize) -> Result<u32> {
-        let id = self.free_packets.pop();
-        if let Some(id) = id
-            && self.packets[id as usize].arguments.len() == count
-        {
+    pub(crate) fn take_packet(&mut self, arity: Arity) -> Result<u32> {
+        let count = arity as usize;
+        let id = self.free_packets[count];
+        if id != NO_PACKET {
+            self.free_packets[count] = self.packet_links[id as usize];
             return Ok(id);
         }
-        self.prepare_packet(id, count)
+        self.prepare_packet(count)
     }
     #[inline(never)]
-    fn prepare_packet(&mut self, id: Option<u32>, count: usize) -> Result<u32> {
-        let id = if let Some(id) = id {
-            id
-        } else {
-            if self.packets.len() >= u32::MAX as usize {
-                return Err(Error::Capacity);
-            }
-            let id = self.packets.len() as u32;
-            self.packets.push(self.values.packet());
-            id
-        };
+    fn prepare_packet(&mut self, count: usize) -> Result<u32> {
+        if self.packets.len() >= NO_PACKET as usize {
+            return Err(Error::Capacity);
+        }
+        let id = self.packets.len() as u32;
+        self.packets.push(self.values.packet());
+        self.packet_links.push(NO_PACKET);
         self.values
             .prepare_packet(&mut self.packets[id as usize], count);
         Ok(id)
     }
     pub(crate) fn release_packet(&mut self, id: u32) {
-        self.packets[id as usize].clear();
-        self.free_packets.push(id);
+        let packet = &mut self.packets[id as usize];
+        packet.clear();
+        let count = packet.arguments.len();
+        self.packet_links[id as usize] = self.free_packets[count];
+        self.free_packets[count] = id;
     }
     #[inline(always)]
     pub(crate) fn capture_raw(
@@ -115,18 +114,21 @@ impl Engine<'_> {
             self.packets[packet as usize].owners.push(tokens.finish());
         }
     }
-    #[inline(always)]
+    // Resolve and retain a definition at the invocation boundary, rather than
+    // duplicating its directory checks in every expanded-token reader.
+    #[inline(never)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
         let owner = self.values.get(id);
         let definition = owner.definition();
-        if definition.prefix_end == 0 && definition.parameters.is_empty() {
+        let arity = definition.arity;
+        if definition.prefix_end == 0 && arity == Arity::Zero {
             self.retire_exhausted();
             return self.push_body(owner, None);
         }
         if definition.uses_parameters {
-            self.begin_macro_with_arguments::<true>(owner)
+            self.begin_macro_with_arguments::<true>(owner, arity)
         } else {
-            self.begin_macro_with_arguments::<false>(owner)
+            self.begin_macro_with_arguments::<false>(owner, arity)
         }
     }
     #[inline(always)]
@@ -247,6 +249,7 @@ impl Engine<'_> {
     fn begin_macro_with_arguments<const RETAIN: bool>(
         &mut self,
         owner: crate::values::Owner,
+        arity: Arity,
     ) -> Result<()> {
         let definition = owner.definition();
         for position in 0..definition.prefix_end {
@@ -255,12 +258,12 @@ impl Engine<'_> {
                 return Err(Error::Argument);
             }
         }
-        let count = definition.parameters.len();
+        let count = arity as usize;
         if count == 0 {
             self.retire_exhausted();
             return self.push_body(owner, None);
         }
-        let packet = if RETAIN { self.take_packet(count)? } else { 0 };
+        let packet = if RETAIN { self.take_packet(arity)? } else { 0 };
         let mut builder = None;
         let long = definition.long;
         for argument in 0..count {

@@ -338,6 +338,40 @@ pub(crate) struct TokenValue {
     pub owner: Option<crate::values::Owner>,
     pub level: u16,
 }
+// TeX validates this finite range while reading a definition. Carrying it as a
+// type keeps packet selection bounded without rechecking a cold buffer length.
+#[repr(u8)]
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) enum Arity {
+    #[default]
+    Zero,
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    Eight,
+    Nine,
+}
+impl Arity {
+    pub fn new(count: u8) -> Self {
+        match count {
+            0 => Self::Zero,
+            1 => Self::One,
+            2 => Self::Two,
+            3 => Self::Three,
+            4 => Self::Four,
+            5 => Self::Five,
+            6 => Self::Six,
+            7 => Self::Seven,
+            8 => Self::Eight,
+            9 => Self::Nine,
+            _ => unreachable!("validated TeX parameter count"),
+        }
+    }
+}
 // Keep invocation fields ahead of cold fallback storage. The default Rust
 // layout put body/prefix fields beyond another cache line after adding vectors.
 #[repr(C)]
@@ -349,15 +383,16 @@ pub(crate) struct Definition {
     pub body: ArenaRange,
     pub long: bool,
     pub uses_parameters: bool,
+    pub arity: Arity,
     pub parameters: crate::value_metadata::Buffer<Parameter>,
     pub failure: crate::value_metadata::Buffer<usize>,
 }
 impl Definition {
     pub fn clear(&mut self) {
+        self.arity = Arity::Zero;
         self.parameters.clear();
         self.failure.clear();
     }
-    #[cfg(feature = "native-profile")]
     pub fn failure(&self, argument: usize) -> &[usize] {
         let parameter = &self.parameters[argument];
         let length = (parameter.delimiter.end - parameter.delimiter.start) as usize;
@@ -368,7 +403,8 @@ pub(crate) struct Parameter {
     pub delimiter: ArenaRange,
     pub failure_start: usize,
 }
-#[derive(Default)]
+pub(crate) const NO_PACKET: u32 = u32::MAX;
+pub(crate) const PACKET_ARITIES: usize = Arity::Nine as usize + 1;
 pub(crate) struct Packet {
     pub arguments: crate::value_metadata::Buffer<Sequence>,
     pub owners: crate::value_metadata::Buffer<crate::values::Owner>,

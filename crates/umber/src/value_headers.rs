@@ -25,6 +25,7 @@ pub(super) struct Slot {
 }
 struct Slab {
     references: Cell<usize>,
+    registered: Cell<bool>,
     pool: Weak<Pool>,
     slots: [Slot; SLOTS],
 }
@@ -38,7 +39,8 @@ impl SlabOwner {
         // only dereferenced while a registry or occupied-slot reference exists.
         unsafe {
             let raw = pointer.as_ptr();
-            std::ptr::addr_of_mut!((*raw).references).write(Cell::new(1));
+            std::ptr::addr_of_mut!((*raw).references).write(Cell::new(0));
+            std::ptr::addr_of_mut!((*raw).registered).write(Cell::new(true));
             std::ptr::addr_of_mut!((*raw).pool).write(Rc::downgrade(pool));
             let slots = std::ptr::addr_of_mut!((*raw).slots).cast::<Slot>();
             for index in 0..SLOTS {
@@ -67,15 +69,26 @@ impl SlabOwner {
         // SAFETY: this handle retains the initialized allocation.
         unsafe { self.0.as_ref() }
     }
-    fn retain(slab: &Slab) {
-        // Match Rc's overflow policy without permitting a wrapping counter.
-        if slab.references.get() == usize::MAX {
-            std::process::abort();
-        }
-        slab.references.set(slab.references.get() + 1);
-    }
 }
 impl SlabOwner {
+    #[cold]
+    #[inline(never)]
+    fn unregister(&self) {
+        let slab = self.slab();
+        // The registry is no longer borrowed. Each occupied slot now takes one
+        // retention reference, irrespective of its aliases. Counting a fixed
+        // 64-slot array cannot overflow; only alias counters grow unboundedly.
+        let references = slab
+            .slots
+            .iter()
+            .filter(|slot| slot.owners.get() != 0)
+            .count();
+        slab.references.set(references);
+        slab.registered.set(false);
+        if references == 0 {
+            self.deallocate();
+        }
+    }
     #[cold]
     #[inline(never)]
     fn deallocate(&self) {
@@ -89,6 +102,10 @@ impl Drop for SlabOwner {
     #[inline]
     fn drop(&mut self) {
         let slab = self.slab();
+        if slab.registered.get() {
+            self.unregister();
+            return;
+        }
         let references = slab.references.get();
         slab.references.set(references - 1);
         if references == 1 {
@@ -97,8 +114,8 @@ impl Drop for SlabOwner {
     }
 }
 
-// One pointer per semantic owner. Only occupancy transitions retain the slab;
-// repeated aliases change the embedded slot counter alone.
+// One pointer per semantic owner. Aliases change the embedded slot counter;
+// slab references are needed only after the registry has disappeared.
 pub(crate) struct Owner(NonNull<Slot>);
 impl Owner {
     #[inline]
@@ -143,10 +160,11 @@ impl Drop for Owner {
 }
 impl Slot {
     #[inline(never)]
-    fn release(&self) -> SlabOwner {
+    fn release(&self) -> Option<SlabOwner> {
         self.published.set(false);
         // SAFETY: final external owner has ended all borrowed views. The
-        // registry retains the slab but has no reader of this slot's contents.
+        // registry or transferred slot reference retains the slab but has no
+        // reader of this slot's contents.
         let value = unsafe { &mut *self.value.get() };
         // SAFETY: this occupied slot retains the slab through this release.
         let slab = unsafe { self.slab.as_ref() };
@@ -163,9 +181,15 @@ impl Slot {
         if let Some(pool) = pool {
             pool.ids.borrow_mut().push(value.id);
         }
-        // Return before deallocation: the release call borrows this slot.
-        // Its caller drops the slab reference after that borrow has ended.
-        SlabOwner(self.slab)
+        // The registry keeps every slab alive without per-checkout bookkeeping.
+        // After registry teardown, return before deallocation: the release call
+        // borrows this slot. Its caller drops the transferred reference only
+        // after that borrow has ended.
+        if slab.registered.get() {
+            None
+        } else {
+            Some(SlabOwner(self.slab))
+        }
     }
 }
 
@@ -226,18 +250,14 @@ impl Values {
         }
         let slot = self.slot(id);
         debug_assert_eq!(slot.owners.get(), 0);
-        // SAFETY: the registry retains this slab; checkout transfers one new
-        // slab reference to the occupied slot, then constructs its first owner.
-        SlabOwner::retain(unsafe { slot.slab.as_ref() });
+        // The registry retains this slab. Its cold teardown transfers retention
+        // to occupied slots, including any unpublished builders that survive it.
         slot.owners.set(1);
         let owner = Owner(NonNull::from(slot));
-        // SAFETY: a cleared slot has no external owner or published view.
-        let value = unsafe { &mut *slot.value.get() };
         Ok(Builder {
-            tokens: std::mem::take(&mut value.tokens),
+            owner,
             pool: Rc::clone(&self.pool),
             class,
-            owner: Some(owner),
             base: std::ptr::null_mut(),
             next: std::ptr::null_mut(),
             limit: std::ptr::null_mut(),

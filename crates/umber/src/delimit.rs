@@ -89,7 +89,8 @@ impl Engine<'_> {
         } else {
             ArenaRange::default()
         };
-        #[cfg(feature = "native-profile")]
+        // Resolve the immutable fallback range once per argument, rather than
+        // reloading its parameter offset after each nested scanner call.
         let failure = if DELIMITED {
             definition.failure(argument)
         } else {
@@ -165,11 +166,7 @@ impl Engine<'_> {
                     if matched == 0 {
                         break;
                     }
-                    #[cfg(feature = "native-profile")]
                     let fallback = failure[matched - 1];
-                    #[cfg(not(feature = "native-profile"))]
-                    let fallback = definition.failure
-                        [definition.parameters[argument].failure_start + matched - 1];
                     matched = fallback;
                 }
                 if matched == length {

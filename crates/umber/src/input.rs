@@ -371,6 +371,9 @@ impl Engine<'_> {
         let (packet, arg) = argument?;
         self.packets[packet as usize].arguments[arg as usize].span(index)
     }
+    // Keep cursor installation out of the per-token reader. Singleton arguments
+    // return inline above; ranges need the full source/window setup only once.
+    #[inline(never)]
     pub(crate) fn push_argument(&mut self, packet: u32, argument: u8) -> Result<()> {
         let sequence = Some((packet, argument));
         let Some(span) = self.span_for(sequence, 0) else {

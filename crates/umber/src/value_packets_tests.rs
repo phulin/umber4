@@ -1,6 +1,36 @@
 use super::*;
 
 #[test]
+fn alternating_arities_retain_nested_span_capacity_and_distinct_live_packets() {
+    let mut engine = crate::Engine::new(b"");
+    let first = engine.take_packet(Arity::Nine).unwrap();
+    let second = engine.take_packet(Arity::Nine).unwrap();
+    let single = engine.take_packet(Arity::One).unwrap();
+    assert_ne!(first, second);
+    assert_ne!(single, first);
+    for start in 0..8 {
+        engine.packets[first as usize].arguments[8].append(Span {
+            store: start,
+            start,
+            end: start + 1,
+        });
+    }
+    let span_capacity = engine.packets[first as usize].arguments[8].rest.capacity();
+    let span_backing = engine.packets[first as usize].arguments[8].rest.as_ptr();
+    engine.release_packet(first);
+    engine.release_packet(single);
+    engine.release_packet(second);
+    assert_eq!(engine.take_packet(Arity::Nine).unwrap(), second);
+    assert_eq!(engine.take_packet(Arity::One).unwrap(), single);
+    assert_eq!(engine.take_packet(Arity::Nine).unwrap(), first);
+    let argument = &engine.packets[first as usize].arguments[8];
+    assert!(argument.first.empty());
+    assert!(argument.rest.is_empty());
+    assert_eq!(argument.rest.capacity(), span_capacity);
+    assert_eq!(argument.rest.as_ptr(), span_backing);
+}
+
+#[test]
 fn packet_blocks_share_live_backing_and_recycle_cleared_sequences() {
     let values = Values::default();
     let mut packets: Vec<_> = (0..97)

@@ -45,18 +45,23 @@ pub struct Outcome {
     pub counts: [i32; 256],
     pub messages: Vec<Vec<u8>>,
 }
+// The per-token directories stay together and precede cold pools and large
+// tables. Explicit layout prevents unrelated metadata additions from moving
+// these roots or increasing their instruction displacements.
+#[repr(C)]
 pub struct Engine<'a> {
+    pub(crate) sources: Vec<Source>,
+    pub(crate) bindings: Vec<Binding>,
+    pub(crate) values: values::Values,
+    pub(crate) packets: Vec<Packet>,
     pub(crate) file: input::FileInput<'a>,
     pub(crate) names: Box<Names>,
-    pub(crate) bindings: Vec<Binding>,
     pub(crate) binding_owners: Vec<Option<values::Owner>>,
     pub(crate) scalars: Scalars,
     pub(crate) token_registers: [TokenValue; 256],
     pub(crate) after_assignment: Option<Token>,
-    pub(crate) values: values::Values,
-    pub(crate) sources: Vec<Source>,
-    pub(crate) packets: Vec<Packet>,
-    pub(crate) free_packets: Vec<u32>,
+    pub(crate) free_packets: [u32; PACKET_ARITIES],
+    pub(crate) packet_links: Vec<u32>,
     pub(crate) name_spills: Vec<value_metadata::Buffer<u8>>,
     pub(crate) save: Vec<execute::Save>,
     pub(crate) level: u16,
@@ -78,7 +83,8 @@ impl<'a> Engine<'a> {
             values: values::Values::default(),
             sources: Vec::with_capacity(16),
             packets: Vec::new(),
-            free_packets: Vec::new(),
+            free_packets: [NO_PACKET; PACKET_ARITIES],
+            packet_links: Vec::new(),
             name_spills: Vec::new(),
             save: Vec::new(),
             level: 0,

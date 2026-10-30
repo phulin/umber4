@@ -238,7 +238,7 @@ fn reservation_stays_inside_value_coordinates() {
     // Exercise the final reservation without allocating the preceding words.
     builder.start = u32::MAX - 1;
     builder.push(Token::other(b'Z')).unwrap();
-    let piece = builder.tokens.first.as_ref().unwrap();
+    let piece = builder.tokens().first.as_ref().unwrap();
     assert_eq!(piece.start, u32::MAX - 1);
     assert_eq!(piece.capacity, 1);
     assert_eq!(piece.start.checked_add(piece.capacity), Some(u32::MAX));
@@ -437,17 +437,17 @@ fn failed_builder_returns_metadata_and_can_outlive_registry() {
     });
     failed.definition_mut().failure.extend([0, 0, 1]);
     let id = failed.id();
-    let pieces = failed.tokens.rest.as_ptr();
+    let pieces = failed.tokens().rest.as_ptr();
     let parameters = failed.definition_mut().parameters.as_ptr();
     let failures = failed.definition_mut().failure.as_ptr();
     drop(failed);
     let mut next = values.builder(Class::Durable).unwrap();
     assert_eq!(next.id(), id);
-    assert!(next.tokens.first.is_none());
-    assert!(next.tokens.rest.is_empty());
+    assert!(next.tokens().first.is_none());
+    assert!(next.tokens().rest.is_empty());
     assert!(next.definition_mut().parameters.is_empty());
     assert!(next.definition_mut().failure.is_empty());
-    assert_eq!(next.tokens.rest.as_ptr(), pieces);
+    assert_eq!(next.tokens().rest.as_ptr(), pieces);
     assert_eq!(next.definition_mut().parameters.as_ptr(), parameters);
     assert_eq!(next.definition_mut().failure.as_ptr(), failures);
     next.push(Token::other(b'Y')).unwrap();
@@ -533,4 +533,27 @@ fn cross_slab_owners_keep_windows_stable_during_reuse_and_teardown() {
     let completed = unfinished.finish();
     drop(alias);
     assert_eq!(completed.tokens.get(4), Token::other(b'X'));
+}
+
+#[test]
+fn registry_teardown_transfers_one_reference_per_occupied_slot() {
+    let mut values = Values::default();
+    let first = value(&mut values, 3, b'A');
+    let discarded = value(&mut values, 3, b'B');
+    let second = value(&mut values, 3, b'C');
+    let first_alias = first.clone();
+    let second_alias = second.clone();
+    let metadata = Rc::downgrade(&values.pool.parameters);
+    drop(discarded);
+    drop(values);
+    drop(first);
+    drop(second);
+    assert_eq!(first_alias.tokens.get(2), Token::other(b'A'));
+    assert_eq!(second_alias.tokens.get(2), Token::other(b'C'));
+    drop(first_alias);
+    assert_ne!(metadata.strong_count(), 0);
+    drop(second_alias);
+    // Alias counts must neither release the shared slab early nor leave an
+    // extra occupancy reference after its last occupied slot is gone.
+    assert_eq!(metadata.strong_count(), 0);
 }

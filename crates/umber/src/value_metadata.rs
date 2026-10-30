@@ -1,4 +1,4 @@
-//! Typed size-class backing used only by immutable value metadata.
+//! Typed size-class backing for value, invocation, and scanner metadata.
 use std::cell::{RefCell, UnsafeCell};
 use std::mem::MaybeUninit;
 use std::ptr::NonNull;
@@ -156,17 +156,28 @@ impl<T> Buffer<T> {
     }
     #[inline]
     pub fn push(&mut self, value: T) {
-        let length = self.length.checked_add(1).expect("metadata capacity");
-        if length > self.capacity {
+        if self.length == self.capacity {
+            let length = self.length.checked_add(1).expect("metadata capacity");
             self.grow(length);
         }
         // SAFETY: the unused cell belongs to this buffer. Publish its length
         // only after initialization; there is no user callback between them.
+        // length < capacity also proves the increment fits u32, including when
+        // the final size class has capacity u32::MAX.
         unsafe { self.pointer.as_ptr().add(self.length as usize).write(value) };
-        self.length = length;
+        self.length += 1;
     }
     pub fn clear(&mut self) {
-        self.truncate(0);
+        let length = std::mem::take(&mut self.length);
+        // SAFETY: exactly this initialized prefix belongs to the buffer. Reset
+        // before dropping it so unwinding cannot expose or drop it again. For
+        // elements without destructors, clear is just the length reset.
+        unsafe {
+            std::ptr::drop_in_place(std::ptr::slice_from_raw_parts_mut(
+                self.pointer.as_ptr(),
+                length as usize,
+            ));
+        }
     }
     fn truncate(&mut self, length: u32) {
         if length >= self.length {

@@ -69,9 +69,11 @@ there is no separate system allocation for each counter or wrapper.
 
 The MVP reuses capacity in existing value slots for token piece descriptors,
 parameter descriptors, and one flat delimiter-fallback array. An unpublished
-builder takes the cleared token descriptor storage and edits its slot's metadata
-exclusively. Publication returns token descriptors without moving token words;
-failed builders return them before last-owner release. Release drops all page
+builder edits token descriptors and definition metadata directly in its stable,
+unpublished slot. Its local write cursor introduces no per-token ownership work.
+Publication sets the initialized token length without moving descriptors or token
+words; an abandoned builder's owner releases its initialized descriptors exactly
+once through the ordinary final-owner path. Release drops all page
 owners and clears metadata lengths before making the slot reusable. Capacity stays
 with the slot until registry teardown or, for surviving owners, final release.
 Headers share stable slabs, and variable metadata shares typed size-class pages.
@@ -84,11 +86,14 @@ the dense non-owning pointer directory never moves a slot. ID lookup remains one
 checked pointer load. Each slot embeds its non-atomic external-owner
 count. An `Owner` remains one pointer to the slot, so reading a value or a token
 window does not resolve another table. Cloning increments only the slot count.
-The first owner of a checked-out slot retains its slab once, and final-owner
-release clears token/definition resources before returning its ID and releasing
-that slab reference. The registry owns a separate slab reference. A surviving
-owner or unpublished builder therefore retains its entire slab after registry
-teardown, without a slab/slot ownership cycle.
+While the registry exists, it alone retains every slab; checking out and clearing
+slots does not update a second ownership counter. At registry teardown, each slab
+counts its occupied slots once and transfers retention to those slots. There are
+at most 64 such references, regardless of their alias counts. Subsequent
+final-owner release clears token/definition resources before releasing that slot's
+slab reference. A surviving owner or unpublished builder therefore retains its
+entire slab after registry teardown, without a slab/slot ownership cycle. Slot
+alias-count overflow still aborts before an overflowing owner can escape.
 
 Slab allocation, in-place initialization, and final deallocation form a narrow
 unsafe layer. Every slot is initialized before the slab is exposed. Only
@@ -121,9 +126,16 @@ there is no cache of independently allocated empty metadata objects.
 
 ### MVP packet and scanner metadata
 
-The packet directory and free IDs remain amortized dense vectors. Each packet's
-argument table, retained-owner table, and each argument's overflow span list use
-the same typed block primitive with independent stores for `Sequence`, `Owner`,
+The packet directory remains an amortized dense vector. Free packets form
+lists by argument count (zero through TeX's nine parameters), using a parallel
+dense next-ID table. Keeping cold links outside the packet preserves its compact
+argument/owner descriptor layout. A checkout reuses the same table shape;
+alternating arities does not destroy and reconstruct nested span buffers or their
+store owners. Link-table growth follows packet-directory capacity. Each packet's
+retained capacity follows peak simultaneous use of its own arity; the sum of
+those per-arity peaks can exceed the largest single simultaneous packet set.
+Each packet's argument table, retained-owner table, and each argument's overflow
+span list use the same typed block primitive with independent stores for `Sequence`, `Owner`,
 and `Span`. Argument reset retains descriptor capacity, clears spans, and then
 releases retained value owners. Resizing an argument table transfers initialized
 sequences, including their span-buffer ownership; removed sequences release their

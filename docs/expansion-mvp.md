@@ -75,12 +75,16 @@ replacement. All list sources use the same cursor/window traversal. Argument
 cursors borrow their body packet while it remains beneath them; forwarded ranges
 acquire their own backing owner before the enclosing source can retire.
 
-Parameters and delimiter fallback tables are definition-owned metadata. Packets
-reuse argument and span capacity. Empty/singleton output stays inline. The bounded
+Parameters and delimiter fallback tables are definition-owned metadata. The
+validated zero-to-nine arity stays with the hot invocation fields, so packet
+selection does not reread a descriptor length to recover arity or revalidate the
+parameter limit. Packets reuse argument and span capacity by arity. Empty/singleton
+output stays inline. The bounded
 allocation revisions in [mvp.md](mvp.md) separate durable and transient active token
 blocks and cache complete block ownership records. Value slots reuse cleared
-parameter/fallback and multi-piece descriptor capacities. Denser value-header slabs
-remain future layout work. Both classes use the same cursor API.
+parameter/fallback and multi-piece descriptor capacities in place. Headers share
+stable slabs and variable metadata shares typed backing blocks. Both classes use
+the same cursor API.
 
 The interner stores stable spelling bytes in session-owned chunks, with a compact
 probe table and dense spelling directory. Source and dynamically built names use

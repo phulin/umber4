@@ -14,6 +14,9 @@ readers and dispatch, and expose scoped token/node windows to bulk operations.
 Inspect release instructions when changing hot loops: duplicate classification,
 meaning resolution, chunk lookup, ownership traffic, and allocator calls are the
 main avoidable costs. Measure the complete affected workload before specializing.
+The MVP keeps source, binding, value-directory, and packet-directory roots in an
+explicit compact prefix of the engine. Adding cold pools must not push those
+per-token fields behind unrelated metadata or change their layout implicitly.
 
 Line-local lookahead and hashing are bounded input optimizations. Cross-line regime
 caches and worker lexing in [fast-lexing.md](fast-lexing.md) remain experiments until
