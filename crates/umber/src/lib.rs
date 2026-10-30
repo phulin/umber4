@@ -45,10 +45,6 @@ pub struct Outcome {
     pub counts: [i32; 256],
     pub messages: Vec<Vec<u8>>,
 }
-// The per-token directories stay together and precede cold pools and large
-// tables. Explicit layout prevents unrelated metadata additions from moving
-// these roots or increasing their instruction displacements.
-#[repr(C)]
 pub struct Engine<'a> {
     pub(crate) sources: Vec<Source>,
     pub(crate) bindings: Vec<Binding>,

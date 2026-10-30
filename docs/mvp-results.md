@@ -1,7 +1,8 @@
 # Native expansion measurements
 
-The current execution follow-up compares CPU against the original pre-metadata
+The historical execution follow-up measures `2f4b614` against the original pre-metadata
 checkout `80facd9` (engine `ad5c07b`) and the completed allocator `706e574`.
+Its CPU figures describe that build, not subsequent source changes.
 Allocation diagnostics compare against the pre-slab checkout `af5982b` (engine
 `317c54d`). The historical slab/metadata comparison uses that same pre-slab baseline.
 The historical metadata-reuse comparison uses `80facd9` as its baseline checkout (engine
@@ -25,10 +26,10 @@ ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
 
-## Allocator execution follow-up
+## Historical allocator execution follow-up
 
 The [execution follow-up report](../benchmarks/results/token-execution-followup.json)
-retains the selected complete implementation and its measured tradeoffs. Builders
+records that build and its measured tradeoffs. Builders
 construct token descriptors directly in unpublished value slots. Registered slabs
 need no per-object occupancy-counter updates; registry teardown transfers retention
 to occupied slots once. Packets reuse argument/span capacity by arity, and validated

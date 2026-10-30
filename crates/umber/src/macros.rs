@@ -114,9 +114,6 @@ impl Engine<'_> {
             self.packets[packet as usize].owners.push(tokens.finish());
         }
     }
-    // Resolve and retain a definition at the invocation boundary, rather than
-    // duplicating its directory checks in every expanded-token reader.
-    #[inline(never)]
     pub(crate) fn begin_macro(&mut self, id: u32) -> Result<()> {
         let owner = self.values.get(id);
         let definition = owner.definition();
