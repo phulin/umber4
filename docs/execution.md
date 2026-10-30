@@ -68,7 +68,7 @@ Use a reusable save stack with typed records for group boundaries, saved values,
 after-group tokens, and the small data needed when a semantic group closes.
 An entry's assignment level identifies the most recent group that wrote it.
 Use our own outer-level convention consistently; TeX's source calls its outer
-level `level_one`, while our checkpoint predicate means zero _open_ groups.
+level `level_one`.
 
 On a local assignment within an open group, save the previous value and level when
 the entry was last assigned outside the current group. At outer level, replacement

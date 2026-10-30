@@ -187,14 +187,14 @@ fn macro_equality_crosses_shifted_chunk_boundaries() {
 fn arena_windows_retain_whole_chunk_access() {
     use crate::token::Token;
     let mut values = crate::values::Values::default();
-    let mut builder = values.builder().unwrap();
+    let mut builder = values.builder(crate::values::Class::Transient).unwrap();
     for index in 0..4100 {
         builder.push(Token::other(index as u8)).unwrap();
     }
     let value = builder.finish(None);
     let (first, end, next) = value.tokens.window(4094, 4100);
     assert_eq!(next, 4096);
-    let mut neighbor = values.builder().unwrap();
+    let mut neighbor = values.builder(crate::values::Class::Transient).unwrap();
     neighbor.push(Token::other(99)).unwrap();
     // SAFETY: value retains the page, and neighbor writes a disjoint suffix.
     unsafe {

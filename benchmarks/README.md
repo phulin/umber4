@@ -162,7 +162,8 @@ python3 benchmarks/memory.py --report target/benchmark/memory.json
 
 Use `--baseline` and `--baseline-allocations` for a paired earlier interpreter and
 its diagnostic adapter. `--sizes` overrides the workload defaults. Memory pools
-retain at most sixteen empty 4,096-token chunks plus the active bump chunk;
+retain at most sixteen empty 4,096-token chunks, including their ownership
+records, plus one active bump chunk per durable/transient allocation class;
 live immutable values retain their occupied chunks. Small surviving values may
 retain unused parts of those chunks, so live-growth measurements also expose
 fragmentation and per-value metadata overhead.

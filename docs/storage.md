@@ -31,6 +31,14 @@ execution. Empty-block caches are bounded.
 | Mutable nodes and large tables | Stable-ID stores with pooled COW chunks |
 | Shipped output and diagnostics | Immutable append blocks, including their descriptors |
 
+The MVP uses one token-block mechanism with separate active blocks for durable
+definitions/register values and transient captures/generated input. Its bounded
+empty-block cache shares complete block records, retaining their non-atomic
+ownership counters together with the token backing. A reused block gets its new
+allocation class only after its last previous owner has released it. Each class
+retains at most one active block; the shared cache retains at most sixteen empty
+blocks. Immutable format blocks remain a future class.
+
 Use the same allocation mechanisms with separate active blocks for format,
 durable-document, and transient-expansion data. Do not put every invocation in a
 separate chunk, and do not mix all lifetimes into one active bump tail. Allocation

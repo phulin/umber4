@@ -7,34 +7,56 @@ const WORDS: usize = 1 << CHUNK_BITS;
 const CACHE_CHUNKS: usize = 16;
 type Cells = [UnsafeCell<MaybeUninit<Token>>; WORDS];
 
+/// Expected retention selects a bump tail, never the release boundary.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Class {
+    Durable,
+    Transient,
+}
+
 #[derive(Default)]
 struct Pool {
-    active: RefCell<Option<(Rc<Page>, usize)>>,
-    free: RefCell<Vec<Box<Cells>>>,
+    active: [RefCell<Option<(PageOwner, usize)>>; 2],
+    free: RefCell<Vec<Rc<Page>>>,
     ids: RefCell<Vec<u32>>,
+    #[cfg(test)]
+    created: Cell<usize>,
 }
 struct Page {
-    cells: Option<Box<Cells>>,
+    cells: Box<Cells>,
     pool: Weak<Pool>,
+    class: Cell<Class>,
 }
-impl Drop for Page {
+// Active tails and token pieces own these handles. The cache holds bare Rc
+// records, so the last checked-out handle can return the complete allocation,
+// including its counter. Page -> Pool is weak: neither cache nor tail cycles.
+#[derive(Clone)]
+struct PageOwner(Rc<Page>);
+impl std::ops::Deref for PageOwner {
+    type Target = Page;
+    fn deref(&self) -> &Page {
+        &self.0
+    }
+}
+impl Drop for PageOwner {
     fn drop(&mut self) {
-        if let Some(pool) = self.pool.upgrade() {
+        if Rc::strong_count(&self.0) == 1
+            && let Some(pool) = self.pool.upgrade()
+        {
             let mut free = pool.free.borrow_mut();
             if free.len() < CACHE_CHUNKS {
-                free.push(self.cells.take().unwrap());
+                free.push(Rc::clone(&self.0));
             }
         }
     }
 }
 impl Pool {
     fn rewind(&self, piece: &Piece, count: u32) -> bool {
-        let mut active = self.active.borrow_mut();
+        let mut active = self.active[piece.page.class.get() as usize].borrow_mut();
         if let Some((page, used)) = active.as_mut()
-            && Rc::ptr_eq(page, &piece.page)
+            && Rc::ptr_eq(&page.0, &piece.page.0)
         {
-            let cells = page.cells.as_ref().unwrap();
-            let base = UnsafeCell::raw_get(cells.as_ptr()).cast::<Token>();
+            let base = UnsafeCell::raw_get(page.cells.as_ptr()).cast::<Token>();
             if base.wrapping_add(*used) == piece.base.wrapping_add(piece.capacity as usize) {
                 *used -= count as usize;
                 return true;
@@ -42,31 +64,37 @@ impl Pool {
         }
         false
     }
-    fn reserve(self: &Rc<Self>, requested: usize, start: u32) -> Piece {
-        let mut active = self.active.borrow_mut();
+    fn reserve(self: &Rc<Self>, class: Class, requested: usize, start: u32) -> Piece {
+        let mut active = self.active[class as usize].borrow_mut();
         if active.as_ref().is_none_or(|(_, used)| *used == WORDS) {
-            let cells = self.free.borrow_mut().pop().unwrap_or_else(|| {
+            // Retire a full tail before looking in the cache, so a completely
+            // dead active page can serve this reservation without more backing.
+            drop(active.take());
+            let page = self.free.borrow_mut().pop().unwrap_or_else(|| {
+                #[cfg(test)]
+                self.created.set(self.created.get() + 1);
                 let cells = Box::<Cells>::new_uninit();
                 // SAFETY: UnsafeCell<MaybeUninit<Token>> permits uninitialized
                 // contents and has Token's layout. Publication follows writes.
-                unsafe { cells.assume_init() }
-            });
-            *active = Some((
+                let cells = unsafe { cells.assume_init() };
                 Rc::new(Page {
-                    cells: Some(cells),
+                    cells,
                     pool: Rc::downgrade(self),
-                }),
-                0,
-            ));
+                    class: Cell::new(class),
+                })
+            });
+            // A cached record has no active tail, piece, or published reader.
+            debug_assert_eq!(Rc::strong_count(&page), 1);
+            page.class.set(class);
+            *active = Some((PageOwner(page), 0));
         }
         let (page, used) = active.as_mut().unwrap();
         let capacity = requested.min(WORDS - *used);
-        let cells = page.cells.as_ref().unwrap();
-        let base = UnsafeCell::raw_get(cells.as_ptr()).cast::<Token>();
+        let base = UnsafeCell::raw_get(page.cells.as_ptr()).cast::<Token>();
         // SAFETY: used is inside this page's complete cell allocation.
         let base = unsafe { base.add(*used) };
         let piece = Piece {
-            page: Rc::clone(page),
+            page: page.clone(),
             base,
             start,
             capacity: capacity as u32,
@@ -77,7 +105,7 @@ impl Pool {
 }
 
 struct Piece {
-    page: Rc<Page>,
+    page: PageOwner,
     base: *mut Token,
     start: u32,
     capacity: u32,
@@ -158,6 +186,7 @@ impl Tokens {
 pub(crate) struct Builder {
     tokens: Tokens,
     pool: Rc<Pool>,
+    class: Class,
     owner: Owner,
     base: *mut Token,
     next: *mut Token,
@@ -243,12 +272,12 @@ impl Builder {
         if requested == 0 {
             return Err(Error::Capacity);
         }
-        let piece = self.pool.reserve(requested, len);
+        let piece = self.pool.reserve(self.class, requested, len);
         self.next = piece.base;
         // SAFETY: the reservation lies inside its page's cell allocation.
         self.limit = unsafe { piece.base.add(piece.capacity as usize) };
         if let Some(last) = self.tokens.last_mut()
-            && Rc::ptr_eq(&last.page, &piece.page)
+            && Rc::ptr_eq(&last.page.0, &piece.page.0)
             && last.base.wrapping_add(last.capacity as usize) == piece.base
         {
             last.capacity += piece.capacity;
@@ -352,7 +381,7 @@ pub(crate) struct Values {
     slots: Vec<Rc<Slot>>,
 }
 impl Values {
-    pub fn builder(&mut self) -> Result<Builder> {
+    pub fn builder(&mut self, class: Class) -> Result<Builder> {
         let id = self
             .pool
             .ids
@@ -379,6 +408,7 @@ impl Values {
         Ok(Builder {
             tokens: Tokens::default(),
             pool: Rc::clone(&self.pool),
+            class,
             owner: Owner(slot),
             base: std::ptr::null_mut(),
             next: std::ptr::null_mut(),

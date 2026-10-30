@@ -25,7 +25,7 @@ impl Engine<'_> {
         if let Some(tokens) = &mut output.buffer {
             tokens.push(token)?;
         } else if let Some(first) = output.first.take() {
-            let mut tokens = self.values.builder()?;
+            let mut tokens = self.values.builder(crate::values::Class::Transient)?;
             tokens.push(first)?;
             tokens.push(token)?;
             output.buffer = Some(tokens);

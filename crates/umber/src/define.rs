@@ -10,7 +10,7 @@ impl Engine<'_> {
         protected: bool,
     ) -> Result<()> {
         let cs = self.scan_cs()?;
-        let mut tokens = self.values.builder()?;
+        let mut tokens = self.values.builder(crate::values::Class::Durable)?;
         let mut prefix_end = None;
         let mut parameters = 0u8;
         let mut brace_tail = None;

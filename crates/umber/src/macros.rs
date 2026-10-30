@@ -99,7 +99,7 @@ impl Engine<'_> {
         builder: &mut Option<crate::values::Builder>,
     ) -> Result<Span> {
         if builder.is_none() {
-            *builder = Some(self.values.builder()?);
+            *builder = Some(self.values.builder(crate::values::Class::Transient)?);
         }
         let tokens = builder.as_mut().unwrap();
         let start = tokens.len();

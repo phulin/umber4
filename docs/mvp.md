@@ -92,19 +92,26 @@ immutable-window comparisons and no temporary flattened list.
 ## Allocation target for this slice
 
 [storage.md](storage.md) defines the final requirement: fixed-working-set execution
-reuses backing capacity, including metadata. The current implementation already
-reuses value IDs, headers, packet capacity, and 4,096-token chunks, but still uses
-individually allocated shared headers and some boxed/variable metadata. Historical
-counts in [mvp-results.md](mvp-results.md) are not a zero-allocation claim.
+reuses backing capacity, including metadata. The first bounded allocator revision
+keeps one 4,096-token active bump block for durable definitions/register values
+and another for transient captures/generated input. Both use the same builder,
+window traversal, and shared empty-block cache. Recycling retains each complete
+block record and its non-atomic shared ownership counter, avoiding a fresh wrapper
+allocation when token backing is reused. The cache holds at most sixteen empty
+blocks; actual owners retain checked-out blocks independently of that bound.
 
-The MVP revision should retain its token-window and semantic ownership APIs while
-moving headers, block-owner records, parameter/fallback arrays, and span metadata
-into reusable stores. Durable definitions/register values and transient captures/
-generated input use separate active allocation classes over one storage mechanism.
-A class never overrides an escaped value's actual owners. Single-token arguments
-stay inline; larger ranges remain immutable and can be retained across producer
-replacement. Small-copy promotion is optional when a concrete retention case
-justifies it.
+Allocation class never overrides an escaped value's actual owners. Single-token
+arguments stay inline; larger ranges remain immutable and can be retained across
+producer replacement. Capturing existing input keeps its backing owner's class;
+it does not move or relabel the block. Newly built definitions and register values
+write into durable storage. Small-copy promotion remains optional when a concrete
+retention case justifies it.
+
+Value IDs/headers and packet capacity are reused, but value-header growth still
+allocates individual shared records. Definition parameter/fallback vectors and
+multi-piece value descriptors can still allocate on repeated construction; moving
+those variable records into reusable stores remains the next allocator work.
+Historical counts in [mvp-results.md](mvp-results.md) are not a zero-allocation claim.
 
 Publication transfers initialized storage without flattening. Failed builders
 release their reservations. Reused IDs cannot become visible until old owners and

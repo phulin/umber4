@@ -76,10 +76,10 @@ cursors borrow their body packet while it remains beneath them; forwarded ranges
 acquire their own backing owner before the enclosing source can retire.
 
 Parameters and delimiter fallback tables are definition-owned metadata. Packets
-reuse argument and span capacity. Empty/singleton output stays inline. The allocation
-revision in [mvp.md](mvp.md) moves remaining object metadata into pooled storage and
-separates durable and transient token allocation classes. The shared cursor API
-does not require mixing those lifetimes in one bump tail.
+reuse argument and span capacity. Empty/singleton output stays inline. The first allocation
+revision in [mvp.md](mvp.md) separates durable and transient active token blocks
+and caches complete block ownership records. Value-header slabs and reusable
+variable metadata remain later work. Both classes use the same cursor API.
 
 The interner stores stable spelling bytes in session-owned chunks, with a compact
 probe table and dense spelling directory. Source and dynamically built names use

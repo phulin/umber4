@@ -254,7 +254,10 @@ fn short_integer_terminators_and_progress_cross_windows() {
                 ),
                 _ => unreachable!(),
             };
-            let mut tokens = engine.values.builder().unwrap();
+            let mut tokens = engine
+                .values
+                .builder(crate::values::Class::Transient)
+                .unwrap();
             for _ in 0..padding {
                 tokens.push(letter(b'P')).unwrap();
             }
@@ -317,7 +320,10 @@ fn keyword_matches_and_rollback_cross_arena_windows() {
                 14 => (vec![Token::character(10, b'B'), letter(b'Y')], true),
                 _ => unreachable!(),
             };
-            let mut tokens = engine.values.builder().unwrap();
+            let mut tokens = engine
+                .values
+                .builder(crate::values::Class::Transient)
+                .unwrap();
             for _ in 0..padding {
                 tokens.push(letter(b'P')).unwrap();
             }
