@@ -89,7 +89,7 @@ ownership where possible. Control-sequence tokens keep identities; meanings are
 resolved when read. Macro equality compares flags and complete signatures, with
 immutable-window comparisons and no temporary flattened list.
 
-## Allocation target for this slice
+## Allocation for this slice
 
 [storage.md](storage.md) defines the final requirement: fixed-working-set execution
 reuses backing capacity, including metadata. The first bounded allocator revision

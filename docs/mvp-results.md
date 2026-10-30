@@ -1,6 +1,7 @@
 # Native expansion measurements
 
-The metadata-reuse comparison uses `80facd9` as its baseline checkout (engine
+The final slab/metadata comparison uses `317c54d` (baseline checkout `af5982b`).
+The historical metadata-reuse comparison uses `80facd9` as its baseline checkout (engine
 source `ad5c07b`). The bounded-token-allocation comparison uses `e88cad7`. The
 historical shared-token-store comparison uses `dc64762`, with the restored custom
 name table and unchanged dependencies. The earlier reclamation
@@ -20,6 +21,80 @@ suite and -10.0% on the broader suite, using geometric means of paired
 ratios. Individual costs and gains appear below. Layout, fonts, mathematics,
 shipout, format files, checkpoints, and Wasm runtime timing remain outside this
 implemented slice.
+
+## Stable header slabs and typed metadata
+
+The final allocator build (`706e574`) shares 64-slot value-header slabs with
+embedded non-atomic owner counts. Variable token pieces, parameter/fallback arrays,
+packet argument/owner tables, and overflow spans acquire reusable typed blocks.
+Expanded-name scanners retain their 64-byte stack prefix and check out independent
+pooled scratch only on spill; nested scanners and failed scans return that storage.
+Dense ID lookup remains one checked pointer load. Owners remain one pointer;
+token windows and hot definition fields remain directly accessible.
+
+The [final paired report](../benchmarks/results/token-slab-metadata.json) retains
+seven alternating ordinary-release repetitions at 100,000 core iterations and
+10,000 broader records, all compact-source memory cases, nine repetitions at one million iterations for
+affected cases, actual allocation diagnostics, and executable/source
+identities. It uses rustc 1.98.1, fat LTO, and the same AMD EPYC 7642/pdfTeX
+3.141592653-2.6-1.40.25 host as the preceding metadata work. All numbers below
+measure the final build; earlier intermediate slab/layout trials are excluded.
+
+| CPU versus preceding metadata allocator | Change |
+| --------------------------------------- | -----: |
+| Core geometric mean | +2.2% |
+| Broader geometric mean | +2.3% |
+| Stored bodies, longer confirmation | +2.8% |
+| Parameters, longer confirmation | +7.0% |
+| Groups, longer confirmation | +10.6% |
+| Delimiters, longer confirmation | -0.4% |
+| Long arguments, longer confirmation | +11.4% |
+| Focused metadata, 1,000 iterations | +21.9% |
+
+These regressions remain material. Allocation improvements do not establish CPU
+neutrality; parameters, groups, long arguments, focused metadata, and selected
+broader cases require a separate execution/layout investigation. The scalar-group
+kernel retains its bound macro owners, so final-slot release does not explain its
+regression. The allocator preserves the existing token-loop ownership boundaries.
+
+| Allocation workload | Requests before | Requests after | Peak after (KiB) | Peak change |
+| ------------------- | --------------: | -------------: | ---------------: | ----------: |
+| Churn, 50,000 | 44 | 44 | 101.5 | +14.4% |
+| Focused metadata, 1,000 | 66 | 79 | 193.8 | +25.5% |
+| Live definitions, 2,500 | 2,835 | 302 | 2,104.7 | -0.2% |
+| Live parameter metadata, 2,500 | 15,381 | 576 | 3,205.2 | +2.8% |
+| Nested long names, 10,000 | 40,040 | 48 | 106.1 | +20.0% |
+| Live packets, 3,000 (allocation only) | 6,078 | 282 | 1,211.3 | +7.0% |
+
+Churn uses 44 requests from 1,000 through 50,000 iterations; focused metadata uses
+79 from 10 through 1,000. Long-name scanning uses 48 from 100 through 10,000,
+including setup. New live objects share backing allocations rather than creating
+an individual header or small metadata allocation. Across the nine broader cases
+at 10,000 records, requests fall from 2,835 to 1,107 (-61.0%).
+
+Slab/page slack increases fixed-state peaks by about 13 KiB for churn and 39 KiB
+for metadata. Typed pages retain each size class's capacity; buffers retain their
+largest block. A surviving owner can retain its header slab and shared metadata
+stores. Large arrays may receive individual backing blocks, and small surviving
+token ranges can pin partly occupied pages. Peaks are requested engine heap,
+excluding host input, stack, allocator overhead, RSS, and pdfTeX heap.
+
+The native INITEX oracle has a 60-entry parameter stack. Paired live-packet runs
+therefore use depths 10, 30, and 50. Larger depths 100, 1,000, and 3,000 retain
+allocation counts from both Umber adapters with validated identical sources;
+they make no native-oracle or timing claim beyond that limit. Independently owned
+message byte vectors remain at the public result boundary. The final
+[storage allocation audit](storage.md#mvp-allocation-boundaries) distinguishes
+those outputs from reusable internal metadata.
+
+All 82 debug/release tests and 87 release all-feature tests pass, alongside rustfmt,
+Clippy with warnings denied, the release Wasm library build, and the native oracle's
+748 messages and 26 rejection cases. Focused Miri checks cover cross-slab growth,
+raw-window retention, failure cleanup, typed-buffer transfer/removal and partial
+initialization, packet/store teardown, nested long-name scratch, and the profile
+build's cached delimiter metadata. Read-only review found no concrete ownership
+or aliasing defect. The measured CLI and validated CLI have identical executable
+text and complete binary hashes.
 
 ## Reusable token metadata
 

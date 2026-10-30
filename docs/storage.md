@@ -2,8 +2,8 @@
 
 This document defines the storage contract for the interpreter. The MVP implements
 immutable token storage and reusable invocation packets; node stores, snapshots,
-and output storage remain proposals. [mvp.md](mvp.md) separates the current slice
-from the remaining allocator changes.
+and output storage remain proposals. [mvp.md](mvp.md) records the implemented
+allocator boundaries for the current slice.
 
 ## 1. Allocation contract
 

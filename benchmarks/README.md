@@ -46,6 +46,13 @@ allocator. It retains core/broader CPU samples, longer affected-case confirmatio
 and actual allocation counts, including the warm metadata plateau and remaining
 core CPU/live-header memory costs.
 
+The [slab and typed-metadata comparison](results/token-slab-metadata.json) retains
+the final header, definition, packet, span, and long-name scratch allocator build.
+It includes growing-live-state and warmed allocation diagnostics, full CPU samples,
+longer affected-case confirmations, and the remaining throughput/space regressions.
+Large packet-depth diagnostics are allocation-only beyond the native oracle's
+60-entry parameter stack; the paired native cases stay within that bound.
+
 An optional native profile build uses the same generators for compiler training:
 
 ```bash
