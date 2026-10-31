@@ -7,6 +7,40 @@ described in [storage.md](storage.md).
 
 The executable initial font/text contract is in [fonts-text.md](fonts-text.md).
 
+## Executable paragraph baseline
+
+The next executable slice completes external horizontal paragraphs with TeX82's
+`line_break`, `try_break`, and `post_line_break`. It uses the existing node store
+and immutable font metrics. It preserves active-list order, six relative width
+components, fitness classes, demerits, equal-cost selection, pretolerance and
+tolerance passes, emergency stretch, looseness, and final-pass recovery. Existing
+discretionary nodes participate in every pass; automatic hyphenation remains
+unsupported. INITEX has no patterns, so the supported unhyphenated search does
+not invent word breaks.
+
+Paragraph completion consumes the horizontal list, transforms its final glue
+into the terminal penalty, and appends paragraph-fill glue. Selected breaks
+transfer existing nodes into line boxes with left/right skips, indentation,
+baseline/line glue, and interline penalties. Hanging indentation and `\parshape`
+select line widths. Paragraph settings reset through ordinary local assignment
+semantics. The resulting vertical list is the later page builder's contribution
+root; this slice does not build pages or ship output.
+
+Active and delta slots are recycled within reusable engine scratch; passive
+predecessors survive until line construction finishes. Scratch is empty outside
+paragraph completion and is absent from checkpoints. Paragraph shapes use typed
+pooled immutable buffers, retained by document/save/checkpoint roots. Finished
+lines remain in the versioned node store with their vertical-list owner.
+
+Horizontal packing uses TeX's integer dimensions and badness and an IEEE binary64
+glue ratio, matching the native Web2C oracle. Normal shrink is capped at one;
+infinite glue orders and signed components retain their upstream behavior.
+Placement checks use cumulative glue rounding. Diagnostic text, overfull rules,
+restricted boxes, general discretionary syntax, automatic hyphenation, math,
+last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
+Unsupported infinite paragraph shrink fails explicitly rather than applying
+TeX's interactive recovery.
+
 ## 1. Font metrics and live fonts
 
 Parse TFM data once per immutable resource version. Retain compact character
