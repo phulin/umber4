@@ -21,6 +21,8 @@ Read the root `AGENTS.md` first.
   after edits.
 - `resources.md` develops native/Wasm byte acquisition, shared input buffers,
   generated-file append storage, stream handles, diagnostics, and replay.
+- `fonts-text.md` contracts immutable TFM resources, restored font descriptors, and
+  horizontal list construction before paragraph breaking.
 - `paragraphs.md` develops font state, character/ligature construction, packing,
   hyphenation, exact line breaking, and pdfTeX spacing extensions.
 - `math-alignments.md` develops math atoms/conversion, display math, alignment

@@ -5,6 +5,8 @@ their destination store; paragraph algorithms use reusable working memory and
 return finished lines to the enclosing vertical list. The storage interface is
 described in [storage.md](storage.md).
 
+The executable initial font/text contract is in [fonts-text.md](fonts-text.md).
+
 ## 1. Font metrics and live fonts
 
 Parse TFM data once per immutable resource version. Retain compact character
