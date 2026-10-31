@@ -5,6 +5,8 @@ interpreter runs on Wasm, and editing sessions should reuse useful work without
 excessive snapshot or retention costs. [mvp-results.md](mvp-results.md) records
 historical expansion/register measurements; those do not establish layout,
 checkpoint, or browser runtime performance.
+The [paragraph/page report](layout-results.md) records ordinary-release prose
+composition against INITEX and same-source checkpoint timing/allocation costs.
 
 Architecture comes first: preserve exact TeX semantics, clear ownership,
 semantic-lifetime allocation of headers and buffers, in-place construction, and

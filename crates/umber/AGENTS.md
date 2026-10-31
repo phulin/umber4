@@ -58,6 +58,9 @@ host access out of the portable library.
 
 `examples/allocations.rs` is a separate native diagnostic adapter. Its allocator
 counters cover engine construction and execution, excluding the host input buffer.
+`examples/layout.rs` inspects detached prose pages and times unchanged-source
+checkpoint replay; `examples/layout_allocations.rs` separately counts system
+allocation and retention phases. They share `examples/layout_support/mod.rs`.
 
 `lexing/`, built only with the `lexing-prototype` feature, is the whole-file lexer
 prototype from `docs/fast-lexing.md`: `scan.rs` splits lines and runs the shared

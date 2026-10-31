@@ -1,4 +1,27 @@
-# Native expansion benchmarks
+# Native benchmarks
+
+`layout.py` measures three prose documents with real TFM fonts, line/page
+construction, and checkpoint replay. It checks all native DVI glyph coordinates
+and pages, then compares the ordinary release CLI with same-input INITEX using
+one warmup and five interleaved samples. Native-only diagnostic thresholds suppress
+underfull logging. Separate examples inspect/time replay and count allocations;
+their counters never enter CLI or checkpoint timings. See the
+[current layout results](../docs/layout-results.md) and
+[raw samples](results/layout-native.json) for endpoint differences and limitations.
+
+```bash
+cargo build --release --bin umber --example layout --example layout_allocations
+python3 benchmarks/layout.py --report target/benchmark/layout.json
+```
+
+The prose is extracted from six repository design documents; `--paragraphs`
+defaults to 600 and can be changed in multiples of 100. Local real TFMs use the
+corpus paths from [fast-lexing.md](../docs/fast-lexing.md). The helper adapters share
+`crates/umber/examples/layout_support/mod.rs`; generated inputs and native output
+stay in `target/benchmark/layout/`. No format, package loading, hyphenation patterns,
+math, custom output routine, or PDF backend is exercised.
+
+## Expansion benchmarks
 
 `mvp.py` retains the original eight core workloads and adds `source-integers`.
 That workload reads varied one- to ten-digit decimal operands directly from

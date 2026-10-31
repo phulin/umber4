@@ -23,6 +23,8 @@ source edits remain design proposals.
 
 [Native measurements](docs/mvp-results.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.
+The [paragraph/page measurements](docs/layout-results.md) cover repository prose,
+real fonts, native DVI correspondence, checkpoint replay, and retained memory.
 The implementation builds new data in place and reuses captured token ranges,
 token-register values, and invocation storage.
 The [benchmark guide](benchmarks/README.md) also provides an optional native

@@ -1,0 +1,729 @@
+{
+  "date": "2026-10-31T18:00:25.062089+00:00",
+  "measured_engine_commit": "159ebe5f114ce6621c59909f2afe9f8fb1f90a00",
+  "build": "cargo build --release --bin umber --example layout --example layout_allocations; default features; fat LTO; codegen-units=1",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "rustflags": "",
+  "hashes": {
+    "target/release/umber": "bde5e548c91b30ef10d2e5c94ad5d32dae8eb196ddc168d4e16c5e85fe7f9613",
+    "target/release/examples/layout": "b8278bdea4caeb2470ce2f12cd156fb9334fafdb89565f0133aa9e9d8332d283",
+    "target/release/examples/layout_allocations": "62034b584b4e5614efc574865c87c39034ab6de5fa61d72f62d25e320133404e",
+    "benchmarks/layout.py": "e993bec92ab7fd158150cded47f3d4925aa94ba20e89b4b642cc6774e13c824a",
+    "crates/umber/examples/layout_support/mod.rs": "6110c68a8d746d9227cb8e1bf8e25d127b14b9ef20b8a5ab2c1afba20c72212d",
+    "crates/umber/examples/layout.rs": "3e29cf1d28dff6d2f78d0cd3b283c1715c3715695a7cae238b20dfd7ad32af11",
+    "crates/umber/examples/layout_allocations.rs": "1dd7c733ed1167521308e9064ea6784946acb14728d2fd7c0ec43f14beb0d3f7"
+  },
+  "prose_sources": {
+    "docs/architecture.md": "74ace19d7732e767c522d54aea9408d065e1a057f6b1c0f6a2494ab5ef470257",
+    "docs/storage.md": "c1b16ba273028168edc5fa8c86773fc2c64910559575714d81084fdcc7c3773c",
+    "docs/checkpoints.md": "4e8c1fde3c3905104c94afe738192c11e81b196b485f81d243e550cdcd15c9f4",
+    "docs/fonts-text.md": "bd17f774da67b0d23f4cf002125a199e016e707d0ab71c32aefd962b6efa33ff",
+    "docs/paragraphs.md": "f2d5a8aa01a65ca16b63c2a5d87bf72668c5c3cbe0866f472969bdb7a6066bb3",
+    "docs/pages.md": "d4548810eb09881e65ee9cb70c6ad1168871b05f3a546ca43f92bc8c43ba1202"
+  },
+  "distinct_prose_paragraphs": 194,
+  "repeats": 5,
+  "warmups": 1,
+  "cases": [
+    {
+      "case": "book",
+      "paragraphs": 600,
+      "source_bytes": 270608,
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "font": "ae/aer10",
+      "font_sha256": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+      "width_pt": 360,
+      "height_pt": 540,
+      "baseline_pt": 12,
+      "paragraph_gap_pt": 0,
+      "pages": 79,
+      "glyphs": 227323,
+      "lines": 3517,
+      "native_underfull_diagnostics": 0,
+      "validation": "all pages and glyph characters/x/y match native DVI, independently scaled raw TFM widths",
+      "samples": {
+        "umber": [
+          {
+            "wall_seconds": 0.069695531,
+            "cpu_seconds": 0.06938799999999999
+          },
+          {
+            "wall_seconds": 0.068574895,
+            "cpu_seconds": 0.0683
+          },
+          {
+            "wall_seconds": 0.068983862,
+            "cpu_seconds": 0.068691
+          },
+          {
+            "wall_seconds": 0.069500559,
+            "cpu_seconds": 0.069235
+          },
+          {
+            "wall_seconds": 0.070173229,
+            "cpu_seconds": 0.069867
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.046730694,
+            "cpu_seconds": 0.046404
+          },
+          {
+            "wall_seconds": 0.046208498,
+            "cpu_seconds": 0.045973
+          },
+          {
+            "wall_seconds": 0.048723715,
+            "cpu_seconds": 0.048301
+          },
+          {
+            "wall_seconds": 0.046833634,
+            "cpu_seconds": 0.046516
+          },
+          {
+            "wall_seconds": 0.048436637,
+            "cpu_seconds": 0.048066
+          }
+        ]
+      },
+      "medians": {
+        "umber": {
+          "wall_seconds": 0.069500559,
+          "cpu_seconds": 0.069235
+        },
+        "pdftex": {
+          "wall_seconds": 0.046833634,
+          "cpu_seconds": 0.046516
+        }
+      },
+      "cpu_ratio": 1.4884125892166138,
+      "umber_glyphs_per_cpu_second": 3283353.7950458582,
+      "allocations": {
+        "stages": [
+          {
+            "stage": "begin",
+            "calls": 0,
+            "requested_bytes": 0,
+            "live_bytes": 0,
+            "peak_bytes": 0
+          },
+          {
+            "stage": "complete",
+            "calls": 541,
+            "requested_bytes": 7538768,
+            "live_bytes": 7379472,
+            "peak_bytes": 7393832
+          },
+          {
+            "stage": "all_engine_owners_released",
+            "calls": 553,
+            "requested_bytes": 7539328,
+            "live_bytes": 0,
+            "peak_bytes": 7393832
+          }
+        ]
+      },
+      "max_rss_kib": {
+        "umber": 8320,
+        "pdftex": 6768
+      },
+      "original_diagnostic_samples": {
+        "umber": [
+          {
+            "wall_seconds": 0.070473281,
+            "cpu_seconds": 0.070152
+          },
+          {
+            "wall_seconds": 0.068345073,
+            "cpu_seconds": 0.067992
+          },
+          {
+            "wall_seconds": 0.070498632,
+            "cpu_seconds": 0.070108
+          },
+          {
+            "wall_seconds": 0.068415447,
+            "cpu_seconds": 0.06812599999999999
+          },
+          {
+            "wall_seconds": 0.068337299,
+            "cpu_seconds": 0.068
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.056117354,
+            "cpu_seconds": 0.055701
+          },
+          {
+            "wall_seconds": 0.05961573,
+            "cpu_seconds": 0.059217
+          },
+          {
+            "wall_seconds": 0.056798621,
+            "cpu_seconds": 0.056307
+          },
+          {
+            "wall_seconds": 0.05606209,
+            "cpu_seconds": 0.055664
+          },
+          {
+            "wall_seconds": 0.056838938,
+            "cpu_seconds": 0.056436999999999994
+          }
+        ]
+      },
+      "original_diagnostic_medians": {
+        "umber": {
+          "wall_seconds": 0.068415447,
+          "cpu_seconds": 0.06812599999999999
+        },
+        "pdftex": {
+          "wall_seconds": 0.056798621,
+          "cpu_seconds": 0.056307
+        }
+      },
+      "original_diagnostic_cpu_ratio": 1.2099028539968386,
+      "original_native_underfull_diagnostics": 513
+    },
+    {
+      "case": "narrow",
+      "paragraphs": 600,
+      "source_bytes": 270609,
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "font": "latex-fonts/lcmss8",
+      "font_sha256": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+      "width_pt": 180,
+      "height_pt": 360,
+      "baseline_pt": 12,
+      "paragraph_gap_pt": 3,
+      "pages": 295,
+      "glyphs": 227323,
+      "lines": 8533,
+      "native_underfull_diagnostics": 0,
+      "validation": "all pages and glyph characters/x/y match native DVI, independently scaled raw TFM widths",
+      "samples": {
+        "umber": [
+          {
+            "wall_seconds": 0.066476515,
+            "cpu_seconds": 0.066226
+          },
+          {
+            "wall_seconds": 0.067542923,
+            "cpu_seconds": 0.06730799999999999
+          },
+          {
+            "wall_seconds": 0.071752848,
+            "cpu_seconds": 0.071416
+          },
+          {
+            "wall_seconds": 0.067340107,
+            "cpu_seconds": 0.06704299999999999
+          },
+          {
+            "wall_seconds": 0.067547515,
+            "cpu_seconds": 0.06723
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.047836761,
+            "cpu_seconds": 0.047569
+          },
+          {
+            "wall_seconds": 0.047611536,
+            "cpu_seconds": 0.047353
+          },
+          {
+            "wall_seconds": 0.050212673,
+            "cpu_seconds": 0.049805
+          },
+          {
+            "wall_seconds": 0.049390723,
+            "cpu_seconds": 0.049041
+          },
+          {
+            "wall_seconds": 0.049967556,
+            "cpu_seconds": 0.049492999999999995
+          }
+        ]
+      },
+      "medians": {
+        "umber": {
+          "wall_seconds": 0.067542923,
+          "cpu_seconds": 0.06723
+        },
+        "pdftex": {
+          "wall_seconds": 0.049390723,
+          "cpu_seconds": 0.049041
+        }
+      },
+      "cpu_ratio": 1.3708937419710039,
+      "umber_glyphs_per_cpu_second": 3381273.2411125987,
+      "allocations": {
+        "stages": [
+          {
+            "stage": "begin",
+            "calls": 0,
+            "requested_bytes": 0,
+            "live_bytes": 0,
+            "peak_bytes": 0
+          },
+          {
+            "stage": "complete",
+            "calls": 855,
+            "requested_bytes": 7449264,
+            "live_bytes": 7418880,
+            "peak_bytes": 7418880
+          },
+          {
+            "stage": "all_engine_owners_released",
+            "calls": 867,
+            "requested_bytes": 7449824,
+            "live_bytes": 0,
+            "peak_bytes": 7418880
+          }
+        ]
+      },
+      "max_rss_kib": {
+        "umber": 9472,
+        "pdftex": 6768
+      },
+      "original_diagnostic_samples": {
+        "umber": [
+          {
+            "wall_seconds": 0.066735796,
+            "cpu_seconds": 0.066438
+          },
+          {
+            "wall_seconds": 0.067335594,
+            "cpu_seconds": 0.067065
+          },
+          {
+            "wall_seconds": 0.066905074,
+            "cpu_seconds": 0.06665
+          },
+          {
+            "wall_seconds": 0.066960449,
+            "cpu_seconds": 0.066678
+          },
+          {
+            "wall_seconds": 0.067499306,
+            "cpu_seconds": 0.06720899999999999
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.064840871,
+            "cpu_seconds": 0.064535
+          },
+          {
+            "wall_seconds": 0.064898283,
+            "cpu_seconds": 0.06454
+          },
+          {
+            "wall_seconds": 0.065630894,
+            "cpu_seconds": 0.065303
+          },
+          {
+            "wall_seconds": 0.066749933,
+            "cpu_seconds": 0.06638
+          },
+          {
+            "wall_seconds": 0.064205014,
+            "cpu_seconds": 0.063872
+          }
+        ]
+      },
+      "original_diagnostic_medians": {
+        "umber": {
+          "wall_seconds": 0.066960449,
+          "cpu_seconds": 0.066678
+        },
+        "pdftex": {
+          "wall_seconds": 0.064898283,
+          "cpu_seconds": 0.06454
+        }
+      },
+      "original_diagnostic_cpu_ratio": 1.033126743105051,
+      "original_native_underfull_diagnostics": 4572
+    },
+    {
+      "case": "dense",
+      "paragraphs": 600,
+      "source_bytes": 270609,
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "font": "latex-fonts/icmtt8",
+      "font_sha256": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24",
+      "width_pt": 420,
+      "height_pt": 600,
+      "baseline_pt": 10,
+      "paragraph_gap_pt": 0,
+      "pages": 63,
+      "glyphs": 228277,
+      "lines": 3775,
+      "native_underfull_diagnostics": 0,
+      "validation": "all pages and glyph characters/x/y match native DVI, independently scaled raw TFM widths",
+      "samples": {
+        "umber": [
+          {
+            "wall_seconds": 0.061732837,
+            "cpu_seconds": 0.06148
+          },
+          {
+            "wall_seconds": 0.061959566,
+            "cpu_seconds": 0.061696999999999995
+          },
+          {
+            "wall_seconds": 0.069183497,
+            "cpu_seconds": 0.068828
+          },
+          {
+            "wall_seconds": 0.062390688,
+            "cpu_seconds": 0.062078999999999995
+          },
+          {
+            "wall_seconds": 0.06239133,
+            "cpu_seconds": 0.062065999999999996
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.041948365,
+            "cpu_seconds": 0.04155199999999999
+          },
+          {
+            "wall_seconds": 0.040632677,
+            "cpu_seconds": 0.040295
+          },
+          {
+            "wall_seconds": 0.053610312,
+            "cpu_seconds": 0.05312499999999999
+          },
+          {
+            "wall_seconds": 0.056540103,
+            "cpu_seconds": 0.056046
+          },
+          {
+            "wall_seconds": 0.043557219,
+            "cpu_seconds": 0.04319
+          }
+        ]
+      },
+      "medians": {
+        "umber": {
+          "wall_seconds": 0.062390688,
+          "cpu_seconds": 0.062065999999999996
+        },
+        "pdftex": {
+          "wall_seconds": 0.043557219,
+          "cpu_seconds": 0.04319
+        }
+      },
+      "cpu_ratio": 1.4370456124102802,
+      "umber_glyphs_per_cpu_second": 3677971.8364321855,
+      "allocations": {
+        "stages": [
+          {
+            "stage": "begin",
+            "calls": 0,
+            "requested_bytes": 0,
+            "live_bytes": 0,
+            "peak_bytes": 0
+          },
+          {
+            "stage": "complete",
+            "calls": 511,
+            "requested_bytes": 6938832,
+            "live_bytes": 6211344,
+            "peak_bytes": 6240064
+          },
+          {
+            "stage": "all_engine_owners_released",
+            "calls": 523,
+            "requested_bytes": 6939392,
+            "live_bytes": 0,
+            "peak_bytes": 6240064
+          }
+        ]
+      },
+      "max_rss_kib": {
+        "umber": 8192,
+        "pdftex": 6764
+      },
+      "original_diagnostic_samples": {
+        "umber": [
+          {
+            "wall_seconds": 0.069134536,
+            "cpu_seconds": 0.068758
+          },
+          {
+            "wall_seconds": 0.064136072,
+            "cpu_seconds": 0.063815
+          },
+          {
+            "wall_seconds": 0.064688624,
+            "cpu_seconds": 0.064316
+          },
+          {
+            "wall_seconds": 0.063311095,
+            "cpu_seconds": 0.062974
+          },
+          {
+            "wall_seconds": 0.063822699,
+            "cpu_seconds": 0.06347699999999999
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.053135027,
+            "cpu_seconds": 0.052559999999999996
+          },
+          {
+            "wall_seconds": 0.051252391,
+            "cpu_seconds": 0.050887
+          },
+          {
+            "wall_seconds": 0.052278519,
+            "cpu_seconds": 0.051757
+          },
+          {
+            "wall_seconds": 0.052597676,
+            "cpu_seconds": 0.052030999999999994
+          },
+          {
+            "wall_seconds": 0.051606704,
+            "cpu_seconds": 0.05122499999999999
+          }
+        ]
+      },
+      "original_diagnostic_medians": {
+        "umber": {
+          "wall_seconds": 0.064136072,
+          "cpu_seconds": 0.063815
+        },
+        "pdftex": {
+          "wall_seconds": 0.052278519,
+          "cpu_seconds": 0.051757
+        }
+      },
+      "original_diagnostic_cpu_ratio": 1.2329733176188729,
+      "original_native_underfull_diagnostics": 3091
+    }
+  ],
+  "complete": true,
+  "checkpoint": {
+    "paragraphs": 600,
+    "cadence": 10,
+    "samples": [
+      {
+        "paragraph": 60,
+        "capture_release_ns": 2191.545,
+        "stable_restore_ns": 2014.555,
+        "changed_restore_ns": 16344,
+        "suffix_seconds": 0.058749846
+      },
+      {
+        "paragraph": 60,
+        "capture_release_ns": 2288.425,
+        "stable_restore_ns": 1904.915,
+        "changed_restore_ns": 16964,
+        "suffix_seconds": 0.060315917
+      },
+      {
+        "paragraph": 60,
+        "capture_release_ns": 2350.575,
+        "stable_restore_ns": 1909.42,
+        "changed_restore_ns": 27163,
+        "suffix_seconds": 0.06020014
+      },
+      {
+        "paragraph": 60,
+        "capture_release_ns": 2292.48,
+        "stable_restore_ns": 2127.65,
+        "changed_restore_ns": 22338,
+        "suffix_seconds": 0.061078442
+      },
+      {
+        "paragraph": 60,
+        "capture_release_ns": 2629.655,
+        "stable_restore_ns": 2223.27,
+        "changed_restore_ns": 21707,
+        "suffix_seconds": 0.057776456
+      },
+      {
+        "paragraph": 300,
+        "capture_release_ns": 2170.33,
+        "stable_restore_ns": 1881.585,
+        "changed_restore_ns": 14112,
+        "suffix_seconds": 0.030606483
+      },
+      {
+        "paragraph": 300,
+        "capture_release_ns": 2268.465,
+        "stable_restore_ns": 2031.515,
+        "changed_restore_ns": 18015,
+        "suffix_seconds": 0.030972295
+      },
+      {
+        "paragraph": 300,
+        "capture_release_ns": 2308.995,
+        "stable_restore_ns": 2062.895,
+        "changed_restore_ns": 16454,
+        "suffix_seconds": 0.029962254
+      },
+      {
+        "paragraph": 300,
+        "capture_release_ns": 2271.01,
+        "stable_restore_ns": 1977.825,
+        "changed_restore_ns": 13061,
+        "suffix_seconds": 0.030469689
+      },
+      {
+        "paragraph": 300,
+        "capture_release_ns": 2268.16,
+        "stable_restore_ns": 1887.44,
+        "changed_restore_ns": 15623,
+        "suffix_seconds": 0.030159296
+      },
+      {
+        "paragraph": 540,
+        "capture_release_ns": 2121.69,
+        "stable_restore_ns": 1733.475,
+        "changed_restore_ns": 6325,
+        "suffix_seconds": 0.005796421
+      },
+      {
+        "paragraph": 540,
+        "capture_release_ns": 2369.6,
+        "stable_restore_ns": 2090.86,
+        "changed_restore_ns": 10078,
+        "suffix_seconds": 0.005603194
+      },
+      {
+        "paragraph": 540,
+        "capture_release_ns": 2018.405,
+        "stable_restore_ns": 1857.57,
+        "changed_restore_ns": 4834,
+        "suffix_seconds": 0.005602823
+      },
+      {
+        "paragraph": 540,
+        "capture_release_ns": 2116.08,
+        "stable_restore_ns": 1732.47,
+        "changed_restore_ns": 5335,
+        "suffix_seconds": 0.005822053
+      },
+      {
+        "paragraph": 540,
+        "capture_release_ns": 2234.03,
+        "stable_restore_ns": 1872.14,
+        "changed_restore_ns": 8218,
+        "suffix_seconds": 0.005789355
+      }
+    ]
+  },
+  "checkpoint_allocations": {
+    "stages": [
+      {
+        "stage": "begin",
+        "calls": 0,
+        "requested_bytes": 0,
+        "live_bytes": 0,
+        "peak_bytes": 0
+      },
+      {
+        "stage": "completed_with_checkpoints_and_prefixes",
+        "calls": 1161,
+        "requested_bytes": 16343767,
+        "live_bytes": 15545613,
+        "peak_bytes": 15545613
+      },
+      {
+        "stage": "fresh_comparison_released",
+        "calls": 1716,
+        "requested_bytes": 23883204,
+        "live_bytes": 15545613,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "late_checkpoint_restored",
+        "calls": 1718,
+        "requested_bytes": 23887332,
+        "live_bytes": 15549725,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "capture_release_200",
+        "calls": 1718,
+        "requested_bytes": 23887332,
+        "live_bytes": 15549725,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "restore_200",
+        "calls": 1718,
+        "requested_bytes": 23887332,
+        "live_bytes": 15549725,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "replay_1",
+        "calls": 1745,
+        "requested_bytes": 24653321,
+        "live_bytes": 16301237,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "replay_5",
+        "calls": 1776,
+        "requested_bytes": 24814378,
+        "live_bytes": 16301269,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "replay_20",
+        "calls": 1896,
+        "requested_bytes": 25458478,
+        "live_bytes": 16301269,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "five_suffix_outputs_retained",
+        "calls": 1999,
+        "requested_bytes": 28389679,
+        "live_bytes": 19142702,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "five_suffix_outputs_released",
+        "calls": 1999,
+        "requested_bytes": 28389679,
+        "live_bytes": 19065949,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "engine_released",
+        "calls": 2190,
+        "requested_bytes": 28406447,
+        "live_bytes": 19009789,
+        "peak_bytes": 22939445
+      },
+      {
+        "stage": "all_engine_owners_released",
+        "calls": 2200,
+        "requested_bytes": 28407055,
+        "live_bytes": 0,
+        "peak_bytes": 22939445
+      }
+    ]
+  },
+  "measurement_corrections": "Original full-process CPU/wall samples retained. RSS measured separately through GNU time after excluding inherited Python high-water. Resume helper rerun to separate mutated-state restore and stable-root restore. Allocation counters run separately using final helper. Final paired five-sample pass suppresses native underfull diagnostics; original CPU/wall samples retained in original_diagnostic fields. Native DVI correspondence revalidated.",
+  "original_timing_runner_sha256": "032372f00e3de630bb0a716dc80f490da4814c59123cb5e45e4a60bd0c12b5a2",
+  "native_only_setup": "\\hbadness=10000\\vbadness=10000; diagnostic thresholds only, identical typesetting input; -jobname retains case name"
+}
