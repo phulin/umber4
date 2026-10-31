@@ -197,12 +197,16 @@ impl Engine<'_> {
             }
             return emit(self, b"0123456789ABCDEF"[(value & 15) as usize]);
         }
-        if matches!(meaning.command, cmd::COUNT_REF | cmd::TOKS_REF) {
+        if matches!(
+            meaning.command,
+            cmd::COUNT_REF | cmd::TOKS_REF | cmd::DIMEN_REF | cmd::SKIP_REF
+        ) {
             self.escaped_text(
-                if meaning.command == cmd::COUNT_REF {
-                    b"count"
-                } else {
-                    b"toks"
+                match meaning.command {
+                    cmd::COUNT_REF => b"count".as_slice(),
+                    cmd::TOKS_REF => b"toks".as_slice(),
+                    cmd::DIMEN_REF => b"dimen".as_slice(),
+                    _ => b"skip".as_slice(),
                 },
                 emit,
             )?;

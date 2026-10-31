@@ -49,10 +49,19 @@ impl Engine<'_> {
                     a.0 == b.0
                 }
             }
-            cmd::IFNUM => {
-                let a = self.scan_int()?;
+            cmd::IFNUM | cmd::IFDIM => {
+                let dimension = command == cmd::IFDIM;
+                let a = if dimension {
+                    self.scan_dimen()?.0
+                } else {
+                    self.scan_int()?
+                };
                 let relation = self.nonspace(true)?.token;
-                let b = self.scan_int()?;
+                let b = if dimension {
+                    self.scan_dimen()?.0
+                } else {
+                    self.scan_int()?
+                };
                 if relation == Token::other(b'=') {
                     a == b
                 } else if relation == Token::other(b'<') {

@@ -1,7 +1,7 @@
 use crate::{Engine, Error, Result, token::*, values::Builder};
 
 pub(crate) enum Internal {
-    Integer(i32),
+    Quantity(crate::quantities::Quantity),
     Tokens(Option<crate::values::Owner>),
 }
 
@@ -115,7 +115,9 @@ impl<'a> Engine<'a> {
                 self.document.token_registers[index].owner.clone(),
             ))
         } else {
-            Ok(Internal::Integer(self.internal_int(read)?))
+            self.quantity(read)?
+                .map(Internal::Quantity)
+                .ok_or(Error::Number)
         }
     }
     // The opening brace has already been consumed. Both emitters write in their
@@ -144,7 +146,16 @@ impl<'a> Engine<'a> {
                                     }
                                 }
                             }
-                            Internal::Integer(value) => self.emit_number(value, emit)?,
+                            Internal::Quantity(crate::quantities::Quantity::Integer(value)) => {
+                                self.emit_number(value, emit)?
+                            }
+                            Internal::Quantity(value) => {
+                                let mut text = [0; 128];
+                                let length = crate::quantities::quantity_text(value, &mut text);
+                                for &byte in &text[..length] {
+                                    emit.token(self, Token::string_character(byte))?;
+                                }
+                            }
                         },
                         cmd::NUMBER => self.with_expansion(|engine| {
                             let value = engine.scan_int()?;

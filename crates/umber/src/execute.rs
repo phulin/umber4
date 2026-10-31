@@ -4,6 +4,8 @@ pub(crate) enum Save {
     Boundary(bool),
     Meaning(usize, Binding, Option<crate::values::Owner>),
     Integer(Target, Integer),
+    Dimension(usize, crate::layout_values::DimenSlot),
+    Glue(usize, crate::layout_values::GlueSlot),
     Tokens(usize, TokenValue),
     After(Token),
 }
@@ -73,7 +75,7 @@ impl Engine<'_> {
                 self.back(first.token);
                 Ok(())
             }
-            cmd::COUNT_DEF | cmd::CHAR_DEF | cmd::TOKS_DEF => {
+            cmd::COUNT_DEF | cmd::CHAR_DEF | cmd::TOKS_DEF | cmd::DIMEN_DEF | cmd::SKIP_DEF => {
                 let id = self.scan_cs()?;
                 self.assign_meaning(id, Meaning::RELAX, assignment_global);
                 self.scan_equals()?;
@@ -81,6 +83,8 @@ impl Engine<'_> {
                 let command = match read.meaning.command {
                     cmd::COUNT_DEF => cmd::COUNT_REF,
                     cmd::TOKS_DEF => cmd::TOKS_REF,
+                    cmd::DIMEN_DEF => cmd::DIMEN_REF,
+                    cmd::SKIP_DEF => cmd::SKIP_REF,
                     _ => cmd::CHAR_GIVEN,
                 };
                 self.assign_meaning(id, Meaning { command, value }, assignment_global);
@@ -106,6 +110,12 @@ impl Engine<'_> {
                 self.assign_tokens(index, owner, assignment_global);
                 Ok(())
             }
+            cmd::DIMEN
+            | cmd::DIMEN_REF
+            | cmd::DIMEN_PARAM
+            | cmd::SKIP
+            | cmd::SKIP_REF
+            | cmd::GLUE_PARAM => self.layout_assignment(read, assignment_global),
             cmd::COUNT
             | cmd::COUNT_REF
             | cmd::CATCODE
@@ -126,29 +136,41 @@ impl Engine<'_> {
             cmd::ARITH => {
                 let operation = read.meaning.value;
                 let register = self.nonspace(true)?;
-                if !matches!(
+                if matches!(
                     register.meaning.command,
-                    cmd::COUNT | cmd::COUNT_REF | cmd::ENDLINE | cmd::INTEGER_PARAM
+                    cmd::DIMEN
+                        | cmd::DIMEN_REF
+                        | cmd::DIMEN_PARAM
+                        | cmd::SKIP
+                        | cmd::SKIP_REF
+                        | cmd::GLUE_PARAM
                 ) {
-                    return Err(Error::Unsupported);
-                }
-                let target = self.scalar_target(register)?;
-                self.scan_keyword(b"by")?;
-                let operand = self.scan_int()?;
-                self.update_integer(target, assignment_global, |old| {
-                    Ok(match operation {
-                        0 => old.wrapping_add(operand),
-                        1 => {
-                            let product = i64::from(old) * i64::from(operand);
-                            if product.abs() > i64::from(i32::MAX) {
-                                return Err(Error::Overflow);
+                    self.layout_arithmetic(register, operation, assignment_global)
+                } else {
+                    if !matches!(
+                        register.meaning.command,
+                        cmd::COUNT | cmd::COUNT_REF | cmd::ENDLINE | cmd::INTEGER_PARAM
+                    ) {
+                        return Err(Error::Unsupported);
+                    }
+                    let target = self.scalar_target(register)?;
+                    self.scan_keyword(b"by")?;
+                    let operand = self.scan_int()?;
+                    self.update_integer(target, assignment_global, |old| {
+                        Ok(match operation {
+                            0 => old.wrapping_add(operand),
+                            1 => {
+                                let product = i64::from(old) * i64::from(operand);
+                                if product.abs() > i64::from(i32::MAX) {
+                                    return Err(Error::Overflow);
+                                }
+                                product as i32
                             }
-                            product as i32
-                        }
-                        2 => old.checked_div(operand).ok_or(Error::Overflow)?,
-                        _ => unreachable!(),
+                            2 => old.checked_div(operand).ok_or(Error::Overflow)?,
+                            _ => unreachable!(),
+                        })
                     })
-                })
+                }
             }
             cmd::AFTER_ASSIGN if !global => {
                 self.document.after_assignment = Some(self.next_raw()?.token);
@@ -279,6 +301,18 @@ impl Engine<'_> {
                     if self.document.bindings[id].level != 0 {
                         self.document.bindings[id] = old;
                         self.document.bindings.replace_owner(id, owner);
+                    }
+                }
+                Save::Dimension(index, old) => {
+                    let slot = &mut self.document.layout_values.dimens[index];
+                    if slot.level != 0 {
+                        *slot = old;
+                    }
+                }
+                Save::Glue(index, old) => {
+                    let slot = &mut self.document.layout_values.glues[index];
+                    if slot.level != 0 {
+                        *slot = old;
                     }
                 }
                 Save::Integer(target, old) => {

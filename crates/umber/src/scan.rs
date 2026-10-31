@@ -100,6 +100,14 @@ impl Engine<'_> {
         match read.meaning.command {
             cmd::CHAR_GIVEN => Ok(read.meaning.value),
             cmd::NUMEXPR => self.scan_expression(),
+            cmd::DIMEN | cmd::DIMEN_REF | cmd::DIMEN_PARAM => {
+                let target = self.dimen_target(read)?;
+                Ok(self.document.layout_values.dimens[target].value.0)
+            }
+            cmd::SKIP | cmd::SKIP_REF | cmd::GLUE_PARAM => {
+                let target = self.glue_target(read)?;
+                Ok(self.document.layout_values.glues[target].value.width.0)
+            }
             _ => {
                 let target = self.scalar_target(read)?;
                 Ok(self.document.scalars[target].value)
@@ -207,6 +215,12 @@ impl Engine<'_> {
                 | cmd::CASE_CODE
                 | cmd::CHAR_GIVEN
                 | cmd::NUMEXPR
+                | cmd::DIMEN
+                | cmd::DIMEN_REF
+                | cmd::DIMEN_PARAM
+                | cmd::SKIP
+                | cmd::SKIP_REF
+                | cmd::GLUE_PARAM
         ) {
             self.internal_int(read)?
         } else {

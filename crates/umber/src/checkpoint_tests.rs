@@ -297,3 +297,36 @@ fn zero_budget_and_initialization_roots_do_not_consume_input() {
     );
     assert_eq!(finish(&mut engine).counts[0], 17);
 }
+
+#[test]
+fn dimension_glue_groups_magnification_and_pending_input_replay() {
+    replay_boundaries(include_bytes!("../../../fixtures/mvp/layout-values.tex"));
+}
+
+#[test]
+fn node_ids_resolve_in_the_captured_store_version() {
+    use crate::nodes::{Kind, List, ReleaseScratch};
+    let mut engine = Engine::new(br"\end");
+    let node = engine.document.nodes.alloc(Kind::Penalty(7)).unwrap();
+    let id = node.id();
+    let mut chain = List::default();
+    engine.document.nodes.append(&mut chain, node);
+    // The following slices will keep this corresponding list root in Document.
+    let retained_chain = chain.snapshot();
+    let saved = engine.checkpoint().unwrap();
+    engine.document.nodes.get_mut(id).kind = Kind::Penalty(99);
+    engine
+        .document
+        .nodes
+        .release(chain, &mut ReleaseScratch::default());
+    engine.restore(&saved).unwrap();
+    assert!(matches!(
+        engine.document.nodes.get(retained_chain.head()).kind,
+        Kind::Penalty(7)
+    ));
+    engine.restore(&saved).unwrap();
+    assert!(matches!(
+        engine.document.nodes.get(id).kind,
+        Kind::Penalty(7)
+    ));
+}

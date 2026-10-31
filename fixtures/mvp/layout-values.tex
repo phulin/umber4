@@ -1,0 +1,37 @@
+\catcode123=1 \catcode125=2 \catcode35=6\relax
+\dimen0=1.234567890123456789pt
+\dimen1=.pt \dimen2=,5pt \dimen3='10sp \dimen4="10sp
+\message{UMBER:\number\dimen0/\the\dimen0/\the\dimen1/\the\dimen2/\number\dimen3/\number\dimen4:END}
+\dimen0=1in \dimen1=1pc \dimen2=1cm \dimen3=1mm \dimen4=1bp \dimen5=1dd \dimen6=1cc
+\message{UMBER:\number\dimen0/\number\dimen1/\number\dimen2/\number\dimen3/\number\dimen4/\number\dimen5/\number\dimen6:END}
+\skip0=10pt plus2fil minus3fill
+\advance\skip0 by -2pt plus-2fil minus1pt
+\message{UMBER:\the\skip0:END}
+\multiply\skip0 by-3 \divide\skip0 by2
+\skip1=1pt plus0fill \advance\skip1 by0pt plus1fil
+\message{UMBER:\the\skip0/\the\skip1:END}
+\dimendef\size=255 \skipdef\space=255
+\size=2.5pt \space=\size plus2pt minus1fil
+\edef\snapshot{\the\size/\the\space}
+\message{UMBER:\snapshot/\meaning\size/\meaning\space:END}
+{\size=7pt \global\size=8pt \size=9pt
+ \space=3pt \global\space=4pt plus1fill \space=5pt
+ \message{UMBER:\the\size/\the\space:END}}
+\message{UMBER:\the\size/\the\space:END}
+\let\second=\size \ifx\size\second\message{UMBER:ALIASES:END}\else\undefined\fi
+\count0=\size \count1=\space
+\advance\size by.5pt \multiply\size by3 \divide\size by2
+\ifdim\size>12pt \message{UMBER:\the\size/\number\count0/\number\count1:END}\else\undefined\fi
+\def\hook{\message{UMBER:AFTER/\the\size:END}}\afterassignment\hook\size=11pt
+\hsize=42pt \leftskip=1pt plus2fil
+\message{UMBER:\the\hsize/\the\leftskip/\the\mag/\the\lccode65/\the\uccode97:END}
+\mag=1200 \dimen0=1truein \dimen1=1truept
+\message{UMBER:\number\dimen0/\number\dimen1:END}
+\dimen0=2em \dimen1=3ex
+\message{UMBER:\the\dimen0/\the\dimen1:END}
+\hsize=16383pt \advance\hsize by1pt \skip0=\hsize
+\message{UMBER:\the\skip0/\number\skip0:END}
+\edef\actual{\the\skip0}
+\edef\wanted{\detokenize{16384.0pt}}
+\ifx\actual\wanted\message{UMBER:FORMAT:END}\else\undefined\fi
+\end

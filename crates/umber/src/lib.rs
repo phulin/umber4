@@ -3,10 +3,13 @@ mod condition;
 mod convert;
 mod define;
 mod delimit;
+mod dimension_scan;
 mod execute;
 mod expand;
 mod expression;
 mod input;
+mod layout_assign;
+mod layout_values;
 #[cfg(feature = "lexing-prototype")]
 #[doc(hidden)]
 pub mod lexing;
@@ -14,6 +17,10 @@ mod lists;
 mod macros;
 mod messages;
 mod names;
+#[allow(dead_code)] // Node consumers are the following font/paragraph/page slices.
+mod nodes;
+mod numeric;
+mod quantities;
 mod scalars;
 mod scan;
 mod tables;
@@ -72,6 +79,8 @@ pub(crate) struct Document<'a> {
     pub file: input::FileInput<'a>,
     pub scalars: Scalars,
     pub token_registers: tables::Table<TokenValue>,
+    pub layout_values: layout_values::LayoutValues,
+    pub nodes: nodes::NodeStore,
     pub after_assignment: Option<Token>,
     pub save: Vec<execute::Save>,
     pub level: u16,
@@ -88,6 +97,8 @@ impl<'a> Engine<'a> {
                 bindings: tables::Bindings::new(NAMED_BASE as usize),
                 scalars: Scalars::default(),
                 token_registers: tables::Table::new(256),
+                layout_values: layout_values::LayoutValues::default(),
+                nodes: nodes::NodeStore::default(),
                 after_assignment: None,
                 sources: Vec::with_capacity(16),
                 save: Vec::new(),
@@ -206,3 +217,6 @@ mod tests;
 
 #[cfg(test)]
 mod memory_tests;
+
+#[cfg(test)]
+mod dimension_tests;

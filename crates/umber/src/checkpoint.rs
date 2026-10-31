@@ -49,6 +49,8 @@ pub struct Checkpoint<'a> {
     file: FileInput<'a>,
     scalars: Scalars,
     token_registers: Table<TokenValue>,
+    layout_values: crate::layout_values::LayoutValues,
+    nodes: crate::nodes::NodeStore,
     after_assignment: Option<Token>,
     save: Buffer<Save>,
     level: u16,
@@ -190,6 +192,8 @@ impl<'a> Engine<'a> {
             file: d.file.clone(),
             scalars: d.scalars.clone(),
             token_registers: d.token_registers.clone(),
+            layout_values: d.layout_values.clone(),
+            nodes: d.nodes.clone(),
             after_assignment: d.after_assignment,
             save,
             level: d.level,
@@ -299,6 +303,8 @@ impl<'a> Engine<'a> {
             file,
             scalars,
             token_registers,
+            layout_values,
+            nodes,
             after_assignment,
             save,
             level,
@@ -312,6 +318,8 @@ impl<'a> Engine<'a> {
         file.clone_from(&checkpoint.file);
         scalars.clone_from(&checkpoint.scalars);
         token_registers.clone_from(&checkpoint.token_registers);
+        layout_values.clone_from(&checkpoint.layout_values);
+        nodes.clone_from(&checkpoint.nodes);
         *after_assignment = checkpoint.after_assignment;
         save.clear();
         save.extend(checkpoint.save.iter().cloned());

@@ -1,4 +1,12 @@
-use crate::token::Integer;
+use crate::token::{Integer, cmd};
+
+const REGISTERS: usize = 256;
+const CAT_BASE: usize = REGISTERS;
+const ENDLINE: usize = CAT_BASE + 256;
+const PARAM_BASE: usize = ENDLINE + 1;
+const PARAMS: usize = cmd::names(cmd::INTEGER_PARAM).len();
+const CASE_BASE: usize = PARAM_BASE + PARAMS;
+const SLOTS: usize = CASE_BASE + 2 * 256;
 use std::ops::{Index, IndexMut};
 
 // Scalar values have the same representation and group-save lifetime. A target
@@ -7,34 +15,35 @@ use std::ops::{Index, IndexMut};
 #[derive(Clone, Copy)]
 pub(crate) struct Target(u16);
 impl Target {
-    pub const ENDLINE: Self = Self(512);
-    pub const GLOBALDEFS: Self = Self(513);
-    pub const ESCAPECHAR: Self = Self(514);
+    pub const ENDLINE: Self = Self(ENDLINE as u16);
+    pub const GLOBALDEFS: Self = Self(PARAM_BASE as u16);
+    pub const ESCAPECHAR: Self = Self((PARAM_BASE + 1) as u16);
+    pub const MAG: Self = Self((PARAM_BASE + 6) as u16);
     pub fn count(index: usize) -> Self {
         Self(index as u16)
     }
     pub fn catcode(index: usize) -> Self {
-        Self(256 + index as u16)
+        Self((CAT_BASE + index) as u16)
     }
     pub fn parameter(index: usize) -> Self {
-        Self(513 + index as u16)
+        Self((PARAM_BASE + index) as u16)
     }
     pub fn casecode(which: usize, index: usize) -> Self {
-        Self(519 + (which * 256 + index) as u16)
+        Self((CASE_BASE + which * 256 + index) as u16)
     }
 }
 
 #[derive(Clone)]
-pub(crate) struct Scalars([Integer; 1031]);
+pub(crate) struct Scalars([Integer; SLOTS]);
 impl Default for Scalars {
     fn default() -> Self {
-        let mut state = Self([Integer::default(); 1031]);
-        state.0[256..512].fill(Integer {
+        let mut state = Self([Integer::default(); SLOTS]);
+        state.0[CAT_BASE..ENDLINE].fill(Integer {
             value: 12,
             level: 0,
         });
         state[Target::ENDLINE].value = 13;
-        for (index, value) in [0, 92, 0, 1, 1, 1970].into_iter().enumerate() {
+        for (index, value) in [0, 92, 0, 1, 1, 1970, 1000].into_iter().enumerate() {
             state[Target::parameter(index)].value = value;
         }
         for byte in b'a'..=b'z' {
@@ -59,10 +68,10 @@ impl Default for Scalars {
 }
 impl Scalars {
     pub fn counts(&self) -> &[Integer; 256] {
-        self.0[..256].try_into().unwrap()
+        self.0[..REGISTERS].try_into().unwrap()
     }
     pub fn catcodes(&self) -> &[Integer; 256] {
-        self.0[256..512].try_into().unwrap()
+        self.0[CAT_BASE..ENDLINE].try_into().unwrap()
     }
 }
 impl Index<Target> for Scalars {

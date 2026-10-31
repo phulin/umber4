@@ -87,7 +87,7 @@ pub(crate) mod cmd {
             pub const PRIMITIVES: &[(u8, &[&[u8]])] = &[
                 $(($command, &[$($name),*]),)*
             ];
-            pub fn names(command: u8) -> &'static [&'static [u8]] {
+            pub const fn names(command: u8) -> &'static [&'static [u8]] {
                 match command {
                     $($command => &[$($name),*],)*
                     _ => &[],
@@ -96,6 +96,12 @@ pub(crate) mod cmd {
             pub fn is_assignment(command: u8) -> bool {
                 match command {
                     $($command => commands!(@assignment $($kind)?),)*
+                    _ => false,
+                }
+            }
+            pub fn is_expandable(command: u8) -> bool {
+                match command {
+                    $($command => commands!(@expandable $($kind)?),)*
                     _ => false,
                 }
             }
@@ -108,9 +114,15 @@ pub(crate) mod cmd {
         };
         (@assignment assignment) => { true };
         (@assignment conditional) => { false };
+        (@assignment expandable) => { false };
         (@assignment) => { false };
         (@conditional conditional) => { true };
         (@conditional assignment) => { false };
+        (@conditional expandable) => { false };
+        (@expandable expandable) => { true };
+        (@expandable conditional) => { true };
+        (@expandable assignment) => { false };
+        (@expandable) => { false };
         (@conditional) => { false };
     }
     commands! {
@@ -120,9 +132,9 @@ pub(crate) mod cmd {
         END_GROUP_CHAR = 2 => [];
         SPACE = 10 => [];
         CHAR_GIVEN = 38 => [];
-        MACRO = 64 => [];
-        PROTECTED_MACRO = 65 => [];
-        UNDEFINED = 66 => [];
+        MACRO = 64 => [] expandable;
+        PROTECTED_MACRO = 65 => [] expandable;
+        UNDEFINED = 66 => [] expandable;
         RELAX = 16 => [b"relax"];
         DEF = 17 => [b"def"] assignment;
         GDEF = 18 => [b"gdef"] assignment;
@@ -139,18 +151,18 @@ pub(crate) mod cmd {
         CATCODE = 29 => [b"catcode"] assignment;
         ENDLINE = 30 => [b"endlinechar"] assignment;
         MESSAGE = 31 => [b"message"];
-        NUMBER = 67 => [b"number"];
-        THE = 68 => [b"the"];
-        EXPANDAFTER = 69 => [b"expandafter"];
-        NOEXPAND = 70 => [b"noexpand"];
-        CSNAME = 71 => [b"csname"];
+        NUMBER = 67 => [b"number"] expandable;
+        THE = 68 => [b"the"] expandable;
+        EXPANDAFTER = 69 => [b"expandafter"] expandable;
+        NOEXPAND = 70 => [b"noexpand"] expandable;
+        CSNAME = 71 => [b"csname"] expandable;
         ENDCSNAME = 33 => [b"endcsname"];
         IFNUM = 72 => [b"ifnum"] conditional;
         IFX = 73 => [b"ifx"] conditional;
         IFTRUE = 74 => [b"iftrue"] conditional;
         IFFALSE = 75 => [b"iffalse"] conditional;
-        ELSE = 76 => [b"else"];
-        FI = 77 => [b"fi"];
+        ELSE = 76 => [b"else"] expandable;
+        FI = 77 => [b"fi"] expandable;
         END = 34 => [b"end"];
         PAR = 35 => [b"par"];
         TOKS = 36 => [b"toks"] assignment;
@@ -159,24 +171,33 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
         NUMEXPR = 48 => [b"numexpr"];
-        STRING = 78 => [b"string"];
-        MEANING = 80 => [b"meaning"];
-        ROMAN = 79 => [b"romannumeral"];
-        DETOKENIZE = 89 => [b"detokenize"];
-        UNEXPANDED = 88 => [b"unexpanded"];
+        STRING = 78 => [b"string"] expandable;
+        MEANING = 80 => [b"meaning"] expandable;
+        ROMAN = 79 => [b"romannumeral"] expandable;
+        DETOKENIZE = 89 => [b"detokenize"] expandable;
+        UNEXPANDED = 88 => [b"unexpanded"] expandable;
         IF = 81 => [b"if"] conditional;
         IFCAT = 82 => [b"ifcat"] conditional;
         IFODD = 83 => [b"ifodd"] conditional;
         IFCASE = 84 => [b"ifcase"] conditional;
-        OR = 85 => [b"or"];
+        OR = 85 => [b"or"] expandable;
         IFDEFINED = 86 => [b"ifdefined"] conditional;
         IFCSNAME = 87 => [b"ifcsname"] conditional;
-        UNLESS = 90 => [b"unless"];
+        UNLESS = 90 => [b"unless"] expandable;
+        DIMEN = 91 => [b"dimen"] assignment;
+        DIMEN_REF = 92 => [] assignment;
+        DIMEN_DEF = 93 => [b"dimendef"] assignment;
+        SKIP = 94 => [b"skip"] assignment;
+        SKIP_REF = 95 => [] assignment;
+        SKIP_DEF = 96 => [b"skipdef"] assignment;
+        DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz"] assignment;
+        GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip"] assignment;
+        IFDIM = 99 => [b"ifdim"] conditional;
     }
 }
 
@@ -207,7 +228,7 @@ impl Meaning {
         cmd::is_conditional(self.command)
     }
     pub fn expandable(self) -> bool {
-        self.command >= cmd::MACRO
+        cmd::is_expandable(self.command)
     }
 }
 #[derive(Clone, Copy)]

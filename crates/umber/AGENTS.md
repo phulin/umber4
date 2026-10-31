@@ -20,6 +20,14 @@ scratch ownership, reuse, and failure cleanup;
 captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;
 `scalars.rs` stores integer tables and their group levels;
+`numeric.rs` supplies scaled arithmetic/glue and `numeric_tests.rs` checks it;
+`dimension_scan.rs` scans dimensions/glue, `quantities.rs` shares internal-value
+formatting, `layout_values.rs` owns typed COW bindings, and `layout_assign.rs`
+applies typed assignments/arithmetic, with operand and fixture tests in
+`dimension_tests.rs`;
+`nodes.rs` owns versioned chunked node storage and consuming list/node transfers,
+with branch/reclamation tests in `nodes_tests.rs`; these node APIs precede actual
+font, paragraph, and page execution;
 `lists.rs` scans raw/expanded lists into their destinations; `convert.rs` builds
 conversion and case-change output; `expand.rs` dispatches expansion;
 `condition.rs` handles conditional selection/skipping; `execute.rs` handles

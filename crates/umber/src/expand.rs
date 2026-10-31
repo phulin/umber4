@@ -25,7 +25,18 @@ impl Engine<'_> {
                 self.insert_number(value)
             }
             cmd::THE => match self.the_value()? {
-                crate::lists::Internal::Integer(value) => self.insert_number(value),
+                crate::lists::Internal::Quantity(crate::quantities::Quantity::Integer(value)) => {
+                    self.insert_number(value)
+                }
+                crate::lists::Internal::Quantity(value) => {
+                    let mut text = [0; 128];
+                    let length = crate::quantities::quantity_text(value, &mut text);
+                    let mut output = crate::convert::Generated::default();
+                    for &byte in &text[..length] {
+                        self.generated_token(&mut output, Token::string_character(byte))?;
+                    }
+                    self.finish_generated(output)
+                }
                 crate::lists::Internal::Tokens(Some(owner)) => self.push_tokens(owner, 0),
                 crate::lists::Internal::Tokens(None) => Ok(()),
             },
