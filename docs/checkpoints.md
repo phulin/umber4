@@ -5,6 +5,49 @@ This proposal develops the in-memory checkpoint boundary in
 the outer loop. It does not serialize Rust calls, scanners, or the expansion
 machine's intermediate work.
 
+## Implemented expansion/register boundary
+
+The first executable slice supplies an in-memory `Checkpoint` for unchanged
+source bytes. `Engine` is the session and non-consuming driver; its document
+root contains all restorable semantic state. `advance(command_budget)` executes
+complete outer commands and returns `Progress::Boundary` or `Progress::Complete`.
+`checkpoint` is legal only at a successful driver boundary (including startup
+and completion). An error leaves the attempt ineligible until a retained root is
+restored. `restore` rejects checkpoints from another session. `outcome` publishes
+a replacement message prefix and register values; `run` remains the consuming
+convenience adapter. A command budget is a coarse handoff request, not a bound on
+macro expansion or scanner work.
+
+This interpreter has no layout nest: all its successful outer boundaries are
+preamble-like. Ordinary assignment groups and conditionals may remain open.
+Future layout state must extend the document root and eligibility predicate with
+external vertical mode, construction, and output-routine checks. This slice does
+not claim to capture those future roots.
+
+Meanings and their payload owners share 64-entry COW pages; token registers use
+the same page mechanism. Small scalar arrays, save records, and conditional
+records are copied. Page copies reuse bounded session caches and retain immutable
+payload owners once per copied physical page. Session spelling identities and
+value/metadata registries survive rollback; scratch and free lists are not
+snapshot state. Names discovered on an abandoned branch remain interned with
+undefined restored meanings until assigned again.
+
+Live packet slots remain reusable expansion storage. A checkpoint copies only
+active argument span descriptors into its own immutable metadata buffers and
+retains their token owners. Saved cursors contain logical positions, span indices,
+and checkpoint-local packet coordinates, never raw pointers or reusable live
+packet IDs. Restore checks out live packet slots, remaps those coordinates, and
+reconstructs raw token windows from retained owners. Definitions and argument
+token words are shared without flattening or per-token reference counting.
+Snapshots retain their backing stores and can safely outlive the engine.
+
+The prepared input line is copied with its lexical position/state, including any
+committed superscript translations. Source bytes remain borrowed and unchanged.
+Message history shares immutable append blocks; appending after a checkpoint
+starts a new block rather than copying old message bytes. Repeated restore
+selects the same roots and releases the abandoned suffix. This slice excludes
+source edits, filesystem effects, persisted serialization, and scheduler policy.
+
 ## 1. Eligibility and cadence
 
 A checkpoint is eligible when all of the following hold:

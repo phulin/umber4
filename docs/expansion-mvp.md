@@ -88,8 +88,8 @@ the same cursor API.
 
 The interner stores stable spelling bytes in session-owned chunks, with a compact
 probe table and dense spelling directory. Source and dynamically built names use
-the same identity lookup. The current MVP owns one interner per engine; a future
-session keeps it across restores and releases it at session teardown.
+the same identity lookup. The engine session keeps this interner across checkpoint restores and releases
+it at session teardown.
 
 Scalar tables retain integer values and assignment levels. Token registers own
 values with their group levels; temporary internal quantities retain only the

@@ -1,8 +1,8 @@
 # Storage and semantic lifetimes
 
 This document defines the storage contract for the interpreter. The MVP implements
-immutable token storage and reusable invocation packets; node stores, snapshots,
-and output storage remain proposals. [mvp.md](mvp.md) records the implemented
+immutable token storage, reusable invocation packets, paged table checkpoints,
+and shared message prefixes; node and page output stores remain proposals. [mvp.md](mvp.md) records the implemented
 allocator boundaries for the current slice.
 
 ## 1. Allocation contract
