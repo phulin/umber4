@@ -3,8 +3,9 @@
 This document defines the storage contract for the interpreter. The MVP implements
 immutable token storage, reusable invocation packets, paged table checkpoints,
 shared message prefixes, and the versioned node foundation in
-[layout-foundation.md](layout-foundation.md); text/page execution and output
-stores remain proposals. [mvp.md](mvp.md) records the implemented
+[layout-foundation.md](layout-foundation.md). Font/text construction and
+[paragraph breaking](paragraphs.md) now use those nodes and typed COW shape tables;
+page execution and output stores remain proposals. [mvp.md](mvp.md) records the implemented
 allocator boundaries for the current slice.
 
 ## 1. Allocation contract

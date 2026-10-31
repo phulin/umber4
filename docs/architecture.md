@@ -108,7 +108,8 @@ arena boundary. Optional macro precompilation can be explored once the basic
 execution path is working and measurable.
 
 [layout-foundation.md](layout-foundation.md) specifies the numeric and versioned
-node/list foundation preceding executable font, paragraph, and page layout.
+node/list foundation used by executable [font/text](fonts-text.md) and
+[paragraph](paragraphs.md) layout; page construction remains a proposal.
 
 See [expansion.md](expansion.md) for the input and expansion loop design.
 Character scanning and primitive/group execution are developed in

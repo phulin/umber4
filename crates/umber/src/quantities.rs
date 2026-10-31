@@ -50,6 +50,7 @@ impl Engine<'_> {
         if matches!(
             read.meaning.command,
             cmd::FONT_INT
+                | cmd::PAR_SHAPE
                 | cmd::SPACE_FACTOR
                 | cmd::SF_CODE
                 | cmd::COUNT

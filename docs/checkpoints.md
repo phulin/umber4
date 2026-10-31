@@ -25,7 +25,11 @@ Font/text execution adds document-owned font descriptors, parameter spans, mode,
 and horizontal/vertical list roots with the matching node-store version. Only
 external vertical mode is eligible; a budget defers handoff through horizontal
 construction. Ordinary assignment groups and conditionals may remain open.
-Nonempty paragraph completion awaits the line breaker and reports unsupported.
+Completed paragraphs retain their packed lines and interline material on the
+vertical root. Paragraph shape COW pages and grouped save records are captured
+with the other layout values; active/delta/passive search scratch resets before
+returning to the outer driver. Replay can resume pending macro arguments and
+ordinary open groups after a paragraph.
 Future construction nests and output routines must extend eligibility and roots.
 Immutable registered TFM resources are session-owned and registration seals at
 the first nonzero advance, so restore cannot change the observed metric bytes.

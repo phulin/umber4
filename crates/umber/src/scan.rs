@@ -98,6 +98,13 @@ impl Engine<'_> {
     }
     pub(crate) fn internal_int(&mut self, read: Read) -> Result<i32> {
         match read.meaning.command {
+            cmd::PAR_SHAPE => Ok(self
+                .document
+                .layout_values
+                .shape
+                .lines
+                .as_ref()
+                .map_or(0, |s| s.len() as i32)),
             cmd::FONT_DIMEN | cmd::FONT_METRIC => Ok(self.font_dimension(read)?.0),
             cmd::FONT_INT | cmd::SPACE_FACTOR => self.font_integer(read),
             cmd::CHAR_GIVEN => Ok(read.meaning.value),
@@ -221,6 +228,7 @@ impl Engine<'_> {
                 | cmd::ENDLINE
                 | cmd::INTEGER_PARAM
                 | cmd::CASE_CODE
+                | cmd::PAR_SHAPE
                 | cmd::CHAR_GIVEN
                 | cmd::NUMEXPR
                 | cmd::DIMEN

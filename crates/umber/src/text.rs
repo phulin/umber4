@@ -1,6 +1,6 @@
-//! External modes and owned horizontal construction; paragraph completion is a hook.
+//! External modes and owned text lists, with paragraph-to-vertical handoff.
 use crate::{
-    Engine, Error, Result,
+    Engine, Result,
     layout_values::{DimenParam, GlueParam},
     nodes::{BoxData, GlueKind, Kind, List},
     numeric::{Glue, Scaled},
@@ -89,9 +89,10 @@ impl Engine<'_> {
     pub(crate) fn end_graf(&mut self) -> Result<()> {
         if self.document.text.mode == Mode::Horizontal {
             if !self.document.text.horizontal.is_empty() {
-                return Err(Error::Unsupported);
+                self.break_paragraph()?;
             }
             self.document.text.mode = Mode::Vertical;
+            self.normal_paragraph()?;
         }
         Ok(())
     }
@@ -136,7 +137,13 @@ impl Engine<'_> {
                 }
                 self.append_space(true)?;
             }
-            cmd::PAR => self.end_graf()?,
+            cmd::PAR => {
+                if self.document.text.mode == Mode::Vertical {
+                    self.normal_paragraph()?;
+                } else {
+                    self.end_graf()?;
+                }
+            }
             cmd::START_PAR => {
                 if self.document.text.mode == Mode::Vertical {
                     self.new_graf(read.meaning.value != 0)?;
@@ -164,6 +171,16 @@ impl Engine<'_> {
                     spec,
                     subtype: GlueKind::Normal,
                 })?;
+            }
+            cmd::PENALTY => {
+                let penalty = self.scan_int()?;
+                let node = self.document.nodes.alloc(Kind::Penalty(penalty))?;
+                let list = if self.document.text.mode == Mode::Horizontal {
+                    &mut self.document.text.horizontal
+                } else {
+                    &mut self.document.text.vertical
+                };
+                self.document.nodes.append(list, node);
             }
             cmd::KERN => {
                 let width = self.scan_dimen()?;

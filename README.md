@@ -13,9 +13,10 @@ implement a parsing/expansion interpreter in
 [crates/umber](crates/umber/), with [in-memory checkpoint/resume](docs/checkpoints.md)
 for unchanged input. The [layout foundation](docs/layout-foundation.md) supplies
 scaled dimensions, glue, and versioned node storage. [Fonts and text](docs/fonts-text.md)
-load host-supplied TFM metrics and construct horizontal lists; nonempty paragraph
-completion explicitly awaits line breaking. Paragraph/page construction, shipout,
-formats, and restart after source edits remain design proposals.
+load host-supplied TFM metrics and construct horizontal lists.
+[Paragraph construction](docs/paragraphs.md) implements TeX line breaking and
+packing into an owned vertical list. Page construction, shipout, formats, and
+restart after source edits remain design proposals.
 
 [Native measurements](docs/mvp-results.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.

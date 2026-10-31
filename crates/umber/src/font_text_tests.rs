@@ -190,18 +190,21 @@ fn boundary_ligatures_noboundary_and_retaining_operations() {
     ));
 }
 #[test]
-fn nonempty_paragraph_and_end_fail_without_discarding_nodes() {
+fn paragraph_end_transfers_nodes_and_restore_returns_to_vertical_root() {
     let mut e = engine(br"\font\f=test \f\noindent a\end");
     assert_eq!(e.advance(1).unwrap(), Progress::Boundary);
     let saved = e.checkpoint().unwrap();
-    assert_eq!(e.advance(100), Err(Error::Unsupported));
-    assert!(!e.document.text.horizontal.is_empty());
-    assert!(!e.can_checkpoint());
+    assert_eq!(e.advance(100), Ok(Progress::Complete));
+    assert!(e.document.text.horizontal.is_empty());
+    assert!(!e.document.text.vertical.is_empty());
+    assert!(e.can_checkpoint());
     e.restore(&saved).unwrap();
     assert_eq!(e.document.text.mode, Mode::Vertical);
+    assert!(e.document.text.vertical.is_empty());
     let mut empty = Engine::new(br"\noindent\par\end");
     assert_eq!(empty.advance(1).unwrap(), Progress::Boundary);
 }
+
 #[test]
 fn false_boundary_missing_glyphs_and_nullfont_preserve_input() {
     let bytes = tfm(&[[255, 200, 0, 1], [128, 200, 0, b'd']], &[(b'a', 1, 1)]);

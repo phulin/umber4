@@ -9,7 +9,7 @@ The executable initial font/text contract is in [fonts-text.md](fonts-text.md).
 
 ## Executable paragraph baseline
 
-The next executable slice completes external horizontal paragraphs with TeX82's
+The executable baseline completes external horizontal paragraphs with TeX82's
 `line_break`, `try_break`, and `post_line_break`. It uses the existing node store
 and immutable font metrics. It preserves active-list order, six relative width
 components, fitness classes, demerits, equal-cost selection, pretolerance and
@@ -28,18 +28,50 @@ root; this slice does not build pages or ship output.
 
 Active and delta slots are recycled within reusable engine scratch; passive
 predecessors survive until line construction finishes. Scratch is empty outside
-paragraph completion and is absent from checkpoints. Paragraph shapes use typed
-pooled immutable buffers, retained by document/save/checkpoint roots. Finished
-lines remain in the versioned node store with their vertical-list owner.
+paragraph completion and is absent from checkpoints. Paragraph shapes use the
+established typed COW tables with pooled pages and directories, retained by
+document/save/checkpoint roots. Finished lines remain in the versioned node store with their vertical-list owner.
 
 Horizontal packing uses TeX's integer dimensions and badness and an IEEE binary64
 glue ratio, matching the native Web2C oracle. Normal shrink is capped at one;
 infinite glue orders and signed components retain their upstream behavior.
-Placement checks use cumulative glue rounding. Diagnostic text, overfull rules,
+Native comparisons inspect node dimensions and displayed glue settings; cumulative
+placement checks belong to the later output traversal. Diagnostic text, overfull
+rules,
 restricted boxes, general discretionary syntax, automatic hyphenation, math,
 last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
 Unsupported infinite paragraph shrink fails explicitly rather than applying
 TeX's interactive recovery.
+
+The initial integer parameters match INITEX: tolerance 10000, hang-after 1, and
+zero for the remaining paragraph penalties and controls. All dimensions and glue
+start at zero. Sources set the geometry, font, and spacing they require.
+`\penalty` appends to the current horizontal or vertical list. `\parshape`,
+paragraph integer parameters, and existing typed skips/dimensions obey ordinary
+local/global assignment and internal-quantity formatting.
+
+Portable tests cover tie selection, final recovery, discretionary range/child
+transfers with retained old node roots, local/global paragraph resets, search
+failure cleanup, and paragraph checkpoints inside pending macros and open groups.
+The ignored native adapter compares 51 packed vertical structures against
+pdfTeX 1.40.25 (TeX Live 2023/Debian), using INITEX with e-TeX. These compare line
+contents, dimensions, shifts, displayed glue ratios, retained discretionaries,
+skips, and penalties. Native tracing confirms the emergency pass executes in its
+fixture. Cases include attainable and unattainable looseness, equal-cost repeated
+words, forced and overfull breaks, hanging/explicit shapes, kern boundaries, and
+controlled metrics plus the three real fonts identified in [fonts-text.md](fonts-text.md).
+
+Run the native adapter with explicit executable/corpus paths and the executable's
+library search path when needed, as for the font adapter:
+
+```bash
+cargo test --lib upstream_paragraph_lines_and_glue -- --ignored
+```
+
+No timing measurement is part of this validation. Page integration consumes
+`TextState.vertical` directly. `hpack` and `append_to_vlist` are reusable internal
+helpers; page packing, top skip, maximum depth, output routines, and end-of-job
+page flushing remain the page builder's responsibility.
 
 ## 1. Font metrics and live fonts
 

@@ -63,13 +63,11 @@ space path without changing the current factor. Font mutations affect subsequent
 spaces only. Missing glyphs create no character node, as in TeX; tracing lost
 characters is outside this stage's diagnostic profile.
 
-A nonempty paragraph remains owned by the horizontal root until the paragraph
-consumer takes it. This stage returns an explicit unsupported error on paragraph
-completion requiring line breaking; it never silently discards or packs text into
-an invented natural line. Internal builder tests examine live horizontal lists.
-Empty noindent paragraphs return to vertical mode. Later paragraph integration
-replaces this single completion hook and directly transfers the list into line
-boxes on the vertical list. No intermediate result queue is introduced.
+A nonempty paragraph remains owned by the horizontal root until the
+[paragraph consumer](paragraphs.md) takes it. Paragraph completion transfers
+selected ranges into packed line boxes on the vertical root. Internal builder
+tests can still inspect unfinished horizontal lists. Empty noindent paragraphs
+return to vertical mode. No intermediate result queue is introduced.
 
 Only successful external vertical driver boundaries are checkpointable. A work
 budget defers handoff while horizontal construction continues. Font tables,

@@ -1,8 +1,8 @@
 # Layout storage and numeric foundation
 
-This contract defines the foundation preceding fonts, paragraphs, and pages.
-Those execution paths remain unimplemented. The numeric and node facilities
-below are implemented independently of layout execution; their correctness
+This contract defines the foundation used by executable fonts and paragraphs;
+page construction remains a proposal. The numeric and node facilities
+below are independent of the layout algorithms; their correctness
 references are `round_decimals`, `print_scaled`, `scan_dimen`, `scan_glue`,
 `badness`, register arithmetic, and list ownership in
 [TeX's WEB source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).

@@ -15,6 +15,9 @@ mod layout_values;
 #[doc(hidden)]
 pub mod lexing;
 mod ligatures;
+mod line_break;
+mod line_construct;
+mod line_search;
 mod lists;
 mod macros;
 mod messages;
@@ -22,6 +25,8 @@ mod names;
 #[allow(dead_code)] // Node consumers are the following font/paragraph/page slices.
 mod nodes;
 mod numeric;
+mod packing;
+mod paragraph;
 mod quantities;
 mod scalars;
 mod scan;
@@ -76,6 +81,7 @@ pub struct Engine<'a> {
     pub(crate) font_catalog: tfm::Catalog,
     font_name: Vec<u8>,
     ligatures: ligatures::Scratch,
+    paragraph: paragraph::Scratch,
     checkpoint_stores: checkpoint::Stores,
     session: std::rc::Rc<()>,
     quiescent: bool,
@@ -131,6 +137,7 @@ impl<'a> Engine<'a> {
             font_catalog: tfm::Catalog::default(),
             font_name: Vec::new(),
             ligatures: ligatures::Scratch::default(),
+            paragraph: paragraph::Scratch::default(),
             checkpoint_stores: checkpoint::Stores::default(),
             session: std::rc::Rc::new(()),
             quiescent: true,
@@ -244,3 +251,8 @@ mod font_text_tests;
 
 #[cfg(test)]
 mod font_oracle_tests;
+
+#[cfg(test)]
+mod paragraph_oracle_tests;
+#[cfg(test)]
+mod paragraph_tests;

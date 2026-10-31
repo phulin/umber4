@@ -23,8 +23,8 @@ Read the root `AGENTS.md` first.
   generated-file append storage, stream handles, diagnostics, and replay.
 - `fonts-text.md` contracts immutable TFM resources, restored font descriptors, and
   horizontal list construction before paragraph breaking.
-- `paragraphs.md` develops font state, character/ligature construction, packing,
-  hyphenation, exact line breaking, and pdfTeX spacing extensions.
+- `paragraphs.md` contracts executable nonhyphenating TeX paragraph breaking and
+  packing, and develops future hyphenation and pdfTeX spacing extensions.
 - `math-alignments.md` develops math atoms/conversion, display math, alignment
   templates, entry measurement, and result-list transfers.
 - `pages.md` develops vertical contributions, page breaks, insertions, marks,

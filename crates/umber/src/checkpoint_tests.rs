@@ -193,7 +193,7 @@ fn names_survive_rollback_but_their_meanings_do_not() {
 
 #[test]
 fn abandoned_failed_scans_can_restore_without_retaining_packet_values() {
-    let source = format!(r"{BOOT}\def\take#1#2{{#1#2}}\take{{captured}}\end");
+    let source = format!(r"{BOOT}\def\take#1#2{{#1#2}}\take{{captured}}");
     let mut engine = Engine::new(source.as_bytes());
     let start = engine.checkpoint().unwrap();
     for _ in 0..3 {

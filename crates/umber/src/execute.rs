@@ -9,6 +9,7 @@ pub(crate) enum Save {
     Tokens(usize, TokenValue),
     After(Token),
     Font(Integer),
+    Shape(crate::layout_values::ShapeSlot),
 }
 
 impl Engine<'_> {
@@ -42,6 +43,7 @@ impl Engine<'_> {
             _ => global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
         };
         let result = match read.meaning.command {
+            cmd::PAR_SHAPE => self.shape_assignment(assignment_global),
             cmd::BEGIN | cmd::BEGIN_GROUP if !global => {
                 self.document.level = self.document.level.checked_add(1).ok_or(Error::Capacity)?;
                 self.document
@@ -238,7 +240,7 @@ impl Engine<'_> {
         }
     }
     #[inline]
-    fn update_integer(
+    pub(crate) fn update_integer(
         &mut self,
         target: Target,
         global: bool,
@@ -308,6 +310,11 @@ impl Engine<'_> {
                 Save::Font(old) => {
                     if self.document.fonts.current.level != 0 {
                         self.document.fonts.current = old;
+                    }
+                }
+                Save::Shape(old) => {
+                    if self.document.layout_values.shape.level != 0 {
+                        self.document.layout_values.shape = old;
                     }
                 }
                 Save::After(token) => self.back(token),

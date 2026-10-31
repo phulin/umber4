@@ -3,12 +3,14 @@
 This slice makes the execution path in [expansion.md](expansion.md) and
 [execution.md](execution.md) executable. It runs small TeX programs that expand
 macros and change integer state, then report their result with `\message`.
-Shipout, fonts, layout, and format files come later. The current interpreter adds
+Shipout and format files come later. The current interpreter adds
 [unchanged-input in-memory checkpoints](checkpoints.md) and a non-consuming
 outer driver to this expansion/register slice. The
 [layout foundation](layout-foundation.md) adds dimension/glue registers, physical
-unit scanning, arithmetic, conversions, and versioned node storage; text execution
-and scheduler integration remain future work.
+unit scanning, arithmetic, conversions, and versioned node storage.
+[Fonts/text](fonts-text.md) and [paragraphs](paragraphs.md) add immutable TFM
+resources, character construction, exact unhyphenated breaking, packing, and
+checkpointable completed paragraphs; page construction remains future work.
 
 The slice is implemented in [crates/umber](../crates/umber/). Its
 [native measurements](mvp-results.md) record the tested behavior, optimization

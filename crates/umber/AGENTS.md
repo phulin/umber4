@@ -26,11 +26,17 @@ formatting, `layout_values.rs` owns typed COW bindings, and `layout_assign.rs`
 applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
 `nodes.rs` owns versioned chunked node storage and consuming list/node transfers,
-with branch/reclamation tests in `nodes_tests.rs`; these node APIs precede actual
-paragraph and page execution;
+with branch/reclamation tests in `nodes_tests.rs`; page construction will use
+the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
 owns restorable loaded-font descriptors/parameters and font assignments,
-`text.rs` owns external modes and horizontal/vertical lists, and `ligatures.rs`
+`text.rs` owns external modes and horizontal/vertical lists, `paragraph.rs` owns
+paragraph parameters, pooled shape roots, and reusable search storage,
+`line_break.rs` traverses legal breaks and passes, `line_search.rs` implements
+active/delta/passive search, `line_construct.rs` transfers selected ranges into
+lines, and `packing.rs` packs lines and appends baseline glue;
+`paragraph_tests.rs` covers ownership/replay and `paragraph_oracle_tests.rs`
+compares packed structures with native INITEX. `ligatures.rs`
 builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
 `tfm_tests.rs` use controlled metrics from `font_test_data.rs`, while the explicitly
 invoked native adapter in `font_oracle_tests.rs` compares real and controlled TFMs;

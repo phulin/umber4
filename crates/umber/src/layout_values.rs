@@ -21,6 +21,17 @@ pub(crate) struct LayoutValues {
     pub dimens: Table<DimenSlot>,
     pub glues: Table<GlueSlot>,
     pub prepared_mag: Option<i32>,
+    pub shape: ShapeSlot,
+}
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct LineShape {
+    pub indent: Scaled,
+    pub width: Scaled,
+}
+#[derive(Clone, Default)]
+pub(crate) struct ShapeSlot {
+    pub lines: Option<Table<LineShape>>,
+    pub level: u16,
 }
 impl Default for LayoutValues {
     fn default() -> Self {
@@ -28,6 +39,7 @@ impl Default for LayoutValues {
             dimens: Table::new(REGISTERS),
             glues: Table::new(REGISTERS),
             prepared_mag: None,
+            shape: ShapeSlot::default(),
         }
     }
 }

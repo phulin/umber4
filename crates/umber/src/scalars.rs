@@ -22,6 +22,9 @@ impl Target {
     pub const MAG: Self = Self((PARAM_BASE + 6) as u16);
     pub const DEFAULT_HYPHEN: Self = Self((PARAM_BASE + 7) as u16);
     pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
+    pub fn paragraph(parameter: ParagraphParam) -> Self {
+        Self::parameter(9 + parameter as usize)
+    }
     pub fn sfcode(index: usize) -> Self {
         Self((SF_BASE + index) as u16)
     }
@@ -39,6 +42,24 @@ impl Target {
     }
 }
 
+#[derive(Clone, Copy)]
+#[repr(usize)]
+pub(crate) enum ParagraphParam {
+    Pretolerance,
+    Tolerance,
+    LinePenalty,
+    HyphenPenalty,
+    ExHyphenPenalty,
+    AdjDemerits,
+    DoubleHyphenDemerits,
+    FinalHyphenDemerits,
+    Looseness,
+    HangAfter,
+    InterlinePenalty,
+    ClubPenalty,
+    WidowPenalty,
+    BrokenPenalty,
+}
 #[derive(Clone)]
 pub(crate) struct Scalars([Integer; SLOTS]);
 impl Default for Scalars {
@@ -52,6 +73,8 @@ impl Default for Scalars {
         for (index, value) in [0, 92, 0, 1, 1, 1970, 1000, 0, 0].into_iter().enumerate() {
             state[Target::parameter(index)].value = value;
         }
+        state[Target::paragraph(ParagraphParam::Tolerance)].value = 10000;
+        state[Target::paragraph(ParagraphParam::HangAfter)].value = 1;
         state.0[SF_BASE..].fill(Integer {
             value: 1000,
             level: 0,

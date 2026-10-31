@@ -171,7 +171,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -211,6 +211,8 @@ pub(crate) mod cmd {
         HSKIP = 111 => [b"hskip"];
         KERN = 112 => [b"kern"];
         TOKS_PARAM = 113 => [b"everypar"] assignment;
+        PAR_SHAPE = 114 => [b"parshape"] assignment;
+        PENALTY = 115 => [b"penalty"];
         IFDIM = 99 => [b"ifdim"] conditional;
     }
 }

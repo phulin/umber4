@@ -14,8 +14,8 @@ proposal until reviewed with the user.
 
 - `docs/`: architecture proposals and, as implementation proceeds, subsystem
   contracts and performance methodology.
-- `crates/umber/`: portable expansion/register MVP, in-memory checkpoints, typed layout storage, TFM metrics/horizontal text, and
-  its native CLI.
+- `crates/umber/`: portable expansion/register interpreter, TFM text and paragraph
+  construction, typed layout storage, in-memory checkpoints, and its native CLI.
 - `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.
 - `fixtures/mvp/`: same-source INITEX compatibility fixtures.
 - `scripts/`: native oracle setup and compatibility comparison.
