@@ -333,7 +333,7 @@ impl Sequence {
         self.rest.clear();
     }
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(crate) struct TokenValue {
     pub owner: Option<crate::values::Owner>,
     pub level: u16,

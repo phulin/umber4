@@ -89,7 +89,9 @@ impl Engine<'_> {
         }
         if show
             && (length != 1
-                || self.scalars[Target::catcode(self.names.spelling(id)[0] as usize)].value == 11)
+                || self.document.scalars[Target::catcode(self.names.spelling(id)[0] as usize)]
+                    .value
+                    == 11)
         {
             emit(self, b' ')?;
         }
@@ -106,7 +108,7 @@ impl Engine<'_> {
         Ok(())
     }
     fn emit_escape(&mut self, emit: &mut impl FnMut(&mut Self, u8) -> Result<()>) -> Result<()> {
-        let escape = self.scalars[Target::ESCAPECHAR].value;
+        let escape = self.document.scalars[Target::ESCAPECHAR].value;
         if (0..=255).contains(&escape) {
             emit(self, escape as u8)?;
         }
@@ -295,7 +297,7 @@ impl Engine<'_> {
                 Some(token.byte())
             };
             if let Some(byte) = byte {
-                let code = engine.scalars[Target::casecode(which, byte as usize)].value;
+                let code = engine.document.scalars[Target::casecode(which, byte as usize)].value;
                 if code != 0 {
                     // Case codes are validated bytes.
                     token = if token.is_cs() {

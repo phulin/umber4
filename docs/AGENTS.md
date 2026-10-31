@@ -15,7 +15,8 @@ Read the root `AGENTS.md` first.
 - `fast-lexing.md` measures a whole-file lexer prototype under fixed category
   codes and explores deferred cross-line lookahead and worker lexing experiments.
 - `checkpoints.md` defines quiescent driver handoff, heterogeneous snapshots,
-  in-memory restore, and conservative prefix restart after edits.
+  implemented expansion/register restore, and proposed conservative prefix restart
+  after edits.
 - `resources.md` develops native/Wasm byte acquisition, shared input buffers,
   generated-file append storage, stream handles, diagnostics, and replay.
 - `paragraphs.md` develops font state, character/ligature construction, packing,

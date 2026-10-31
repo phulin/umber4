@@ -1,3 +1,4 @@
+mod checkpoint;
 mod condition;
 mod convert;
 mod define;
@@ -11,12 +12,15 @@ mod input;
 pub mod lexing;
 mod lists;
 mod macros;
+mod messages;
 mod names;
 mod scalars;
 mod scan;
+mod tables;
 mod token;
 mod value_metadata;
 mod values;
+pub use checkpoint::{Checkpoint, Progress};
 use names::Names;
 use scalars::{Scalars, Target};
 use token::*;
@@ -33,6 +37,7 @@ pub enum Error {
     Conditional,
     Argument,
     Capacity,
+    Checkpoint,
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -45,57 +50,71 @@ pub struct Outcome {
     pub counts: [i32; 256],
     pub messages: Vec<Vec<u8>>,
 }
+/// A source-bound session. Names, token stores and reusable scratch survive restore.
 pub struct Engine<'a> {
-    pub(crate) sources: Vec<Source>,
-    pub(crate) bindings: Vec<Binding>,
+    pub(crate) document: Document<'a>,
     pub(crate) values: values::Values,
     pub(crate) packets: Vec<Packet>,
-    pub(crate) file: input::FileInput<'a>,
     pub(crate) names: Box<Names>,
-    pub(crate) binding_owners: Vec<Option<values::Owner>>,
-    pub(crate) scalars: Scalars,
-    pub(crate) token_registers: [TokenValue; 256],
-    pub(crate) after_assignment: Option<Token>,
     pub(crate) free_packets: [u32; PACKET_ARITIES],
     pub(crate) packet_links: Vec<u32>,
     pub(crate) name_spills: Vec<value_metadata::Buffer<u8>>,
-    pub(crate) save: Vec<execute::Save>,
-    pub(crate) level: u16,
-    pub(crate) conditions: Vec<condition::Condition>,
-    pub(crate) messages: Vec<Vec<u8>>,
-    pub(crate) par: Token,
     pub(crate) expansion_depth: u16,
+    checkpoint_stores: checkpoint::Stores,
+    session: std::rc::Rc<()>,
+    quiescent: bool,
+}
+
+/// Every live semantic root belongs here; reusable stores do not.
+pub(crate) struct Document<'a> {
+    pub sources: Vec<Source>,
+    pub bindings: tables::Bindings,
+    pub file: input::FileInput<'a>,
+    pub scalars: Scalars,
+    pub token_registers: tables::Table<TokenValue>,
+    pub after_assignment: Option<Token>,
+    pub save: Vec<execute::Save>,
+    pub level: u16,
+    pub conditions: Vec<condition::Condition>,
+    pub messages: messages::Messages,
+    pub par: Token,
+    pub complete: bool,
 }
 impl<'a> Engine<'a> {
     pub fn new(source: &'a [u8]) -> Self {
         let mut engine = Self {
-            file: input::FileInput::new(source),
+            document: Document {
+                file: input::FileInput::new(source),
+                bindings: tables::Bindings::new(NAMED_BASE as usize),
+                scalars: Scalars::default(),
+                token_registers: tables::Table::new(256),
+                after_assignment: None,
+                sources: Vec::with_capacity(16),
+                save: Vec::new(),
+                level: 0,
+                conditions: Vec::new(),
+                messages: messages::Messages::default(),
+                par: Token(0),
+                complete: false,
+            },
             names: Box::new(Names::new()),
-            bindings: vec![Binding::default(); NAMED_BASE as usize],
-            binding_owners: vec![None; NAMED_BASE as usize],
-            scalars: Scalars::default(),
-            token_registers: std::array::from_fn(|_| TokenValue::default()),
-            after_assignment: None,
             values: values::Values::default(),
-            sources: Vec::with_capacity(16),
             packets: Vec::new(),
             free_packets: [NO_PACKET; PACKET_ARITIES],
             packet_links: Vec::new(),
             name_spills: Vec::new(),
-            save: Vec::new(),
-            level: 0,
-            conditions: Vec::new(),
-            messages: Vec::new(),
-            par: Token(0),
             expansion_depth: 0,
+            checkpoint_stores: checkpoint::Stores::default(),
+            session: std::rc::Rc::new(()),
+            quiescent: true,
         };
-        engine.bindings[0] = Binding::new(Meaning::RELAX, 0);
+        engine.document.bindings[0] = Binding::new(Meaning::RELAX, 0);
         for &(command, names) in cmd::PRIMITIVES {
             for (value, name) in names.iter().enumerate() {
                 let id = engine
                     .intern(name)
                     .expect("primitive names fit the token encoding");
-                engine.bindings[id as usize] = Binding::new(
+                engine.document.bindings[id as usize] = Binding::new(
                     Meaning {
                         command,
                         value: value as i32,
@@ -103,7 +122,7 @@ impl<'a> Engine<'a> {
                     0,
                 );
                 if command == cmd::PAR {
-                    engine.par = Token::cs(id);
+                    engine.document.par = Token::cs(id);
                 }
             }
         }
@@ -113,35 +132,24 @@ impl<'a> Engine<'a> {
     /// starts with 00:00, January 1, 1970 until the host sets these values.
     pub fn set_calendar(&mut self, minutes: i32, day: i32, month: i32, year: i32) {
         for (index, value) in [minutes, day, month, year].into_iter().enumerate() {
-            self.scalars[Target::parameter(index + 2)] = Integer { value, level: 0 };
+            self.document.scalars[Target::parameter(index + 2)] = Integer { value, level: 0 };
         }
     }
     pub fn run(mut self) -> Result<Outcome> {
         self.run_input()?;
         Ok(Outcome {
-            counts: self.scalars.counts().map(|i| i.value),
-            messages: self.messages,
+            counts: self.document.scalars.counts().map(|i| i.value),
+            messages: self.document.messages.into_vec(),
         })
     }
     #[inline(never)]
     fn run_input(&mut self) -> Result<()> {
-        loop {
-            let read = self.next_expanded()?;
-            if read.meaning.command == cmd::END {
-                if self.level != 0 {
-                    return Err(Error::Group);
-                }
-                if !self.conditions.is_empty() {
-                    return Err(Error::Conditional);
-                }
-                return Ok(());
-            }
-            self.execute(read)?;
-        }
+        while self.advance(usize::MAX)? != Progress::Complete {}
+        Ok(())
     }
     pub(crate) fn intern(&mut self, name: &[u8]) -> Result<u32> {
         let id = self.names.intern(name)?;
-        if id as usize >= self.bindings.len() {
+        if id as usize >= self.document.bindings.len() {
             self.grow_bindings(id as usize + 1);
         }
         Ok(id)
@@ -149,13 +157,12 @@ impl<'a> Engine<'a> {
     #[cold]
     #[inline(never)]
     pub(crate) fn grow_bindings(&mut self, len: usize) {
-        self.bindings.resize(len, Binding::default());
-        self.binding_owners.resize_with(len, || None);
+        self.document.bindings.grow(len);
     }
     #[inline(always)]
     pub(crate) fn resolve(&self, token: Token) -> Meaning {
         if token.is_cs() {
-            self.bindings[token.id()].meaning()
+            self.document.bindings[token.id()].meaning()
         } else {
             Meaning {
                 command: token.cat(),

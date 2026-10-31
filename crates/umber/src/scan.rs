@@ -21,7 +21,12 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn scan_digit_window(&mut self, radix: i32, value: &mut i32) -> Result<bool> {
-        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+        let Some(cursor) = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)
+        else {
             return Ok(false);
         };
         while cursor.next != cursor.end {
@@ -43,7 +48,7 @@ impl Engine<'_> {
             }
             // Engine::resolve would borrow the engine across this cursor.
             let meaning = if token.is_cs() {
-                self.bindings[token.id()].meaning()
+                self.document.bindings[token.id()].meaning()
             } else {
                 Meaning {
                     command: token.cat(),
@@ -97,7 +102,7 @@ impl Engine<'_> {
             cmd::NUMEXPR => self.scan_expression(),
             _ => {
                 let target = self.scalar_target(read)?;
-                Ok(self.scalars[target].value)
+                Ok(self.document.scalars[target].value)
             }
         }
     }
@@ -115,10 +120,17 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn literal_digit(&mut self) -> Option<i32> {
-        if self.sources.is_empty() {
-            return self.file.literal_digit(self.scalars.catcodes());
+        if self.document.sources.is_empty() {
+            return self
+                .document
+                .file
+                .literal_digit(self.document.scalars.catcodes());
         }
-        let cursor = self.sources.last_mut().and_then(Source::cursor_mut)?;
+        let cursor = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)?;
         if cursor.next == cursor.end {
             return None;
         }
@@ -228,7 +240,12 @@ impl Engine<'_> {
         })
     }
     pub(crate) fn scan_keyword(&mut self, keyword: &[u8]) -> Result<bool> {
-        if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
+        if let Some(cursor) = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)
+        {
             // SAFETY: both pointers belong to this retained immutable window.
             let available = unsafe { cursor.end.offset_from(cursor.next) } as usize;
             if keyword.len() <= available {

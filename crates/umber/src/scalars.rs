@@ -24,6 +24,7 @@ impl Target {
     }
 }
 
+#[derive(Clone)]
 pub(crate) struct Scalars([Integer; 1031]);
 impl Default for Scalars {
     fn default() -> Self {

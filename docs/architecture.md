@@ -334,8 +334,9 @@ with the interpreter as it starts compiling ordinary documents.
 ## 11. Detailed subsystem proposals
 
 The deep dives share ordinary Rust execution, in-place construction, semantic
-lifetimes, and the quiescent outer-driver checkpoint predicate. Layout and
-checkpointing remain proposals; the expansion/register slice is implemented.
+lifetimes, and the quiescent outer-driver checkpoint predicate. The
+expansion/register slice and its unchanged-input in-memory checkpoints are
+implemented. Layout roots, source-edit restart, and scheduling remain proposals.
 
 | Area                                                | Design                                   |
 | --------------------------------------------------- | ---------------------------------------- |

@@ -57,7 +57,7 @@ fn decimal_sources_retain_signs_digits_and_nested_backing() {
             }
         }
         engine.retire_exhausted();
-        assert!(engine.sources.is_empty());
+        assert!(engine.document.sources.is_empty());
     }
 }
 

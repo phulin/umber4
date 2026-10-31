@@ -74,8 +74,8 @@ fn file_character_runs_follow_space_states() {
 fn list_destination_failure_preserves_file_progress_and_lexical_state() {
     use crate::{scalars::Target, token::Token};
     let mut engine = Engine::new(b"{abc XYZ}");
-    engine.scalars[Target::catcode(b'{' as usize)].value = 1;
-    engine.scalars[Target::catcode(b'}' as usize)].value = 2;
+    engine.document.scalars[Target::catcode(b'{' as usize)].value = 1;
+    engine.document.scalars[Target::catcode(b'}' as usize)].value = 2;
     engine.opening_brace().unwrap();
     let mut consumed = 0;
     assert_eq!(
@@ -127,7 +127,7 @@ fn file_integer_prefix_preserves_categories_and_progress() {
             engine.next_raw().unwrap();
         }
         assert_eq!(engine.scan_int(), Ok(123));
-        engine.scalars[Target::catcode(b'X' as usize)].value = 12;
+        engine.document.scalars[Target::catcode(b'X' as usize)].value = 12;
         assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));
     }
     for (category, expected, next) in [
@@ -136,14 +136,14 @@ fn file_integer_prefix_preserves_categories_and_progress() {
         (10, Ok(23), letter(b'X')),
     ] {
         let mut engine = Engine::new(b"!123X");
-        engine.scalars[Target::catcode(b'1' as usize)].value = category;
+        engine.document.scalars[Target::catcode(b'1' as usize)].value = category;
         engine.next_raw().unwrap();
         assert_eq!(engine.scan_int(), expected);
         assert_eq!(engine.next_raw().unwrap().token, next);
     }
     for (endline, expected) in [(-1, 78), (b'0' as i32, 708)] {
         let mut engine = Engine::new(b"!7\n8X");
-        engine.scalars[Target::ENDLINE].value = endline;
+        engine.document.scalars[Target::ENDLINE].value = endline;
         engine.next_raw().unwrap();
         assert_eq!(engine.scan_int(), Ok(expected));
         assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));
@@ -154,13 +154,13 @@ fn file_integer_prefix_preserves_categories_and_progress() {
         (9, 13, letter(b'X')),
     ] {
         let mut engine = Engine::new(b"!123X");
-        engine.scalars[Target::catcode(b'2' as usize)].value = category;
+        engine.document.scalars[Target::catcode(b'2' as usize)].value = category;
         engine.next_raw().unwrap();
         assert_eq!(engine.scan_int(), Ok(expected));
         assert_eq!(engine.next_raw().unwrap().token, next);
     }
     let mut engine = Engine::new(b"!123^^34X");
-    engine.scalars[Target::catcode(b'^' as usize)].value = 7;
+    engine.document.scalars[Target::catcode(b'^' as usize)].value = 7;
     engine.next_raw().unwrap();
     assert_eq!(engine.scan_int(), Ok(1234));
     assert_eq!(engine.next_raw().unwrap().token, letter(b'X'));

@@ -58,7 +58,7 @@ impl Engine<'_> {
             }
             cmd::CSNAME => {
                 let id = self.scan_name()?;
-                if self.bindings[id as usize].meaning() == Meaning::UNDEFINED {
+                if self.document.bindings[id as usize].meaning() == Meaning::UNDEFINED {
                     self.assign_meaning(id as usize, Meaning::RELAX, false);
                 }
                 self.back(Token::cs(id));

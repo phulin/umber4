@@ -1,4 +1,5 @@
 use crate::{Engine, Error, Result, scalars::Target, token::*};
+#[derive(Clone)]
 pub(crate) enum Save {
     Boundary(bool),
     Meaning(usize, Binding, Option<crate::values::Owner>),
@@ -29,15 +30,16 @@ impl Engine<'_> {
         {
             return Err(Error::Syntax);
         }
-        let assignment_global = match self.scalars[Target::GLOBALDEFS].value {
+        let assignment_global = match self.document.scalars[Target::GLOBALDEFS].value {
             n if n > 0 => true,
             n if n < 0 => false,
             _ => global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
         };
         let result = match read.meaning.command {
             cmd::BEGIN | cmd::BEGIN_GROUP if !global => {
-                self.level = self.level.checked_add(1).ok_or(Error::Capacity)?;
-                self.save
+                self.document.level = self.document.level.checked_add(1).ok_or(Error::Capacity)?;
+                self.document
+                    .save
                     .push(Save::Boundary(read.meaning.command == cmd::BEGIN_GROUP));
                 Ok(())
             }
@@ -95,7 +97,7 @@ impl Engine<'_> {
                 };
                 let owner = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
                     let from = self.toks_index(first)?;
-                    self.token_registers[from].owner.clone()
+                    self.document.token_registers[from].owner.clone()
                 } else if first.meaning.command == cmd::BEGIN {
                     Some(self.store_body()?)
                 } else {
@@ -149,13 +151,13 @@ impl Engine<'_> {
                 })
             }
             cmd::AFTER_ASSIGN if !global => {
-                self.after_assignment = Some(self.next_raw()?.token);
+                self.document.after_assignment = Some(self.next_raw()?.token);
                 Ok(())
             }
             cmd::AFTER_GROUP if !global => {
                 let token = self.next_raw()?.token;
-                if self.level > 0 {
-                    self.save.push(Save::After(token));
+                if self.document.level > 0 {
+                    self.document.save.push(Save::After(token));
                 }
                 Ok(())
             }
@@ -167,16 +169,16 @@ impl Engine<'_> {
                     engine.print_token(token, &mut bytes);
                     Ok(())
                 })?;
-                self.messages.push(bytes);
+                self.document.messages.push(bytes);
                 Ok(())
             }
             _ => Err(Error::Unsupported),
         };
         if result.is_ok()
-            && let Some(token) = self.after_assignment
+            && let Some(token) = self.document.after_assignment
             && cmd::is_assignment(read.meaning.command)
         {
-            self.after_assignment = None;
+            self.document.after_assignment = None;
             self.back(token);
         }
         result
@@ -208,9 +210,9 @@ impl Engine<'_> {
     ) -> Result<()> {
         // Resolve the slot once. Split the mutable save stack from the scalar
         // tables so the same slot handles the read, saved value, and write.
-        let level = self.level;
-        let save = &mut self.save;
-        let slot = &mut self.scalars[target];
+        let level = self.document.level;
+        let save = &mut self.document.save;
+        let slot = &mut self.document.scalars[target];
         let old = *slot;
         let value = update(old.value)?;
         if !global && old.value == value {
@@ -226,60 +228,61 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn assign_meaning(&mut self, id: usize, meaning: Meaning, global: bool) {
-        let old = self.bindings[id];
+        let old = self.document.bindings[id];
         if !global && old.meaning() == meaning {
             return;
         }
         let owner = meaning
             .is_macro()
             .then(|| self.values.get(meaning.value as u32));
-        let old_owner = std::mem::replace(&mut self.binding_owners[id], owner);
-        if !global && self.level > 0 && old.level != self.level {
-            self.save.push(Save::Meaning(id, old, old_owner));
+        let old_owner = self.document.bindings.replace_owner(id, owner);
+        if !global && self.document.level > 0 && old.level != self.document.level {
+            self.document.save.push(Save::Meaning(id, old, old_owner));
         }
-        self.bindings[id] = Binding::new(meaning, if global { 0 } else { self.level });
+        self.document.bindings[id] =
+            Binding::new(meaning, if global { 0 } else { self.document.level });
     }
     fn assign_tokens(&mut self, index: usize, owner: Option<crate::values::Owner>, global: bool) {
-        let slot = &mut self.token_registers[index];
+        let slot = &mut self.document.token_registers[index];
         if !global && slot.owner.as_ref().map(|v| v.id) == owner.as_ref().map(|v| v.id) {
             return;
         }
         let value = TokenValue {
             owner,
-            level: if global { 0 } else { self.level },
+            level: if global { 0 } else { self.document.level },
         };
         let old = std::mem::replace(slot, value);
-        if !global && self.level > 0 && old.level != self.level {
-            self.save.push(Save::Tokens(index, old));
+        if !global && self.document.level > 0 && old.level != self.document.level {
+            self.document.save.push(Save::Tokens(index, old));
         }
     }
     fn close_group(&mut self, kind: bool) -> Result<()> {
-        if self.level == 0 {
+        if self.document.level == 0 {
             return Err(Error::Group);
         }
         loop {
-            match self.save.pop().ok_or(Error::Group)? {
+            match self.document.save.pop().ok_or(Error::Group)? {
                 Save::Boundary(saved) => {
                     if saved != kind {
                         return Err(Error::Group);
                     }
-                    self.level -= 1;
+                    self.document.level -= 1;
                     return Ok(());
                 }
                 Save::After(token) => self.back(token),
                 Save::Tokens(index, old) => {
-                    if self.token_registers[index].level != 0 {
-                        self.token_registers[index] = old;
+                    if self.document.token_registers[index].level != 0 {
+                        self.document.token_registers[index] = old;
                     }
                 }
                 Save::Meaning(id, old, owner) => {
-                    if self.bindings[id].level != 0 {
-                        self.bindings[id] = old;
-                        self.binding_owners[id] = owner;
+                    if self.document.bindings[id].level != 0 {
+                        self.document.bindings[id] = old;
+                        self.document.bindings.replace_owner(id, owner);
                     }
                 }
                 Save::Integer(target, old) => {
-                    let slot = &mut self.scalars[target];
+                    let slot = &mut self.document.scalars[target];
                     if slot.level != 0 {
                         *slot = old;
                     }

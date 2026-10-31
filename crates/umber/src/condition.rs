@@ -21,8 +21,8 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn conditional(&mut self, command: u8, invert: bool) -> Result<()> {
-        let target = self.conditions.len();
-        self.conditions.push(Condition::Pending);
+        let target = self.document.conditions.len();
+        self.document.conditions.push(Condition::Pending);
         let is_case = command == cmd::IFCASE;
         let mut choice = if is_case { self.scan_int()? } else { 0 };
         let yes = match command {
@@ -33,7 +33,7 @@ impl Engine<'_> {
             cmd::IFDEFINED => self.next_token()?.meaning != Meaning::UNDEFINED,
             cmd::IFCSNAME => {
                 let id = self.scan_name()?;
-                self.bindings[id as usize].meaning() != Meaning::UNDEFINED
+                self.document.bindings[id as usize].meaning() != Meaning::UNDEFINED
             }
             cmd::IFX => {
                 let a = self.next_token()?.meaning;
@@ -66,30 +66,30 @@ impl Engine<'_> {
             _ => return Err(Error::Conditional),
         } ^ invert;
         if yes {
-            self.conditions[target] = Condition::Then { case: is_case };
+            self.document.conditions[target] = Condition::Then { case: is_case };
             return Ok(());
         }
         loop {
             let boundary = self.skip_boundary()?;
-            if self.conditions.len() - 1 != target {
+            if self.document.conditions.len() - 1 != target {
                 if boundary == cmd::FI {
-                    self.conditions.pop();
+                    self.document.conditions.pop();
                 }
                 continue;
             }
             match boundary {
                 cmd::FI => {
-                    self.conditions.pop();
+                    self.document.conditions.pop();
                     return Ok(());
                 }
                 cmd::ELSE => {
-                    self.conditions[target] = Condition::Else;
+                    self.document.conditions[target] = Condition::Else;
                     return Ok(());
                 }
                 cmd::OR if is_case => {
                     choice = choice.saturating_sub(1);
                     if choice == 0 {
-                        self.conditions[target] = Condition::Then { case: true };
+                        self.document.conditions[target] = Condition::Then { case: true };
                         return Ok(());
                     }
                 }
@@ -98,14 +98,14 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn condition_boundary(&mut self, read: Read) -> Result<()> {
-        let phase = *self.conditions.last().ok_or(Error::Conditional)?;
+        let phase = *self.document.conditions.last().ok_or(Error::Conditional)?;
         match phase {
             Condition::Pending => {
                 self.insert_pair(FROZEN_RELAX, read.token);
                 return Ok(());
             }
             _ if read.meaning.command == cmd::FI => {
-                self.conditions.pop();
+                self.document.conditions.pop();
                 return Ok(());
             }
             Condition::Else => return Err(Error::Conditional),
@@ -115,7 +115,7 @@ impl Engine<'_> {
             _ => {}
         }
         while self.skip_boundary()? != cmd::FI {}
-        self.conditions.pop();
+        self.document.conditions.pop();
         Ok(())
     }
     fn skip_boundary(&mut self) -> Result<u8> {
@@ -137,11 +137,21 @@ impl Engine<'_> {
     }
     #[inline]
     fn skip_characters(&mut self) {
-        if self.sources.is_empty() {
-            while self.file.read_character(self.scalars.catcodes()).is_some() {}
+        if self.document.sources.is_empty() {
+            while self
+                .document
+                .file
+                .read_character(self.document.scalars.catcodes())
+                .is_some()
+            {}
             return;
         }
-        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+        let Some(cursor) = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)
+        else {
             return;
         };
         while cursor.next != cursor.end {

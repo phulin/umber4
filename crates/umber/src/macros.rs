@@ -135,7 +135,7 @@ impl Engine<'_> {
         argument: usize,
         long: bool,
     ) -> bool {
-        let Some(cursor) = self.sources.last().and_then(Source::cursor) else {
+        let Some(cursor) = self.document.sources.last().and_then(Source::cursor) else {
             return false;
         };
         let first = cursor.next;
@@ -163,13 +163,18 @@ impl Engine<'_> {
             token
         };
         if !token.is_plain_character()
-            && (token.is_begin() || token.is_end() || (!long && token == self.par))
+            && (token.is_begin() || token.is_end() || (!long && token == self.document.par))
         {
             return false;
         }
         // SAFETY: second was initialized in this window. Looking up an argument
         // only borrowed packet metadata; this cursor and its backing stay live.
-        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+        let Some(cursor) = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)
+        else {
             return false;
         };
         cursor.next = unsafe { second.add(1) };
@@ -191,8 +196,9 @@ impl Engine<'_> {
         if !RETAIN {
             let mut count = 0;
             while self
+                .document
                 .file
-                .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+                .read_character_except::<EXCEPT>(self.document.scalars.catcodes(), except)
                 .is_some()
             {
                 count += 1;
@@ -200,8 +206,9 @@ impl Engine<'_> {
             return Ok(count);
         }
         let Some(first) = self
+            .document
             .file
-            .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+            .read_character_except::<EXCEPT>(self.document.scalars.catcodes(), except)
         else {
             return Ok(0);
         };
@@ -216,8 +223,9 @@ impl Engine<'_> {
             builder,
         )?;
         let Some(token) = self
+            .document
             .file
-            .read_character_except::<EXCEPT>(self.scalars.catcodes(), except)
+            .read_character_except::<EXCEPT>(self.document.scalars.catcodes(), except)
         else {
             return Ok(1);
         };
@@ -232,8 +240,11 @@ impl Engine<'_> {
         let tokens = builder.as_mut().unwrap();
         let start = tokens.len();
         tokens.push(token)?;
-        self.file
-            .read_characters::<EXCEPT>(self.scalars.catcodes(), except, tokens)?;
+        self.document.file.read_characters::<EXCEPT>(
+            self.document.scalars.catcodes(),
+            except,
+            tokens,
+        )?;
         let end = tokens.len();
         self.packets[packet as usize].arguments[argument].append(Span {
             store: tokens.id(),
@@ -275,7 +286,7 @@ impl Engine<'_> {
                 if first.token.is_end() {
                     return Err(Error::Argument);
                 }
-                if !long && first.token == self.par {
+                if !long && first.token == self.document.par {
                     return Err(Error::Argument);
                 }
                 if first.token.is_begin() {

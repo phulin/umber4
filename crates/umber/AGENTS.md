@@ -1,6 +1,12 @@
 # Core MVP
 
-Read the root guidance. `src/lib.rs` owns the driver and document state;
+Read the root guidance. `src/lib.rs` separates the session stores from restorable
+document state;
+`checkpoint.rs` owns the non-consuming outer driver and explicit snapshot roots,
+with replay and ownership tests in `checkpoint_tests.rs`;
+`tables.rs` supplies pooled COW table pages with ownership tests in
+`tables_tests.rs`; `messages.rs` retains immutable message prefixes with tests
+in `messages_tests.rs`;
 `token.rs` owns compact tokens, the command inventory, definition metadata, and
 source descriptors; `names.rs` owns name lookup and immutable spelling bytes;
 `values.rs` owns the shared token builder and backing chunks;

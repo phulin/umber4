@@ -44,7 +44,12 @@ impl Engine<'_> {
         builder: &mut Option<crate::values::Builder>,
         except: Token,
     ) -> Result<usize> {
-        let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) else {
+        let Some(cursor) = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)
+        else {
             return Ok(0);
         };
         // Promotion stays on the scalar path so a failed append consumes only
@@ -110,14 +115,14 @@ impl Engine<'_> {
         let mut group_end = None;
         loop {
             if (!DELIMITED || matched == 0 || depth > 0)
-                && (self.sources.is_empty() || !DELIMITED || RETAIN)
+                && (self.document.sources.is_empty() || !DELIMITED || RETAIN)
             {
                 let except = if DELIMITED && depth == 0 {
                     first
                 } else {
                     Token(u32::MAX)
                 };
-                if self.sources.is_empty() {
+                if self.document.sources.is_empty() {
                     seen += self.capture_file_characters::<RETAIN, DELIMITED>(
                         packet, argument, builder, except,
                     )?;
@@ -128,7 +133,7 @@ impl Engine<'_> {
                 }
             }
             if !DELIMITED
-                && let Some(cursor) = self.sources.last().and_then(Source::cursor)
+                && let Some(cursor) = self.document.sources.last().and_then(Source::cursor)
                 && cursor.next == cursor.end
             {
                 self.advance_source()?;
@@ -137,10 +142,10 @@ impl Engine<'_> {
             // The grouped-window path reports a non-long paragraph before
             // advancing that window, as its existing bulk scanner does.
             if !DELIMITED && !long
-                && let Some(cursor) = self.sources.last().and_then(Source::cursor)
+                && let Some(cursor) = self.document.sources.last().and_then(Source::cursor)
                 && cursor.next != cursor.end
                 // SAFETY: next precedes end in the retained immutable window.
-                && unsafe { cursor.next.read() } == self.par
+                && unsafe { cursor.next.read() } == self.document.par
             {
                 return Err(Error::Argument);
             }
@@ -176,7 +181,8 @@ impl Engine<'_> {
             // On delimiter fallback, already matched tokens become argument
             // content without another paragraph check. Check the current word
             // only when it is unmatched or inside a group.
-            if !long && raw.token == self.par && (!DELIMITED || depth > 0 || matched == 0) {
+            if !long && raw.token == self.document.par && (!DELIMITED || depth > 0 || matched == 0)
+            {
                 return Err(Error::Argument);
             }
             if raw.token.is_begin() {

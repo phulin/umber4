@@ -3,10 +3,11 @@ use crate::{Engine, Error, Result, names::Names, token::*, values::Builder};
 // Installed token sources, including generated text, share one nesting limit.
 const MAX_SOURCES: usize = 10000;
 
+#[derive(Clone)]
 pub(crate) struct FileInput<'a> {
     bytes: &'a [u8],
     offset: usize,
-    pub line: Vec<u8>,
+    pub line: crate::value_metadata::Buffer<u8>,
     position: usize,
     state: u8,
     loaded: bool,
@@ -16,7 +17,7 @@ impl<'a> FileInput<'a> {
         Self {
             bytes,
             offset: 0,
-            line: Vec::new(),
+            line: crate::value_metadata::Buffer::new(&std::rc::Rc::default()),
             position: 0,
             state: 0,
             loaded: false,
@@ -89,7 +90,9 @@ impl<'a> FileInput<'a> {
                     return b;
                 };
             self.line[p] = decoded;
-            self.line.drain(p + 1..end);
+            let length = self.line.len() - (end - p - 1);
+            self.line.copy_within(end.., p + 1);
+            self.line.resize(length, 0);
         }
     }
     #[inline]
@@ -137,7 +140,7 @@ impl<'a> FileInput<'a> {
         except: Token,
         tokens: &mut Builder,
     ) -> Result<()> {
-        let (line, mut position, mut state) = (self.line.as_slice(), self.position, self.state);
+        let (line, mut position, mut state) = (&*self.line, self.position, self.state);
         let result = tokens.extend_with(|| {
             loop {
                 let &byte = line.get(position)?;
@@ -262,7 +265,7 @@ impl<'a> FileInput<'a> {
 impl Engine<'_> {
     #[inline(always)]
     pub(crate) fn check_source_limit(&self) -> Result<()> {
-        if self.sources.len() > MAX_SOURCES {
+        if self.document.sources.len() > MAX_SOURCES {
             return Err(Error::Capacity);
         }
         Ok(())
@@ -272,14 +275,14 @@ impl Engine<'_> {
     #[cfg_attr(not(debug_assertions), inline(always))]
     pub(crate) fn next_raw(&mut self) -> Result<Raw> {
         loop {
-            let Some(source) = self.sources.last_mut() else {
-                let token = self.file.read(
-                    self.scalars.catcodes(),
-                    self.scalars[crate::scalars::Target::ENDLINE].value,
+            let Some(source) = self.document.sources.last_mut() else {
+                let token = self.document.file.read(
+                    self.document.scalars.catcodes(),
+                    self.document.scalars[crate::scalars::Target::ENDLINE].value,
                     &mut self.names,
-                    self.par,
+                    self.document.par,
                 )?;
-                if self.names.len() > self.bindings.len() {
+                if self.names.len() > self.document.bindings.len() {
                     self.grow_bindings(self.names.len());
                 }
                 return Ok(Raw {
@@ -424,7 +427,7 @@ impl Engine<'_> {
             Some(value) => value.tokens.window(span.start, span.end),
             _ => self.values.window(span, span.start),
         };
-        self.sources.push(Source::Tokens(Cursor {
+        self.document.sources.push(Source::Tokens(Cursor {
             next,
             end,
             end_position: window_end_position,
@@ -438,7 +441,7 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn advance_source(&mut self) -> Result<()> {
-        let Some(Source::Tokens(cursor)) = self.sources.last() else {
+        let Some(Source::Tokens(cursor)) = self.document.sources.last() else {
             return Err(Error::Syntax);
         };
         let (mut span, mut index, mut position) = (
@@ -460,7 +463,7 @@ impl Engine<'_> {
             position = span.start;
         }
         let (next, end, end_position) = self.values.window(span, position);
-        if let Some(Source::Tokens(cursor)) = self.sources.last_mut() {
+        if let Some(Source::Tokens(cursor)) = self.document.sources.last_mut() {
             cursor.next = next;
             cursor.end = end;
             cursor.end_position = end_position;
@@ -471,7 +474,7 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn pop_source(&mut self) {
-        if let Some(Source::Tokens(cursor)) = self.sources.pop()
+        if let Some(Source::Tokens(cursor)) = self.document.sources.pop()
             && let Some(packet) = cursor.owns_packet
         {
             self.release_packet(packet);
@@ -479,7 +482,7 @@ impl Engine<'_> {
     }
     pub(crate) fn retire_exhausted(&mut self) {
         loop {
-            let done = match self.sources.last() {
+            let done = match self.document.sources.last() {
                 Some(Source::Inline { position, len, .. }) => position == len,
                 Some(Source::Tokens(c)) => {
                     c.next == c.end
@@ -496,7 +499,7 @@ impl Engine<'_> {
     }
     #[inline]
     pub(crate) fn push_inline(&mut self, tokens: [Token; 2], len: u8, suppress: bool) {
-        self.sources.push(Source::Inline {
+        self.document.sources.push(Source::Inline {
             tokens,
             position: 0,
             len,

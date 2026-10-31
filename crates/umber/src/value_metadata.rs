@@ -258,11 +258,29 @@ impl<T> Buffer<T> {
         }
         self.truncate(length);
     }
-    #[cfg(test)]
     pub fn extend(&mut self, values: impl IntoIterator<Item = T>) {
         for value in values {
             self.push(value);
         }
+    }
+}
+impl<T: Clone> Clone for Buffer<T> {
+    fn clone(&self) -> Self {
+        let mut buffer = Self {
+            store: self.store.clone(),
+            ..Self::default()
+        };
+        buffer.reserve(self.len());
+        buffer.extend(self.iter().cloned());
+        buffer
+    }
+    fn clone_from(&mut self, source: &Self) {
+        self.clear();
+        if self.store.is_none() {
+            self.store = source.store.clone();
+        }
+        self.reserve(source.len());
+        self.extend(source.iter().cloned());
     }
 }
 impl<T> std::ops::Deref for Buffer<T> {

@@ -10,8 +10,9 @@ the deep dives. The [expansion](docs/expansion.md) and
 [storage](docs/storage.md) designs are the foundation for the execution path.
 The [MVP](docs/mvp.md) and its [expanded primitive set](docs/expansion-mvp.md)
 implement a parsing/expansion interpreter with 63 primitive names in
-[crates/umber](crates/umber/). Layout, shipout, formats, and checkpoints remain
-design proposals.
+[crates/umber](crates/umber/), with [in-memory checkpoint/resume](docs/checkpoints.md)
+for unchanged expansion/register input. Layout, shipout, formats, and restart
+after source edits remain design proposals.
 
 [Native measurements](docs/mvp-results.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.

@@ -361,9 +361,13 @@ fn engine_destinations_choose_classes_without_changing_escaped_tokens() {
 \def\name{letter}\message{\string\name}\end";
     let mut engine = crate::Engine::new(source);
     engine.run_input().unwrap();
-    assert_eq!(engine.messages, [b"YES".as_slice(), b"\\name"]);
-    for owner in engine.binding_owners.iter().flatten().chain(
+    assert_eq!(
+        engine.document.messages.copy(),
+        [b"YES".as_slice(), b"\\name"]
+    );
+    for owner in engine.document.bindings.owners().chain(
         engine
+            .document
             .token_registers
             .iter()
             .filter_map(|register| register.owner.as_ref()),
@@ -500,7 +504,7 @@ fn alternating_definition_metadata_reaches_a_fixed_capacity() {
             assert_eq!(&capacities, previous);
         }
         previous = Some(capacities);
-        assert_eq!(engine.scalars.counts()[0].value, iterations);
+        assert_eq!(engine.document.scalars.counts()[0].value, iterations);
     }
 }
 

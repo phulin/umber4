@@ -39,7 +39,7 @@ fn replacement_reuses_values_with_a_fixed_live_working_set() {
         );
         let mut engine = Engine::new(source.as_bytes());
         engine.run_input().unwrap();
-        assert_eq!(engine.scalars.counts()[0].value, iterations);
+        assert_eq!(engine.document.scalars.counts()[0].value, iterations);
         counts.push(engine.values.retained());
     }
     assert_eq!((counts[0].0, counts[0].1), (counts[1].0, counts[1].1));

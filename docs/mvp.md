@@ -3,8 +3,10 @@
 This slice makes the execution path in [expansion.md](expansion.md) and
 [execution.md](execution.md) executable. It runs small TeX programs that expand
 macros and change integer state, then report their result with `\message`.
-Shipout, fonts, layout, format files, and document checkpoints come later. This
-slice has no checkpoint or scheduler yield implementation yet.
+Shipout, fonts, layout, and format files come later. The current interpreter adds
+[unchanged-input in-memory checkpoints](checkpoints.md) and a non-consuming
+outer driver to this expansion/register slice; scheduler integration remains
+future work.
 
 The slice is implemented in [crates/umber](../crates/umber/). Its
 [native measurements](mvp-results.md) record the tested behavior, optimization
@@ -134,9 +136,10 @@ store/slab granularity. No per-token ownership operation is introduced.
 Validate repeated replacement of fixed live state, mixed short-lived work with
 durable survivors, active definitions during redefinition, forwarded arguments,
 and registry teardown. Count system allocations separately from reusable-store
-operations; check CPU throughput as well as retained capacity. This slice does not
-add layout, checkpoint roots, or a browser scheduler merely to exercise allocation.
-The next architectural slice connects those owners to real paragraph/page state.
+operations; check CPU throughput as well as retained capacity. The allocator
+revision did not add layout or a browser scheduler merely to exercise allocation.
+The checkpoint followup now connects those owners to real expansion/register
+roots; paragraph/page state remains the next architectural slice.
 
 ## Compatibility before timing
 
@@ -175,7 +178,7 @@ allocations separately in a diagnostic run so counters stay out of normal loops.
 Use these synthetic workloads to diagnose costs and ownership behavior, not as
 architectural acceptance gates or a mandate to remove every per-case CPU
 regression. Prioritize exact semantics, clear ownership, reusable lifetime-based
-storage, and future quiescent checkpoint boundaries. Defer extensive tuning until
+storage, and quiescent checkpoint boundaries. Defer extensive tuning until
 representative layout, output, and checkpoint paths mature. Rerun the relevant
 semantic fixtures after changing a representation or fast path.
 

@@ -111,7 +111,9 @@ impl<'a> Engine<'a> {
         let read = self.next_expanded()?;
         if matches!(read.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
             let index = self.toks_index(read)?;
-            Ok(Internal::Tokens(self.token_registers[index].owner.clone()))
+            Ok(Internal::Tokens(
+                self.document.token_registers[index].owner.clone(),
+            ))
         } else {
             Ok(Internal::Integer(self.internal_int(read)?))
         }
@@ -240,19 +242,24 @@ impl<'a> Engine<'a> {
     // while the boxed input chunk itself stays at its original address.
     #[inline]
     fn emit_characters(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
-        if self.sources.is_empty() {
+        if self.document.sources.is_empty() {
             if let Some(tokens) = emit.builder() {
-                let cats = self.scalars.catcodes();
+                let cats = self.document.scalars.catcodes();
                 return self
+                    .document
                     .file
                     .read_characters::<false>(cats, Token(u32::MAX), tokens);
             }
-            while let Some(token) = self.file.read_character(self.scalars.catcodes()) {
+            while let Some(token) = self
+                .document
+                .file
+                .read_character(self.document.scalars.catcodes())
+            {
                 emit.token(self, token)?;
             }
             return Ok(());
         }
-        let Some(cursor) = self.sources.last().and_then(Source::cursor) else {
+        let Some(cursor) = self.document.sources.last().and_then(Source::cursor) else {
             return Ok(());
         };
         let (mut next, end) = (cursor.next, cursor.end);
@@ -276,7 +283,12 @@ impl<'a> Engine<'a> {
             None => std::iter::from_fn(|| unsafe { next_body_character(&mut next, end) })
                 .try_for_each(|token| emit.token(self, token)),
         };
-        if let Some(cursor) = self.sources.last_mut().and_then(Source::cursor_mut) {
+        if let Some(cursor) = self
+            .document
+            .sources
+            .last_mut()
+            .and_then(Source::cursor_mut)
+        {
             cursor.next = next;
         }
         result

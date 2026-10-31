@@ -11,11 +11,14 @@ The first executable slice supplies an in-memory `Checkpoint` for unchanged
 source bytes. `Engine` is the session and non-consuming driver; its document
 root contains all restorable semantic state. `advance(command_budget)` executes
 complete outer commands and returns `Progress::Boundary` or `Progress::Complete`.
-`checkpoint` is legal only at a successful driver boundary (including startup
-and completion). An error leaves the attempt ineligible until a retained root is
-restored. `restore` rejects checkpoints from another session. `outcome` publishes
-a replacement message prefix and register values; `run` remains the consuming
-convenience adapter. A command budget is a coarse handoff request, not a bound on
+`can_checkpoint()` reports eligibility. `checkpoint` is legal only at a successful
+driver boundary (including startup and completion). An error leaves the attempt ineligible until a retained root is
+restored. `restore` rejects checkpoints from another session before changing live
+state. Source bytes remain borrowed for the engine/checkpoint lifetime; the
+checkpoint does not borrow the engine. `outcome` publishes a replacement message
+prefix and register values in independently owned host buffers. Those buffers may
+outlive or be mutated independently of all engine roots. `run` remains the
+consuming convenience adapter. A command budget is a coarse handoff request, not a bound on
 macro expansion or scanner work.
 
 This interpreter has no layout nest: all its successful outer boundaries are
@@ -44,9 +47,31 @@ Snapshots retain their backing stores and can safely outlive the engine.
 The prepared input line is copied with its lexical position/state, including any
 committed superscript translations. Source bytes remain borrowed and unchanged.
 Message history shares immutable append blocks; appending after a checkpoint
-starts a new block rather than copying old message bytes. Repeated restore
+starts a new block rather than copying old message bytes. Log and snapshot
+descriptors use pooled backing; new message byte vectors retain the existing
+durable-output allocation behavior, so repeated message production is not
+allocation-free. Explicit host publication copies shared bytes as necessary.
+Repeated restore
 selects the same roots and releases the abandoned suffix. This slice excludes
 source edits, filesystem effects, persisted serialization, and scheduler policy.
+
+For example (the API documentation also compiles this pattern):
+
+```rust
+use umber::{Engine, Progress};
+let mut engine = Engine::new(br"\count0=7\relax\count0=9\relax\end");
+engine.advance(1)?;
+let saved = engine.checkpoint()?;
+while engine.advance(32)? != Progress::Complete {}
+assert_eq!(engine.outcome().counts[0], 9);
+engine.restore(&saved)?;
+assert_eq!(engine.outcome().counts[0], 7);
+```
+
+The `native-profile` feature uses this same driver and snapshot code. Adding a
+subsystem requires adding its semantic roots to `Document` and to the centralized
+checkpoint capture/restore, then extending `can_checkpoint()` when unfinished
+construction can span outer commands. No second session layer is needed.
 
 ## 1. Eligibility and cadence
 
