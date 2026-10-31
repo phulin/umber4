@@ -5,6 +5,70 @@ paragraphs, math, and alignments. Page building is incremental in TeX's ordinary
 document order; its unfinished lists are persistent document state. Algorithm
 scratch remains local to calls.
 
+## Executable page baseline
+
+The executable slice implements TeX82's ordinary incremental `build_page`,
+`fire_up`, and default output path over `TextState.vertical` contributions.
+A separate current-page list owns considered nodes; page dimensions, frozen
+maximum depth, last-node caches, and the best break and saved goal are document
+roots. Checkpoints retain these roots together with their node-store version.
+An unfinished page or trailing contribution kern is eligible state, including
+inside ordinary assignment groups and partially consumed macro calls.
+
+The first box or rule freezes `\vsize` and `\maxdepth` and inserts adjusted
+`\topskip` without changing its stretch or shrink. Leading glue, penalties, and
+kerns are discarded. Legal glue, kern-before-glue, and penalty breaks are tested
+before the candidate enters totals. Equal costs select the latest break. An
+awful cost or forced penalty fires the best break, returning its node and later
+material ahead of the existing contributions. The selected penalty becomes
+10000; `\outputpenalty` receives its former value globally. Selected material
+is packed to the saved goal with the frozen maximum depth, then lowered and
+released. Infinite page shrink requires unsupported interactive recovery and
+returns `Unsupported`, as in the paragraph baseline.
+
+Page work runs at TeX's paragraph-entry, paragraph-completion, vertical `\par`,
+and vertical penalty points. Vertical glue, kerns, and rules alone do not drain
+contributions. `\prevdepth` remains the enclosing vertical-list baseline state
+across page output. `\end` finishes its paragraph, then retries after appending
+an empty horizontal box of `\hsize`, fill-order glue, and penalty -1073741824
+directly to contributions. This preserves TeX's final flushing and empty-job
+behavior; it is not natural-height shipping.
+
+The vertical command slice includes `\vskip`, `\vfil`, `\vfill`, `\vss`,
+`\vfilneg`, `\hrule`, horizontal `\vrule`, `\nointerlineskip`, `\prevdepth`,
+and writable page dimensions. Rules preserve running dimensions until traversal.
+Insertions, marks, custom output routines, explicit shipout/box construction,
+leaders, math, and output backends remain unsupported. Packing diagnostics and
+interactive recovery remain outside this fail-fast interpreter contract.
+
+Detached results expose an immutable page prefix, packed box records, absolute
+glyph/rule placements in scaled points, count registers, and output penalties.
+Coordinates use the page's upper-left content origin, before any backend's
+one-inch offset; positive y points down. Page records retain no live node IDs or
+document font IDs. Cumulative glue rounding follows `hlist_out` and `vlist_out`.
+Typed placement and descriptor buffers are built in their destination storage;
+reusable traversal/release scratch contains no durable semantic state.
+Immutable output chunks share prefixes across checkpoint, result, and branch
+owners. Branching copies at most one bounded descriptor tail, never the growing
+page history. Publication completes before releasing the corresponding node tree.
+
+TFM source headers and their exact immutable buffers share one sealed resource-set
+owner. Registration is already closed before execution. Runtime scaled-font
+headers occupy fixed chunks of once-initialized slots; opaque handles retain a
+chunk and slot, with safe borrowed descriptor access. A page retains one handle
+per used font and glyphs store local indices, with no per-glyph ownership or metric
+copies. Retained pages keep the entire registered source-resource set and the
+scaled-header chunks they use alive, even after engine/checkpoint teardown.
+Document font selectors and mutable parameters remain independently restored.
+
+Acceptance compares upstream page breaks, box dimensions/glue settings, and DVI
+absolute placements, including forced and final breaks, equal costs, discarded
+top material, maximum depth, overfull material, and cumulative fractional glue.
+Ownership checks retain old results while restoring incomplete pages and pending
+macros/groups, grow font caches after publication, reuse document font IDs on a
+new branch, and exercise both teardown orders. This stage makes no performance
+claim and adds no backend.
+
 ## 1. Vertical contribution and current page
 
 Keep separate contribution and current-page lists with direct head/tail handles.

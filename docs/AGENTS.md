@@ -27,7 +27,8 @@ Read the root `AGENTS.md` first.
   packing, and develops future hyphenation and pdfTeX spacing extensions.
 - `math-alignments.md` develops math atoms/conversion, display math, alignment
   templates, entry measurement, and result-list transfers.
-- `pages.md` develops vertical contributions, page breaks, insertions, marks,
+- `pages.md` contracts executable vertical contributions, page breaks, detached
+  publication and retained unfinished pages, and develops insertions, marks,
   output routines, and retained unfinished pages.
 - `output.md` develops ordered shipout, detached pages, backend document state,
   DVI/PDF resources, and direct serialization.
