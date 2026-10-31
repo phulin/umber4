@@ -32,6 +32,9 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn quantity(&mut self, read: Read) -> Result<Option<Quantity>> {
+        if let Some(value) = self.page_quantity(read)? {
+            return Ok(Some(value));
+        }
         if matches!(read.meaning.command, cmd::FONT_DIMEN | cmd::FONT_METRIC) {
             return Ok(Some(Quantity::Dimension(self.font_dimension(read)?)));
         }

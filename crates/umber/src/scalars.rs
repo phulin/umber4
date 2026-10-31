@@ -123,3 +123,13 @@ impl IndexMut<Target> for Scalars {
         &mut self.0[usize::from(target.0)]
     }
 }
+
+#[derive(Clone, Copy)]
+pub(crate) enum PageParam {
+    OutputPenalty = 23,
+}
+impl Target {
+    pub fn page(parameter: PageParam) -> Self {
+        Self::parameter(parameter as usize)
+    }
+}

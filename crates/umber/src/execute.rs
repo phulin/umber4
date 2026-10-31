@@ -43,6 +43,7 @@ impl Engine<'_> {
             _ => global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
         };
         let result = match read.meaning.command {
+            cmd::PAGE_DIMEN | cmd::PREV_DEPTH => self.page_assignment(read),
             cmd::PAR_SHAPE => self.shape_assignment(assignment_global),
             cmd::BEGIN | cmd::BEGIN_GROUP if !global => {
                 self.document.level = self.document.level.checked_add(1).ok_or(Error::Capacity)?;

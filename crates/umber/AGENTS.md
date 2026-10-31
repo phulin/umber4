@@ -26,7 +26,7 @@ formatting, `layout_values.rs` owns typed COW bindings, and `layout_assign.rs`
 applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
 `nodes.rs` owns versioned chunked node storage and consuming list/node transfers,
-with branch/reclamation tests in `nodes_tests.rs`; page construction will use
+with branch/reclamation tests in `nodes_tests.rs`; page construction uses
 the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
 owns restorable loaded-font descriptors/parameters and font assignments,
@@ -34,7 +34,14 @@ owns restorable loaded-font descriptors/parameters and font assignments,
 paragraph parameters, pooled shape roots, and reusable search storage,
 `line_break.rs` traverses legal breaks and passes, `line_search.rs` implements
 active/delta/passive search, `line_construct.rs` transfers selected ranges into
-lines, and `packing.rs` packs lines and appends baseline glue;
+lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glue;
+`page.rs` owns incremental page state and default output, `vertical.rs` executes
+vertical contributions and page quantities, `page_output.rs` lowers owned nodes
+with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/
+rule records in immutable prefixes. `page_tests.rs` covers page/replay/resource
+ownership; `page_oracle_tests.rs` compares native boxes and placements with the
+small test-only DVI reader in `page_dvi_tests.rs`. Scaled font headers use safe
+once-initialized chunk handles in `tfm.rs`, retaining the sealed resource set;
 `paragraph_tests.rs` covers ownership/replay and `paragraph_oracle_tests.rs`
 compares packed structures with native INITEX. `ligatures.rs`
 builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and

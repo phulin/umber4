@@ -75,7 +75,7 @@ impl Engine<'_> {
         if let Some(owner) = self.document.token_registers[256].owner.clone() {
             self.push_tokens(owner, 0)?;
         }
-        Ok(())
+        self.build_page()
     }
     fn indent(&mut self) -> Result<()> {
         let b = BoxData {
@@ -93,11 +93,15 @@ impl Engine<'_> {
             }
             self.document.text.mode = Mode::Vertical;
             self.normal_paragraph()?;
+            self.build_page()?;
         }
         Ok(())
     }
     /// Returns true when this complete command belongs to horizontal execution.
     pub(crate) fn text_command(&mut self, read: Read) -> Result<bool> {
+        if self.vertical_command(read)? {
+            return Ok(true);
+        }
         let cmd = read.meaning.command;
         if self.document.text.mode == Mode::Vertical
             && matches!(
@@ -140,6 +144,7 @@ impl Engine<'_> {
             cmd::PAR => {
                 if self.document.text.mode == Mode::Vertical {
                     self.normal_paragraph()?;
+                    self.build_page()?;
                 } else {
                     self.end_graf()?;
                 }
@@ -181,6 +186,9 @@ impl Engine<'_> {
                     &mut self.document.text.vertical
                 };
                 self.document.nodes.append(list, node);
+                if self.document.text.mode == Mode::Vertical {
+                    self.build_page()?;
+                }
             }
             cmd::KERN => {
                 let width = self.scan_dimen()?;
@@ -201,6 +209,10 @@ impl Engine<'_> {
             _ => return Ok(false),
         }
         Ok(true)
+    }
+    pub(crate) fn head_for_vertical(&mut self, read: Read) {
+        self.back_read(read);
+        self.back(self.document.par);
     }
     pub(crate) fn back_read(&mut self, read: Read) {
         self.push_inline(

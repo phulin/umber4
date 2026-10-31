@@ -9,48 +9,74 @@ use crate::{
 fn engine(source: &[u8]) -> Engine<'_> {
     let mut e = Engine::new(source);
     e.register_tfm(b"test", &basic()).unwrap();
+    e.assign_dimen(
+        crate::layout_values::DimenParam::VSize.index(),
+        Scaled(10000 * 65536),
+        false,
+    );
     e
 }
 fn lines(e: &Engine<'_>) -> Vec<NodeId> {
     let mut result = Vec::new();
-    let mut p = e.document.text.vertical.head();
-    while !p.is_null() {
-        let n = e.document.nodes.get(p);
-        if matches!(n.kind, Kind::Box(_)) {
-            result.push(p);
+    for list in [&e.document.page.current, &e.document.text.vertical] {
+        let mut p = list.head();
+        while !p.is_null() {
+            let n = e.document.nodes.get(p);
+            if matches!(n.kind, Kind::Box(_)) {
+                result.push(p);
+            }
+            p = n.next;
         }
-        p = n.next;
     }
     result
 }
 fn glyphs(e: &Engine<'_>) -> Vec<Vec<u8>> {
-    lines(e)
-        .iter()
-        .map(|&id| {
-            let Kind::Box(b) = &e.document.nodes.get(id).kind else {
-                unreachable!()
-            };
-            let mut p = b.list.head();
-            let mut text = Vec::new();
-            while !p.is_null() {
-                let n = e.document.nodes.get(p);
-                if let Kind::Character { character, .. } | Kind::Ligature { character, .. } = n.kind
-                {
-                    text.push(character);
+    let mut output = Vec::new();
+    for page in e.document.page.output.iter() {
+        let mut last = None;
+        for p in page.placements() {
+            if let crate::Placement::Glyph { character, y, .. } = *p {
+                if last != Some(y) {
+                    output.push(Vec::new());
+                    last = Some(y);
                 }
-                p = n.next;
+                output.last_mut().unwrap().push(character);
             }
-            text
-        })
-        .collect()
+        }
+    }
+    output.extend(
+        lines(e)
+            .iter()
+            .map(|&id| {
+                let Kind::Box(b) = &e.document.nodes.get(id).kind else {
+                    unreachable!()
+                };
+                let mut p = b.list.head();
+                let mut text = Vec::new();
+                while !p.is_null() {
+                    let n = e.document.nodes.get(p);
+                    if let Kind::Character { character, .. } | Kind::Ligature { character, .. } =
+                        n.kind
+                    {
+                        text.push(character);
+                    }
+                    p = n.next;
+                }
+                text
+            })
+            .collect::<Vec<_>>(),
+    );
+    output
 }
 #[test]
 fn forced_break_transfers_lines_and_interline_material() {
     let mut e=engine(br"\font\f=test\f\hsize=50pt\parfillskip=0pt plus1fil\baselineskip=12pt\lineskip=1pt\interlinepenalty=3\clubpenalty=5\widowpenalty=7\noindent abc\penalty-10000 def\par\end");
-    assert_eq!(e.advance(100), Ok(Progress::Complete));
+    while e.document.text.prev_graf == 0 {
+        e.advance(1).unwrap();
+    }
     assert_eq!(glyphs(&e), vec![b"abc".to_vec(), b"def".to_vec()]);
     assert_eq!(e.document.text.prev_graf, 2);
-    let mut p = e.document.text.vertical.head();
+    let mut p = e.document.page.current.head();
     let mut penalty = Vec::new();
     let mut baseline = Vec::new();
     while !p.is_null() {

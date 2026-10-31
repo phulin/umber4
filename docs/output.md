@@ -5,6 +5,38 @@ traverses the supplied box, performs its ordered effects, and builds output
 directly in retained destination storage. Completed page records contain bytes
 and immutable resource owners, not live TeX node IDs.
 
+## Executable detached baseline
+
+The [page contract](pages.md) defines the current default output path, without
+DVI/PDF serialization. `Outcome.pages` is a cheap retained prefix; `Pages::iter`
+and `get` expose immutable `Page` records. Each page owns packed box records
+(including parent indices and glue settings), ordered absolute `Placement` glyphs
+and rules, count registers, output penalty, and an immutable font-resource table.
+All coordinates/dimensions use scaled points from the upper-left content origin;
+glyph and box y coordinates denote baselines, while rules use top-left corners.
+Font indices are page-local. `FontResource` exposes source name, exact retained TFM
+bytes, design/scaled size, and immutable glyph metrics, independent of the engine.
+
+The traversal uses existing node lists and cumulative glue rounding, writes
+records directly into typed pooled buffers, and releases the live page tree on
+success or failure. Only complete successful traversals append a page record.
+Huge boxes are consumed and return `Overflow`; incompatible magnification returns
+`Number`. The first accepted page prepares magnification, paired with the existing
+restored first-use state. No raw node or document-font identity crosses the result
+boundary. Both output and font header chunks have sixteen slots; held partial
+output chunks may pin a bounded invisible suffix, and held font chunks pin the
+registered source-resource set. Full backend operations below remain proposals.
+
+Native validation compares boxes, glue settings, output penalties, and absolute
+DVI movements for 29 cases against pdfTeX 1.40.25 (TeX Live 2023/Debian). The adapter
+uses controlled TFM metrics and the three real resources in [fonts-text.md](fonts-text.md).
+Its DVI reader is test-only, never an output backend. Run with the same explicit
+native/font environment used by the paragraph adapter:
+
+```bash
+cargo test --lib upstream_page_breaks_boxes_glue_and_absolute_placements -- --ignored
+```
+
 ## 1. Shipout is execution
 
 Shipout walks horizontal and vertical boxes, glue, kerns, rules, leaders,

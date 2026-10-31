@@ -4,7 +4,10 @@ use crate::{
     numeric::Scaled,
     value_metadata::{Buffer, Store},
 };
-use std::rc::Rc;
+use std::{
+    cell::{Cell, OnceCell},
+    rc::Rc,
+};
 
 #[derive(Clone, Copy, Default, Debug)]
 pub(crate) struct CharInfo {
@@ -48,12 +51,73 @@ pub(crate) struct ScaledFont {
     pub size: Scaled,
     pub numbers: Buffer<Scaled>,
 }
+const FONT_SLOTS: usize = 16;
+// The allocation owns many immutable headers; payloads retain their typed pools.
+// OnceCell permits appending disjoint slots after older handles are published.
+struct ScaledChunk {
+    resources: Rc<Buffer<Resource>>,
+    slots: [OnceCell<ScaledFont>; FONT_SLOTS],
+    len: Cell<usize>,
+}
+/// An immutable metric version retained independently of its originating engine.
+/// A handle retains its scaled-header chunk and the complete registered TFM set.
+#[derive(Clone)]
+pub struct FontResource {
+    chunk: Rc<ScaledChunk>,
+    slot: usize,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct GlyphMetrics {
+    pub width: i32,
+    pub height: i32,
+    pub depth: i32,
+    pub italic: i32,
+}
+impl FontResource {
+    pub(crate) fn descriptor(&self) -> &ScaledFont {
+        self.chunk.slots[self.slot].get().expect("published font")
+    }
+    fn source(&self) -> &Resource {
+        &self.chunk.resources[self.descriptor().resource]
+    }
+    pub fn name(&self) -> &[u8] {
+        &self.source().name
+    }
+    pub fn size(&self) -> i32 {
+        self.descriptor().size.0
+    }
+    pub fn tfm_bytes(&self) -> &[u8] {
+        &self.source().bytes
+    }
+    pub fn design_size(&self) -> i32 {
+        self.source().design.0
+    }
+    pub fn metrics(&self, character: u8) -> Option<GlyphMetrics> {
+        let r = self.source();
+        let c = character as usize;
+        if c < r.bc || c > r.ec || r.chars[c - r.bc].width == 0 {
+            return None;
+        }
+        let i = r.chars[c - r.bc];
+        let n = &self.descriptor().numbers;
+        Some(GlyphMetrics {
+            width: n[i.width].0,
+            height: n[r.nw + i.height].0,
+            depth: n[r.nw + r.nh + i.depth].0,
+            italic: n[r.nw + r.nh + r.nd + i.italic].0,
+        })
+    }
+    pub(crate) fn same(&self, other: &Self) -> bool {
+        self.slot == other.slot && Rc::ptr_eq(&self.chunk, &other.chunk)
+    }
+}
 #[derive(Default)]
 pub(crate) struct Catalog {
-    pub resources: Buffer<Resource>,
-    pub scaled: Buffer<ScaledFont>,
+    pub resources: Rc<Buffer<Resource>>,
+    pub scaled: Buffer<FontResource>,
+    active: Option<Rc<ScaledChunk>>,
     resource_store: Rc<Store<Resource>>,
-    scaled_store: Rc<Store<ScaledFont>>,
+    scaled_store: Rc<Store<FontResource>>,
     bytes: Rc<Store<u8>>,
     chars: Rc<Store<CharInfo>>,
     instructions: Rc<Store<[u8; 4]>>,
@@ -78,9 +142,11 @@ impl Catalog {
         }
         let resource = self.parse(name, bytes)?;
         if self.resources.is_empty() {
-            self.resources = Buffer::new(&self.resource_store);
+            self.resources = Rc::new(Buffer::new(&self.resource_store));
         }
-        self.resources.push(resource);
+        Rc::get_mut(&mut self.resources)
+            .ok_or(Error::Resource)?
+            .push(resource);
         Ok(())
     }
     fn parse(&self, name: &[u8], bytes: &[u8]) -> Result<Resource> {
@@ -244,7 +310,7 @@ impl Catalog {
         if let Some(i) = self
             .scaled
             .iter()
-            .position(|f| f.resource == resource && f.size == size)
+            .position(|f| f.descriptor().resource == resource && f.descriptor().size == size)
         {
             return Ok(i);
         }
@@ -278,22 +344,45 @@ impl Catalog {
             self.scaled = Buffer::new(&self.scaled_store);
         }
         let id = self.scaled.len();
-        self.scaled.push(ScaledFont {
-            resource,
-            size,
-            numbers,
+        self.sealed = true;
+        if self
+            .active
+            .as_ref()
+            .is_none_or(|c| c.len.get() == FONT_SLOTS)
+        {
+            self.active = Some(Rc::new(ScaledChunk {
+                resources: self.resources.clone(),
+                slots: std::array::from_fn(|_| OnceCell::new()),
+                len: Cell::new(0),
+            }));
+        }
+        let chunk = self.active.as_ref().unwrap();
+        let slot = chunk.len.get();
+        assert!(
+            chunk.slots[slot]
+                .set(ScaledFont {
+                    resource,
+                    size,
+                    numbers
+                })
+                .is_ok()
+        );
+        chunk.len.set(slot + 1);
+        self.scaled.push(FontResource {
+            chunk: chunk.clone(),
+            slot,
         });
         Ok(id)
     }
     pub fn metrics(&self, scaled: usize, c: u8) -> Option<Metrics> {
-        let r = &self.resources[self.scaled[scaled].resource];
+        let r = &self.resources[self.scaled[scaled].descriptor().resource];
         if (c as usize) < r.bc || c as usize > r.ec || r.chars[c as usize - r.bc].width == 0 {
             return None;
         }
         self.metric_fields(scaled, c)
     }
     pub fn metric_fields(&self, scaled: usize, c: u8) -> Option<Metrics> {
-        let f = &self.scaled[scaled];
+        let f = self.scaled[scaled].descriptor();
         let r = &self.resources[f.resource];
         let c = c as usize;
         if c < r.bc || c > r.ec {
@@ -308,11 +397,11 @@ impl Catalog {
         })
     }
     pub fn param_start(&self, scaled: usize) -> usize {
-        let r = &self.resources[self.scaled[scaled].resource];
+        let r = &self.resources[self.scaled[scaled].descriptor().resource];
         r.nw + r.nh + r.nd + r.ni + r.nk
     }
     pub fn kern(&self, scaled: usize, index: usize) -> Scaled {
-        let f = &self.scaled[scaled];
+        let f = self.scaled[scaled].descriptor();
         let r = &self.resources[f.resource];
         f.numbers[r.nw + r.nh + r.nd + r.ni + index]
     }

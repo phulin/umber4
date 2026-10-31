@@ -171,7 +171,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -213,6 +213,12 @@ pub(crate) mod cmd {
         TOKS_PARAM = 113 => [b"everypar"] assignment;
         PAR_SHAPE = 114 => [b"parshape"] assignment;
         PENALTY = 115 => [b"penalty"];
+        VSKIP = 116 => [b"vskip", b"vfil", b"vfill", b"vss", b"vfilneg"];
+        RULE = 117 => [b"hrule", b"vrule"];
+        PAGE_DIMEN = 118 => [b"pagegoal", b"pagetotal", b"pagestretch", b"pagefilstretch", b"pagefillstretch", b"pagefilllstretch", b"pageshrink", b"pagedepth"] assignment;
+        PREV_DEPTH = 119 => [b"prevdepth"] assignment;
+        LAST_ITEM = 121 => [b"lastpenalty", b"lastkern", b"lastskip"];
+        UNSUPPORTED_LAYOUT = 122 => [b"insert", b"mark", b"marks", b"output", b"shipout", b"hbox", b"vbox", b"vsplit", b"leaders", b"mathsurround"];
         IFDIM = 99 => [b"ifdim"] conditional;
     }
 }

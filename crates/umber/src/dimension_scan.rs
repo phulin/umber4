@@ -150,17 +150,7 @@ impl Engine<'_> {
                 return Ok((self.signed_dimension(value, negative)?, order));
             }
             if self.scan_keyword(b"true")? {
-                let mag = self.document.scalars[Target::MAG].value;
-                if !(1..=32768).contains(&mag)
-                    || self
-                        .document
-                        .layout_values
-                        .prepared_mag
-                        .is_some_and(|old| old != mag)
-                {
-                    return Err(Error::Number);
-                }
-                self.document.layout_values.prepared_mag = Some(mag);
+                let mag = self.prepare_magnification()?;
                 Self::convert_unit(&mut integer, &mut fraction, 1000, i64::from(mag));
             }
             if !self.scan_keyword(b"pt")? {
@@ -200,6 +190,20 @@ impl Engine<'_> {
             )?,
             order,
         ))
+    }
+    pub(crate) fn prepare_magnification(&mut self) -> Result<i32> {
+        let mag = self.document.scalars[Target::MAG].value;
+        if !(1..=32768).contains(&mag)
+            || self
+                .document
+                .layout_values
+                .prepared_mag
+                .is_some_and(|old| old != mag)
+        {
+            return Err(Error::Number);
+        }
+        self.document.layout_values.prepared_mag = Some(mag);
+        Ok(mag)
     }
     fn convert_unit(integer: &mut i64, fraction: &mut i32, num: i64, den: i64) {
         let product = *integer * num;

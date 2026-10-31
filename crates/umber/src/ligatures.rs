@@ -51,7 +51,7 @@ impl Engine<'_> {
             self.document.text.cancel_boundary = false;
             return Ok(());
         };
-        let resource = self.font_catalog.scaled[scaled].resource;
+        let resource = self.font_catalog.scaled[scaled].descriptor().resource;
         let r = &self.font_catalog.resources[resource];
         let mut boundary = r.boundary;
         let false_boundary = r.false_boundary;

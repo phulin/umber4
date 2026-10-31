@@ -30,7 +30,8 @@ Read the root `AGENTS.md` first.
 - `pages.md` contracts executable vertical contributions, page breaks, detached
   publication and retained unfinished pages, and develops insertions, marks,
   output routines, and retained unfinished pages.
-- `output.md` develops ordered shipout, detached pages, backend document state,
+- `output.md` records detached page publication and develops ordered backend
+  shipout, document state,
   DVI/PDF resources, and direct serialization.
 - `formats.md` develops bootstrap, Umber format export/read, shared semantic
   baselines, and document startup.

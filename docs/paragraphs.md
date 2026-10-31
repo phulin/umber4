@@ -23,8 +23,8 @@ into the terminal penalty, and appends paragraph-fill glue. Selected breaks
 transfer existing nodes into line boxes with left/right skips, indentation,
 baseline/line glue, and interline penalties. Hanging indentation and `\parshape`
 select line widths. Paragraph settings reset through ordinary local assignment
-semantics. The resulting vertical list is the later page builder's contribution
-root; this slice does not build pages or ship output.
+semantics. The resulting vertical list is the [page builder](pages.md) contribution
+root; paragraph completion runs synchronous page work before returning.
 
 Active and delta slots are recycled within reusable engine scratch; passive
 predecessors survive until line construction finishes. Scratch is empty outside
@@ -35,8 +35,8 @@ document/save/checkpoint roots. Finished lines remain in the versioned node stor
 Horizontal packing uses TeX's integer dimensions and badness and an IEEE binary64
 glue ratio, matching the native Web2C oracle. Normal shrink is capped at one;
 infinite glue orders and signed components retain their upstream behavior.
-Native comparisons inspect node dimensions and displayed glue settings; cumulative
-placement checks belong to the later output traversal. Diagnostic text, overfull
+Native comparisons inspect node dimensions and displayed glue settings; the
+page adapter additionally checks cumulative absolute output placements. Diagnostic text, overfull
 rules,
 restricted boxes, general discretionary syntax, automatic hyphenation, math,
 last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
@@ -69,9 +69,9 @@ cargo test --lib upstream_paragraph_lines_and_glue -- --ignored
 ```
 
 No timing measurement is part of this validation. Page integration consumes
-`TextState.vertical` directly. `hpack` and `append_to_vlist` are reusable internal
-helpers; page packing, top skip, maximum depth, output routines, and end-of-job
-page flushing remain the page builder's responsibility.
+`TextState.vertical` directly. `hpack`, `vpackage`, and `append_to_vlist` are shared
+internal helpers. The page builder owns top skip, maximum depth, default output,
+and end-of-job page flushing; custom output routines remain unsupported.
 
 ## 1. Font metrics and live fonts
 

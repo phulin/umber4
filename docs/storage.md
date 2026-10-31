@@ -5,7 +5,8 @@ immutable token storage, reusable invocation packets, paged table checkpoints,
 shared message prefixes, and the versioned node foundation in
 [layout-foundation.md](layout-foundation.md). Font/text construction and
 [paragraph breaking](paragraphs.md) now use those nodes and typed COW shape tables;
-page execution and output stores remain proposals. [mvp.md](mvp.md) records the implemented
+the [page baseline](pages.md) builds pages and publishes detached immutable output
+prefixes. DVI/PDF backend stores remain proposals. [mvp.md](mvp.md) records the implemented
 allocator boundaries for the current slice.
 
 ## 1. Allocation contract
@@ -189,7 +190,18 @@ relevant chunk writable. Temporary math atoms have their own allocation class
 within the same node-ID domain, so their disappearance does not leave holes among
 long-lived results. Table blocks use the same ownership boundary.
 
-Append stores hold output bytes, page records, and descriptor sequences in pooled
+The executable page store holds sixteen once-initialized page headers in each
+shared chunk. Headers own typed pooled buffers of packed boxes, placements, and
+font handles. A root records its endpoint and page count; restoring a shared
+partial tail starts a new chunk linked to the retained prefix, without copying
+old descriptors. A retained partial tail may also pin at most fifteen later,
+invisible records. Iteration builds a temporary directory of borrowed chunks;
+root cloning is constant-sized, and final unique-chain release is iterative.
+Scaled-font headers likewise occupy sixteen-slot shared chunks; each chunk keeps
+the exact sealed resource-set owner, including its initialized metadata buffers.
+These chunk records allocate as backing blocks, not per glyph or font header.
+
+Future append stores hold backend bytes and descriptor sequences in pooled
 blocks. A retained prefix is a block root and endpoint. Branching after restore
 shares complete blocks and copies at most the bounded partial tail; it never
 copies all preceding descriptors simply to append. Byte and descriptor blocks

@@ -157,11 +157,19 @@ impl Oracle {
         let source = format!("{boot}{settings}{body}\\par\\end");
         let mut e = Engine::new(source.as_bytes());
         e.register_tfm(b"test", tfm).unwrap();
-        e.advance(usize::MAX).unwrap();
+        // Isolate paragraph construction before its synchronous page handoff.
+        loop {
+            let read = e.next_expanded().unwrap();
+            if read.meaning.command == crate::token::cmd::PAR {
+                e.break_paragraph().unwrap();
+                break;
+            }
+            e.execute(read).unwrap();
+        }
         let mut expected = Vec::new();
         list(&e, &e.document.text.vertical, 1, &mut expected);
         let source = format!(
-            "{boot}\\tracingparagraphs=1\\showboxbreadth=10000\\showboxdepth=10000\\setbox0=\\vbox{{\\kern0pt {settings}{body}\\par}}\\showbox0\\end\n"
+            "{boot}\\tracingparagraphs=1\\showboxbreadth=10000\\showboxdepth=10000\\setbox0=\\vbox{{{settings}{body}\\par}}\\showbox0\\end\n"
         );
         std::fs::write(self.dir.join("test.tfm"), tfm).unwrap();
         std::fs::write(self.dir.join("probe.tex"), source).unwrap();
@@ -184,7 +192,7 @@ impl Oracle {
             "{}\n{log}",
             String::from_utf8_lossy(&output.stdout)
         );
-        let mut observed: Vec<String> = log
+        let observed: Vec<String> = log
             .split("> \\box0=")
             .last()
             .unwrap()
@@ -192,8 +200,6 @@ impl Oracle {
             .filter(|line| line.starts_with('.'))
             .map(str::to_owned)
             .collect();
-        assert_eq!(observed.first().unwrap(), ".\\kern 0.0");
-        observed.remove(0);
         assert_eq!(
             expected, observed,
             "settings {settings}\nbody {body}\n{log}"

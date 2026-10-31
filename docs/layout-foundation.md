@@ -1,7 +1,7 @@
 # Layout storage and numeric foundation
 
-This contract defines the foundation used by executable fonts and paragraphs;
-page construction remains a proposal. The numeric and node facilities
+This contract defines the foundation used by executable fonts, paragraphs, and
+[page construction](pages.md). The numeric and node facilities
 below are independent of the layout algorithms; their correctness
 references are `round_decimals`, `print_scaled`, `scan_dimen`, `scan_glue`,
 `badness`, register arithmetic, and list ownership in
@@ -85,7 +85,7 @@ explicit/TFM kerns, glue, penalties, rules, horizontal/vertical boxes, and
 discretionaries. No kind implements text execution yet. Box headers carry
 dimensions, shift, and glue sign/order/ratio; packing will supply the compatible
 glue calculation. Font metrics resolve through immutable font IDs rather than
-per-character owners. Later paragraph/page algorithms traverse and splice these
+per-character owners. Paragraph/page algorithms traverse and splice these
 lists directly, and publish detached immutable results without live node IDs.
 
 ## Driver and validation

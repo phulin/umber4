@@ -17,7 +17,9 @@ are explicit errors. Host bytes are copied once at this resource boundary.
 
 Session-owned typed backing pools retain resource descriptors, character records,
 program instructions, and scaled metric arrays. Parsed and scaled metrics are
-immutable cache entries. They do not contain live TeX font descriptors. There is
+immutable cache entries. Safe handles retain scaled-header chunks and the sealed
+resource-set owner for [detached page output](output.md); source/header/payload
+storage can therefore outlive the session. They do not contain live TeX font descriptors. There is
 no allocation or reference counting per emitted character.
 
 Document state owns loaded-font order and IDs, source resource names, sizes,

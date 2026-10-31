@@ -245,7 +245,7 @@ impl Engine<'_> {
         let mut found = None;
         for i in 1..self.document.fonts.len {
             let scaled = self.document.fonts.descriptors[i].scaled.unwrap();
-            let cached = &self.font_catalog.scaled[scaled];
+            let cached = self.font_catalog.scaled[scaled].descriptor();
             if cached.resource == resource && cached.size == size {
                 found = Some(i);
                 break;
@@ -260,7 +260,7 @@ impl Engine<'_> {
             let params = self.document.fonts.parameter_end;
             for i in 0..count {
                 self.document.fonts.parameters[params + i] =
-                    self.font_catalog.scaled[scaled].numbers[start + i];
+                    self.font_catalog.scaled[scaled].descriptor().numbers[start + i];
             }
             let f = self.document.fonts.len;
             self.document.fonts.descriptors[f] = Font {

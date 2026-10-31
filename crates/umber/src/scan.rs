@@ -97,6 +97,13 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn internal_int(&mut self, read: Read) -> Result<i32> {
+        if let Some(value) = self.page_quantity(read)? {
+            return Ok(match value {
+                crate::quantities::Quantity::Integer(v) => v,
+                crate::quantities::Quantity::Dimension(v) => v.0,
+                crate::quantities::Quantity::Glue(v) => v.width.0,
+            });
+        }
         match read.meaning.command {
             cmd::PAR_SHAPE => Ok(self
                 .document
@@ -215,30 +222,12 @@ impl Engine<'_> {
                 self.back(read.token);
             }
             value
-        } else if matches!(
-            read.meaning.command,
-            cmd::FONT_DIMEN
-                | cmd::FONT_METRIC
-                | cmd::FONT_INT
-                | cmd::SPACE_FACTOR
-                | cmd::SF_CODE
-                | cmd::COUNT
-                | cmd::COUNT_REF
-                | cmd::CATCODE
-                | cmd::ENDLINE
-                | cmd::INTEGER_PARAM
-                | cmd::CASE_CODE
-                | cmd::PAR_SHAPE
-                | cmd::CHAR_GIVEN
-                | cmd::NUMEXPR
-                | cmd::DIMEN
-                | cmd::DIMEN_REF
-                | cmd::DIMEN_PARAM
-                | cmd::SKIP
-                | cmd::SKIP_REF
-                | cmd::GLUE_PARAM
-        ) {
-            self.internal_int(read)?
+        } else if let Some(value) = self.quantity(read)? {
+            match value {
+                crate::quantities::Quantity::Integer(v) => v,
+                crate::quantities::Quantity::Dimension(v) => v.0,
+                crate::quantities::Quantity::Glue(v) => v.width.0,
+            }
         } else {
             let radix = if read.token == Token::other(b'\'') {
                 8

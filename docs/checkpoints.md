@@ -16,8 +16,9 @@ driver boundary (including startup and completion). An error leaves the attempt 
 restored. `restore` rejects checkpoints from another session before changing live
 state. Source bytes remain borrowed for the engine/checkpoint lifetime; the
 checkpoint does not borrow the engine. `outcome` publishes a replacement message
-prefix and register values in independently owned host buffers. Those buffers may
-outlive or be mutated independently of all engine roots. `run` remains the
+prefix, register values, and an immutable page prefix. Message/count buffers may
+be mutated independently; page/font records are shared immutable owners, and all
+results can outlive the engine. `run` remains the
 consuming convenience adapter. A command budget is a coarse handoff request, not a bound on
 macro expansion or scanner work.
 
@@ -25,14 +26,19 @@ Font/text execution adds document-owned font descriptors, parameter spans, mode,
 and horizontal/vertical list roots with the matching node-store version. Only
 external vertical mode is eligible; a budget defers handoff through horizontal
 construction. Ordinary assignment groups and conditionals may remain open.
-Completed paragraphs retain their packed lines and interline material on the
-vertical root. Paragraph shape COW pages and grouped save records are captured
+Completed paragraphs transfer packed lines and interline material through
+contributions into incremental page construction. Current-page measurements,
+best-break roots, frozen parameters, last-node caches, and contribution/current
+lists are captured with the matching node store. Completed output uses shared
+immutable prefixes; restoring selects its endpoint, while older displayed results
+keep their detached pages and exact font resources. Paragraph shape COW pages and grouped save records are captured
 with the other layout values; active/delta/passive search scratch resets before
 returning to the outer driver. Replay can resume pending macro arguments and
 ordinary open groups after a paragraph.
 Future construction nests and output routines must extend eligibility and roots.
-Immutable registered TFM resources are session-owned and registration seals at
-the first nonzero advance, so restore cannot change the observed metric bytes.
+Immutable registered TFM resources share a sealed resource-set owner. Registration
+seals at the first nonzero advance, so restore cannot change observed metric bytes;
+retained output font chunks keep the resource set alive beyond session teardown.
 
 Meanings and their payload owners share 64-entry COW pages; token registers use
 the same page mechanism. Small scalar arrays, save records, and conditional

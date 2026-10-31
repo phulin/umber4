@@ -53,6 +53,7 @@ pub struct Checkpoint<'a> {
     nodes: crate::nodes::NodeStore,
     fonts: crate::fonts::Fonts,
     text: crate::text::TextState,
+    page: crate::page::PageState,
     after_assignment: Option<Token>,
     save: Buffer<Save>,
     level: u16,
@@ -99,12 +100,22 @@ impl<'a> Engine<'a> {
             self.quiescent = false;
             let read = self.next_expanded()?;
             if read.meaning.command == cmd::END {
-                self.end_graf()?;
+                if self.document.text.mode == crate::text::Mode::Horizontal {
+                    self.head_for_vertical(read);
+                    self.quiescent = true;
+                    commands = commands.saturating_add(1);
+                    continue;
+                }
                 if self.document.level != 0 {
                     return Err(Error::Group);
                 }
                 if !self.document.conditions.is_empty() {
                     return Err(Error::Conditional);
+                }
+                if !self.end_pages(read)? {
+                    self.quiescent = true;
+                    commands = commands.saturating_add(1);
+                    continue;
                 }
                 self.document.complete = true;
                 self.quiescent = true;
@@ -124,6 +135,7 @@ impl<'a> Engine<'a> {
         Outcome {
             counts: self.document.scalars.counts().map(|i| i.value),
             messages: self.document.messages.copy(),
+            pages: self.document.page.output.clone(),
         }
     }
 
@@ -205,6 +217,7 @@ impl<'a> Engine<'a> {
             nodes: d.nodes.clone(),
             fonts: d.fonts.clone(),
             text: d.text.snapshot(),
+            page: d.page.snapshot(),
             after_assignment: d.after_assignment,
             save,
             level: d.level,
@@ -318,6 +331,7 @@ impl<'a> Engine<'a> {
             nodes,
             fonts,
             text,
+            page,
             after_assignment,
             save,
             level,
@@ -335,6 +349,7 @@ impl<'a> Engine<'a> {
         nodes.clone_from(&checkpoint.nodes);
         fonts.clone_from(&checkpoint.fonts);
         *text = checkpoint.text.snapshot();
+        *page = checkpoint.page.snapshot();
         *after_assignment = checkpoint.after_assignment;
         save.clear();
         save.extend(checkpoint.save.iter().cloned());

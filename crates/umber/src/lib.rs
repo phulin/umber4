@@ -25,7 +25,10 @@ mod names;
 #[allow(dead_code)] // Node consumers are the following font/paragraph/page slices.
 mod nodes;
 mod numeric;
+mod output;
 mod packing;
+mod page;
+mod page_output;
 mod paragraph;
 mod quantities;
 mod scalars;
@@ -36,9 +39,12 @@ mod tfm;
 mod token;
 mod value_metadata;
 mod values;
+mod vertical;
 pub use checkpoint::{Checkpoint, Progress};
 use names::Names;
+pub use output::{GlueSetting, PackedBox, Page, Pages, Placement};
 use scalars::{Scalars, Target};
+pub use tfm::{FontResource, GlyphMetrics};
 use token::*;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -67,6 +73,7 @@ pub(crate) type Result<T> = std::result::Result<T, Error>;
 pub struct Outcome {
     pub counts: [i32; 256],
     pub messages: Vec<Vec<u8>>,
+    pub pages: Pages,
 }
 /// A source-bound session. Names, token stores and reusable scratch survive restore.
 pub struct Engine<'a> {
@@ -82,6 +89,9 @@ pub struct Engine<'a> {
     font_name: Vec<u8>,
     ligatures: ligatures::Scratch,
     paragraph: paragraph::Scratch,
+    page_lowering: Option<page_output::Scratch>,
+    page_release: nodes::ReleaseScratch,
+    output_pools: output::Pools,
     checkpoint_stores: checkpoint::Stores,
     session: std::rc::Rc<()>,
     quiescent: bool,
@@ -98,6 +108,7 @@ pub(crate) struct Document<'a> {
     pub nodes: nodes::NodeStore,
     pub fonts: fonts::Fonts,
     pub text: text::TextState,
+    pub page: page::PageState,
     pub after_assignment: Option<Token>,
     pub save: Vec<execute::Save>,
     pub level: u16,
@@ -118,6 +129,7 @@ impl<'a> Engine<'a> {
                 nodes: nodes::NodeStore::default(),
                 fonts: fonts::Fonts::default(),
                 text: text::TextState::default(),
+                page: page::PageState::default(),
                 after_assignment: None,
                 sources: Vec::with_capacity(16),
                 save: Vec::new(),
@@ -138,6 +150,9 @@ impl<'a> Engine<'a> {
             font_name: Vec::new(),
             ligatures: ligatures::Scratch::default(),
             paragraph: paragraph::Scratch::default(),
+            page_lowering: Some(page_output::Scratch::default()),
+            page_release: nodes::ReleaseScratch::default(),
+            output_pools: output::Pools::default(),
             checkpoint_stores: checkpoint::Stores::default(),
             session: std::rc::Rc::new(()),
             quiescent: true,
@@ -174,6 +189,7 @@ impl<'a> Engine<'a> {
         Ok(Outcome {
             counts: self.document.scalars.counts().map(|i| i.value),
             messages: self.document.messages.into_vec(),
+            pages: self.document.page.output,
         })
     }
     #[inline(never)]
@@ -256,3 +272,11 @@ mod font_oracle_tests;
 mod paragraph_oracle_tests;
 #[cfg(test)]
 mod paragraph_tests;
+
+#[cfg(test)]
+mod page_tests;
+
+#[cfg(test)]
+mod page_dvi_tests;
+#[cfg(test)]
+mod page_oracle_tests;

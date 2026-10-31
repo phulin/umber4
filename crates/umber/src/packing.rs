@@ -109,6 +109,68 @@ impl Engine<'_> {
             ..BoxData::default()
         }))
     }
+    pub(crate) fn vpackage(
+        &mut self,
+        list: List,
+        height: Scaled,
+        max_depth: Scaled,
+    ) -> Result<DetachedNode> {
+        let (mut natural, mut depth, mut width) = (0i32, 0i32, 0i32);
+        let (mut stretch, mut shrink) = ([0i32; 4], [0i32; 4]);
+        let mut p = list.head();
+        while !p.is_null() {
+            let n = self.document.nodes.get(p);
+            match &n.kind {
+                Kind::Box(b) => {
+                    natural = natural.wrapping_add(depth).wrapping_add(b.height.0);
+                    depth = b.depth.0;
+                    width = width.max(b.width.0.wrapping_add(b.shift.0));
+                }
+                Kind::Rule {
+                    width: w,
+                    height: h,
+                    depth: d,
+                } => {
+                    natural = natural.wrapping_add(depth).wrapping_add(h.0);
+                    depth = d.0;
+                    width = width.max(w.0);
+                }
+                Kind::Kern { width, .. } => {
+                    natural = natural.wrapping_add(depth).wrapping_add(width.0);
+                    depth = 0;
+                }
+                Kind::Glue { spec, .. } => {
+                    natural = natural.wrapping_add(depth).wrapping_add(spec.width.0);
+                    depth = 0;
+                    let i = spec.stretch_order as usize;
+                    stretch[i] = stretch[i].wrapping_add(spec.stretch.0);
+                    let i = spec.shrink_order as usize;
+                    shrink[i] = shrink[i].wrapping_add(spec.shrink.0);
+                }
+                _ => {}
+            }
+            p = n.next;
+        }
+        if depth > max_depth.0 {
+            natural = natural.wrapping_add(depth).wrapping_sub(max_depth.0);
+            depth = max_depth.0;
+        }
+        let glue_set = glue_setting(
+            height.0.wrapping_sub(natural),
+            stretch,
+            shrink,
+            !list.is_empty(),
+        );
+        self.document.nodes.alloc(Kind::Box(BoxData {
+            list,
+            vertical: true,
+            width: Scaled(width),
+            height,
+            depth: Scaled(depth),
+            glue_set,
+            ..BoxData::default()
+        }))
+    }
     pub(crate) fn append_to_vlist(&mut self, b: DetachedNode) -> Result<()> {
         let (height, depth) = match &self.document.nodes.get(b.id()).kind {
             Kind::Box(b) => (b.height, b.depth),

@@ -29,13 +29,14 @@ returns `Unsupported`, as in the paragraph baseline.
 Page work runs at TeX's paragraph-entry, paragraph-completion, vertical `\par`,
 and vertical penalty points. Vertical glue, kerns, and rules alone do not drain
 contributions. `\prevdepth` remains the enclosing vertical-list baseline state
-across page output. `\end` finishes its paragraph, then retries after appending
-an empty horizontal box of `\hsize`, fill-order glue, and penalty -1073741824
+across page output. `\end` inserts the current `\par` token when horizontal,
+then retries after appending an empty horizontal box of `\hsize`, fill-order
+glue, and penalty -1073741824
 directly to contributions. This preserves TeX's final flushing and empty-job
 behavior; it is not natural-height shipping.
 
 The vertical command slice includes `\vskip`, `\vfil`, `\vfill`, `\vss`,
-`\vfilneg`, `\hrule`, horizontal `\vrule`, `\nointerlineskip`, `\prevdepth`,
+`\vfilneg`, `\hrule`, horizontal `\vrule`, `\prevdepth`,
 and writable page dimensions. Rules preserve running dimensions until traversal.
 Insertions, marks, custom output routines, explicit shipout/box construction,
 leaders, math, and output backends remain unsupported. Packing diagnostics and
@@ -49,8 +50,10 @@ document font IDs. Cumulative glue rounding follows `hlist_out` and `vlist_out`.
 Typed placement and descriptor buffers are built in their destination storage;
 reusable traversal/release scratch contains no durable semantic state.
 Immutable output chunks share prefixes across checkpoint, result, and branch
-owners. Branching copies at most one bounded descriptor tail, never the growing
-page history. Publication completes before releasing the corresponding node tree.
+owners. Branching starts a fresh chunk linked to the retained endpoint without
+copying page history. Held partial chunks may pin at most fifteen later invisible
+pages. Lowering completes before releasing the corresponding node tree; only
+successful records enter the published prefix.
 
 TFM source headers and their exact immutable buffers share one sealed resource-set
 owner. Registration is already closed before execution. Runtime scaled-font

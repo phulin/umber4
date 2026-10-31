@@ -196,7 +196,8 @@ fn paragraph_end_transfers_nodes_and_restore_returns_to_vertical_root() {
     let saved = e.checkpoint().unwrap();
     assert_eq!(e.advance(100), Ok(Progress::Complete));
     assert!(e.document.text.horizontal.is_empty());
-    assert!(!e.document.text.vertical.is_empty());
+    assert!(e.document.text.vertical.is_empty());
+    assert!(!e.document.page.output.is_empty());
     assert!(e.can_checkpoint());
     e.restore(&saved).unwrap();
     assert_eq!(e.document.text.mode, Mode::Vertical);

@@ -3,14 +3,15 @@
 This slice makes the execution path in [expansion.md](expansion.md) and
 [execution.md](execution.md) executable. It runs small TeX programs that expand
 macros and change integer state, then report their result with `\message`.
-Shipout and format files come later. The current interpreter adds
+DVI/PDF backends and format files come later. The current interpreter adds
 [unchanged-input in-memory checkpoints](checkpoints.md) and a non-consuming
 outer driver to this expansion/register slice. The
 [layout foundation](layout-foundation.md) adds dimension/glue registers, physical
 unit scanning, arithmetic, conversions, and versioned node storage.
 [Fonts/text](fonts-text.md) and [paragraphs](paragraphs.md) add immutable TFM
 resources, character construction, exact unhyphenated breaking, packing, and
-checkpointable completed paragraphs; page construction remains future work.
+checkpointable completed paragraphs. The [page baseline](pages.md) adds exact
+incremental page breaks, default detached publication, and retained page roots.
 
 The slice is implemented in [crates/umber](../crates/umber/). Its
 [native measurements](mvp-results.md) record the tested behavior, optimization
@@ -143,7 +144,8 @@ and registry teardown. Count system allocations separately from reusable-store
 operations; check CPU throughput as well as retained capacity. The allocator
 revision did not add layout or a browser scheduler merely to exercise allocation.
 The checkpoint followup now connects those owners to real expansion/register
-roots; paragraph/page state remains the next architectural slice.
+roots; later font/paragraph/page slices now capture their own semantic roots and
+retain detached immutable page prefixes.
 
 ## Compatibility before timing
 

@@ -12,7 +12,7 @@ fn checked_tables_scaling_and_signed_slant() {
     assert_eq!(m.depth.0, 131071);
     assert_eq!(m.italic.0, 65536);
     let start = c.param_start(s);
-    assert_eq!(c.scaled[s].numbers[start].0, 6553);
+    assert_eq!(c.scaled[s].descriptor().numbers[start].0, 6553);
     assert_eq!(c.kern(s, 0).0, -65537);
     assert!(c.metrics(s, 0).is_none());
     assert_eq!(c.scaled(0, Scaled(655360)).unwrap(), s);
@@ -20,7 +20,9 @@ fn checked_tables_scaling_and_signed_slant() {
     assert_eq!(c.metrics(large, b'a').unwrap().width.0, 9_830_400);
     let mut trailing = bytes.clone();
     trailing.extend_from_slice(&[1, 2, 3]);
-    c.register(b"trailing", &trailing).unwrap();
+    let mut other = Catalog::default();
+    other.register(b"trailing", &trailing).unwrap();
+    assert_eq!(c.register(b"late", &trailing), Err(Error::Resource));
 }
 #[test]
 fn malformed_ranges_cycles_programs_and_recipes() {
@@ -57,7 +59,7 @@ fn signed_slant_valid_extensible_and_scaled_zero_entries() {
     let mut c = Catalog::default();
     c.register(b"negative", &b).unwrap();
     let s = c.scaled(0, Scaled(655360)).unwrap();
-    assert_eq!(c.scaled[s].numbers[c.param_start(s)].0, -6554);
+    assert_eq!(c.scaled[s].descriptor().numbers[c.param_start(s)].0, -6554);
     // A valid extension recipe uses a mandatory repeat and optional zero pieces.
     let mut b = tfm(&[], &[(b'x', 3, 0)]);
     let n = b.len();

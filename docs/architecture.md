@@ -109,7 +109,8 @@ execution path is working and measurable.
 
 [layout-foundation.md](layout-foundation.md) specifies the numeric and versioned
 node/list foundation used by executable [font/text](fonts-text.md) and
-[paragraph](paragraphs.md) layout; page construction remains a proposal.
+[paragraph](paragraphs.md) layout and [page construction](pages.md), including
+detached immutable output and unfinished-page checkpoints.
 
 See [expansion.md](expansion.md) for the input and expansion loop design.
 Character scanning and primitive/group execution are developed in
@@ -340,7 +341,8 @@ with the interpreter as it starts compiling ordinary documents.
 The deep dives share ordinary Rust execution, in-place construction, semantic
 lifetimes, and the quiescent outer-driver checkpoint predicate. The
 expansion/register slice and its unchanged-input in-memory checkpoints are
-implemented. Layout roots, source-edit restart, and scheduling remain proposals.
+implemented, including font/paragraph/page roots and detached page prefixes.
+Source-edit restart, full output backends, and scheduling remain proposals.
 
 | Area                                                | Design                                   |
 | --------------------------------------------------- | ---------------------------------------- |
