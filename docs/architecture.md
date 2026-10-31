@@ -107,6 +107,9 @@ code, with allocation and ownership bookkeeping paid at the relevant object or
 arena boundary. Optional macro precompilation can be explored once the basic
 execution path is working and measurable.
 
+[layout-foundation.md](layout-foundation.md) specifies the numeric and versioned
+node/list foundation preceding executable font, paragraph, and page layout.
+
 See [expansion.md](expansion.md) for the input and expansion loop design.
 Character scanning and primitive/group execution are developed in
 [input.md](input.md) and [execution.md](execution.md).

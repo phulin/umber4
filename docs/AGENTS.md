@@ -8,6 +8,8 @@ Read the root `AGENTS.md` first.
   argument capture and lifetime, and their checkpoint behavior.
 - `storage.md` proposes stores, allocation primitives, mutable roots, and
   ownership transfers by semantic lifetime.
+- `layout-foundation.md` contracts scaled arithmetic, typed dimension/glue
+  bindings, and versioned node/list ownership before text layout execution.
 - `execution.md` develops primitive dispatch, meanings, assignment restoration,
   modes, and paragraph handoff.
 - `input.md` develops character scanning, line lookahead and its invalidation,
