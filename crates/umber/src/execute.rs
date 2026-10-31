@@ -8,11 +8,15 @@ pub(crate) enum Save {
     Glue(usize, crate::layout_values::GlueSlot),
     Tokens(usize, TokenValue),
     After(Token),
+    Font(Integer),
 }
 
 impl Engine<'_> {
     pub(crate) fn execute(&mut self, read: Read) -> Result<()> {
-        if matches!(read.meaning.command, cmd::RELAX | cmd::SPACE | cmd::PAR) {
+        if read.meaning.command == cmd::RELAX {
+            return Ok(());
+        }
+        if self.text_command(read)? {
             return Ok(());
         }
         let (read, prefix) = if matches!(
@@ -90,7 +94,7 @@ impl Engine<'_> {
                 self.assign_meaning(id, Meaning { command, value }, assignment_global);
                 Ok(())
             }
-            cmd::TOKS | cmd::TOKS_REF => {
+            cmd::TOKS | cmd::TOKS_REF | cmd::TOKS_PARAM => {
                 let index = self.toks_index(read)?;
                 self.scan_equals()?;
                 let first = loop {
@@ -99,7 +103,10 @@ impl Engine<'_> {
                         break read;
                     }
                 };
-                let owner = if matches!(first.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
+                let owner = if matches!(
+                    first.meaning.command,
+                    cmd::TOKS | cmd::TOKS_REF | cmd::TOKS_PARAM
+                ) {
                     let from = self.toks_index(first)?;
                     self.document.token_registers[from].owner.clone()
                 } else if first.meaning.command == cmd::BEGIN {
@@ -116,7 +123,11 @@ impl Engine<'_> {
             | cmd::SKIP
             | cmd::SKIP_REF
             | cmd::GLUE_PARAM => self.layout_assignment(read, assignment_global),
-            cmd::COUNT
+            cmd::FONT | cmd::SELECT_FONT | cmd::FONT_DIMEN | cmd::FONT_INT | cmd::SPACE_FACTOR => {
+                self.font_assignment(read, assignment_global)
+            }
+            cmd::SF_CODE
+            | cmd::COUNT
             | cmd::COUNT_REF
             | cmd::CATCODE
             | cmd::ENDLINE
@@ -126,6 +137,9 @@ impl Engine<'_> {
                 self.scan_equals()?;
                 let value = self.scan_int()?;
                 if read.meaning.command == cmd::CATCODE && !(0..=15).contains(&value) {
+                    return Err(Error::Number);
+                }
+                if read.meaning.command == cmd::SF_CODE && !(0..=32767).contains(&value) {
                     return Err(Error::Number);
                 }
                 if read.meaning.command == cmd::CASE_CODE && !(0..=255).contains(&value) {
@@ -290,6 +304,11 @@ impl Engine<'_> {
                     }
                     self.document.level -= 1;
                     return Ok(());
+                }
+                Save::Font(old) => {
+                    if self.document.fonts.current.level != 0 {
+                        self.document.fonts.current = old;
+                    }
                 }
                 Save::After(token) => self.back(token),
                 Save::Tokens(index, old) => {

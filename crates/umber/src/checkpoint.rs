@@ -1,4 +1,4 @@
-//! Outer-driver handoff and explicit roots for the expansion/register slice.
+//! Outer-driver handoff and explicit semantic roots, including external modes.
 use crate::{
     Document, Engine, Error, Outcome, Result,
     condition::Condition,
@@ -51,6 +51,8 @@ pub struct Checkpoint<'a> {
     token_registers: Table<TokenValue>,
     layout_values: crate::layout_values::LayoutValues,
     nodes: crate::nodes::NodeStore,
+    fonts: crate::fonts::Fonts,
+    text: crate::text::TextState,
     after_assignment: Option<Token>,
     save: Buffer<Save>,
     level: u16,
@@ -73,25 +75,31 @@ pub(crate) struct Stores {
 
 impl<'a> Engine<'a> {
     /// Whether the current outer-driver state can be retained. Ordinary
-    /// assignment groups are allowed. Layout must add its mode/construction
-    /// requirements here when those roots are introduced.
+    /// assignment groups are allowed. Horizontal construction defers handoff
+    /// until a successful return to external vertical mode.
     pub fn can_checkpoint(&self) -> bool {
-        self.quiescent
+        self.quiescent && self.document.text.mode == crate::text::Mode::Vertical
     }
 
     /// Execute up to `command_budget` complete outer commands. Expansion and
-    /// operand scanning finish before a boundary is returned. Zero only polls.
+    /// operand scanning finish before a boundary is returned. Horizontal mode
+    /// defers handoff until an eligible vertical boundary. Zero only polls.
     pub fn advance(&mut self, command_budget: usize) -> Result<Progress> {
-        if !self.can_checkpoint() {
+        if !self.quiescent {
             return Err(Error::Checkpoint);
+        }
+        if command_budget > 0 {
+            self.font_catalog.sealed = true;
         }
         if self.document.complete {
             return Ok(Progress::Complete);
         }
-        for _ in 0..command_budget {
+        let mut commands = 0usize;
+        while commands < command_budget || !self.can_checkpoint() {
             self.quiescent = false;
             let read = self.next_expanded()?;
             if read.meaning.command == cmd::END {
+                self.end_graf()?;
                 if self.document.level != 0 {
                     return Err(Error::Group);
                 }
@@ -106,6 +114,7 @@ impl<'a> Engine<'a> {
             // Scanners have returned, and all pending reads belong to sources.
             debug_assert_eq!(self.expansion_depth, 0);
             self.quiescent = true;
+            commands = commands.saturating_add(1);
         }
         Ok(Progress::Boundary)
     }
@@ -118,8 +127,8 @@ impl<'a> Engine<'a> {
         }
     }
 
-    /// Capture only at the outer driver. This slice has no layout construction;
-    /// future modes must further restrict this predicate and extend these roots.
+    /// Capture only at the outer driver in external vertical mode. Future
+    /// construction/output nests must further restrict the eligibility predicate.
     /// The source is borrowed for the checkpoint lifetime, but the engine is not.
     /// A checkpoint can outlive the engine; only its original session can restore it.
     ///
@@ -194,6 +203,8 @@ impl<'a> Engine<'a> {
             token_registers: d.token_registers.clone(),
             layout_values: d.layout_values.clone(),
             nodes: d.nodes.clone(),
+            fonts: d.fonts.clone(),
+            text: d.text.snapshot(),
             after_assignment: d.after_assignment,
             save,
             level: d.level,
@@ -305,6 +316,8 @@ impl<'a> Engine<'a> {
             token_registers,
             layout_values,
             nodes,
+            fonts,
+            text,
             after_assignment,
             save,
             level,
@@ -320,6 +333,8 @@ impl<'a> Engine<'a> {
         token_registers.clone_from(&checkpoint.token_registers);
         layout_values.clone_from(&checkpoint.layout_values);
         nodes.clone_from(&checkpoint.nodes);
+        fonts.clone_from(&checkpoint.fonts);
+        *text = checkpoint.text.snapshot();
         *after_assignment = checkpoint.after_assignment;
         save.clear();
         save.extend(checkpoint.save.iter().cloned());

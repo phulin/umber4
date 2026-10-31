@@ -6,7 +6,8 @@ const ENDLINE: usize = CAT_BASE + 256;
 const PARAM_BASE: usize = ENDLINE + 1;
 const PARAMS: usize = cmd::names(cmd::INTEGER_PARAM).len();
 const CASE_BASE: usize = PARAM_BASE + PARAMS;
-const SLOTS: usize = CASE_BASE + 2 * 256;
+const SF_BASE: usize = CASE_BASE + 2 * 256;
+const SLOTS: usize = SF_BASE + 256;
 use std::ops::{Index, IndexMut};
 
 // Scalar values have the same representation and group-save lifetime. A target
@@ -19,6 +20,11 @@ impl Target {
     pub const GLOBALDEFS: Self = Self(PARAM_BASE as u16);
     pub const ESCAPECHAR: Self = Self((PARAM_BASE + 1) as u16);
     pub const MAG: Self = Self((PARAM_BASE + 6) as u16);
+    pub const DEFAULT_HYPHEN: Self = Self((PARAM_BASE + 7) as u16);
+    pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
+    pub fn sfcode(index: usize) -> Self {
+        Self((SF_BASE + index) as u16)
+    }
     pub fn count(index: usize) -> Self {
         Self(index as u16)
     }
@@ -43,8 +49,15 @@ impl Default for Scalars {
             level: 0,
         });
         state[Target::ENDLINE].value = 13;
-        for (index, value) in [0, 92, 0, 1, 1, 1970, 1000].into_iter().enumerate() {
+        for (index, value) in [0, 92, 0, 1, 1, 1970, 1000, 0, 0].into_iter().enumerate() {
             state[Target::parameter(index)].value = value;
+        }
+        state.0[SF_BASE..].fill(Integer {
+            value: 1000,
+            level: 0,
+        });
+        for byte in b'A'..=b'Z' {
+            state[Target::sfcode(byte as usize)].value = 999;
         }
         for byte in b'a'..=b'z' {
             for c in [byte, byte.to_ascii_uppercase()] {

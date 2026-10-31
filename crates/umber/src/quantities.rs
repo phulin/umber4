@@ -11,10 +11,12 @@ pub(crate) enum Quantity {
     Glue(Glue),
 }
 impl Engine<'_> {
-    /// The current null font has zero quad and x-height. Font execution replaces
-    /// this getter with its restored current-font descriptor, never a host call.
-    pub(crate) fn font_unit(&self, _ex: bool) -> Scaled {
-        Scaled::ZERO
+    /// Read quad/x-height from the restored current descriptor; never ask a host.
+    pub(crate) fn font_unit(&self, ex: bool) -> Scaled {
+        self.font_parameter(
+            self.document.fonts.current.value as usize,
+            if ex { 5 } else { 6 },
+        )
     }
     pub(crate) fn quantity_if_glue(&mut self, read: Read) -> Result<Option<Quantity>> {
         if matches!(
@@ -30,6 +32,9 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn quantity(&mut self, read: Read) -> Result<Option<Quantity>> {
+        if matches!(read.meaning.command, cmd::FONT_DIMEN | cmd::FONT_METRIC) {
+            return Ok(Some(Quantity::Dimension(self.font_dimension(read)?)));
+        }
         if matches!(
             read.meaning.command,
             cmd::DIMEN | cmd::DIMEN_REF | cmd::DIMEN_PARAM
@@ -44,7 +49,10 @@ impl Engine<'_> {
         }
         if matches!(
             read.meaning.command,
-            cmd::COUNT
+            cmd::FONT_INT
+                | cmd::SPACE_FACTOR
+                | cmd::SF_CODE
+                | cmd::COUNT
                 | cmd::COUNT_REF
                 | cmd::CATCODE
                 | cmd::ENDLINE

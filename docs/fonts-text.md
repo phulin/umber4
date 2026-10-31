@@ -41,16 +41,18 @@ unscaled fixed-point number. Fonts have at least seven parameter slots.
 The document contains an external vertical list and a horizontal list, mode,
 space factor, previous depth, and previous paragraph line count. Startup uses
 INITEX values: nullfont, zero dimensions/glue, character space-factor codes 1000
-except uppercase ASCII 999, space factor 1000, and ignored previous depth.
+except uppercase ASCII 999, space factor 1000, and ignored previous depth. The
+nullfont has hyphen/skew characters 45 and -1; the separate default-hyphen/default-
+skew integer parameters start at zero, as in INITEX.
 Paragraph entry appends paragraph skip, resets line count, enters horizontal mode,
-and optionally adds an empty indentation box. Indentation in horizontal mode
-resets space factor; noindent there does nothing. Ordinary brace groups do not
+and optionally adds an empty indentation box before inserting `\everypar`.
+Indentation in horizontal mode resets space factor; noindent there does nothing. Ordinary brace groups do not
 terminate a paragraph.
 
-Character runs use the selected font, look ahead through expansion and `\\char`,
+Character runs use the selected font, look ahead through expansion and `\char`,
 and preserve a noncharacter lookahead in pending input without executing it.
 All TFM ligature operations retain original components and boundary-hit flags.
-Boundary programs, false boundary characters, and `\\noboundary` follow upstream.
+Boundary programs, false boundary characters, and `\noboundary` follow upstream.
 TFM kerns remain distinct from explicit kerns. An explicit hyphen-character
 component adds an empty discretionary with zero replacement count in unrestricted
 horizontal mode. Pattern hyphenation is absent.
@@ -74,7 +76,43 @@ budget defers handoff while horizontal construction continues. Font tables,
 current selector, text state and lists are captured with their matching node-store
 version. Errors require restore before execution continues.
 
-Restricted boxes, general discretionary syntax, accents, math, alignments,
+Internal font-token conversion (`\the\font`), restricted boxes, general
+discretionary syntax, accents, math, alignments,
 automatic hyphenation, pdfTeX font extensions, arbitrary I/O and output backends
 remain unsupported. Tests explicitly set document dimensions and spacing; no
 plain-format defaults are assumed.
+
+## Validation and native adapter
+
+Ordinary tests construct small controlled valid TFM resources and malformed
+variants entirely in memory. They cover metric rounding, signed slant, missing
+characters, extensible recipes, ligature component ownership and all operation
+forms, real/false boundary characters, explicit hyphens, spaces, group restoration,
+new/reused font descriptors after rollback, and paragraph-entry ordering.
+
+The ignored `upstream_font_metrics_and_horizontal_nodes` test is an explicit
+native adapter. Supply `UMBER_PDFTEX` as an absolute executable path and
+`UMBER_TFM_DIR` as the corpus `fonts/tfm/public` directory, with that executable's
+library search path when required, then run:
+
+```bash
+cargo test --lib upstream_font_metrics_and_horizontal_nodes -- --ignored
+```
+
+The adapter writes only into a temporary directory and removes its files. It
+compares 380 marked metric/parameter messages over five sizes and 20 horizontal
+node lists against pdfTeX 1.40.25 (TeX Live 2023/Debian), using INITEX with e-TeX.
+The e-TeX character-metric primitives expose indexed height/depth/italic fields
+even when the width index marks a character absent; emitted glyphs still require
+existence. Native list comparisons use restricted hboxes, where explicit-hyphen
+discretionaries are suppressed; separate tests check their unrestricted creation.
+No timing measurements are part of this stage.
+
+The real TFM inputs are retained in the local lexing corpus, rather than vendored
+or required by normal tests:
+
+| Corpus TFM | SHA-256 |
+| ---------- | ------- |
+| `ae/aer10.tfm` | `49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64` |
+| `latex-fonts/lcmss8.tfm` | `84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d` |
+| `latex-fonts/icmtt8.tfm` | `f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24` |

@@ -104,12 +104,19 @@ impl<'a> Engine<'a> {
         match read.meaning.command {
             cmd::TOKS => self.scan_index(),
             cmd::TOKS_REF => Ok(read.meaning.value as usize),
+            cmd::TOKS_PARAM => Ok(256 + read.meaning.value as usize),
             _ => Err(Error::Syntax),
         }
     }
     pub(crate) fn the_value(&mut self) -> Result<Internal> {
         let read = self.next_expanded()?;
-        if matches!(read.meaning.command, cmd::TOKS | cmd::TOKS_REF) {
+        if matches!(read.meaning.command, cmd::FONT | cmd::SELECT_FONT) {
+            return Err(Error::Unsupported);
+        }
+        if matches!(
+            read.meaning.command,
+            cmd::TOKS | cmd::TOKS_REF | cmd::TOKS_PARAM
+        ) {
             let index = self.toks_index(read)?;
             Ok(Internal::Tokens(
                 self.document.token_registers[index].owner.clone(),

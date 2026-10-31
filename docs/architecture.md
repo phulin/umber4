@@ -347,6 +347,7 @@ implemented. Layout roots, source-edit restart, and scheduling remain proposals.
 | Token reading, expansion, and argument capture      | [expansion.md](expansion.md)             |
 | Meanings, assignments, groups, and modes            | [execution.md](execution.md)             |
 | Allocation, immutable spans, and mutable stores     | [storage.md](storage.md)                 |
+| Executable TFM resources and horizontal text       | [fonts-text.md](fonts-text.md)           |
 | Fonts, character construction, and line breaking    | [paragraphs.md](paragraphs.md)           |
 | Math lists and alignment templates                  | [math-alignments.md](math-alignments.md) |
 | Page breaks, insertions, marks, and output routines | [pages.md](pages.md)                     |

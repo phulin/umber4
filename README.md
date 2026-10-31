@@ -9,10 +9,13 @@ Its [subsystem index](docs/architecture.md#11-detailed-subsystem-proposals) link
 the deep dives. The [expansion](docs/expansion.md) and
 [storage](docs/storage.md) designs are the foundation for the execution path.
 The [MVP](docs/mvp.md) and its [expanded primitive set](docs/expansion-mvp.md)
-implement a parsing/expansion interpreter with 63 primitive names in
+implement a parsing/expansion interpreter in
 [crates/umber](crates/umber/), with [in-memory checkpoint/resume](docs/checkpoints.md)
-for unchanged expansion/register input. Layout, shipout, formats, and restart
-after source edits remain design proposals.
+for unchanged input. The [layout foundation](docs/layout-foundation.md) supplies
+scaled dimensions, glue, and versioned node storage. [Fonts and text](docs/fonts-text.md)
+load host-supplied TFM metrics and construct horizontal lists; nonempty paragraph
+completion explicitly awaits line breaking. Paragraph/page construction, shipout,
+formats, and restart after source edits remain design proposals.
 
 [Native measurements](docs/mvp-results.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.
@@ -31,7 +34,8 @@ cargo build --release --lib --target wasm32-unknown-unknown
 ```
 
 The oracle and benchmark runners use native `pdftex -ini -etex`, without a
-format or fonts. Install pdfTeX or pass `--pdftex /path/to/pdftex`.
+format or fonts. The CLI accepts explicit metric mappings as
+`umber FILE.tex --tfm NAME=PATH`; TeX input never opens a font path itself. Install pdfTeX or pass `--pdftex /path/to/pdftex`.
 
 Repository guidance is in [AGENTS.md](AGENTS.md). The copied and adapted
 [coordinate](.agents/skills/coordinate/SKILL.md) and

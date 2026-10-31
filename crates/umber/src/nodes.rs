@@ -93,6 +93,8 @@ pub(crate) enum GlueKind {
     LineSkip,
     ParSkip,
     TopSkip,
+    SpaceSkip,
+    XSpaceSkip,
 }
 #[derive(Debug, Default)]
 pub(crate) enum Kind {

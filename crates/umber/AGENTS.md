@@ -27,7 +27,13 @@ applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
 `nodes.rs` owns versioned chunked node storage and consuming list/node transfers,
 with branch/reclamation tests in `nodes_tests.rs`; these node APIs precede actual
-font, paragraph, and page execution;
+paragraph and page execution;
+`tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
+owns restorable loaded-font descriptors/parameters and font assignments,
+`text.rs` owns external modes and horizontal/vertical lists, and `ligatures.rs`
+builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
+`tfm_tests.rs` use controlled metrics from `font_test_data.rs`, while the explicitly
+invoked native adapter in `font_oracle_tests.rs` compares real and controlled TFMs;
 `lists.rs` scans raw/expanded lists into their destinations; `convert.rs` builds
 conversion and case-change output; `expand.rs` dispatches expansion;
 `condition.rs` handles conditional selection/skipping; `execute.rs` handles

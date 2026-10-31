@@ -7,12 +7,14 @@ mod dimension_scan;
 mod execute;
 mod expand;
 mod expression;
+mod fonts;
 mod input;
 mod layout_assign;
 mod layout_values;
 #[cfg(feature = "lexing-prototype")]
 #[doc(hidden)]
 pub mod lexing;
+mod ligatures;
 mod lists;
 mod macros;
 mod messages;
@@ -24,6 +26,8 @@ mod quantities;
 mod scalars;
 mod scan;
 mod tables;
+mod text;
+mod tfm;
 mod token;
 mod value_metadata;
 mod values;
@@ -45,6 +49,8 @@ pub enum Error {
     Argument,
     Capacity,
     Checkpoint,
+    Font,
+    Resource,
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -67,6 +73,9 @@ pub struct Engine<'a> {
     pub(crate) packet_links: Vec<u32>,
     pub(crate) name_spills: Vec<value_metadata::Buffer<u8>>,
     pub(crate) expansion_depth: u16,
+    pub(crate) font_catalog: tfm::Catalog,
+    font_name: Vec<u8>,
+    ligatures: ligatures::Scratch,
     checkpoint_stores: checkpoint::Stores,
     session: std::rc::Rc<()>,
     quiescent: bool,
@@ -81,6 +90,8 @@ pub(crate) struct Document<'a> {
     pub token_registers: tables::Table<TokenValue>,
     pub layout_values: layout_values::LayoutValues,
     pub nodes: nodes::NodeStore,
+    pub fonts: fonts::Fonts,
+    pub text: text::TextState,
     pub after_assignment: Option<Token>,
     pub save: Vec<execute::Save>,
     pub level: u16,
@@ -99,6 +110,8 @@ impl<'a> Engine<'a> {
                 token_registers: tables::Table::new(256),
                 layout_values: layout_values::LayoutValues::default(),
                 nodes: nodes::NodeStore::default(),
+                fonts: fonts::Fonts::default(),
+                text: text::TextState::default(),
                 after_assignment: None,
                 sources: Vec::with_capacity(16),
                 save: Vec::new(),
@@ -115,6 +128,9 @@ impl<'a> Engine<'a> {
             packet_links: Vec::new(),
             name_spills: Vec::new(),
             expansion_depth: 0,
+            font_catalog: tfm::Catalog::default(),
+            font_name: Vec::new(),
+            ligatures: ligatures::Scratch::default(),
             checkpoint_stores: checkpoint::Stores::default(),
             session: std::rc::Rc::new(()),
             quiescent: true,
@@ -220,3 +236,11 @@ mod memory_tests;
 
 #[cfg(test)]
 mod dimension_tests;
+
+#[cfg(test)]
+mod font_test_data;
+#[cfg(test)]
+mod font_text_tests;
+
+#[cfg(test)]
+mod font_oracle_tests;

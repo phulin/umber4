@@ -171,7 +171,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -197,6 +197,20 @@ pub(crate) mod cmd {
         SKIP_DEF = 96 => [b"skipdef"] assignment;
         DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz"] assignment;
         GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip"] assignment;
+        FONT = 100 => [b"font"] assignment;
+        SELECT_FONT = 101 => [b"nullfont"] assignment;
+        FONT_DIMEN = 102 => [b"fontdimen"] assignment;
+        FONT_INT = 103 => [b"hyphenchar", b"skewchar"] assignment;
+        FONT_METRIC = 104 => [b"fontcharwd", b"fontcharht", b"fontchardp", b"fontcharic"];
+        SF_CODE = 105 => [b"sfcode"] assignment;
+        SPACE_FACTOR = 106 => [b"spacefactor"] assignment;
+        CHAR = 107 => [b"char"];
+        START_PAR = 108 => [b"noindent", b"indent"];
+        NO_BOUNDARY = 109 => [b"noboundary"];
+        CONTROL_SPACE = 110 => [b" "];
+        HSKIP = 111 => [b"hskip"];
+        KERN = 112 => [b"kern"];
+        TOKS_PARAM = 113 => [b"everypar"] assignment;
         IFDIM = 99 => [b"ifdim"] conditional;
     }
 }

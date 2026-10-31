@@ -98,6 +98,8 @@ impl Engine<'_> {
     }
     pub(crate) fn internal_int(&mut self, read: Read) -> Result<i32> {
         match read.meaning.command {
+            cmd::FONT_DIMEN | cmd::FONT_METRIC => Ok(self.font_dimension(read)?.0),
+            cmd::FONT_INT | cmd::SPACE_FACTOR => self.font_integer(read),
             cmd::CHAR_GIVEN => Ok(read.meaning.value),
             cmd::NUMEXPR => self.scan_expression(),
             cmd::DIMEN | cmd::DIMEN_REF | cmd::DIMEN_PARAM => {
@@ -117,6 +119,7 @@ impl Engine<'_> {
     #[inline]
     pub(crate) fn scalar_target(&mut self, read: Read) -> Result<Target> {
         Ok(match read.meaning.command {
+            cmd::SF_CODE => Target::sfcode(self.scan_index()?),
             cmd::COUNT => Target::count(self.scan_index()?),
             cmd::COUNT_REF => Target::count(read.meaning.value as usize),
             cmd::CATCODE => Target::catcode(self.scan_index()?),
@@ -207,7 +210,12 @@ impl Engine<'_> {
             value
         } else if matches!(
             read.meaning.command,
-            cmd::COUNT
+            cmd::FONT_DIMEN
+                | cmd::FONT_METRIC
+                | cmd::FONT_INT
+                | cmd::SPACE_FACTOR
+                | cmd::SF_CODE
+                | cmd::COUNT
                 | cmd::COUNT_REF
                 | cmd::CATCODE
                 | cmd::ENDLINE

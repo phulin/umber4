@@ -21,11 +21,14 @@ outlive or be mutated independently of all engine roots. `run` remains the
 consuming convenience adapter. A command budget is a coarse handoff request, not a bound on
 macro expansion or scanner work.
 
-This interpreter has no layout nest: all its successful outer boundaries are
-preamble-like. Ordinary assignment groups and conditionals may remain open.
-Future layout state must extend the document root and eligibility predicate with
-external vertical mode, construction, and output-routine checks. This slice does
-not claim to capture those future roots.
+Font/text execution adds document-owned font descriptors, parameter spans, mode,
+and horizontal/vertical list roots with the matching node-store version. Only
+external vertical mode is eligible; a budget defers handoff through horizontal
+construction. Ordinary assignment groups and conditionals may remain open.
+Nonempty paragraph completion awaits the line breaker and reports unsupported.
+Future construction nests and output routines must extend eligibility and roots.
+Immutable registered TFM resources are session-owned and registration seals at
+the first nonzero advance, so restore cannot change the observed metric bytes.
 
 Meanings and their payload owners share 64-entry COW pages; token registers use
 the same page mechanism. Small scalar arrays, save records, and conditional
