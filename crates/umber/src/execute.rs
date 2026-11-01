@@ -161,9 +161,18 @@ impl Engine<'_> {
                     let from = self.toks_index(first)?;
                     self.document.token_registers[from].owner.clone()
                 } else if first.meaning.command == cmd::BEGIN {
-                    Some(self.store_body()?)
+                    if index == OUTPUT_ROUTINE {
+                        self.store_output_body()?
+                    } else {
+                        Some(self.store_body()?)
+                    }
                 } else {
                     return Err(Error::Syntax);
+                };
+                let owner = if index == OUTPUT_ROUTINE {
+                    owner.filter(|v| v.tokens.len != 0)
+                } else {
+                    owner
                 };
                 self.assign_tokens(index, owner, assignment_global);
                 Ok(())

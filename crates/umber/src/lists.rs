@@ -340,6 +340,16 @@ impl<'a> Engine<'a> {
         }
         result
     }
+    pub(crate) fn store_output_body(&mut self) -> Result<Option<crate::values::Owner>> {
+        let mut tokens = self.values.builder(crate::values::Class::Durable)?;
+        tokens.push(Token::character(1, b'{'))?;
+        self.scan_raw_body(&mut tokens)?;
+        if tokens.len() == 1 {
+            return Ok(None);
+        }
+        tokens.push(Token::character(2, b'}'))?;
+        Ok(Some(tokens.finish()))
+    }
     pub(crate) fn store_body(&mut self) -> Result<crate::values::Owner> {
         let mut tokens = self.values.builder(crate::values::Class::Durable)?;
         self.scan_raw_body(&mut tokens)?;

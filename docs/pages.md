@@ -42,6 +42,14 @@ Insertions, marks, custom output routines, explicit shipout/box construction,
 leaders, math, and output backends remain unsupported. Packing diagnostics and
 interactive recovery remain outside this fail-fast interpreter contract.
 
+`\output` is a scoped token parameter and participates in token-list reads,
+copies, aliases, and checkpoints. A nonempty directly scanned body receives the
+outer brace pair TeX stores; a token-list copy preserves its existing tokens.
+Empty values select default output. Custom routine execution remains unsupported:
+`fire_up` rejects a nonempty routine before changing the selected penalty,
+packing or consuming its page, or publishing output. Merely assigning a routine
+or retaining an unfinished page does not invoke it.
+
 Detached results expose an immutable page prefix, packed box records, absolute
 glyph/rule placements in scaled points, count registers, and output penalties.
 Coordinates use the page's upper-left content origin, before any backend's

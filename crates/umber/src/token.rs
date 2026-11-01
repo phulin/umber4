@@ -229,7 +229,7 @@ pub(crate) mod cmd {
         CONTROL_SPACE = 110 => [b" "];
         HSKIP = 111 => [b"hskip", b"hfil", b"hfill", b"hss", b"hfilneg"];
         KERN = 112 => [b"kern"];
-        TOKS_PARAM = 113 => [b"everypar", b"everyhbox"] assignment;
+        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output"] assignment;
         PAR_SHAPE = 114 => [b"parshape"] assignment;
         PENALTY = 115 => [b"penalty"];
         VSKIP = 116 => [b"vskip", b"vfil", b"vfill", b"vss", b"vfilneg"];
@@ -237,7 +237,7 @@ pub(crate) mod cmd {
         PAGE_DIMEN = 118 => [b"pagegoal", b"pagetotal", b"pagestretch", b"pagefilstretch", b"pagefillstretch", b"pagefilllstretch", b"pageshrink", b"pagedepth"] assignment;
         PREV_DEPTH = 119 => [b"prevdepth"] assignment;
         LAST_ITEM = 121 => [b"lastpenalty", b"lastkern", b"lastskip"];
-        UNSUPPORTED_LAYOUT = 122 => [b"insert", b"mark", b"marks", b"output", b"shipout", b"vsplit", b"leaders", b"mathsurround"];
+        UNSUPPORTED_LAYOUT = 122 => [b"insert", b"mark", b"marks", b"shipout", b"vsplit", b"leaders", b"mathsurround"];
         IFDIM = 99 => [b"ifdim"] conditional;
         MATH_CODE = 126 => [b"mathcode"] assignment;
         DEL_CODE = 127 => [b"delcode"] assignment;
@@ -496,6 +496,8 @@ pub(crate) struct Parameter {
     pub delimiter: ArenaRange,
     pub failure_start: usize,
 }
+pub(crate) const OUTPUT_ROUTINE: usize = 258;
+
 pub(crate) const NO_PACKET: u32 = u32::MAX;
 pub(crate) const PACKET_ARITIES: usize = Arity::Nine as usize + 1;
 pub(crate) struct Packet {

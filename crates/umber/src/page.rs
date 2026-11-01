@@ -259,6 +259,13 @@ impl Engine<'_> {
         cost == AWFUL || pi <= -10000
     }
     fn fire_up(&mut self, candidate: NodeId) -> Result<()> {
+        if self.document.token_registers[OUTPUT_ROUTINE]
+            .owner
+            .as_ref()
+            .is_some_and(|v| v.tokens.len != 0)
+        {
+            return Err(Error::Unsupported);
+        }
         let s = self.document.page.state;
         let penalty = match self.document.nodes.kind_mut(s.best_break) {
             Kind::Penalty(pi) => {

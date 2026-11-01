@@ -322,6 +322,8 @@ mod paragraph_oracle_tests;
 mod paragraph_tests;
 
 #[cfg(test)]
+mod output_state_tests;
+#[cfg(test)]
 mod page_tests;
 
 #[cfg(test)]

@@ -344,7 +344,6 @@ fn unsupported_page_features_and_infinite_shrink_fail_explicitly() {
     for source in [
         br"\insert0{}\end".as_slice(),
         br"\mark{}\end",
-        br"\output{}\end",
         br"\catcode36=3$x$\end",
         br"\vsize=100pt\hrule width1pt\vskip0pt minus1fil\par\end",
     ] {
