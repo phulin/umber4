@@ -3,6 +3,7 @@ use crate::{
     font_test_data::basic,
     nodes::{BoxData, Kind, List},
     numeric::Scaled,
+    packing::PackSpec,
     scalars::{PageParam, Target},
 };
 fn engine(source: &[u8]) -> Engine<'_> {
@@ -302,7 +303,9 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
         .unwrap();
     let mut list = List::default();
     e.document.nodes.append(&mut list, rule);
-    let good = e.vpackage(list, Scaled(10), Scaled(0)).unwrap();
+    let good = e
+        .vpackage(list, PackSpec::To(Scaled(10)), Scaled(0))
+        .unwrap();
     e.publish_page(good, 0).unwrap();
     assert_eq!(
         e.outcome()
@@ -364,7 +367,9 @@ fn vpackage_limits_final_depth_without_clipping_contents() {
         })
         .unwrap();
     e.document.nodes.append(&mut list, rule);
-    let boxed = e.vpackage(list, Scaled(20), Scaled(2)).unwrap();
+    let boxed = e
+        .vpackage(list, PackSpec::To(Scaled(20)), Scaled(2))
+        .unwrap();
     let Kind::Box(b) = &e.document.nodes.get(boxed.id()).kind else {
         unreachable!()
     };

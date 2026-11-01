@@ -39,6 +39,7 @@ paragraph parameters, pooled shape roots, and reusable search storage,
 `line_break.rs` traverses legal breaks and passes, `line_search.rs` implements
 active/delta/passive search, `line_construct.rs` transfers selected ranges into
 lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glue;
+`packing_tests.rs` checks packing specifications against fixed geometry and native boxes;
 `page.rs` owns incremental page state and default output, `vertical.rs` executes
 vertical contributions and page quantities, `page_output.rs` lowers owned nodes
 with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/

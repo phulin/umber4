@@ -5,6 +5,7 @@ use crate::{
     nodes::{BoxData, GlueKind, Kind, List, NodeId},
     numeric::{Glue, GlueOrder, Scaled, badness},
     output::Pages,
+    packing::PackSpec,
     scalars::{PageParam, Target},
     token::*,
 };
@@ -282,7 +283,7 @@ impl Engine<'_> {
             self.document.text.vertical = rest;
         }
         let list = std::mem::take(&mut self.document.page.current);
-        let page = self.vpackage(list, Scaled(s.best_size), Scaled(s.max_depth))?;
+        let page = self.vpackage(list, PackSpec::To(Scaled(s.best_size)), Scaled(s.max_depth))?;
         // Start-new-page resets caches/depth, but raw previous totals are retained.
         let state = &mut self.document.page.state;
         state.started = false;

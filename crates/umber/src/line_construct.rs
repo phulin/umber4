@@ -2,6 +2,7 @@
 use crate::{
     Engine, Result,
     nodes::{GlueKind, Kind, List, NodeId},
+    packing::PackSpec,
     paragraph::{Parameters, Scratch},
     scalars::ParagraphParam as P,
 };
@@ -101,7 +102,7 @@ impl Engine<'_> {
                 contents
             };
             let shape = parameters.line(line_number);
-            let b = self.hpack(contents, shape.width)?;
+            let b = self.hpack(contents, PackSpec::To(shape.width))?;
             self.document.nodes.box_mut(b.id()).shift = shape.indent;
             self.append_to_vlist(b)?;
             if line_number + 1 != best_line {

@@ -32,9 +32,23 @@ paragraph completion and is absent from checkpoints. Paragraph shapes use the
 established typed COW tables with pooled pages and directories, retained by
 document/save/checkpoint roots. Finished lines remain in the versioned node store with their vertical-list owner.
 
-Horizontal packing uses TeX's integer dimensions and badness and an IEEE binary64
-glue ratio, matching the native Web2C oracle. Normal shrink is capped at one;
-infinite glue orders and signed components retain their upstream behavior.
+Horizontal and vertical packing accept `PackSpec::Natural`, `To(dimension)`, or
+`Spread(amount)`. Natural packing uses the measured list size; `To` fixes the
+box width or height; `Spread` adds its signed amount to the measured size.
+Paragraph lines and selected pages explicitly use `To` with their saved goals.
+The existing measurement traversal determines the target without an additional
+list pass or retained measurement state.
+
+Horizontal packing measures width, height, and depth. Vertical packing measures
+height excluding its final depth and the maximum of zero and each child width
+plus its horizontal shift. A final depth above the supplied maximum is moved into
+the natural height before resolving `Natural` or `Spread`; the resulting depth remains capped for
+all specifications. Empty lists begin with zero dimensions; vertical depth
+limiting still applies. Dimension arithmetic and glue excess preserve TeX's
+operation order. Packing uses an IEEE binary64 glue ratio, matching the native Web2C oracle.
+Normal shrink is capped at one; infinite glue orders and signed components retain
+their upstream behavior. These rules follow `hpack` and `vpackage` in the
+[TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 Native comparisons inspect node dimensions and displayed glue settings; the
 page adapter additionally checks cumulative absolute output placements. Diagnostic text, overfull
 rules,
@@ -66,6 +80,16 @@ library search path when needed, as for the font adapter:
 
 ```bash
 cargo test --lib upstream_paragraph_lines_and_glue -- --ignored
+```
+
+A separate packing adapter compares 29 font-free natural, exact, and spread
+boxes with native INITEX geometry and displayed glue settings. These include
+empty lists, signed dimensions and glue, infinite orders, overfull shrink,
+shifted child boxes, and final-depth limits. It needs only `UMBER_PDFTEX` and its
+library search path:
+
+```bash
+cargo test --lib upstream_natural_exact_and_spread_box_geometry -- --ignored
 ```
 
 No timing measurement is part of this validation. Page integration consumes

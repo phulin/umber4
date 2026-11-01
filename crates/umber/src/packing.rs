@@ -6,6 +6,29 @@ use crate::{
     numeric::{GlueOrder, Scaled},
 };
 
+#[derive(Clone, Copy, Debug)]
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "Natural and spread packing currently have no production callers."
+    )
+)]
+pub(crate) enum PackSpec {
+    Natural,
+    To(Scaled),
+    Spread(Scaled),
+}
+impl PackSpec {
+    fn target(self, natural: i32) -> Scaled {
+        match self {
+            Self::Natural => Scaled(natural),
+            Self::To(target) => target,
+            Self::Spread(amount) => Scaled(natural.wrapping_add(amount.0)),
+        }
+    }
+}
+
 pub(crate) fn glue_setting(
     excess: i32,
     stretch: [i32; 4],
@@ -47,7 +70,7 @@ pub(crate) fn glue_setting(
     setting
 }
 impl Engine<'_> {
-    pub(crate) fn hpack(&mut self, list: List, width: Scaled) -> Result<DetachedNode> {
+    pub(crate) fn hpack(&mut self, list: List, spec: PackSpec) -> Result<DetachedNode> {
         let mut natural = 0i32;
         let mut height = 0;
         let mut depth = 0;
@@ -96,6 +119,7 @@ impl Engine<'_> {
             }
             p = n.next;
         }
+        let width = spec.target(natural);
         let glue_set = glue_setting(
             width.0.wrapping_sub(natural),
             stretch,
@@ -114,7 +138,7 @@ impl Engine<'_> {
     pub(crate) fn vpackage(
         &mut self,
         list: List,
-        height: Scaled,
+        spec: PackSpec,
         max_depth: Scaled,
     ) -> Result<DetachedNode> {
         let (mut natural, mut depth, mut width) = (0i32, 0i32, 0i32);
@@ -158,6 +182,7 @@ impl Engine<'_> {
             natural = natural.wrapping_add(depth).wrapping_sub(max_depth.0);
             depth = max_depth.0;
         }
+        let height = spec.target(natural);
         let glue_set = glue_setting(
             height.0.wrapping_sub(natural),
             stretch,
@@ -224,3 +249,7 @@ impl Engine<'_> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+#[path = "packing_tests.rs"]
+mod tests;
