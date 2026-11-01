@@ -31,7 +31,8 @@ applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
 `nodes.rs` owns versioned chunked node storage and consuming list/node transfers;
 `node_boxes.rs` owns its dense reusable COW box payload slots,
-with branch/reclamation tests in `nodes_tests.rs`; page construction uses
+with branch/reclamation tests in `nodes_tests.rs`; `node_copy.rs` owns iterative
+semantic list copies with ownership/failure tests in `node_copy_tests.rs`; page construction uses
 the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
 owns restorable loaded-font descriptors/parameters, font assignments, and scoped

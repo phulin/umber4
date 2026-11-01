@@ -77,8 +77,8 @@ Capacity failure releases any transferred children. Node, box, and
 ligature/discretionary payloads carry owned non-`Copy` child lists; only the
 private COW copier duplicates them into another version. Raw node IDs are
 internal references, never independent owners. Copying a root for a checkpoint
-is distinct from copying a mutable TeX list. Future semantic list-copy commands
-must allocate fresh nodes, while immutable font metrics can remain shared.
+is distinct from copying a mutable TeX list. Semantic list copying allocates
+fresh nodes and box payload slots, while immutable font metrics remain shared.
 
 Box headers live in a dense reusable `Table` with 64-entry COW pages inside the
 node store. A box node owns an opaque non-`Copy`, non-`Clone` slot handle; only
@@ -102,6 +102,35 @@ recursion and allocations per node. Scratch must be empty on return and is not
 checkpoint state. Chunk references retain their backing independently of engine
 lifetime. All roots containing IDs must be captured with the matching node-store
 version. A node ID from an abandoned branch cannot be used with another version.
+
+`NodeStore::copy_list` accepts a source-head reference in its matching store
+version and returns an independently owned `List`. Null copies to an empty list.
+Every sibling and owned box, ligature-component, and discretionary pre/post list
+is copied; discretionary replacement nodes remain part of the sibling chain.
+All scalar payload fields, including dimensions, shifts, glue settings, subtype
+and boundary flags, are preserved without repacking. Semantic copying never
+uses `List::snapshot` or duplicates an owning box-slot handle. The order follows
+TeX's `copy_node_list`: allocate the parent, copy its children (pre before post),
+then continue to its next sibling.
+
+Copying uses a caller-retained `CopyScratch` vector of ownership frames and the
+existing iterative release scratch. Like `ReleaseScratch`, the vector retains
+its capacity between operations; a separate one-buffer metadata pool would add
+an owner without improving this lifetime. The work stack handles arbitrary valid
+node nesting without Rust recursion or a separate nesting limit. It is empty on
+both success and failure and is absent from checkpoints.
+
+Each frame owns a partial destination list. New parents initially own empty
+child lists and enter that destination before child copying begins. Completing
+a child frame transfers its list once into the new parent; remaining frame
+outputs form disjoint owned trees. Capacity failure releases all of those trees
+through ordinary node release, leaving the source and retained versions intact.
+Allocator backing, free-slot metadata, and scratch capacity may grow during a
+failed copy. The existing node-address capacity and system allocation behavior
+apply; copying adds no smaller limit or pre-count pass. Source scalar fields and
+reference IDs are read before allocation, so no node or payload reference spans
+mutable allocation or COW. These transfers follow `copy_node_list` in the
+[TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 
 The initial node kinds cover characters, ligatures and their boundary flags,
 explicit/TFM kerns, glue, penalties, rules, horizontal/vertical boxes, and

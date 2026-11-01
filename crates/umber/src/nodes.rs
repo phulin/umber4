@@ -9,6 +9,9 @@ use std::{cell::RefCell, rc::Rc};
 
 #[path = "node_boxes.rs"]
 mod box_slots;
+#[path = "node_copy.rs"]
+mod copying;
+pub(crate) use copying::CopyScratch;
 
 const CELLS: usize = 256;
 const CACHED: usize = 16;
@@ -328,6 +331,16 @@ pub(crate) struct ReleaseScratch {
     pending: Vec<NodeId>,
 }
 impl NodeStore {
+    #[cfg_attr(
+        not(test),
+        expect(
+            dead_code,
+            reason = "Semantic node copying currently has no frontend callers."
+        )
+    )]
+    pub fn copy_list(&mut self, source: NodeId, scratch: &mut CopyScratch) -> Result<List> {
+        copying::copy_list(self, source, scratch, (u32::MAX as usize) / CELLS)
+    }
     fn page(&self, index: usize) -> &Rc<Chunk> {
         self.pages[index]
             .as_ref()
