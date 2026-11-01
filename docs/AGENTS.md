@@ -30,8 +30,9 @@ Keep implementation histories, before/after reports, and validation logs out of
   horizontal list construction before paragraph breaking.
 - `paragraphs.md` contracts executable nonhyphenating TeX paragraph breaking and
   packing, and develops future hyphenation and pdfTeX spacing extensions.
-- `math-alignments.md` develops math atoms/conversion, display math, alignment
-  templates, entry measurement, and result-list transfers.
+- `math-alignments.md` contracts executable math-code initialization and develops
+  math atoms/conversion, display math, alignment templates, entry measurement, and
+  result-list transfers.
 - `pages.md` contracts executable vertical contributions, page breaks, detached
   publication and retained unfinished pages, and develops insertions, marks,
   and output routines.

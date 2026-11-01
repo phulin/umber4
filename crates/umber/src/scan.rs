@@ -114,7 +114,7 @@ impl Engine<'_> {
                 .map_or(0, |s| s.len() as i32)),
             cmd::FONT_DIMEN | cmd::FONT_METRIC => Ok(self.font_dimension(read)?.0),
             cmd::FONT_INT | cmd::SPACE_FACTOR => self.font_integer(read),
-            cmd::CHAR_GIVEN => Ok(read.meaning.value),
+            cmd::CHAR_GIVEN | cmd::MATH_GIVEN => Ok(read.meaning.value),
             cmd::NUMEXPR => self.scan_expression(),
             cmd::DIMEN | cmd::DIMEN_REF | cmd::DIMEN_PARAM => {
                 let target = self.dimen_target(read)?;
@@ -134,6 +134,8 @@ impl Engine<'_> {
     pub(crate) fn scalar_target(&mut self, read: Read) -> Result<Target> {
         Ok(match read.meaning.command {
             cmd::SF_CODE => Target::sfcode(self.scan_index()?),
+            cmd::MATH_CODE => Target::mathcode(self.scan_index()?),
+            cmd::DEL_CODE => Target::delcode(self.scan_index()?),
             cmd::COUNT => Target::count(self.scan_index()?),
             cmd::COUNT_REF => Target::count(read.meaning.value as usize),
             cmd::CATCODE => Target::catcode(self.scan_index()?),

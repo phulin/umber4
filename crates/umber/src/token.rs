@@ -223,6 +223,10 @@ pub(crate) mod cmd {
         LAST_ITEM = 121 => [b"lastpenalty", b"lastkern", b"lastskip"];
         UNSUPPORTED_LAYOUT = 122 => [b"insert", b"mark", b"marks", b"output", b"shipout", b"hbox", b"vbox", b"vsplit", b"leaders", b"mathsurround"];
         IFDIM = 99 => [b"ifdim"] conditional;
+        MATH_CODE = 126 => [b"mathcode"] assignment;
+        DEL_CODE = 127 => [b"delcode"] assignment;
+        MATH_CHAR_DEF = 128 => [b"mathchardef"] assignment;
+        MATH_GIVEN = 129 => [];
     }
 }
 

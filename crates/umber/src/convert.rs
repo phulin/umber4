@@ -192,13 +192,25 @@ impl Engine<'_> {
         if meaning.command == cmd::UNDEFINED {
             return self.emit_text(b"undefined", emit);
         }
-        if meaning.command == cmd::CHAR_GIVEN {
-            self.escaped_text(b"char\"", emit)?;
-            let value = meaning.value as u8;
-            if value >= 16 {
-                emit(self, b"0123456789ABCDEF"[(value >> 4) as usize])?;
+        if matches!(meaning.command, cmd::CHAR_GIVEN | cmd::MATH_GIVEN) {
+            self.escaped_text(
+                if meaning.command == cmd::MATH_GIVEN {
+                    b"mathchar\""
+                } else {
+                    b"char\""
+                },
+                emit,
+            )?;
+            let value = meaning.value as u16;
+            let mut leading = true;
+            for shift in [12, 8, 4, 0] {
+                let digit = (value >> shift) & 15;
+                if digit != 0 || shift == 0 || !leading {
+                    emit(self, b"0123456789ABCDEF"[digit as usize])?;
+                    leading = false;
+                }
             }
-            return emit(self, b"0123456789ABCDEF"[(value & 15) as usize]);
+            return Ok(());
         }
         if matches!(
             meaning.command,

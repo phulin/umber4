@@ -5,6 +5,37 @@ paragraphs. Their semantic groups remain explicit TeX state, while conversion,
 packing, and scanning use ordinary Rust calls. They share the node stores and
 packing primitives in [storage.md](storage.md) and [paragraphs.md](paragraphs.md).
 
+## Executable math-code state
+
+The interpreter supports `\mathcode`, `\delcode`, and `\mathchardef` as
+initialization state independently of math construction. Character-code indices
+are 0 through 255. Math codes are 0 through 32768, including the math-active
+value `"8000`. Delimiter codes accept any negative integer supplied by the
+integer scanner and nonnegative values through `"FFFFFF`.
+
+INITEX math codes equal the character byte, except that digits add `"7000` and
+ASCII letters add `"7100`. Delimiter codes start at -1, except that `.` starts
+at zero. Both tables use the existing scalar slots and assignment save levels;
+local/global assignments, `\globaldefs`, and checkpoints follow the same rules
+as the other character-code tables. Checkpoints copy their fixed scalar array;
+no additional snapshot root is needed. Reads return integers through `\the`,
+`\number`, and internal integer operands.
+
+`\mathchardef` creates a distinct math-character meaning with a value from 0
+through 32767. Its target becomes `\relax` before the optional equals sign and
+value are scanned, so scanning failure leaves that temporary meaning in place.
+Aliases, `\ifx`, numeric reads, and hexadecimal `\meaning` output preserve the
+math-character meaning independently of ordinary `\chardef` characters.
+Out-of-range assignments return `Number` instead of upstream's interactive
+recovery; a failed character-code assignment preserves its preceding value.
+
+Math-mode entry, math-character execution, family selectors, and math list
+construction remain unsupported. Executing a math-character meaning returns
+`Unsupported` without creating a text glyph. The construction and conversion
+sections below remain proposals. The compatibility reference is TeX's
+`def_code`, `shorthand_def`, and `scan_something_internal` in the
+[TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+
 ## 1. Math construction
 
 Math execution builds a list of TeX atoms, commonly called noads, directly in

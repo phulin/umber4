@@ -7,7 +7,9 @@ const PARAM_BASE: usize = ENDLINE + 1;
 const PARAMS: usize = cmd::names(cmd::INTEGER_PARAM).len();
 const CASE_BASE: usize = PARAM_BASE + PARAMS;
 const SF_BASE: usize = CASE_BASE + 2 * 256;
-const SLOTS: usize = SF_BASE + 256;
+const MATH_BASE: usize = SF_BASE + 256;
+const DEL_BASE: usize = MATH_BASE + 256;
+const SLOTS: usize = DEL_BASE + 256;
 use std::ops::{Index, IndexMut};
 
 // Scalar values have the same representation and group-save lifetime. A target
@@ -27,6 +29,12 @@ impl Target {
     }
     pub fn sfcode(index: usize) -> Self {
         Self((SF_BASE + index) as u16)
+    }
+    pub fn mathcode(index: usize) -> Self {
+        Self((MATH_BASE + index) as u16)
+    }
+    pub fn delcode(index: usize) -> Self {
+        Self((DEL_BASE + index) as u16)
     }
     pub fn count(index: usize) -> Self {
         Self(index as u16)
@@ -75,10 +83,18 @@ impl Default for Scalars {
         }
         state[Target::paragraph(ParagraphParam::Tolerance)].value = 10000;
         state[Target::paragraph(ParagraphParam::HangAfter)].value = 1;
-        state.0[SF_BASE..].fill(Integer {
+        state.0[SF_BASE..MATH_BASE].fill(Integer {
             value: 1000,
             level: 0,
         });
+        for byte in 0..=255 {
+            state[Target::mathcode(byte)].value = byte as i32;
+            state[Target::delcode(byte)].value = -1;
+        }
+        state[Target::delcode(b'.' as usize)].value = 0;
+        for byte in b'0'..=b'9' {
+            state[Target::mathcode(byte as usize)].value += 0x7000;
+        }
         for byte in b'A'..=b'Z' {
             state[Target::sfcode(byte as usize)].value = 999;
         }
@@ -87,6 +103,7 @@ impl Default for Scalars {
                 state[Target::catcode(c as usize)].value = 11;
                 state[Target::casecode(0, c as usize)].value = i32::from(byte);
                 state[Target::casecode(1, c as usize)].value = i32::from(byte.to_ascii_uppercase());
+                state[Target::mathcode(c as usize)].value += 0x7100;
             }
         }
         for (byte, cat) in [

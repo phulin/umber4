@@ -83,16 +83,30 @@ impl Engine<'_> {
                 self.back(first.token);
                 Ok(())
             }
-            cmd::COUNT_DEF | cmd::CHAR_DEF | cmd::TOKS_DEF | cmd::DIMEN_DEF | cmd::SKIP_DEF => {
+            cmd::COUNT_DEF
+            | cmd::CHAR_DEF
+            | cmd::MATH_CHAR_DEF
+            | cmd::TOKS_DEF
+            | cmd::DIMEN_DEF
+            | cmd::SKIP_DEF => {
                 let id = self.scan_cs()?;
                 self.assign_meaning(id, Meaning::RELAX, assignment_global);
                 self.scan_equals()?;
-                let value = self.scan_index()? as i32;
+                let value = if read.meaning.command == cmd::MATH_CHAR_DEF {
+                    let value = self.scan_int()?;
+                    if !(0..=32767).contains(&value) {
+                        return Err(Error::Number);
+                    }
+                    value
+                } else {
+                    self.scan_index()? as i32
+                };
                 let command = match read.meaning.command {
                     cmd::COUNT_DEF => cmd::COUNT_REF,
                     cmd::TOKS_DEF => cmd::TOKS_REF,
                     cmd::DIMEN_DEF => cmd::DIMEN_REF,
                     cmd::SKIP_DEF => cmd::SKIP_REF,
+                    cmd::MATH_CHAR_DEF => cmd::MATH_GIVEN,
                     _ => cmd::CHAR_GIVEN,
                 };
                 self.assign_meaning(id, Meaning { command, value }, assignment_global);
@@ -131,6 +145,8 @@ impl Engine<'_> {
                 self.font_assignment(read, assignment_global)
             }
             cmd::SF_CODE
+            | cmd::MATH_CODE
+            | cmd::DEL_CODE
             | cmd::COUNT
             | cmd::COUNT_REF
             | cmd::CATCODE
@@ -147,6 +163,12 @@ impl Engine<'_> {
                     return Err(Error::Number);
                 }
                 if read.meaning.command == cmd::CASE_CODE && !(0..=255).contains(&value) {
+                    return Err(Error::Number);
+                }
+                if read.meaning.command == cmd::MATH_CODE && !(0..=32768).contains(&value) {
+                    return Err(Error::Number);
+                }
+                if read.meaning.command == cmd::DEL_CODE && value > 0xFF_FFFF {
                     return Err(Error::Number);
                 }
                 self.update_integer(target, assignment_global, |_| Ok(value))

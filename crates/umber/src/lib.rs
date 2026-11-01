@@ -261,6 +261,8 @@ mod memory_tests;
 
 #[cfg(test)]
 mod dimension_tests;
+#[cfg(test)]
+mod math_code_tests;
 
 #[cfg(test)]
 mod font_test_data;

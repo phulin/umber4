@@ -56,6 +56,8 @@ impl Engine<'_> {
                 | cmd::PAR_SHAPE
                 | cmd::SPACE_FACTOR
                 | cmd::SF_CODE
+                | cmd::MATH_CODE
+                | cmd::DEL_CODE
                 | cmd::COUNT
                 | cmd::COUNT_REF
                 | cmd::CATCODE
@@ -63,6 +65,7 @@ impl Engine<'_> {
                 | cmd::INTEGER_PARAM
                 | cmd::CASE_CODE
                 | cmd::CHAR_GIVEN
+                | cmd::MATH_GIVEN
                 | cmd::NUMEXPR
         ) {
             Ok(Some(Quantity::Integer(self.internal_int(read)?)))
