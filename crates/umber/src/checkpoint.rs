@@ -110,7 +110,13 @@ impl<'a> Engine<'a> {
         let mut commands = 0usize;
         while commands < command_budget || !self.can_checkpoint() {
             self.quiescent = false;
-            let read = self.next_expanded()?;
+            let mut read = self.next_expanded()?;
+            while read.meaning.command == cmd::IGNORE_SPACES {
+                // TeX reswitches the already expanded first nonspace command.
+                // Keep its effective meaning, including noexpand suppression,
+                // and let END and all mode/group transitions use this dispatch.
+                read = self.nonspace(true)?;
+            }
             if read.meaning.command == cmd::END {
                 if self.document.text.mode == crate::text::Mode::Horizontal {
                     self.head_for_vertical(read);

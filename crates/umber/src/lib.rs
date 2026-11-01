@@ -353,6 +353,8 @@ mod font_text_tests;
 mod font_oracle_tests;
 
 #[cfg(test)]
+mod ignorespaces_tests;
+#[cfg(test)]
 mod paragraph_oracle_tests;
 #[cfg(test)]
 mod paragraph_tests;

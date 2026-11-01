@@ -140,6 +140,13 @@ group closes, as described below. In horizontal mode, character commands use the
 text character path; in math mode they build math atoms. Finishing an unrestricted
 paragraph returns to its enclosing vertical mode.
 
+Executed `\ignorespaces` expands and skips spacer commands, then redispatches the
+already resolved first nonspace command. Consecutive `\ignorespaces` commands use
+the same loop. The first command retains `\noexpand` suppression and reaches the
+ordinary document-end, mode-transition, or group-closing path without an extra
+expansion. This primitive remains unexpandable in stored expanded lists;
+exhausted input and expansion errors propagate through the ordinary reader.
+
 Use a direct command dispatch with a few specialized inner loops where they help:
 character runs, consecutive assignments with prefixes reset for each command,
 and list traversal during packing. A local already-read token can pass to the

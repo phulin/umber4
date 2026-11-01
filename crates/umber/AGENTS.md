@@ -48,6 +48,8 @@ and deep traversal; `math_oracle_tests.rs`, `math_real_oracle_tests.rs`, and
 formatting, scoped bindings, and checkpoint replay;
 `parameter_tests.rs` covers initialization parameters and newline rendering across
 messages, writes, groups, snapshots, and native comparisons;
+`ignorespaces_tests.rs` checks expanded nonspace redispatch, noexpand, mode/group
+boundaries, and native diagnostics and layout;
 `numeric.rs` supplies scaled arithmetic/glue and `numeric_tests.rs` checks it;
 `dimension_scan.rs` scans dimensions/glue, `quantities.rs` shares internal-value
 formatting, `layout_values.rs` owns typed COW bindings, and `layout_assign.rs`
