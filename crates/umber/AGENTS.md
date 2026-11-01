@@ -63,7 +63,8 @@ with reusable traversal scratch, and `output.rs` retains detached page/box/glyph
 rule records in immutable prefixes; `output_tests.rs` checks positioned run
 iteration, aggregate capacity, and nested movement boundaries. `page_tests.rs` covers page/replay/resource
 ownership; `page_oracle_tests.rs` compares native boxes and placements with the
-small test-only DVI reader in `page_dvi_tests.rs`. Scaled font headers use safe
+small test-only DVI reader in `page_dvi_tests.rs`; `page_offset_tests.rs` checks
+signed offsets, scoped replay, and huge-page rejection. Scaled font headers use safe
 once-initialized chunk handles in `tfm.rs`, retaining the sealed resource set;
 `paragraph_tests.rs` covers ownership/replay and `paragraph_oracle_tests.rs`
 compares packed structures with native INITEX. `font_state_tests.rs` covers frozen

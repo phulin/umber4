@@ -170,6 +170,8 @@ fn upstream_page_breaks_boxes_glue_and_absolute_placements() {
         r"\hsize=55.123pt\spaceskip=3pt plus7pt minus1pt\parfillskip=0pt ",
         r"\leftskip=3pt plus1fil\rightskip=0pt plus2fil ",
         r"\hangindent=3pt\hangafter=1 ",
+        r"\hoffset=7pt\voffset=-3pt ",
+        r"\hoffset=-9pt\voffset=5pt ",
     ] {
         oracle.compare(&tfm, settings, body);
     }

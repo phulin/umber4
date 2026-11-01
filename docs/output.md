@@ -25,7 +25,9 @@ that need an owned position array can collect the iterator explicitly. Repeated
 scans repeat the font-width reads and coordinate additions; no scan cache is
 retained.
 
-All coordinates/dimensions use scaled points from the upper-left content origin;
+Coordinates and dimensions use scaled points. Coordinates include the restored
+horizontal and vertical page offsets before any backend's implicit one-inch
+origin; dimensions remain intrinsic to each box or rule.
 glyph and box y coordinates denote baselines, while rules use top-left corners.
 Font indices are page-local. `FontResource` exposes source name, exact retained TFM
 bytes, design/scaled size, and immutable glyph metrics, independent of the engine.

@@ -1,6 +1,7 @@
 //! Synchronous lowering over live lists; all retained output is detached.
 use crate::{
     Engine, Error, Result,
+    layout_values::DimenParam,
     nodes::{BoxData, DetachedNode, GlueSet, GlueSign, Kind, NodeId},
     numeric::Glue,
     output::{GlueSetting, PackedBox, Page, Runs},
@@ -95,9 +96,21 @@ impl Engine<'_> {
         let b = self.document.nodes.box_data(b);
         if b.height.0 > crate::numeric::Scaled::MAX.0
             || b.depth.0 > crate::numeric::Scaled::MAX.0
-            || i64::from(b.height.0) + i64::from(b.depth.0)
+            || i64::from(b.height.0)
+                + i64::from(b.depth.0)
+                + i64::from(
+                    self.document.layout_values.dimens[DimenParam::VOffset.index()]
+                        .value
+                        .0,
+                )
                 > i64::from(crate::numeric::Scaled::MAX.0)
-            || b.width.0 > crate::numeric::Scaled::MAX.0
+            || i64::from(b.width.0)
+                + i64::from(
+                    self.document.layout_values.dimens[DimenParam::HOffset.index()]
+                        .value
+                        .0,
+                )
+                > i64::from(crate::numeric::Scaled::MAX.0)
         {
             self.document
                 .nodes
@@ -136,9 +149,17 @@ impl Engine<'_> {
             return Err(Error::Unsupported);
         };
         let b = self.document.nodes.box_data(b);
-        // Geometry precedes any backend-specific origin offset.
-        let index = page.box_record(record(b, None, 0, b.height.0));
-        scratch.frames.push(Frame::new(b, index, 0, b.height.0));
+        // These TeX offsets precede the backend's implicit one-inch origin.
+        let x = self.document.layout_values.dimens[DimenParam::HOffset.index()]
+            .value
+            .0;
+        let y = b.height.0.wrapping_add(
+            self.document.layout_values.dimens[DimenParam::VOffset.index()]
+                .value
+                .0,
+        );
+        let index = page.box_record(record(b, None, x, y));
+        scratch.frames.push(Frame::new(b, index, x, y));
         let mut runs = Runs::default();
         let mut font_binding: Option<(u32, &crate::tfm::ScaledFont, u32)> = None;
         while let Some(frame) = scratch.frames.last_mut() {
@@ -262,3 +283,7 @@ impl Engine<'_> {
     }
 }
 pub(crate) const RUNNING: i32 = -1_073_741_824;
+
+#[cfg(test)]
+#[path = "page_offset_tests.rs"]
+mod offset_tests;

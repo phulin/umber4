@@ -67,6 +67,8 @@ pub(crate) enum DimenParam {
     DelimiterShortfall,
     NullDelimiterSpace,
     ScriptSpace,
+    HOffset,
+    VOffset,
 }
 #[allow(dead_code)]
 impl DimenParam {

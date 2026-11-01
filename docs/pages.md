@@ -52,8 +52,14 @@ or retaining an unfinished page does not invoke it.
 
 Detached results expose an immutable page prefix, packed box records, absolute
 glyph/rule placements in scaled points, count registers, and output penalties.
-Coordinates use the page's upper-left content origin, before any backend's
-one-inch offset; positive y points down. Page records retain no live node IDs or
+Coordinates include the current signed `\hoffset` and `\voffset`, before any
+backend's implicit one-inch origin; positive y points down. The root box baseline
+is `(hoffset, height + voffset)`, and lowering translates all descendants and
+placements from that point. These typed dimension parameters start at zero and
+follow ordinary scoped assignments and checkpoints. Huge-page rejection checks
+width plus horizontal offset and height plus depth plus vertical offset, while
+still checking height and depth individually. Negative offsets are valid.
+Page records retain no live node IDs or
 document font IDs. Cumulative glue rounding follows `hlist_out` and `vlist_out`.
 Typed ordered run/rule and glyph-byte buffers are built in destination storage.
 The forward placement iterator yields owned absolute glyph/rule values and reads
