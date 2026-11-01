@@ -36,6 +36,9 @@ data once per run while keeping mutable font parameters in document state.
 The [TFM program-entry comparison](results/layout-tfm-program-entry.json) records
 paired release samples and instruction counts for preparing immutable character
 program starts once per registered resource, including its metadata/load cost.
+The [TFM character-metadata comparison](results/tfm-character-metadata.json)
+records byte-sized field domains, logical and pooled metadata savings, registration
+and scaling costs, and bounded ordinary-path nonregression checks.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

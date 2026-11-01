@@ -11,12 +11,12 @@ use std::{
 
 #[derive(Clone, Copy, Default, Debug)]
 pub(crate) struct CharInfo {
-    pub width: usize,
-    pub height: usize,
-    pub depth: usize,
-    pub italic: usize,
+    pub width: u8,
+    pub height: u8,
+    pub depth: u8,
+    pub italic: u8,
     pub tag: u8,
-    pub remainder: usize,
+    pub remainder: u8,
 }
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq)]
 pub(crate) struct Metrics {
@@ -195,20 +195,20 @@ impl Catalog {
         let mut chars = Buffer::new(&self.chars);
         for c in bytes[(6 + lh) * 4..(6 + lh + count) * 4].as_chunks::<4>().0 {
             let info = CharInfo {
-                width: c[0] as usize,
-                height: (c[1] >> 4) as usize,
-                depth: (c[1] & 15) as usize,
-                italic: (c[2] >> 2) as usize,
+                width: c[0],
+                height: c[1] >> 4,
+                depth: c[1] & 15,
+                italic: c[2] >> 2,
                 tag: c[2] & 3,
-                remainder: c[3] as usize,
+                remainder: c[3],
             };
-            if info.width >= nw
-                || info.height >= nh
-                || info.depth >= nd
-                || info.italic >= ni
-                || (info.tag == 1 && info.remainder >= nl)
-                || (info.tag == 3 && info.remainder >= ne)
-                || (info.tag == 2 && !(bc..=ec).contains(&info.remainder))
+            if info.width as usize >= nw
+                || info.height as usize >= nh
+                || info.depth as usize >= nd
+                || info.italic as usize >= ni
+                || (info.tag == 1 && info.remainder as usize >= nl)
+                || (info.tag == 3 && info.remainder as usize >= ne)
+                || (info.tag == 2 && !(bc..=ec).contains(&(info.remainder as usize)))
             {
                 return Err(bad);
             }
@@ -218,13 +218,13 @@ impl Catalog {
             if info.tag != 2 {
                 continue;
             }
-            let mut next = info.remainder;
+            let mut next = info.remainder as usize;
             while next < i + bc {
                 let q = chars[next - bc];
                 if q.tag != 2 {
                     break;
                 }
-                next = q.remainder;
+                next = q.remainder as usize;
             }
             if next == i + bc {
                 return Err(bad);
@@ -298,7 +298,7 @@ impl Catalog {
         let mut entries = [u16::MAX; 256];
         for (offset, info) in chars.iter().enumerate() {
             if info.tag == 1 {
-                let mut i = info.remainder;
+                let mut i = info.remainder as usize;
                 let [skip, _, op, rem] = program[i];
                 if skip > 128 {
                     i = 256 * op as usize + rem as usize;
@@ -361,10 +361,10 @@ impl Catalog {
                 present[character / 64] |= 1u64 << (character % 64);
             }
             metrics.push(Metrics {
-                width: dimension(i.width)?,
-                height: dimension(r.nw + i.height)?,
-                depth: dimension(r.nw + r.nh + i.depth)?,
-                italic: dimension(r.nw + r.nh + r.nd + i.italic)?,
+                width: dimension(i.width as usize)?,
+                height: dimension(r.nw + i.height as usize)?,
+                depth: dimension(r.nw + r.nh + i.depth as usize)?,
+                italic: dimension(r.nw + r.nh + r.nd + i.italic as usize)?,
             });
         }
         let mut kerns = Buffer::new(&self.dimensions);

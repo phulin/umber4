@@ -1,0 +1,51 @@
+{
+  "date": "2026-11-01",
+  "baseline_commit": "de9112435808b7279d0798ce6421373af319be7e",
+  "change": "Retain six ordinary byte fields in immutable CharInfo; widen only for bounds checks and indexing. No layout attributes, new ownership, or runtime glyph decoding.",
+  "build": "Ordinary default-feature cargo build --release --bin umber; external allocation/output adapters linked to explicitly built release library.",
+  "char_info": {
+    "native_size_before_after": [48, 6],
+    "field_maxima": {"width": 255, "height": 15, "depth": 15, "italic": 63, "tag": 3, "remainder": 255},
+    "runtime_source_delta_lines": 0,
+    "runtime_source_delta_bytes": 62,
+    "logical_bytes_per_256_char_resource": [12288, 1536],
+    "logical_bytes_per_128_char_resource": [6144, 768],
+    "fonts_256_chars": ["aer10", "aeti10", "aett10"],
+    "fonts_128_chars": ["lcmss8", "icmtt8"]
+  },
+  "registration_three_ae_fonts": {
+    "logical_char_bytes_before_after": [36864, 4608],
+    "pooled_char_backing_bytes_before_after": [60864, 26496],
+    "pool_scope": "Computed from existing Store page geometry and Buffer growth 4..256, including retained intermediate size classes. Descriptor allocations excluded here and included in public-adapter totals below. Page capacity granularity means allocated savings differ from logical savings.",
+    "whole_adapter_allocations_before_after": [181, 180],
+    "whole_adapter_requested_bytes_before_after": [228248, 195144],
+    "whole_adapter_live_bytes_before_after": [227248, 194144],
+    "counter_scope": "System allocation counters active from Engine construction through registration; source and host TFM buffers excluded. Values include all engine stores and pool descriptors.",
+    "callgrind_total_instructions_before_after": [916504, 869736],
+    "callgrind_tfm_self_instructions_before_after": [213105, 191983],
+    "full_mixed_scaled_tfm_self_instructions_before_after": [140591, 140591]
+  },
+  "full_mixed_adapter": {
+    "allocations_before_after": [606, 605],
+    "requested_bytes_before_after": [6950728, 6917624],
+    "live_bytes_before_after": [6938344, 6905240],
+    "callgrind_total_instructions_before_after": [329734358, 329682176],
+    "scope": "External allocator adapter; diagnostic counters are absent from ordinary CLI timings."
+  },
+  "ordinary_cli": {
+    "cpu": 3,
+    "warmups": 1,
+    "measured_pairs": 5,
+    "order": "Bounded serial alternating pairs, one pass; same preserved fixed600-paragraph inputs and authentic Gentle mixed source.",
+    "binary_sha256": {"before": "eb8772ba120deba421cc5762e9eb5ba5cbc08fae43931b631fdbedc5b20dcded", "after": "3baca21e4b8bbc260c675e960367422f15dd864eb58c2663ccce8ad5bacbd494"},
+    "cases": [
+      {"case": "book", "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052", "cpu_ms": {"before": [50.859, 50.249, 49.568, 48.7, 49.251], "after": [48.508, 49.031, 49.035, 50.748, 49.525]}, "median_cpu_ms": {"before": 49.568, "after": 49.035}, "change_percent": -1.075},
+      {"case": "narrow", "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682", "cpu_ms": {"before": [51.234, 53.666, 62.436, 49.364, 49.66], "after": [48.742, 50.025, 50.262, 50.268, 48.204]}, "median_cpu_ms": {"before": 51.234, "after": 50.025}, "change_percent": -2.36},
+      {"case": "dense", "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5", "cpu_ms": {"before": [48.191, 45.612, 44.392, 46.119, 43.634], "after": [41.723, 42.652, 42.569, 43.744, 42.485]}, "median_cpu_ms": {"before": 45.612, "after": 42.569}, "change_percent": -6.671},
+      {"case": "mixed", "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d", "cpu_ms": {"before": [47.751, 48.607, 49.227, 48.38, 47.794], "after": [48.53, 47.756, 48.036, 49.329, 48.67]}, "median_cpu_ms": {"before": 48.38, "after": 48.53}, "change_percent": 0.31}
+    ],
+    "interpretation": "No meaningful ordinary-path regression observed; this short shared-host pass supports no CPU speedup claim. Shaping and scaled glyph storage are unchanged."
+  },
+  "validation": ["173 active library tests; maximum field values with table lengths above255, malformed fields, existing empty-range/presence/scaling coverage", "All three explicit native font/paragraph/page oracles", "All four complete output baseline comparisons and retained-root checkpoint replays; native placements including214800 mixed records", "rustfmt; warning-free all-target Clippy; wasm32-unknown-unknown library check"],
+  "limits": "Logical payload savings are42 bytes per character on64bit,87.5%; unchanged retained raw TFM bytes and prepared program entries. Pool backing follows retained size-class high-water demand; no guarantee of proportional whole-engine memory or runtime improvement."
+}

@@ -133,3 +133,69 @@ fn dense_metrics_preserve_presence_fields_and_character_ranges() {
         }
     }
 }
+
+#[test]
+fn byte_character_fields_with_wide_metric_and_program_tables() {
+    let [nw, nh, nd, ni, nl, ne] = [300, 257, 258, 260, 256, 256];
+    let lf = 6 + 2 + 256 + nw + nh + nd + ni + nl + 1 + ne;
+    let mut bytes = Vec::new();
+    for n in [lf, 2, 0, 255, nw, nh, nd, ni, nl, 1, ne, 0] {
+        bytes.extend_from_slice(&(n as u16).to_be_bytes());
+    }
+    bytes.extend_from_slice(&[0; 4]);
+    bytes.extend_from_slice(&(10i32 << 20).to_be_bytes());
+    for character in 0..256 {
+        let (tag, remainder) = match character {
+            2 => (1, 255),
+            3 => (2, 255),
+            4 => (3, 255),
+            _ => (0, 255),
+        };
+        bytes.extend_from_slice(&[u8::from(character != 0) * 255, 255, 252 | tag, remainder]);
+    }
+    for (count, index, value) in [
+        (nw, 255, 524288i32),
+        (nh, 15, 734003),
+        (nd, 15, 209715),
+        (ni, 63, 104858),
+    ] {
+        for i in 0..count {
+            bytes.extend_from_slice(&(if i == index { value } else { 0 }).to_be_bytes());
+        }
+    }
+    bytes.extend_from_slice(&[128, 1, 128, 0].repeat(nl));
+    bytes.extend_from_slice(&0i32.to_be_bytes());
+    bytes.extend_from_slice(&[0, 0, 0, 1].repeat(ne));
+    let mut catalog = Catalog::default();
+    catalog.register(b"wide", &bytes).unwrap();
+    assert_eq!(size_of::<CharInfo>(), 6);
+    assert_eq!(catalog.resources[0].entries[2], 255);
+    for size in [Scaled(655360), Scaled(13_107_201)] {
+        let scaled = catalog.scaled(0, size).unwrap();
+        let expected = Metrics {
+            width: scale(524288i32.to_be_bytes(), size).unwrap(),
+            height: scale(734003i32.to_be_bytes(), size).unwrap(),
+            depth: scale(209715i32.to_be_bytes(), size).unwrap(),
+            italic: scale(104858i32.to_be_bytes(), size).unwrap(),
+        };
+        assert_eq!(catalog.metrics(scaled, 255), Some(expected));
+        assert_eq!(catalog.metrics(scaled, 0), None);
+        assert_eq!(
+            catalog.metric_fields(scaled, 0),
+            Some(Metrics {
+                width: Scaled::ZERO,
+                ..expected
+            })
+        );
+    }
+    // Out-of-range fields remain errors before any indexed access. In
+    // particular tag/remainder values must not be confused with table lengths.
+    for (offset, value) in [(0, 255), (1, 0xf1), (1, 0x1f), (2, 252), (2, 3), (2, 2)] {
+        let mut bad = tfm(&[], &[]);
+        bad[32 + 4 + offset] = value;
+        if offset == 2 && value == 2 {
+            bad[32 + 4 + 3] = 128;
+        }
+        assert_eq!(Catalog::default().register(b"bad", &bad), Err(Error::Font));
+    }
+}

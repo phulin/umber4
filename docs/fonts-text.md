@@ -53,6 +53,12 @@ a present character can still have zero width. Scaling uses TeX's staged integer
 algorithm, including large-size reduction and negative metrics. Slant is a signed
 unscaled fixed-point number. Fonts have at least seven parameter slots.
 
+Persistent character metadata keeps the six decoded TFM byte fields in ordinary
+`u8` fields: width index, height index, depth index, italic index, tag, and
+remainder. These are relative indices, with maxima 255, 15, 15, 63, 3, and 255;
+table offsets and combined metric indices use host-sized arithmetic. Registration
+validates the widened fields against the original table lengths before indexing.
+
 Each immutable TFM resource holds one 256-entry table of 16-bit ligature/kern
 program starts, shared by all its scaled fonts. Registration prepares the table
 after validation, following at most one initial restart for each tagged character,
