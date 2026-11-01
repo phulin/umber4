@@ -44,9 +44,12 @@ Meanings and their payload owners share 64-entry COW pages; token registers use
 the same page mechanism. Small scalar arrays, save records, and conditional
 records are copied. Page copies reuse bounded session caches and retain immutable
 payload owners once per copied physical page. Session spelling identities and
-value/metadata registries survive rollback; scratch and free lists are not
-snapshot state. Names discovered on an abandoned branch remain interned with
-undefined restored meanings until assigned again.
+value/metadata registries survive rollback; scratch and session allocator backing
+pools, free lists, and caches are not snapshot state. Document-version allocation
+state, including node free-slot links and the box-payload free-list head and
+high-water range, is retained and restored with the matching node and payload
+roots. Names discovered on an abandoned branch remain interned with undefined
+restored meanings until assigned again.
 
 Live packet slots remain reusable expansion storage. A checkpoint copies only
 active argument span descriptors into its own immutable metadata buffers and
