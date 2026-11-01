@@ -9,14 +9,25 @@ use std::{
     rc::Rc,
 };
 
-#[derive(Clone, Copy, Default, Debug)]
-pub(crate) struct CharInfo {
-    pub width: u8,
-    pub height: u8,
-    pub depth: u8,
-    pub italic: u8,
-    pub tag: u8,
-    pub remainder: u8,
+struct CharInfo {
+    width: u8,
+    height: u8,
+    depth: u8,
+    italic: u8,
+    tag: u8,
+    remainder: u8,
+}
+impl CharInfo {
+    fn decode(c: [u8; 4]) -> Self {
+        Self {
+            width: c[0],
+            height: c[1] >> 4,
+            depth: c[1] & 15,
+            italic: c[2] >> 2,
+            tag: c[2] & 3,
+            remainder: c[3],
+        }
+    }
 }
 #[derive(Clone, Copy, Default, Debug, PartialEq, Eq)]
 pub(crate) struct Metrics {
@@ -28,8 +39,8 @@ pub(crate) struct Metrics {
 pub(crate) struct Resource {
     pub name: Buffer<u8>,
     bytes: Buffer<u8>,
-    pub chars: Buffer<CharInfo>,
-    pub program: Buffer<[u8; 4]>,
+    chars_start: usize,
+    program_start: usize,
     pub entries: [u16; 256],
     pub bc: usize,
     pub design: Scaled,
@@ -44,6 +55,18 @@ pub(crate) struct Resource {
     metrics: usize,
     kerns: usize,
     params: usize,
+}
+impl Resource {
+    fn chars(&self) -> &[[u8; 4]] {
+        self.bytes[self.chars_start * 4..self.metrics * 4]
+            .as_chunks::<4>()
+            .0
+    }
+    pub fn program(&self) -> &[[u8; 4]] {
+        self.bytes[self.program_start * 4..self.kerns * 4]
+            .as_chunks::<4>()
+            .0
+    }
 }
 pub(crate) struct ScaledFont {
     pub resource: usize,
@@ -133,8 +156,6 @@ pub(crate) struct Catalog {
     resource_store: Rc<Store<Resource>>,
     scaled_store: Rc<Store<FontResource>>,
     bytes: Rc<Store<u8>>,
-    chars: Rc<Store<CharInfo>>,
-    instructions: Rc<Store<[u8; 4]>>,
     metrics: Rc<Store<Metrics>>,
     dimensions: Rc<Store<Scaled>>,
     pub sealed: bool,
@@ -192,16 +213,11 @@ impl Catalog {
         if design.0 < 65536 {
             return Err(bad);
         }
-        let mut chars = Buffer::new(&self.chars);
-        for c in bytes[(6 + lh) * 4..(6 + lh + count) * 4].as_chunks::<4>().0 {
-            let info = CharInfo {
-                width: c[0],
-                height: c[1] >> 4,
-                depth: c[1] & 15,
-                italic: c[2] >> 2,
-                tag: c[2] & 3,
-                remainder: c[3],
-            };
+        let chars_start = 6 + lh;
+        let metrics = chars_start + count;
+        let chars = bytes[chars_start * 4..metrics * 4].as_chunks::<4>().0;
+        for &raw in chars {
+            let info = CharInfo::decode(raw);
             if info.width as usize >= nw
                 || info.height as usize >= nh
                 || info.depth as usize >= nd
@@ -212,15 +228,15 @@ impl Catalog {
             {
                 return Err(bad);
             }
-            chars.push(info);
         }
-        for (i, info) in chars.iter().enumerate() {
+        for (i, &raw) in chars.iter().enumerate() {
+            let info = CharInfo::decode(raw);
             if info.tag != 2 {
                 continue;
             }
             let mut next = info.remainder as usize;
             while next < i + bc {
-                let q = chars[next - bc];
+                let q = CharInfo::decode(chars[next - bc]);
                 if q.tag != 2 {
                     break;
                 }
@@ -230,7 +246,6 @@ impl Catalog {
                 return Err(bad);
             }
         }
-        let metrics = 6 + lh + count;
         let lig = metrics + nw + nh + nd + ni;
         let kerns = lig + nl;
         let ext = kerns + nk;
@@ -238,16 +253,11 @@ impl Catalog {
         for raw in bytes[metrics * 4..lig * 4].as_chunks::<4>().0 {
             validate_fix(raw)?;
         }
-        let exists = |c: usize| c >= bc && c <= ec && chars[c - bc].width != 0;
-        let mut program = Buffer::new(&self.instructions);
+        let exists = |c: usize| c >= bc && c <= ec && chars[c - bc][0] != 0;
+        let program = bytes[lig * 4..kerns * 4].as_chunks::<4>().0;
         let mut boundary = 256u16;
         let mut boundary_label = None;
-        for (i, raw) in bytes[lig * 4..kerns * 4]
-            .as_chunks::<4>()
-            .0
-            .iter()
-            .enumerate()
-        {
+        for (i, raw) in program.iter().enumerate() {
             let [skip, next, op, rem]: [u8; 4] = *raw;
             if skip > 128 {
                 if 256 * op as usize + rem as usize >= nl {
@@ -274,7 +284,6 @@ impl Catalog {
             if i + 1 == nl && skip == 255 {
                 boundary_label = Some(256 * op as usize + rem as usize);
             }
-            program.push([skip, next, op, rem]);
         }
         for raw in bytes[kerns * 4..ext * 4].as_chunks::<4>().0 {
             validate_fix(raw)?;
@@ -296,7 +305,8 @@ impl Catalog {
             boundary
         };
         let mut entries = [u16::MAX; 256];
-        for (offset, info) in chars.iter().enumerate() {
+        for (offset, &raw) in chars.iter().enumerate() {
+            let info = CharInfo::decode(raw);
             if info.tag == 1 {
                 let mut i = info.remainder as usize;
                 let [skip, _, op, rem] = program[i];
@@ -316,8 +326,8 @@ impl Catalog {
         Ok(Resource {
             name: saved_name,
             bytes: saved_bytes,
-            chars,
-            program,
+            chars_start,
+            program_start: lig,
             entries,
             bc,
             design,
@@ -353,9 +363,11 @@ impl Catalog {
             }
         }
         let mut metrics = Buffer::new(&self.metrics);
-        metrics.reserve(r.chars.len());
+        let chars = r.chars();
+        metrics.reserve(chars.len());
         let mut present = [0; 4];
-        for (index, i) in r.chars.iter().enumerate() {
+        for (index, &raw) in chars.iter().enumerate() {
+            let i = CharInfo::decode(raw);
             let character = r.bc + index;
             if i.width != 0 {
                 present[character / 64] |= 1u64 << (character % 64);

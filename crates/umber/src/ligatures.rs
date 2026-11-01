@@ -344,8 +344,9 @@ impl Resource {
             }
             i as usize
         };
+        let program = r.program();
         loop {
-            let p = r.program[i];
+            let p = program[i];
             if p[0] <= 128 && p[1] as u16 == right {
                 return Some(p);
             }

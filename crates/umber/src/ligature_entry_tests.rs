@@ -20,7 +20,7 @@ fn prepared_entries_preserve_restart_stop_and_boundary_semantics() {
     let ligature = Some([0, b'i', 0, 12]);
     assert_eq!(r.lig_instruction(b'g' as u16, b'i' as u16, None), ligature);
     // Width index zero does not erase the character's program metadata.
-    assert_eq!(r.chars[0].width, 0);
+    assert_eq!(bytes[32], 0);
     assert_eq!(r.lig_instruction(0, b'i' as u16, None), ligature);
     assert_eq!(
         r.lig_instruction(b'h' as u16, b'l' as u16, None),

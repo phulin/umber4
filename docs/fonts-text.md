@@ -15,9 +15,11 @@ strings; an optional terminal `.tfm` is normalized at registration and lookup.
 The portable engine never opens a path. Missing resources and unsupported syntax
 are explicit errors. Host bytes are copied once at this resource boundary.
 
-Session-owned typed backing pools retain resource descriptors, character records,
-program instructions, and scaled metric arrays. Parsed and scaled metrics are
-immutable cache entries. Safe handles retain scaled-header chunks and the sealed
+Session-owned typed backing pools retain resource descriptors, original TFM bytes,
+and scaled metric arrays. Validated character records and ligature/kern programs
+are borrowed directly from their four-byte table ranges within the immutable bytes;
+resources retain table offsets rather than duplicate table payloads. Scaled metrics
+are immutable cache entries. Safe handles retain scaled-header chunks and the sealed
 resource-set owner for [detached page output](output.md); source/header/payload
 storage can therefore outlive the session. They do not contain live TeX font descriptors. There is
 no allocation or reference counting per emitted character.
@@ -53,11 +55,12 @@ a present character can still have zero width. Scaling uses TeX's staged integer
 algorithm, including large-size reduction and negative metrics. Slant is a signed
 unscaled fixed-point number. Fonts have at least seven parameter slots.
 
-Persistent character metadata keeps the six decoded TFM byte fields in ordinary
-`u8` fields: width index, height index, depth index, italic index, tag, and
-remainder. These are relative indices, with maxima 255, 15, 15, 63, 3, and 255;
-table offsets and combined metric indices use host-sized arithmetic. Registration
-validates the widened fields against the original table lengths before indexing.
+Character records decode into six temporary `u8` fields for validation and new-size
+scaling: width index, height index, depth index, italic index, tag, and remainder.
+These are relative indices, with maxima 255, 15, 15, 63, 3, and 255; table offsets
+and combined metric indices use host-sized arithmetic. Registration validates the
+widened fields against the original table lengths before indexing. It validates
+all tables before retaining the host byte copy; trailing bytes never extend a table.
 
 Each immutable TFM resource holds one 256-entry table of 16-bit ligature/kern
 program starts, shared by all its scaled fonts. Registration prepares the table
@@ -82,8 +85,10 @@ Character runs use the selected font, look ahead through expansion and `\char`,
 and preserve a noncharacter lookahead in pending input without executing it.
 Each non-nullfont run retains one immutable font-resource handle and borrows its
 scaled descriptor and source TFM for existence, ligature-program, boundary, and
-kern access across input expansion. Mutable font parameters remain in document
-state; an unexpandable assignment ends the run before execution.
+kern access across input expansion. Each program search borrows its raw instruction
+slice after resolving the character or explicit boundary entry. Mutable font
+parameters remain in document state; an unexpandable assignment ends the run before
+execution.
 All TFM ligature operations retain original components and boundary-hit flags.
 Boundary programs, false boundary characters, and `\noboundary` follow upstream.
 TFM kerns remain distinct from explicit kerns. An explicit hyphen-character

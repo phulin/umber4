@@ -168,7 +168,6 @@ fn byte_character_fields_with_wide_metric_and_program_tables() {
     bytes.extend_from_slice(&[0, 0, 0, 1].repeat(ne));
     let mut catalog = Catalog::default();
     catalog.register(b"wide", &bytes).unwrap();
-    assert_eq!(size_of::<CharInfo>(), 6);
     assert_eq!(catalog.resources[0].entries[2], 255);
     for size in [Scaled(655360), Scaled(13_107_201)] {
         let scaled = catalog.scaled(0, size).unwrap();
@@ -198,4 +197,42 @@ fn byte_character_fields_with_wide_metric_and_program_tables() {
         }
         assert_eq!(Catalog::default().register(b"bad", &bad), Err(Error::Font));
     }
+}
+
+#[test]
+fn raw_table_views_retain_exact_bytes_across_sizes_and_catalog_teardown() {
+    let mut bytes = basic();
+    bytes.extend_from_slice(&[255; 7]);
+    let original = bytes.clone();
+    let mut catalog = Catalog::default();
+    catalog.register(b"raw", &bytes).unwrap();
+    bytes.fill(0);
+    let first = catalog.scaled(0, Scaled(655360)).unwrap();
+    let second = catalog.scaled(0, Scaled(1310720)).unwrap();
+    let fonts = [
+        catalog.scaled[first].clone(),
+        catalog.scaled[second].clone(),
+    ];
+    drop(catalog);
+    for (font, width) in fonts.iter().zip([491520, 983040]) {
+        assert_eq!(font.tfm_bytes(), original);
+        assert_eq!(font.metrics(b'a').unwrap().width, width);
+        let source = font.source();
+        assert_eq!(source.chars().len(), 128);
+        assert_eq!(source.program().len(), 5);
+        assert_eq!(source.program()[0], [0, b'i', 0, 12]);
+        assert_eq!(source.program()[4], [128, b'V', 128, 0]);
+        assert_eq!(
+            source.chars().as_flattened().as_ptr(),
+            font.tfm_bytes()[source.chars_start * 4..].as_ptr()
+        );
+        assert_eq!(
+            source.program().as_flattened().as_ptr(),
+            font.tfm_bytes()[source.program_start * 4..].as_ptr()
+        );
+    }
+    // Extra bytes cannot supply a program word beyond the declared table.
+    let mut bad = tfm(&[[128, b'a', 128, 0]], &[(b'f', 1, 1)]);
+    bad.extend_from_slice(&[128, b'a', 128, 0]);
+    assert_eq!(Catalog::default().register(b"bad", &bad), Err(Error::Font));
 }

@@ -47,6 +47,9 @@ and scaling costs, and bounded ordinary-path nonregression checks.
 The [detached singleton-transfer comparison](results/layout-node-singleton.json)
 retains paired release samples on fixed mixed/book inputs, instruction counts,
 complete four-case output/replay equality, and the CPU sampling tool limitation.
+The [raw TFM table-view comparison](results/tfm-raw-table-views.json) records
+elimination of duplicate character/program storage, measured pooled and whole-engine
+retention, registration cost, and bounded ordinary-release nonregression checks.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

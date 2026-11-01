@@ -1,0 +1,53 @@
+{
+  "date": "2026-11-01",
+  "baseline_commit": "72e18ce3885f6a6cb282ddd920507bee48ff3484",
+  "change": "Borrow character words and ligature/kern instructions from validated immutable TFM byte ranges; retain prepared entry tables and dense scaled metrics. Decode character fields only during validation/new-size scaling. Each program traversal borrows its instruction slice after the existing early returns; cursor API and loop are unchanged.",
+  "build": "Ordinary default-feature release library and CLI, no extra rustflags. Candidate measured in isolated source copy; external allocator/output adapters are separate from ordinary CLI timings.",
+  "ownership": {
+    "resource_native_header_bytes_before_after": [704, 672],
+    "persistent_typed_buffers_removed": ["chars", "program"],
+    "dedicated_typed_stores_removed": 2,
+    "runtime_source_delta_lines": 13,
+    "runtime_source_delta_bytes": 289,
+    "new_unsafe_or_dependencies": false
+  },
+  "registration_three_ae_fonts": {
+    "fonts": ["aer10", "aeti10", "aett10"],
+    "duplicate_logical_table_bytes_removed": 14656,
+    "logical_character_bytes_removed": 4608,
+    "logical_program_bytes_removed": 10048,
+    "calculated_table_backing_bytes_removed": 74624,
+    "unused_table_backing_bytes_removed": 59968,
+    "calculated_table_pages_removed": 19,
+    "pool_directories_and_owners_bytes_removed": 6128,
+    "reserved_resource_header_bytes_removed": 128,
+    "whole_engine_live_bytes_before_after": [194144, 113264],
+    "whole_engine_requested_bytes_before_after": [195144, 113496],
+    "whole_engine_allocations_before_after": [180, 120],
+    "counter_scope": "Measured from Engine construction through registration; exclude host source and TFM buffers. Backing geometry includes retained intermediate growth classes and unused blocks; directory/owner/header contributions reconcile the actual 80,880 B live-byte reduction. Logical payload savings alone are 14,656 B.",
+    "callgrind_total_instructions_before_after": [871954, 744065]
+  },
+  "full_mixed_allocator_adapter": {
+    "whole_engine_live_bytes_before_after": [6905240, 6824360],
+    "whole_engine_requested_bytes_before_after": [6917624, 6835976],
+    "allocations_before_after": [605, 545],
+    "callgrind_total_instructions_before_after": [315483580, 316848434],
+    "scope": "External system allocator counters; includes registration, layout and retained output, not host input bytes. Diagnostic counters are absent from ordinary CLI."
+  },
+  "ordinary_cli": {
+    "cpu": 3,
+    "warmups": 1,
+    "measured_pairs": 5,
+    "order": "One bounded serial alternating-pair pass on preserved book and authentic mixed Gentle inputs. Original fixed 600-paragraph book source was not regenerated.",
+    "binary_sha256": {"before": "ce6cf501ccfa563513695565034673a88d91290dbaa049428ad05596931f896f", "candidate": "ca227f1fb488957ccdcde31e7abcef82f826a1944fa8063125f8d6bed2961ab7"},
+    "integrated_binary_sha256": "c639b4f9eac43d1eb56d6831fb491b39bebf0b36faf50ef37cff1c289ad86c0f",
+    "cases": [
+      {"case": "book", "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052", "cpu_ms": {"before": [45.829, 48.546, 48.243, 46.98, 50.158], "after": [47.98, 46.964, 47.477, 47.65, 47.862]}, "median_cpu_ms": {"before": 48.243, "after": 47.65}, "median_change_percent": -1.229, "median_paired_change_percent": -1.588, "minor_page_faults": {"before": [1608, 1607, 1607, 1607, 1607], "after": [1580, 1580, 1579, 1581, 1580]}},
+      {"case": "mixed", "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d", "cpu_ms": {"before": [47.547, 51.053, 54.698, 45.086, 44.899], "after": [47.679, 51.618, 50.699, 46.493, 46.696]}, "median_cpu_ms": {"before": 47.547, "after": 47.679}, "median_change_percent": 0.278, "median_paired_change_percent": 1.107, "minor_page_faults": {"before": [1554, 1554, 1554, 1556, 1555], "after": [1534, 1534, 1534, 1533, 1535]}}
+    ],
+    "interpretation": "Overlapping small shared-host samples support ordinary-path nonregression, with no CPU speedup claim. Full diagnostic instruction count increases 0.43%.",
+    "executor_assembly": "Release Engine::execute retains baseline 0x138 stack frame and 405 static rsp references. Cursor helper remains inlined; raw slice setup occurs once per program traversal, after early returns."
+  },
+  "validation": ["174 active library tests, including malformed/high-index tables, empty ranges, absent tagged records, boundary/restart equivalence and multiple sizes", "New retained-byte test proves host mutation independence, raw range backing identity, trailing-byte exclusion and fonts surviving Catalog teardown", "All three explicit native font/paragraph/page oracles", "Final book/mixed complete output equality, native placement equality and retained-root replay; mixed 214800 records", "rustfmt, warning-free all-target Clippy, wasm32-unknown-unknown library check", "Independent source/storage review clear"],
+  "limits": "Raw TFM bytes, normalized per-left program entries and dense scaled glyph records remain retained. Character fields are decoded again for a new scaled size. Pool high-water geometry and actual whole-engine memory differ from logical payload size; savings vary with registered font set. No general full-document CPU or proportional memory claim."
+}
