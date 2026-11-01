@@ -260,8 +260,7 @@ impl Engine<'_> {
         arity: Arity,
     ) -> Result<()> {
         let definition = owner.definition();
-        for position in 0..definition.prefix_end {
-            let expected = owner.tokens.get(position);
+        for expected in owner.tokens.iter().take(definition.prefix_end as usize) {
             if self.next_raw()?.token != expected {
                 return Err(Error::Argument);
             }

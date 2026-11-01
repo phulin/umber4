@@ -144,11 +144,10 @@ impl Engine<'_> {
                 emit(self, b' ')?;
             }
             self.emit_text(b"macro:", emit)?;
-            let body_start = definition.body.start;
+            let body_start = definition.body.start as usize;
             let mut marker = b'#';
             let mut parameter = 0;
-            for position in 0..owner.tokens.len {
-                let token = owner.tokens.get(position);
+            for (position, token) in owner.tokens.iter().enumerate() {
                 if token.is_parameter() {
                     if position < body_start {
                         if token.byte() == 255 {
