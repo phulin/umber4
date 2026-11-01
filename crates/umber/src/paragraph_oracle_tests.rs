@@ -221,7 +221,11 @@ impl Oracle {
         loop {
             let read = e.next_expanded().unwrap();
             if read.meaning.command == crate::token::cmd::PAR {
-                e.break_paragraph().unwrap();
+                let widow = e.document.scalars[crate::scalars::Target::paragraph(
+                    crate::scalars::ParagraphParam::WidowPenalty,
+                )]
+                .value;
+                e.break_paragraph(widow).unwrap();
                 break;
             }
             if !construct(&mut e, read) {

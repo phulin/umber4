@@ -4,9 +4,9 @@ use crate::{
     Engine, Error, Result,
     language::Language,
     layout_values::{DimenParam, GlueParam},
-    nodes::{BoxData, GlueKind, Kind, List},
+    nodes::{BoxData, GlueKind, Kind, List, NodeId},
     numeric::{Glue, Scaled},
-    scalars::Target,
+    scalars::{ParagraphParam, Target},
     tfm::ratio,
     token::*,
 };
@@ -134,16 +134,29 @@ impl Engine<'_> {
     }
     pub(crate) fn end_graf(&mut self) -> Result<()> {
         if self.document.text.mode == Mode::Horizontal {
-            if !self.document.text.horizontal.is_empty() {
-                self.break_paragraph()?;
-            }
-            self.document.text.mode = self.document.text.vertical_mode;
+            let widow =
+                self.document.scalars[Target::paragraph(ParagraphParam::WidowPenalty)].value;
+            self.finish_paragraph(widow)?;
             self.normal_paragraph()?;
             if self.document.text.mode == Mode::Vertical {
                 self.build_page()?;
             }
         }
         Ok(())
+    }
+    /// The returned line is borrowed from the vertical root, only until page
+    /// work/release. Preserve paragraph bindings for immediate layout consumers.
+    pub(crate) fn finish_paragraph(&mut self, final_widow_penalty: i32) -> Result<Option<NodeId>> {
+        if self.document.text.mode != Mode::Horizontal {
+            return Ok(None);
+        }
+        let last = if self.document.text.horizontal.is_empty() {
+            None
+        } else {
+            self.break_paragraph(final_widow_penalty)?
+        };
+        self.document.text.mode = self.document.text.vertical_mode;
+        Ok(last)
     }
     /// Returns true when this complete command belongs to horizontal execution.
     pub(crate) fn text_command(&mut self, read: Read) -> Result<bool> {

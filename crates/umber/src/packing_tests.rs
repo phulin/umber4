@@ -1,6 +1,8 @@
 use super::*;
 use crate::nodes::KernKind;
 use crate::{nodes::ReleaseScratch, numeric::Glue};
+#[path = "packing_totals_tests.rs"]
+mod totals;
 
 #[derive(Clone, Copy)]
 enum Item {

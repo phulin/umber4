@@ -12,6 +12,16 @@ pub(crate) enum PackSpec {
     To(Scaled),
     Spread(Scaled),
 }
+/// Natural dimensions and glue amounts from this horizontal packing operation.
+/// These scalars are never retained in the packed box or document state.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub(crate) struct HorizontalTotals {
+    pub width: Scaled,
+    pub height: Scaled,
+    pub depth: Scaled,
+    pub stretch: [i32; 4],
+    pub shrink: [i32; 4],
+}
 impl PackSpec {
     fn target(self, natural: i32) -> Scaled {
         match self {
@@ -64,6 +74,13 @@ pub(crate) fn glue_setting(
 }
 impl Engine<'_> {
     pub(crate) fn hpack(&mut self, list: List, spec: PackSpec) -> Result<DetachedNode> {
+        self.hpack_with_totals(list, spec).map(|(node, _)| node)
+    }
+    pub(crate) fn hpack_with_totals(
+        &mut self,
+        list: List,
+        spec: PackSpec,
+    ) -> Result<(DetachedNode, HorizontalTotals)> {
         self.hpack_inner(list, spec, None)
     }
     /// Only paragraph lines and newly constructed direct vertical hboxes extract
@@ -74,6 +91,15 @@ impl Engine<'_> {
         spec: PackSpec,
         adjustments: &mut List,
     ) -> Result<DetachedNode> {
+        self.hpack_adjusted_with_totals(list, spec, adjustments)
+            .map(|(node, _)| node)
+    }
+    pub(crate) fn hpack_adjusted_with_totals(
+        &mut self,
+        list: List,
+        spec: PackSpec,
+        adjustments: &mut List,
+    ) -> Result<(DetachedNode, HorizontalTotals)> {
         self.hpack_inner(list, spec, Some(adjustments))
     }
     fn hpack_inner(
@@ -81,12 +107,8 @@ impl Engine<'_> {
         mut list: List,
         spec: PackSpec,
         mut adjustments: Option<&mut List>,
-    ) -> Result<DetachedNode> {
-        let mut natural = 0i32;
-        let mut height = 0;
-        let mut depth = 0;
-        let mut stretch = [0i32; 4];
-        let mut shrink = [0i32; 4];
+    ) -> Result<(DetachedNode, HorizontalTotals)> {
+        let mut totals = HorizontalTotals::default();
         let mut metrics = crate::fonts::MetricReader::new(&self.document.fonts, &self.font_catalog);
         let mut previous = NodeId::NULL;
         let mut p = list.head();
@@ -101,45 +123,45 @@ impl Engine<'_> {
                     let m = metrics
                         .get(*font, *character)
                         .expect("constructed glyph has metrics");
-                    natural = natural.wrapping_add(m.width.0);
-                    height = height.max(m.height.0);
-                    depth = depth.max(m.depth.0);
+                    totals.width.0 = totals.width.0.wrapping_add(m.width.0);
+                    totals.height.0 = totals.height.0.max(m.height.0);
+                    totals.depth.0 = totals.depth.0.max(m.depth.0);
                 }
                 Kind::Box(b) => {
                     let b = self.document.nodes.box_data(b);
-                    natural = natural.wrapping_add(b.width.0);
-                    height = height.max(b.height.0.wrapping_sub(b.shift.0));
-                    depth = depth.max(b.depth.0.wrapping_add(b.shift.0));
+                    totals.width.0 = totals.width.0.wrapping_add(b.width.0);
+                    totals.height.0 = totals.height.0.max(b.height.0.wrapping_sub(b.shift.0));
+                    totals.depth.0 = totals.depth.0.max(b.depth.0.wrapping_add(b.shift.0));
                 }
                 Kind::Rule {
                     width,
                     height: h,
                     depth: d,
                 } => {
-                    natural = natural.wrapping_add(width.0);
-                    height = height.max(h.0);
-                    depth = depth.max(d.0);
+                    totals.width.0 = totals.width.0.wrapping_add(width.0);
+                    totals.height.0 = totals.height.0.max(h.0);
+                    totals.depth.0 = totals.depth.0.max(d.0);
                 }
                 Kind::Kern { width, .. } | Kind::MathBoundary { width, .. } => {
-                    natural = natural.wrapping_add(width.0)
+                    totals.width.0 = totals.width.0.wrapping_add(width.0)
                 }
                 Kind::Glue { spec, .. } => {
-                    natural = natural.wrapping_add(spec.width.0);
+                    totals.width.0 = totals.width.0.wrapping_add(spec.width.0);
                     let o = spec.stretch_order as usize;
-                    stretch[o] = stretch[o].wrapping_add(spec.stretch.0);
+                    totals.stretch[o] = totals.stretch[o].wrapping_add(spec.stretch.0);
                     let o = spec.shrink_order as usize;
-                    shrink[o] = shrink[o].wrapping_add(spec.shrink.0);
+                    totals.shrink[o] = totals.shrink[o].wrapping_add(spec.shrink.0);
                 }
                 Kind::Leader(id) => {
                     let data = self.document.nodes.leader_data(id);
-                    natural = natural.wrapping_add(data.spec.width.0);
+                    totals.width.0 = totals.width.0.wrapping_add(data.spec.width.0);
                     let o = data.spec.stretch_order as usize;
-                    stretch[o] = stretch[o].wrapping_add(data.spec.stretch.0);
+                    totals.stretch[o] = totals.stretch[o].wrapping_add(data.spec.stretch.0);
                     let o = data.spec.shrink_order as usize;
-                    shrink[o] = shrink[o].wrapping_add(data.spec.shrink.0);
+                    totals.shrink[o] = totals.shrink[o].wrapping_add(data.spec.shrink.0);
                     let (_, h, d) = self.document.nodes.leader_dimensions(id);
-                    height = height.max(h.0);
-                    depth = depth.max(d.0);
+                    totals.height.0 = totals.height.0.max(h.0);
+                    totals.depth.0 = totals.depth.0.max(d.0);
                 }
                 Kind::Insertion(_) | Kind::Adjustment(_) if adjustments.is_some() => {
                     let destination = adjustments.as_deref_mut().unwrap();
@@ -165,21 +187,22 @@ impl Engine<'_> {
             previous = p;
             p = next;
         }
-        let width = spec.target(natural);
+        let width = spec.target(totals.width.0);
         let glue_set = glue_setting(
-            width.0.wrapping_sub(natural),
-            stretch,
-            shrink,
+            width.0.wrapping_sub(totals.width.0),
+            totals.stretch,
+            totals.shrink,
             !list.is_empty(),
         );
-        self.document.nodes.alloc_box(BoxData {
+        let node = self.document.nodes.alloc_box(BoxData {
             list,
             width,
-            height: Scaled(height),
-            depth: Scaled(depth),
+            height: totals.height,
+            depth: totals.depth,
             glue_set,
             ..BoxData::default()
-        })
+        })?;
+        Ok((node, totals))
     }
     pub(crate) fn vpackage(
         &mut self,

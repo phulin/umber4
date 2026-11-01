@@ -6,6 +6,8 @@ use crate::{
     scalars::{ParagraphParam as P, Target},
     text::Mode,
 };
+#[path = "paragraph_completion_tests.rs"]
+mod completion;
 #[path = "math_boundary_tests.rs"]
 mod math_boundary;
 fn engine(source: &[u8]) -> Engine<'_> {

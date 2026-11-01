@@ -119,6 +119,9 @@ and emits zero-width language nodes, with timing/copy tests in `language_tests.r
 active/delta/passive search, `line_construct.rs` transfers selected ranges into
 lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glue;
 `packing_tests.rs` checks packing specifications against fixed geometry and native boxes;
+`packing_totals_tests.rs` checks operation-local horizontal totals and adjusted
+packing ownership; `paragraph_completion_tests.rs` checks caller-supplied widow
+penalties and borrowed final-line IDs before reset/page work.
 `output_state_tests.rs` covers scoped output-token storage;
 `output_routine_tests.rs` checks direct shipout, output groups, native fixtures,
 returned material, counters, and checkpoint replay;

@@ -37,9 +37,15 @@ transfer existing nodes into line boxes with left/right skips, indentation,
 baseline/line glue, and interline penalties. During the same packing traversal,
 insertion nodes migrate after their line, and adjustment nodes transfer their
 children there before interline penalties, as specified in [pages.md](pages.md). Hanging indentation and `\parshape`
-select line widths. Paragraph settings reset through ordinary local assignment
-semantics. The resulting vertical list is the [page builder](pages.md) contribution
-root; paragraph completion runs synchronous page work before returning.
+select line widths. The lower-level completion accepts the final widow penalty,
+returns to the enclosing vertical mode, and returns the optional final line's
+nonowning node ID. Extracted adjustments or insertions can follow this line in
+the vertical root. The ID is valid only while that root retains the line and must
+be consumed before page work can release it. This path neither resets paragraph
+settings nor runs page work; an empty paragraph returns no line. Ordinary
+`end_graf` supplies the live `\widowpenalty`, resets paragraph settings through
+ordinary local assignment semantics, and runs synchronous external page work.
+The resulting vertical list is the [page builder](pages.md) contribution root.
 
 Active and delta slots are recycled within reusable engine scratch; passive
 predecessors survive until line construction finishes. Scratch is empty outside
@@ -52,7 +58,11 @@ Horizontal and vertical packing accept `PackSpec::Natural`, `To(dimension)`, or
 box width or height; `Spread` adds its signed amount to the measured size.
 Paragraph lines and selected pages explicitly use `To` with their saved goals.
 The existing measurement traversal determines the target without an additional
-list pass or retained measurement state.
+list pass or retained measurement state. Horizontal packing can also return its
+operation-local natural width, height, depth, and four-order stretch/shrink totals
+alongside the owned box. Adjusted packing reports the same measurements while
+extracting migrating material in that traversal. These totals are not stored in
+box payloads; convenience calls discard them when only the box is needed.
 
 Horizontal packing measures width, height, and depth. Vertical packing measures
 height excluding its final depth and the maximum of zero and each child width

@@ -13,9 +13,11 @@ impl Engine<'_> {
         parameters: &Parameters,
         scratch: &mut Scratch,
         best_line: i32,
-    ) -> Result<()> {
+        final_widow_penalty: i32,
+    ) -> Result<Option<NodeId>> {
         let first_line = self.document.text.prev_graf + 1;
         let mut line_number = first_line;
+        let mut last_line = None;
         for index in 0..scratch.breaks.len() {
             let point = scratch.breaks[index];
             let glue_break = !point.is_null() && self.document.nodes.get(point).kind.is_glue();
@@ -117,18 +119,20 @@ impl Engine<'_> {
                 }
             };
             self.document.nodes.box_mut(b.id()).shift = shape.indent;
+            let line_id = b.id();
             let result = self.append_to_vlist(b);
             self.document
                 .nodes
                 .splice(&mut self.document.text.vertical, adjustments);
             result?;
+            last_line = Some(line_id);
             if line_number + 1 != best_line {
                 let mut penalty = parameters.integer(P::InterlinePenalty);
                 if line_number == first_line {
                     penalty = penalty.wrapping_add(parameters.integer(P::ClubPenalty));
                 }
                 if line_number + 2 == best_line {
-                    penalty = penalty.wrapping_add(parameters.integer(P::WidowPenalty));
+                    penalty = penalty.wrapping_add(final_widow_penalty);
                 }
                 if disc_break {
                     penalty = penalty.wrapping_add(parameters.integer(P::BrokenPenalty));
@@ -148,7 +152,7 @@ impl Engine<'_> {
         assert_eq!(line_number, best_line);
         assert!(self.document.text.horizontal.is_empty());
         self.document.text.prev_graf = best_line - 1;
-        Ok(())
+        Ok(last_line)
     }
     fn prune_line_start(&mut self, next_break: NodeId, scratch: &mut Scratch) {
         loop {

@@ -220,7 +220,7 @@ impl Engine<'_> {
         }
         Ok(())
     }
-    pub(crate) fn break_paragraph(&mut self) -> Result<()> {
+    pub(crate) fn break_paragraph(&mut self, final_widow_penalty: i32) -> Result<Option<NodeId>> {
         let parameters = Parameters::capture(self)?;
         // All contents remain in a persistent owned root even when validation or
         // allocation fails. Only completed line construction transfers ownership.
@@ -252,7 +252,7 @@ impl Engine<'_> {
         scratch.reset();
         let result = (|| {
             let best = crate::line_break::find_breaks(self, &parameters, &mut scratch)?;
-            self.construct_lines(&parameters, &mut scratch, best)
+            self.construct_lines(&parameters, &mut scratch, best, final_widow_penalty)
         })();
         scratch.reset();
         self.paragraph = scratch;
