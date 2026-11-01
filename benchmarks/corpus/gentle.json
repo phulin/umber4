@@ -4,6 +4,19 @@
   "version": "1.1",
   "url": "https://ctan.net/info/gentle/gentle.tex",
   "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+  "layout": {
+    "generator": "gentle-layout.py",
+    "repetitions": 300,
+    "excerpts": [
+      {"name": "font-name explanation", "lines": [1397, 1408]},
+      {"name": "letter definition", "lines": [3689, 3700]},
+      {"name": "letter invocation", "lines": [3709, 3709]},
+      {"name": "talks definition and invocations", "lines": [3756, 3761]},
+      {"name": "ligature example", "lines": [4951, 4951]},
+      {"name": "grouped italic sentence", "lines": [4960, 4961]}
+    ],
+    "adaptation": "Select intact executable excerpts from the complete local source, separate them with paragraph commands, and repeat literal source rather than a synthetic TeX loop. Supply explicit INITEX geometry, AE roman/italic/typewriter selectors, plain-compatible smallskip and percent macros, and a sequence counter. The letter definition is supplied once; talks retains its original definition and calls in each sequence. Full-manual boxes, math, automatic hyphenation, custom output and backends are excluded. The author's source header requests distribution as a whole; new prose excerpts are generated locally rather than redistributed here."
+  },
   "kernels": [
     {
       "name": "spelling",

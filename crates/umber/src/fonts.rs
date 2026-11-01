@@ -4,7 +4,7 @@ use crate::{
     numeric::Scaled,
     scalars::Target,
     tables::Table,
-    tfm::{Metrics, ratio},
+    tfm::{Catalog, Metrics, ScaledFont, ratio},
     token::*,
 };
 #[derive(Clone, Copy, Default)]
@@ -23,6 +23,29 @@ pub(crate) struct Fonts {
     pub len: usize,
     pub parameter_end: usize,
     pub current: Integer,
+}
+/// A single immutable traversal retains the last font's resolved metrics.
+pub(crate) struct MetricReader<'a> {
+    fonts: &'a Fonts,
+    catalog: &'a Catalog,
+    last: Option<(u32, &'a ScaledFont)>,
+}
+impl MetricReader<'_> {
+    pub(crate) fn get(&mut self, font: u32, character: u8) -> Option<Metrics> {
+        let metrics = match self.last {
+            Some((id, metrics)) if id == font => metrics,
+            _ => {
+                if font as usize >= self.fonts.len {
+                    return None;
+                }
+                let scaled = self.fonts.descriptors[font as usize].scaled?;
+                let metrics = self.catalog.scaled[scaled].descriptor();
+                self.last = Some((font, metrics));
+                metrics
+            }
+        };
+        metrics.metrics(character)
+    }
 }
 impl Default for Fonts {
     fn default() -> Self {
@@ -43,6 +66,13 @@ impl Default for Fonts {
     }
 }
 impl Engine<'_> {
+    pub(crate) fn metric_reader(&self) -> MetricReader<'_> {
+        MetricReader {
+            fonts: &self.document.fonts,
+            catalog: &self.font_catalog,
+            last: None,
+        }
+    }
     /// Register an immutable metric resource before the first nonzero advance.
     /// Names are exact bytes, with an optional terminal `.tfm`; no file is opened.
     /// Registration remains sealed after restoring an earlier checkpoint.

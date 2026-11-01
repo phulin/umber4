@@ -22,7 +22,8 @@ proposal until reviewed with the user.
 - `scripts/`: native oracle setup and compatibility comparison.
 - `benchmarks/`: source generators, native profile builds, expansion and prose/layout
   CPU, checkpoint, and memory measurements, and retained measurement reports;
-  `corpus/` retains selected Gentle macros and source provenance.
+  `corpus/` retains selected Gentle macros, source provenance, and a bounded local
+  layout-excerpt generator.
 - `.gitattributes`: preserves upstream whitespace in the selected corpus excerpts.
 - `.agents/skills/coordinate/`: GitHub Issues coordination and agent dispatch.
 - `.agents/skills/parallel/`: isolated persistent worktrees and integration.

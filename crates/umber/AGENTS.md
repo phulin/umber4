@@ -29,7 +29,8 @@ applies typed assignments/arithmetic, with operand and fixture tests in
 with branch/reclamation tests in `nodes_tests.rs`; page construction uses
 the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
-owns restorable loaded-font descriptors/parameters and font assignments,
+owns restorable loaded-font descriptors/parameters, font assignments, and scoped
+immutable metric readers,
 `text.rs` owns external modes and horizontal/vertical lists, `paragraph.rs` owns
 paragraph parameters, pooled shape roots, and reusable search storage,
 `line_break.rs` traverses legal breaks and passes, `line_search.rs` implements

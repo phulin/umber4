@@ -32,6 +32,11 @@ fields remain observable through `\fontcharht`, `\fontchardp`, and `\fontcharic`
 Scaled kerns and baseline parameters occupy separate pooled arrays. Engine and
 detached-result access share the same immutable metric lookup.
 
+Paragraph measurement and horizontal packing borrow font tables and the scaled
+catalog immutably for each traversal. A local reader retains the last font ID
+and resolved descriptor; resolution remains lazy in node visit order, and every
+glyph lookup checks character existence. The reader adds no checkpoint state.
+
 Document state owns loaded-font order and IDs, source resource names, sizes,
 mutable font parameters, hyphen/skew characters, and font identifier names.
 Selectors and current-font bindings obey ordinary assignment grouping. Font

@@ -18,6 +18,12 @@ unligated character during discretionary construction.
 The [glyph font-resolution comparison](results/layout-glyph-font.json) retains
 paired release samples, native/replay validation, and instruction counts for
 sharing one borrowed font resource between glyph metrics and page registration.
+The [layout metric-reader comparison](results/layout-metric-reader.json) records
+paired samples for the same three inputs and a mixed-font Gentle excerpt workload,
+with complete output/native placement checks and retained-root replay. Its
+[small generator](corpus/gentle-layout.py) reads the complete local Gentle source;
+[provenance](corpus/gentle.json) records the selected ranges. The report describes
+bootstrap settings and reproduction without distributing additional prose excerpts.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

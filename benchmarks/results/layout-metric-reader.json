@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-01T08:10:35.111462+00:00",
+  "change": "Borrow the last resolved font descriptor within each immutable paragraph-measurement and horizontal-packing traversal; validate every visited glyph lazily.",
+  "baseline_commit": "6620d3de4fc6ae6dc699a39092fc40f37d38cf84",
+  "build": "cargo build --release --bin umber --example layout --lib; default features; no extra rustflags; fat LTO, one codegen unit",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "warmups": 1,
+  "repetitions": 9,
+  "order": "alternating before/after, all sequential",
+  "binary_sha256": {
+    "before": "8b2096c3b6f98d6bd468b316601c3d6b134a7046cd339d90a0e3c73392699d77",
+    "after": "c304dfbc0c72eb3f543f7a0f820a99d6c29a2cfa05897d63992d7da49c816d88"
+  },
+  "measured_candidate": "Isolated prototype of the three runtime source files, subsequently integrated without semantic changes. Formatting rebuild has byte-identical .text to the timed executable. Prototype binary paths differ from the integration build.",
+  "candidate_sources_sha256": {
+    "crates/umber/src/fonts.rs": "7282400d086bdf44e00d517ac762262d2360684088c6079e2d0f64e4fa167f19",
+    "crates/umber/src/packing.rs": "def75b27d76ab4711ca06255a1944edb4bc5caf8b5eba81e477d3bef78c37464",
+    "crates/umber/src/line_break.rs": "08c0a30882f64bf91a4ce47900a7d12b150f66f03d551d871fd7880a0e742dc9"
+  },
+  "scope": "Complete ordinary release CLI execution, warm input/resources, pinned CPU, sequential alternating pairs; detached page construction/retention/release included. Original three 600-paragraph prose inputs preserved unchanged. Fourth case repeats selected authentic mixed-font/macro excerpts. These short shared-host measurements do not establish broad TeX/LaTeX performance.",
+  "font_sha256": {
+    "aer10": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+    "aeti10": "243599dca0a4928095620eb211da7313bb697d2a8f94dc9400a2a08f063de09e",
+    "aett10": "a9d121fc0cdd2bb8da196b14d83dab942550822a74bdae00bbece241434c4c42",
+    "lcmss8": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+    "icmtt8": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24"
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "cpu_ms": {
+        "before": [58.66, 55.056, 53.954, 55.673, 54.506, 54.593, 54.603, 52.8, 55.998],
+        "after": [59.416, 53.413, 56.54, 53.823, 53.467, 54.309, 53.18, 53.326, 55.539]
+      },
+      "wall_ms": {
+        "before": [59.035536, 55.356565, 54.262657, 56.001293, 54.822204, 54.992231, 54.941707, 53.124843, 56.287418],
+        "after": [59.811988, 53.811893, 56.871897, 54.164167, 53.766622, 54.623213, 53.486102, 53.656431, 55.883975]
+      },
+      "median_cpu_ms": {
+        "before": 54.603,
+        "after": 53.823
+      },
+      "cpu_change_fraction": -0.014284929399483559
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "cpu_ms": {
+        "before": [55.482, 55.811, 55.821, 61.006, 59.744, 53.861, 54.704, 53.716, 53.77],
+        "after": [52.665, 53.359, 52.321, 52.793, 54.583, 52.336, 53.228, 53.29, 52.629]
+      },
+      "wall_ms": {
+        "before": [55.767061, 56.169768, 56.171292, 61.329414, 60.211292, 54.187537, 55.067389, 54.0326, 54.086455],
+        "after": [53.056892, 53.701316, 52.598264, 53.118932, 54.908864, 52.680252, 53.58178, 53.640027, 52.956188]
+      },
+      "median_cpu_ms": {
+        "before": 55.482,
+        "after": 52.793
+      },
+      "cpu_change_fraction": -0.04846616920803137
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "cpu_ms": {
+        "before": [47.459, 47.644, 48.027, 48.535, 48.555, 48.534, 47.039, 52.217, 49.052],
+        "after": [45.916, 46.234, 47.441, 47.676, 46.946, 46.815, 48.526, 51.565, 46.8]
+      },
+      "wall_ms": {
+        "before": [47.759521, 47.95299, 48.36599, 48.812057, 48.839115, 48.83318, 47.316002, 52.537555, 49.382216],
+        "after": [46.2588, 46.525689, 47.697139, 47.956632, 47.216496, 47.078933, 48.857459, 51.951397, 47.084735]
+      },
+      "median_cpu_ms": {
+        "before": 48.534,
+        "after": 46.946
+      },
+      "cpu_change_fraction": -0.03271933077842337
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "cpu_ms": {
+        "before": [51.394, 53.432, 55.126, 59.384, 53.031, 52.394, 51.902, 53.063, 54.168],
+        "after": [51.261, 52.145, 51.086, 50.16, 60.73, 51.016, 52.478, 51.462, 51.779]
+      },
+      "wall_ms": {
+        "before": [51.606745, 53.795266, 55.502818, 59.665534, 53.320012, 52.730533, 52.204965, 53.381438, 54.706751],
+        "after": [51.51793, 52.536369, 51.355457, 50.393632, 61.040261, 51.353299, 52.780074, 51.78231, 52.108704]
+      },
+      "median_cpu_ms": {
+        "before": 53.063,
+        "after": 51.462
+      },
+      "cpu_change_fraction": -0.03017168271677073
+    }
+  ],
+  "mixed_workload": {
+    "source": "Michael Doob, A Gentle Introduction to TeX 1.1; full source identity and line ranges in benchmarks/corpus/gentle.json",
+    "generator": "benchmarks/corpus/gentle-layout.py",
+    "generated_bytes": 286810,
+    "literal_sequence_repetitions": 300,
+    "pages": 106,
+    "glyphs": 214500,
+    "rules": 300,
+    "geometry_pt": {
+      "width": 360,
+      "height": 540,
+      "baseline": 12,
+      "paragraph_gap": 0
+    },
+    "fonts": "AE roman aer10, italic aeti10, typewriter aett10, each at 10pt. Explicit INITEX geometry/glue/tolerances and plain-compatible smallskip/percent macros are embedded by the generator. No plain format is loaded.",
+    "support_limits": "Intact selected text and macro definitions/invocations, grouped switches, ligatures and rules; no full-manual boxes, math, automatic hyphenation, custom outputs, or PDF backend.",
+    "initial_native_comparison": {
+      "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+      "samples": 9,
+      "cpu_ms": {
+        "umber": [51.027, 56.178, 54.046, 52.285, 52.146, 53.778, 51.324, 51.055, 51.089],
+        "pdftex": [40.766, 41.858, 41.24, 40.599, 42.967, 42.949, 40.711, 40.25, 41.066]
+      },
+      "median_cpu_ms": {
+        "umber": 52.146,
+        "pdftex": 41.066
+      },
+      "umber_native_cpu_ratio": 1.2698095748307603,
+      "endpoint_difference": "Umber retains detached pages; native INITEX writes DVI/log. Native-only hbadness/vbadness thresholds suppress diagnostics. Identical typesetting source and TFM resources."
+    }
+  },
+  "mixed_instructions": {
+    "before": 362392637,
+    "after": 347041673,
+    "change": -0.042360032828150374,
+    "metric_reads": 429000,
+    "font_descriptor_resolutions_before": 429000,
+    "font_descriptor_resolutions_after": 19500,
+    "profiler": "Valgrind Callgrind 3.22.0; ordinary release binaries, same mixed input"
+  },
+  "validation": "All four complete output signatures (counts/messages/boxes/glue/penalties/placements/font bytes) before==after; fresh independent native DVI equality original three, mixed transitive through earlier independently matched baseline; retained-root midpoint replay all four. 13 font/text+13 paragraph+16 page tests, added paragraph font-error restore test, fmt and clippy pass.",
+  "integration_validation": "165 library tests and all three explicit native font/paragraph/page oracles pass; rustfmt, Clippy with warnings denied, source identities, changed-page links, and byte-identical workload regeneration pass.",
+  "reproduce": [
+    "cargo build --release --bin umber --example layout",
+    "python3 benchmarks/corpus/gentle-layout.py .tools/corpus/gentle.tex target/benchmark/gentle-layout.tex",
+    "target/release/umber target/benchmark/gentle-layout.tex --tfm aer10=.tools/lexing-corpus/root/usr/share/texlive/texmf-dist/fonts/tfm/public/ae/aer10.tfm --tfm aeti10=.tools/lexing-corpus/root/usr/share/texlive/texmf-dist/fonts/tfm/public/ae/aeti10.tfm --tfm aett10=.tools/lexing-corpus/root/usr/share/texlive/texmf-dist/fonts/tfm/public/ae/aett10.tfm"
+  ],
+  "reproduction_notes": "Preserve original target/benchmark/layout/{book,narrow,dense}.tex; layout.py would regenerate different documentation prose. Compare saved ordinary binaries with one warmup and nine sequential alternating pairs, using benchmarks/layout.py child for wall/user+system CPU accounting and one CPU affinity. Native command uses scripts/reference.py INITEX configuration, TFM search paths, and quiet diagnostic thresholds. Mixed-font independent DVI and complete-output/replay adapters used in validation remain temporary; this report adds no harness or acceptance gate."
+}

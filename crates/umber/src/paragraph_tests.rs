@@ -516,6 +516,26 @@ fn packing_zero_flex_and_normal_over_shrink_follow_tex() {
 }
 
 #[test]
+fn invalid_glyph_after_valid_font_fails_before_packing_and_restores() {
+    for (font, character) in [(1, 0), (u32::MAX, b'a')] {
+        let mut e = engine(br"\font\f=test\f\noindent a\par\end");
+        e.advance(2).unwrap();
+        let saved = e.checkpoint().unwrap();
+        for _ in 0..2 {
+            let read = e.next_expanded().unwrap();
+            e.execute(read).unwrap();
+        }
+        e.append_horizontal(Kind::Character { font, character })
+            .unwrap();
+        assert_eq!(e.end_graf(), Err(crate::Error::Font));
+        assert!(!e.document.text.horizontal.is_empty());
+        assert!(e.document.text.vertical.is_empty());
+        e.restore(&saved).unwrap();
+        assert_eq!(e.advance(99), Ok(Progress::Complete));
+        assert_eq!(glyphs(&e), vec![b"a".to_vec()]);
+    }
+}
+#[test]
 fn search_error_resets_checked_out_scratch_before_restore_and_successful_replay() {
     use crate::nodes::List;
     let mut e = engine(br"\font\f=test\f\noindent a\par\end");

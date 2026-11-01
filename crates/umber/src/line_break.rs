@@ -1,6 +1,6 @@
 //! Paragraph passes and legal-break traversal over the original nodes.
 use crate::{
-    Engine, Result,
+    Engine, Error, Result,
     line_search::Search,
     nodes::{Kind, NodeId},
     paragraph::{Active, NONE, Parameters, RecordKind, Scratch, add_glue},
@@ -54,14 +54,19 @@ pub(crate) fn find_breaks(
         };
         let mut p = engine.document.text.horizontal.head();
         let mut previous = p;
+        let mut metrics = engine.metric_reader();
         while !p.is_null() && search.scratch.records[0].next != 0 {
             search.point = p;
             let node = engine.document.nodes.get(p);
             match &node.kind {
-                Kind::Character { .. }
-                | Kind::Ligature { .. }
-                | Kind::Box(_)
-                | Kind::Rule { .. } => {
+                Kind::Character { font, character }
+                | Kind::Ligature {
+                    font, character, ..
+                } => {
+                    let width = metrics.get(*font, *character).ok_or(Error::Font)?.width.0;
+                    search.width[0] = search.width[0].wrapping_add(width);
+                }
+                Kind::Box(_) | Kind::Rule { .. } => {
                     search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?)
                 }
                 Kind::Glue { spec, .. } => {

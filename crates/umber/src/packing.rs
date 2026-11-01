@@ -53,6 +53,7 @@ impl Engine<'_> {
         let mut depth = 0;
         let mut stretch = [0i32; 4];
         let mut shrink = [0i32; 4];
+        let mut metrics = self.metric_reader();
         let mut p = list.head();
         while !p.is_null() {
             let n = self.document.nodes.get(p);
@@ -61,8 +62,8 @@ impl Engine<'_> {
                 | Kind::Ligature {
                     font, character, ..
                 } => {
-                    let m = self
-                        .character_metrics(*font, *character)
+                    let m = metrics
+                        .get(*font, *character)
                         .expect("constructed glyph has metrics");
                     natural = natural.wrapping_add(m.width.0);
                     height = height.max(m.height.0);

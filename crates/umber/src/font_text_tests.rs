@@ -48,6 +48,22 @@ fn discretionaries(e: &Engine<'_>) -> usize {
     count
 }
 #[test]
+fn borrowed_metrics_switch_fonts_and_check_each_character() {
+    let mut e = engine(br"\font\a=test\font\b=test at12pt\end");
+    build(&mut e);
+    let mut metrics = e.metric_reader();
+    assert_eq!(metrics.get(1, b'a').unwrap().width, Scaled(491520));
+    // A cached font must still reject absent and out-of-range characters.
+    assert!(metrics.get(1, 0).is_none());
+    assert!(metrics.get(1, 200).is_none());
+    assert_eq!(metrics.get(1, b'A').unwrap().width, Scaled(163840));
+    assert_eq!(metrics.get(2, b'a').unwrap().width, Scaled(589824));
+    assert_eq!(metrics.get(1, b'a').unwrap().width, Scaled(491520));
+    assert!(metrics.get(0, b'a').is_none());
+    assert!(metrics.get(u32::MAX, b'a').is_none());
+    assert_eq!(metrics.get(2, b'A').unwrap().width, Scaled(196608));
+}
+#[test]
 fn loaded_fonts_grouping_mutation_and_restore() {
     let mut e=engine(br"\font\a=test \a \fontdimen2\a=3pt {\nullfont\fontdimen2\a=4pt}\relax \font\b=test \font\c=test at 12pt \fontdimen8\c=9pt \c\end");
     e.advance(5).unwrap();
