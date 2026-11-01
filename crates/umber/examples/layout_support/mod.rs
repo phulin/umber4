@@ -1,6 +1,7 @@
 //! Native measurement adapter; no changes to interpreter execution.
 use std::{hint::black_box, time::Instant};
 use umber::{Engine, Outcome, Placement, Progress};
+mod document;
 
 fn complete(engine: &mut Engine<'_>) {
     assert_eq!(engine.advance(usize::MAX).unwrap(), Progress::Complete);
@@ -61,6 +62,13 @@ fn inspect(outcome: &Outcome) {
 pub fn run(mut mark: impl FnMut(&'static str)) {
     let mut args = std::env::args().skip(1);
     let mode = args.next().expect("MODE SOURCE FONT_NAME TFM_PATH");
+    if mode == "document-inspect" {
+        if let Err(error) = document::run(args) {
+            eprintln!("document-inspect: {error}");
+            std::process::exit(1);
+        }
+        return;
+    }
     let source = std::fs::read(args.next().unwrap()).unwrap();
     let name = args.next().unwrap();
     let tfm = std::fs::read(args.next().unwrap()).unwrap();

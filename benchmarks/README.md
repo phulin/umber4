@@ -1,5 +1,31 @@
 # Native benchmarks
 
+`gentle.py` compares full-document detached output with an existing native DVI;
+it performs no timing or checkpoint measurements. `layout document-inspect`
+accepts a wrapper, immutable `--input NAME=PATH` and `--tfm NAME=PATH` bundles,
+and an optional `--calendar MINUTES,DAY,MONTH,YEAR`. Its JSON records page counts,
+page-local font names as byte arrays and scaled sizes, and ordered glyph/rule
+events. Existing single-font prose modes retain their interfaces.
+
+```bash
+cargo build --release --example layout
+python3 benchmarks/gentle.py --assets-root . --adapter target/release/examples/layout
+```
+
+The default comparison uses the unchanged local Gentle source and retained
+`gentle-native-pdftex14025-tl2026` reference. It constructs the plain-loading
+wrapper, registers only the union of TFM inputs in the native format/document
+recorders, and sets the calendar from `SOURCE_DATE_EPOCH=1772323200` (UTC).
+`--texmf` selects the immutable TeX Live asset directory. Explicit `--wrapper`,
+`--dvi`, `--input`, and `--tfm` arguments also support smaller sources.
+Comparison expands page-local font indices to resource-name bytes and size,
+then checks every ordered glyph and positive rule rectangle, reporting the first
+mismatch; `--compare-counts` additionally checks the ten native BOP counters.
+The independent DVI reader scales advances directly from raw TFM bytes at each
+DVI font size, including TeX's integer size reduction. Unknown specials fail;
+only exact payloads explicitly declared with `--nonvisual-special HEX` are ignored.
+Interpreter errors fail the comparison without claiming partial-page success.
+
 `layout.py` measures three prose documents with real TFM fonts, line/page
 construction, and checkpoint replay. It checks all native DVI glyph coordinates
 and pages, then compares the ordinary release CLI with same-input INITEX using
