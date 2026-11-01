@@ -64,12 +64,15 @@ impl Value {
 enum Action {
     Again,
     Child(Task),
+    Replace(Task),
     Done(Value),
 }
 enum Task {
     List(ListWork),
     Atom(AtomWork),
     Clean(CleanWork),
+    Form(forms::FormWork),
+    Fraction(fraction::FractionWork),
 }
 #[derive(Clone, Copy)]
 enum Pass {
@@ -85,6 +88,10 @@ struct ListWork {
     style: Style,
     initial: Style,
     penalties: bool,
+    delimited: bool,
+    closed: bool,
+    max_height: i32,
+    max_depth: i32,
     pass: Pass,
     output: List,
     pending: List,
@@ -99,6 +106,10 @@ impl ListWork {
             style,
             initial: style,
             penalties,
+            delimited: false,
+            closed: false,
+            max_height: 0,
+            max_depth: 0,
             pass: Pass::First,
             output: List::default(),
             pending: List::default(),
@@ -154,13 +165,13 @@ impl AtomWork {
                 && (atom.limits == Limits::AboveBelow
                     || (atom.limits == Limits::Normal && style.display())),
             op_clean: atom.class == Class::Op
-                && (matches!(atom.nucleus, Field::Character { .. })
+                && (matches!(atom.fields.nucleus, Field::Character { .. })
                     || atom.limits == Limits::AboveBelow
                     || (atom.limits == Limits::Normal && style.display())),
             op_character: atom.class == Class::Op
-                && matches!(atom.nucleus, Field::Character { .. }),
-            has_sup: !atom.sup.is_empty(),
-            has_sub: !atom.sub.is_empty(),
+                && matches!(atom.fields.nucleus, Field::Character { .. }),
+            has_sup: !atom.fields.sup.is_empty(),
+            has_sub: !atom.fields.sub.is_empty(),
             atom,
             style,
             stage: AtomStage::Nucleus,
@@ -239,12 +250,18 @@ impl Conversion<'_, '_, '_> {
                 Task::List(w) => self.list_step(w),
                 Task::Atom(w) => self.atom_step(w),
                 Task::Clean(w) => self.clean_step(w),
+                Task::Form(w) => self.form_step(w),
+                Task::Fraction(w) => self.fraction_step(w),
             };
             match step {
                 Ok(Action::Again) => self.scratch.tasks.push(task),
                 Ok(Action::Child(child)) => {
                     self.scratch.tasks.push(task);
                     self.scratch.tasks.push(child);
+                }
+                Ok(Action::Replace(next)) => {
+                    self.release_task(task);
+                    self.scratch.tasks.push(next);
                 }
                 Ok(Action::Done(value)) => {
                     self.release_task(task);
@@ -278,6 +295,8 @@ impl Conversion<'_, '_, '_> {
     }
     fn release_task(&mut self, task: Task) {
         match task {
+            Task::Form(w) => self.release_form(w),
+            Task::Fraction(w) => self.release_fraction(w),
             Task::List(w) => {
                 self.math.release(w.list, &mut self.engine.document.nodes);
                 self.release_value(Value::List(w.output));
@@ -306,134 +325,6 @@ impl Conversion<'_, '_, '_> {
         while let Some(t) = self.scratch.tasks.pop() {
             self.release_task(t);
         }
-    }
-    fn list_step(&mut self, w: &mut ListWork) -> Result<Action> {
-        match w.pass {
-            Pass::Atom => {
-                let output = self.result().list();
-                let class = self.math.node(w.cursor).kind.class().unwrap();
-                self.math.node_mut(w.cursor).kind = Kind::Converted { class, output };
-                w.previous = w.cursor;
-                w.previous_class = Some(class);
-                w.cursor = self.math.node(w.cursor).next;
-                w.pass = Pass::First;
-            }
-            Pass::First => {
-                if w.cursor == MathId::NULL {
-                    self.cancel_binary(w.previous, w.previous_class);
-                    w.pass = Pass::Second;
-                    w.style = w.initial;
-                    w.previous_class = None;
-                } else {
-                    let q = w.cursor;
-                    match &self.math.node(q).kind {
-                        Kind::Style(style) => {
-                            w.style = *style;
-                            w.cursor = self.math.node(q).next;
-                        }
-                        Kind::Choice(_) => {
-                            let Kind::Choice(mut choices) = std::mem::replace(
-                                &mut self.math.node_mut(q).kind,
-                                Kind::Style(w.style),
-                            ) else {
-                                unreachable!()
-                            };
-                            let selected = std::mem::take(&mut choices[w.style.choice()]);
-                            for l in choices {
-                                self.math.release(l, &mut self.engine.document.nodes);
-                            }
-                            self.math.insert_after(&mut w.list, q, selected);
-                            w.cursor = self.math.node(q).next;
-                        }
-                        Kind::Material(n) => {
-                            if !matches!(
-                                self.engine.document.nodes.get(n.id()).kind,
-                                nodes::Kind::Kern { .. }
-                                    | nodes::Kind::Glue { .. }
-                                    | nodes::Kind::Rule { .. }
-                                    | nodes::Kind::Penalty(_)
-                            ) {
-                                return Err(Error::Unsupported);
-                            }
-                            w.cursor = self.math.node(q).next;
-                        }
-                        Kind::Atom(a) => {
-                            let mut class = a.class;
-                            if class == Class::Bin
-                                && matches!(
-                                    w.previous_class,
-                                    Some(
-                                        Class::Bin
-                                            | Class::Op
-                                            | Class::Rel
-                                            | Class::Open
-                                            | Class::Punct
-                                    )
-                                )
-                            {
-                                class = Class::Ord;
-                                self.math.node_mut(q).kind.set_class(class);
-                            }
-                            if matches!(class, Class::Rel | Class::Close | Class::Punct) {
-                                self.cancel_binary(w.previous, w.previous_class);
-                            }
-                            if class == Class::Ord {
-                                self.make_ord(q, w.style, &mut w.list)?;
-                            }
-                            let Kind::Atom(atom) = std::mem::replace(
-                                &mut self.math.node_mut(q).kind,
-                                Kind::Working(class),
-                            ) else {
-                                unreachable!()
-                            };
-                            w.pass = Pass::Atom;
-                            return Ok(Action::Child(Task::Atom(AtomWork::new(atom, w.style))));
-                        }
-                        _ => unreachable!("unconverted first pass"),
-                    }
-                }
-            }
-            Pass::Second => {
-                let Some(kind) = self.math.take_front(&mut w.list) else {
-                    return Ok(Action::Done(Value::List(std::mem::take(&mut w.output))));
-                };
-                match kind {
-                    Kind::Style(s) => w.style = s,
-                    Kind::Material(n) => self.engine.document.nodes.append(&mut w.output, n),
-                    Kind::Converted { class, output } => {
-                        w.pending = output;
-                        if let Some(previous) = w.previous_class {
-                            self.spacing(&mut w.output, previous, class, w.style)?;
-                        }
-                        self.engine
-                            .document
-                            .nodes
-                            .splice(&mut w.output, std::mem::take(&mut w.pending));
-                        let pen = match class {
-                            Class::Bin => Some(26),
-                            Class::Rel => Some(27),
-                            _ => None,
-                        };
-                        if w.penalties
-                            && !w.list.is_empty()
-                            && let Some(index) = pen
-                        {
-                            let next = &self.math.node(w.list.head).kind;
-                            let suppress = next.class() == Some(Class::Rel)
-                                || matches!(next, Kind::Material(n) if matches!(self.engine.document.nodes.get(n.id()).kind, nodes::Kind::Penalty(_)));
-                            let penalty =
-                                self.engine.document.scalars[Target::parameter(index)].value;
-                            if !suppress && penalty < 10000 {
-                                self.append(&mut w.output, nodes::Kind::Penalty(penalty))?;
-                            }
-                        }
-                        w.previous_class = Some(class);
-                    }
-                    _ => unreachable!("translated second pass"),
-                }
-            }
-        }
-        Ok(Action::Again)
     }
     fn cancel_binary(&mut self, id: MathId, class: Option<Class>) {
         if class == Some(Class::Bin) {
@@ -543,3 +434,18 @@ mod atoms;
 
 #[path = "math_clean.rs"]
 mod clean;
+
+#[path = "math_lists.rs"]
+mod lists;
+
+#[path = "math_boxing.rs"]
+mod boxing;
+#[path = "math_scripts.rs"]
+mod scripts;
+
+#[path = "math_delimiters.rs"]
+mod delimiters;
+#[path = "math_forms.rs"]
+mod forms;
+#[path = "math_fraction.rs"]
+mod fraction;

@@ -16,8 +16,8 @@ fn upstream_math_cramped_styles_signed_parameters_boxes_and_missing_glyphs() {
                 style,
                 |e, m| {
                     let mut a = Atom::new(Class::Ord, character(b'a'));
-                    a.sub = character(b'b');
-                    a.sup = character(b'c');
+                    a.fields.sub = character(b'b');
+                    a.fields.sup = character(b'c');
                     let mut l = MathList::default();
                     add(e, m, &mut l, a);
                     add(e, m, &mut l, Atom::new(Class::Bin, character(b'd')));
@@ -35,8 +35,8 @@ fn upstream_math_cramped_styles_signed_parameters_boxes_and_missing_glyphs() {
         );
         oracle.compare(&tfm, "", &body, Style::TEXT, |e, m| {
             let mut a = Atom::new(nucleus, character(0));
-            a.sub = character(b'a');
-            a.sup = character(b'b');
+            a.fields.sub = character(b'a');
+            a.fields.sup = character(b'b');
             let mut l = MathList::default();
             add(e, m, &mut l, a);
             l
@@ -72,8 +72,8 @@ fn upstream_math_cramped_styles_signed_parameters_boxes_and_missing_glyphs() {
                 };
                 let mut a = Atom::new(Class::Op, Field::Box(b));
                 a.limits = limits;
-                a.sub = Field::SubMath(MathList::default());
-                a.sup = Field::SubMath(MathList::default());
+                a.fields.sub = Field::SubMath(MathList::default());
+                a.fields.sup = Field::SubMath(MathList::default());
                 let mut l = MathList::default();
                 add(e, m, &mut l, a);
                 l
@@ -148,8 +148,8 @@ fn upstream_math_real_cm_fonts_and_operator_larger_characters() {
                         character: b'f',
                     },
                 );
-                a.sub = character(b'1');
-                a.sup = Field::Character {
+                a.fields.sub = character(b'1');
+                a.fields.sup = Field::Character {
                     family: 1,
                     character: b'x',
                 };
@@ -163,8 +163,8 @@ fn upstream_math_real_cm_fonts_and_operator_larger_characters() {
                         },
                     );
                     a.limits = limits;
-                    a.sub = character(b'1');
-                    a.sup = character(b'2');
+                    a.fields.sub = character(b'1');
+                    a.fields.sup = character(b'2');
                     add(e, m, &mut l, a);
                 }
                 l

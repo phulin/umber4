@@ -57,7 +57,7 @@ impl Oracle {
         static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
         let sequence = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let dir = std::env::temp_dir().join(format!(
-            "umber-math-core-oracle-{}-{sequence}",
+            "umber-math-forms-oracle-{}-{sequence}",
             std::process::id()
         ));
         std::fs::create_dir_all(&dir).unwrap();
@@ -130,7 +130,7 @@ impl Oracle {
             format!("{style_name} {body}")
         };
         let native = format!(
-            r"{boot}{settings}\tracingoutput=1\showboxbreadth=10000\showboxdepth=10000\hbadness=10000\hfuzz=16383pt\setbox0=\hbox{{${formula}$}}\shipout\box0\end"
+            r"{boot}{settings}\tracingoutput=1\showboxbreadth=10000\showboxdepth=10000\hbadness=10000\hfuzz=16383pt\vbadness=10000\vfuzz=16383pt\setbox0=\hbox{{${formula}$}}\shipout\box0\end"
         );
         for (name, bytes) in fonts {
             std::fs::write(
@@ -181,8 +181,17 @@ impl Oracle {
             .map(|p| p.placements().collect())
             .collect();
         if style.cramped() {
-            normalize_glyphs(&mut actual);
-            normalize_glyphs(&mut expected);
+            for (actual, expected) in actual.iter_mut().zip(&expected) {
+                if actual.len() == expected.len() + 1 {
+                    assert!(
+                        matches!(actual.first(), Some(Placement::Rule { .. })),
+                        "native overline wrapper rule"
+                    );
+                    actual.remove(0);
+                }
+            }
+            normalize_placements(&mut actual);
+            normalize_placements(&mut expected);
         }
         assert_eq!(expected, actual, "DVI placements: {body}\n{log}");
     }
@@ -264,10 +273,10 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
                 oracle.compare(&tfm, "", &body, style, |e, m| {
                     let mut a = Atom::new(Class::Ord, character(b'a'));
                     if sup {
-                        a.sup = Field::SubMath(chars(e, m, b"bc"));
+                        a.fields.sup = Field::SubMath(chars(e, m, b"bc"));
                     }
                     if sub {
-                        a.sub = Field::SubMath(chars(e, m, b"de"));
+                        a.fields.sub = Field::SubMath(chars(e, m, b"de"));
                     }
                     let mut l = MathList::default();
                     add(e, m, &mut l, a);
@@ -291,10 +300,10 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
                     let mut a = Atom::new(Class::Op, character(b'a'));
                     a.limits = policy;
                     if sup {
-                        a.sup = character(b'b');
+                        a.fields.sup = character(b'b');
                     }
                     if sub {
-                        a.sub = character(b'c');
+                        a.fields.sub = character(b'c');
                     }
                     let mut l = MathList::default();
                     add(e, m, &mut l, a);
@@ -319,7 +328,7 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
             |e, m| {
                 let mut l = chars(e, m, b"a");
                 let mut a = Atom::new(Class::Rel, character(b'b'));
-                a.sup = character(b'd');
+                a.fields.sup = character(b'd');
                 add(e, m, &mut l, a);
                 l
             },
@@ -351,8 +360,8 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
         Style::DISPLAY,
         |e, m| {
             let mut a = Atom::new(Class::Op, character(b'a'));
-            a.sub = character(b'c');
-            a.sup = character(b'd');
+            a.fields.sub = character(b'c');
+            a.fields.sup = character(b'd');
             let mut l = MathList::default();
             add(e, m, &mut l, a);
             l
@@ -385,8 +394,8 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
                 b
             };
             let mut a = Atom::new(Class::Ord, Field::Box(b));
-            a.sub = character(b'c');
-            a.sup = character(b'd');
+            a.fields.sub = character(b'c');
+            a.fields.sup = character(b'd');
             let mut l = MathList::default();
             add(e, m, &mut l, a);
             l
@@ -433,15 +442,15 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
         };
         oracle.compare(&tfm, "", body, Style::TEXT, |e, m| {
             let mut inner = Atom::new(Class::Ord, character(b'b'));
-            inner.sub = character(b'c');
-            inner.sup = character(b'd');
+            inner.fields.sub = character(b'c');
+            inner.fields.sup = character(b'd');
             let mut field = MathList::default();
             add(e, m, &mut field, inner);
             let mut outer = Atom::new(Class::Ord, character(b'a'));
             if superscript {
-                outer.sup = Field::SubMath(field)
+                outer.fields.sup = Field::SubMath(field)
             } else {
-                outer.sub = Field::SubMath(field)
+                outer.fields.sub = Field::SubMath(field)
             }
             let mut l = MathList::default();
             add(e, m, &mut l, outer);
@@ -450,24 +459,31 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
     }
 }
 
-fn normalize_glyphs(pages: &mut [Vec<Placement>]) {
+fn normalize_placements(pages: &mut [Vec<Placement>]) {
     for page in pages {
-        page.retain(|p| matches!(p, Placement::Glyph { .. }));
-        let Some(Placement::Glyph {
-            x: origin_x,
-            y: origin_y,
-            ..
-        }) = page.first().copied()
-        else {
+        let origin = page
+            .iter()
+            .find(|p| matches!(p, Placement::Glyph { .. }))
+            .or(page.first())
+            .copied();
+        let Some(origin) = origin else {
             continue;
         };
+        let (origin_x, origin_y) = match origin {
+            Placement::Glyph { x, y, .. } | Placement::Rule { x, y, .. } => (x, y),
+        };
         for item in page {
-            if let Placement::Glyph { x, y, .. } = item {
-                *x -= origin_x;
-                *y -= origin_y;
+            match item {
+                Placement::Glyph { x, y, .. } | Placement::Rule { x, y, .. } => {
+                    *x -= origin_x;
+                    *y -= origin_y;
+                }
             }
         }
     }
 }
 #[path = "math_real_oracle_tests.rs"]
 mod real;
+
+#[path = "math_forms_oracle_tests.rs"]
+mod forms;

@@ -89,7 +89,7 @@ fn math_empty_script_is_present_and_suppresses_italic() {
         let mut l = MathList::default();
         let mut a = Atom::new(Class::Ord, character(b'a'));
         if present {
-            a.sub = Field::SubMath(MathList::default());
+            a.fields.sub = Field::SubMath(MathList::default());
         }
         add(&mut e, &mut m, &mut l, a);
         let l = e
@@ -155,7 +155,7 @@ fn math_ligature_transfers_following_scripts_and_reuses_freed_slots() {
             Atom::new(Class::Ord, character(b'a')),
         );
         let mut a = Atom::new(Class::Rel, character(b'b'));
-        a.sup = character(b'd');
+        a.fields.sup = character(b'd');
         add(&mut e, &mut m, &mut l, a);
         let l = e
             .math_to_hlist(&mut m, l, Style::TEXT, false, &mut scratch)
@@ -398,24 +398,24 @@ fn math_every_suspended_handoff_cleans_only_owned_forests_and_reuses_box_slots()
         );
         let mut op = Atom::new(Class::Op, Field::SubMath(field));
         op.limits = Limits::AboveBelow;
-        op.sup = Field::SubMath(MathList::default());
+        op.fields.sup = Field::SubMath(MathList::default());
         let boxed = e.document.nodes.alloc_box(BoxData::default()).unwrap();
-        op.sub = Field::Box(boxed);
+        op.fields.sub = Field::Box(boxed);
         add(&mut e, &mut m, &mut l, op);
         let mut choices = std::array::from_fn(|_| MathList::default());
         for list in &mut choices {
             let boxed = e.document.nodes.alloc_box(BoxData::default()).unwrap();
             let mut a = Atom::new(Class::Ord, Field::Box(boxed));
-            a.sup = character(b'b');
-            a.sub = character(b'c');
+            a.fields.sup = character(b'b');
+            a.fields.sub = character(b'c');
             add(&mut e, &mut m, list, a);
         }
         m.append(&mut l, Kind::Choice(choices), &mut e.document.nodes)
             .unwrap();
         let mut outer = MathList::default();
         let mut a = Atom::new(Class::Ord, Field::SubMath(l));
-        a.sup = character(b'e');
-        a.sub = Field::SubMath(MathList::default());
+        a.fields.sup = character(b'e');
+        a.fields.sub = Field::SubMath(MathList::default());
         add(&mut e, &mut m, &mut outer, a);
         scratch.interrupt_after(budget);
         match e.math_to_hlist(&mut m, outer, Style::TEXT, false, &mut scratch) {

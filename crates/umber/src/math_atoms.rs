@@ -1,6 +1,5 @@
 //! Ordinary ligatures, nucleus continuations, scripts, and displayed limits.
 use super::*;
-use crate::layout_values::DimenParam;
 impl Conversion<'_, '_, '_> {
     pub(super) fn make_ord(&mut self, q: MathId, style: Style, list: &mut MathList) -> Result<()> {
         loop {
@@ -9,10 +8,10 @@ impl Conversion<'_, '_, '_> {
                 let Kind::Atom(a) = &n.kind else {
                     unreachable!()
                 };
-                if !a.sub.is_empty() || !a.sup.is_empty() {
+                if !a.fields.sub.is_empty() || !a.fields.sup.is_empty() {
                     return Ok(());
                 }
-                let Field::Character { family, character } = a.nucleus else {
+                let Field::Character { family, character } = a.fields.nucleus else {
                     return Ok(());
                 };
                 (family, character, n.next)
@@ -21,7 +20,7 @@ impl Conversion<'_, '_, '_> {
                 return Ok(());
             }
             let right = match &self.math.node(p).kind {
-                Kind::Atom(a) if a.class as u8 <= Class::Punct as u8 => match a.nucleus {
+                Kind::Atom(a) if a.class as u8 <= Class::Punct as u8 => match a.fields.nucleus {
                     Field::Character {
                         family: f,
                         character,
@@ -33,7 +32,7 @@ impl Conversion<'_, '_, '_> {
             let Kind::Atom(a) = &mut self.math.node_mut(q).kind else {
                 unreachable!()
             };
-            a.nucleus = Field::TextCharacter {
+            a.fields.nucleus = Field::TextCharacter {
                 family,
                 character: left,
             };
@@ -41,7 +40,7 @@ impl Conversion<'_, '_, '_> {
                 let Kind::Atom(a) = &mut self.math.node_mut(q).kind else {
                     unreachable!()
                 };
-                a.nucleus = Field::Empty;
+                a.fields.nucleus = Field::Empty;
                 return Ok(());
             };
             let scaled = self.descriptor(font).scaled.unwrap();
@@ -73,7 +72,7 @@ impl Conversion<'_, '_, '_> {
                     let Kind::Atom(a) = &mut self.math.node_mut(q).kind else {
                         unreachable!()
                     };
-                    a.nucleus = Field::TextCharacter {
+                    a.fields.nucleus = Field::TextCharacter {
                         family,
                         character: rem,
                     };
@@ -82,7 +81,7 @@ impl Conversion<'_, '_, '_> {
                     let Kind::Atom(a) = &mut self.math.node_mut(p).kind else {
                         unreachable!()
                     };
-                    a.nucleus = Field::Character {
+                    a.fields.nucleus = Field::Character {
                         family,
                         character: rem,
                     };
@@ -119,12 +118,12 @@ impl Conversion<'_, '_, '_> {
                     let Kind::Atom(a) = &mut self.math.node_mut(q).kind else {
                         unreachable!()
                     };
-                    a.nucleus = Field::TextCharacter {
+                    a.fields.nucleus = Field::TextCharacter {
                         family,
                         character: rem,
                     };
-                    a.sub = std::mem::take(&mut following.sub);
-                    a.sup = std::mem::take(&mut following.sup);
+                    a.fields.sub = std::mem::take(&mut following.fields.sub);
+                    a.fields.sup = std::mem::take(&mut following.fields.sup);
                 }
             }
             if op > 3 {
@@ -133,8 +132,8 @@ impl Conversion<'_, '_, '_> {
             let Kind::Atom(a) = &mut self.math.node_mut(q).kind else {
                 unreachable!()
             };
-            if let Field::TextCharacter { family, character } = a.nucleus {
-                a.nucleus = Field::Character { family, character };
+            if let Field::TextCharacter { family, character } = a.fields.nucleus {
+                a.fields.nucleus = Field::Character { family, character };
             }
         }
     }
@@ -145,7 +144,7 @@ impl Conversion<'_, '_, '_> {
                     if let Field::Character {
                         family,
                         mut character,
-                    } = w.atom.nucleus
+                    } = w.atom.fields.nucleus
                     {
                         if let Some((font, mut metrics)) = self.glyph(family, character, w.style)? {
                             if w.style.display() {
@@ -160,18 +159,18 @@ impl Conversion<'_, '_, '_> {
                                 }
                             }
                             w.delta = metrics.italic;
-                            w.atom.nucleus = Field::Character { family, character };
+                            w.atom.fields.nucleus = Field::Character { family, character };
                         } else {
-                            w.atom.nucleus = Field::Empty;
+                            w.atom.fields.nucleus = Field::Empty;
                         }
                     }
                     w.stage = AtomStage::NucleusReady;
                     return Ok(Action::Child(CleanWork::task(
-                        std::mem::take(&mut w.atom.nucleus),
+                        std::mem::take(&mut w.atom.fields.nucleus),
                         w.style,
                     )));
                 }
-                let field = std::mem::take(&mut w.atom.nucleus);
+                let field = std::mem::take(&mut w.atom.fields.nucleus);
                 match field {
                     Field::Character { family, character }
                     | Field::TextCharacter { family, character } => {
@@ -250,7 +249,7 @@ impl Conversion<'_, '_, '_> {
                 w.stage = AtomStage::SupReady;
                 if w.has_sup || w.limits {
                     return Ok(Action::Child(CleanWork::task(
-                        std::mem::take(&mut w.atom.sup),
+                        std::mem::take(&mut w.atom.fields.sup),
                         w.style.sup(),
                     )));
                 }
@@ -265,7 +264,7 @@ impl Conversion<'_, '_, '_> {
                 w.stage = AtomStage::SubReady;
                 if w.has_sub || w.limits {
                     return Ok(Action::Child(CleanWork::task(
-                        std::mem::take(&mut w.atom.sub),
+                        std::mem::take(&mut w.atom.fields.sub),
                         w.style.sub(),
                     )));
                 }
@@ -285,226 +284,5 @@ impl Conversion<'_, '_, '_> {
             }
         }
         Ok(Action::Again)
-    }
-    fn box_geometry(&self, b: &DetachedNode) -> (i32, i32, i32) {
-        let nodes::Kind::Box(id) = &self.engine.document.nodes.get(b.id()).kind else {
-            unreachable!()
-        };
-        let b = self.engine.document.nodes.box_data(id);
-        (b.width.0, b.height.0, b.depth.0)
-    }
-    fn finish_scripts(&mut self, w: &mut AtomWork) -> Result<()> {
-        let script_space = self.engine.document.layout_values.dimens
-            [DimenParam::ScriptSpace.index()]
-        .value
-        .0;
-        for b in [&w.upper, &w.lower].into_iter().flatten() {
-            let data = self.engine.document.nodes.box_mut(b.id());
-            data.width.0 = data.width.0.wrapping_add(script_space);
-        }
-        let xheight = self.symbol(w.style, 5);
-        if let Some(upper) = &w.upper {
-            let (_, _, depth) = self.box_geometry(upper);
-            let parameter = if w.style.cramped() {
-                15
-            } else if w.style.display() {
-                13
-            } else {
-                14
-            };
-            w.up =
-                w.up.max(self.symbol(w.style, parameter))
-                    .max(depth.wrapping_add(xheight.wrapping_abs() / 4));
-        }
-        if let Some(lower) = &w.lower {
-            let (_, height, _) = self.box_geometry(lower);
-            if let Some(upper) = &w.upper {
-                w.down = w.down.max(self.symbol(w.style, 17));
-                let (_, _, depth) = self.box_geometry(upper);
-                let clearance = self.extension(w.style, 8).wrapping_mul(4).wrapping_sub(
-                    w.up.wrapping_sub(depth)
-                        .wrapping_sub(height.wrapping_sub(w.down)),
-                );
-                if clearance > 0 {
-                    w.down = w.down.wrapping_add(clearance);
-                    let extra = (xheight.wrapping_mul(4).wrapping_abs() / 5)
-                        .wrapping_sub(w.up.wrapping_sub(depth));
-                    if extra > 0 {
-                        w.up = w.up.wrapping_add(extra);
-                        w.down = w.down.wrapping_sub(extra);
-                    }
-                }
-            } else {
-                w.down = w
-                    .down
-                    .max(self.symbol(w.style, 16))
-                    .max(height.wrapping_sub(xheight.wrapping_mul(4).wrapping_abs() / 5));
-            }
-        }
-        let b = match (w.upper.is_some(), w.lower.is_some()) {
-            (true, true) => {
-                let (_, _, d) = self.box_geometry(w.upper.as_ref().unwrap());
-                let (_, h, _) = self.box_geometry(w.lower.as_ref().unwrap());
-                let upper = w.upper.take().unwrap();
-                self.engine.document.nodes.box_mut(upper.id()).shift = w.delta;
-                self.engine.document.nodes.append(&mut w.temp, upper);
-                self.kern(
-                    &mut w.temp,
-                    w.up.wrapping_sub(d).wrapping_sub(h.wrapping_sub(w.down)),
-                )?;
-                self.engine
-                    .document
-                    .nodes
-                    .append(&mut w.temp, w.lower.take().unwrap());
-                let b = self.engine.vpackage(
-                    std::mem::take(&mut w.temp),
-                    PackSpec::Natural,
-                    Scaled::MAX,
-                )?;
-                self.engine.document.nodes.box_mut(b.id()).shift = Scaled(w.down);
-                b
-            }
-            (true, false) => {
-                let b = w.upper.take().unwrap();
-                self.engine.document.nodes.box_mut(b.id()).shift = Scaled(w.up.wrapping_neg());
-                b
-            }
-            (false, true) => {
-                let b = w.lower.take().unwrap();
-                self.engine.document.nodes.box_mut(b.id()).shift = Scaled(w.down);
-                b
-            }
-            _ => unreachable!("nonempty scripts"),
-        };
-        self.engine.document.nodes.append(&mut w.output, b);
-        Ok(())
-    }
-    fn finish_limits(&mut self, w: &mut AtomWork) -> Result<()> {
-        let width = [&w.base, &w.upper, &w.lower]
-            .into_iter()
-            .flatten()
-            .map(|b| self.box_geometry(b).0)
-            .max()
-            .unwrap();
-        for target in [&mut w.base, &mut w.upper, &mut w.lower] {
-            *target = Some(self.rebox(target.take().unwrap(), Scaled(width))?);
-        }
-        let (_, mut height, mut depth) = self.box_geometry(w.base.as_ref().unwrap());
-        let padding = self.extension(w.style, 13);
-        if w.has_sup {
-            let (_, h, d) = self.box_geometry(w.upper.as_ref().unwrap());
-            let gap = self
-                .extension(w.style, 11)
-                .wrapping_sub(d)
-                .max(self.extension(w.style, 9));
-            height = height
-                .wrapping_add(padding)
-                .wrapping_add(h)
-                .wrapping_add(d)
-                .wrapping_add(gap);
-            self.kern(&mut w.temp, padding)?;
-            let upper = w.upper.take().unwrap();
-            self.engine.document.nodes.box_mut(upper.id()).shift = Scaled(half(w.delta.0));
-            self.engine.document.nodes.append(&mut w.temp, upper);
-            self.kern(&mut w.temp, gap)?;
-        } else {
-            self.release_value(Value::Box(w.upper.take().unwrap()));
-        }
-        self.engine
-            .document
-            .nodes
-            .append(&mut w.temp, w.base.take().unwrap());
-        if w.has_sub {
-            let (_, h, d) = self.box_geometry(w.lower.as_ref().unwrap());
-            let gap = self
-                .extension(w.style, 12)
-                .wrapping_sub(h)
-                .max(self.extension(w.style, 10));
-            depth = depth
-                .wrapping_add(padding)
-                .wrapping_add(h)
-                .wrapping_add(d)
-                .wrapping_add(gap);
-            self.kern(&mut w.temp, gap)?;
-            let lower = w.lower.take().unwrap();
-            self.engine.document.nodes.box_mut(lower.id()).shift =
-                Scaled(half(w.delta.0).wrapping_neg());
-            self.engine.document.nodes.append(&mut w.temp, lower);
-            self.kern(&mut w.temp, padding)?;
-        } else {
-            self.release_value(Value::Box(w.lower.take().unwrap()));
-        }
-        let b = self.engine.document.nodes.alloc_box(BoxData {
-            list: std::mem::take(&mut w.temp),
-            vertical: true,
-            width: Scaled(width),
-            height: Scaled(height),
-            depth: Scaled(depth),
-            ..BoxData::default()
-        })?;
-        self.engine.document.nodes.append(&mut w.output, b);
-        Ok(())
-    }
-    fn rebox(&mut self, mut b: DetachedNode, width: Scaled) -> Result<DetachedNode> {
-        let (old_width, _, _) = self.box_geometry(&b);
-        let data = self.engine.document.nodes.box_mut(b.id());
-        if old_width == width.0 || data.list.is_empty() {
-            data.width = width;
-            return Ok(b);
-        }
-        if data.vertical {
-            let mut list = List::default();
-            self.engine.document.nodes.append(&mut list, b);
-            b = self.engine.hpack(list, PackSpec::Natural)?;
-        }
-        let mut contents = std::mem::take(&mut self.engine.document.nodes.box_mut(b.id()).list);
-        let data_width = self.engine.document.nodes.box_mut(b.id()).width;
-        self.release_value(Value::Box(b));
-        let mut result = List::default();
-        let converted = (|| {
-            if contents.head() == contents.tail()
-                && let nodes::Kind::Character { font, character } =
-                    self.engine.document.nodes.get(contents.head()).kind
-            {
-                let natural = self
-                    .engine
-                    .character_metrics(font, character)
-                    .unwrap()
-                    .width;
-                if natural != data_width {
-                    self.kern(&mut contents, data_width.0.wrapping_sub(natural.0))?;
-                }
-            }
-            let glue = Glue {
-                stretch: Scaled::ONE,
-                shrink: Scaled::ONE,
-                stretch_order: GlueOrder::Fil,
-                shrink_order: GlueOrder::Fil,
-                ..Glue::default()
-            };
-            self.append(
-                &mut result,
-                nodes::Kind::Glue {
-                    spec: glue,
-                    subtype: GlueKind::Normal,
-                },
-            )?;
-            self.engine
-                .document
-                .nodes
-                .splice(&mut result, std::mem::take(&mut contents));
-            self.append(
-                &mut result,
-                nodes::Kind::Glue {
-                    spec: glue,
-                    subtype: GlueKind::Normal,
-                },
-            )?;
-            self.engine
-                .hpack(std::mem::take(&mut result), PackSpec::To(width))
-        })();
-        self.release_value(Value::List(contents));
-        self.release_value(Value::List(result));
-        converted
     }
 }

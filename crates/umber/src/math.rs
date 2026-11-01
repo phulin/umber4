@@ -87,6 +87,15 @@ impl Style {
     pub fn sub(self) -> Self {
         Self(2 * (self.0 / 4) + 5)
     }
+    pub fn cramp(self) -> Self {
+        Self(2 * (self.0 / 2) + 1)
+    }
+    pub fn numerator(self) -> Self {
+        Self(self.0 + 2 - 2 * (self.0 / 6))
+    }
+    pub fn denominator(self) -> Self {
+        Self(2 * (self.0 / 2) + 3 - 2 * (self.0 / 6))
+    }
     pub fn choice(self) -> usize {
         usize::from(self.0 / 2)
     }
@@ -127,24 +136,68 @@ impl Field {
         matches!(self, Self::Empty)
     }
 }
+#[derive(Debug, Default)]
+pub(crate) struct Fields {
+    pub nucleus: Field,
+    pub sub: Field,
+    pub sup: Field,
+}
+impl Fields {
+    pub fn new(nucleus: Field) -> Self {
+        Self {
+            nucleus,
+            ..Self::default()
+        }
+    }
+}
 #[derive(Debug)]
 pub(crate) struct Atom {
     pub class: Class,
     pub limits: Limits,
-    pub nucleus: Field,
-    pub sub: Field,
-    pub sup: Field,
+    pub fields: Fields,
 }
 impl Atom {
     pub fn new(class: Class, nucleus: Field) -> Self {
         Self {
             class,
-            nucleus,
             limits: Limits::Normal,
-            sub: Field::Empty,
-            sup: Field::Empty,
+            fields: Fields::new(nucleus),
         }
     }
+}
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) struct Delimiter {
+    pub small_family: u8,
+    pub small_char: u8,
+    pub large_family: u8,
+    pub large_char: u8,
+}
+#[cfg_attr(
+    not(test),
+    expect(dead_code, reason = "boundary construction awaits math frontend")
+)]
+#[derive(Clone, Copy, Debug)]
+pub(crate) enum Side {
+    Left,
+    Right,
+}
+#[cfg_attr(
+    not(test),
+    expect(dead_code, reason = "explicit thickness awaits math frontend")
+)]
+#[derive(Clone, Copy, Debug, Default)]
+pub(crate) enum RuleThickness {
+    #[default]
+    Default,
+    Explicit(crate::numeric::Scaled),
+}
+#[derive(Debug, Default)]
+pub(crate) struct Fraction {
+    pub numerator: MathList,
+    pub denominator: MathList,
+    pub left: Delimiter,
+    pub right: Delimiter,
+    pub thickness: RuleThickness,
 }
 #[cfg_attr(
     not(test),
@@ -158,6 +211,18 @@ pub(crate) enum Kind {
     #[default]
     Free,
     Atom(Atom),
+    Fraction(Fraction),
+    Over(Fields),
+    Under(Fields),
+    VCenter(Fields),
+    Radical {
+        fields: Fields,
+        delimiter: Delimiter,
+    },
+    Boundary {
+        side: Side,
+        delimiter: Delimiter,
+    },
     Style(Style),
     Choice([MathList; 4]),
     Material(DetachedNode),
@@ -171,6 +236,17 @@ impl Kind {
     fn class(&self) -> Option<Class> {
         match self {
             Self::Atom(a) => Some(a.class),
+            Self::Fraction(_)
+            | Self::Over(_)
+            | Self::Under(_)
+            | Self::VCenter(_)
+            | Self::Radical { .. } => Some(Class::Ord),
+            Self::Boundary {
+                side: Side::Left, ..
+            } => Some(Class::Open),
+            Self::Boundary {
+                side: Side::Right, ..
+            } => Some(Class::Close),
             Self::Working(c) | Self::Converted { class: c, .. } => Some(*c),
             _ => None,
         }
@@ -310,12 +386,21 @@ impl MathStore {
             _ => {}
         }
     }
+    fn release_fields(&mut self, fields: Fields, nodes: &mut NodeStore) {
+        self.release_field(fields.nucleus, nodes);
+        self.release_field(fields.sub, nodes);
+        self.release_field(fields.sup, nodes);
+    }
     fn release_children(&mut self, kind: Kind, nodes: &mut NodeStore) {
         match kind {
-            Kind::Atom(a) => {
-                self.release_field(a.nucleus, nodes);
-                self.release_field(a.sub, nodes);
-                self.release_field(a.sup, nodes);
+            Kind::Atom(a) => self.release_fields(a.fields, nodes),
+            Kind::Over(fields)
+            | Kind::Under(fields)
+            | Kind::VCenter(fields)
+            | Kind::Radical { fields, .. } => self.release_fields(fields, nodes),
+            Kind::Fraction(f) => {
+                self.pending.push(f.numerator.head);
+                self.pending.push(f.denominator.head);
             }
             Kind::Choice(lists) => {
                 for l in lists {
@@ -355,3 +440,7 @@ mod oracle_tests;
 #[cfg(test)]
 #[path = "math_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "math_forms_tests.rs"]
+mod forms_tests;

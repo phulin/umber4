@@ -66,7 +66,8 @@ release them through their stores.
 The current core supports all eight spacing classes, operators with normal or
 explicit limits policy, eight styles including cramped styles, choices, ordinary
 math ligatures/kerns, scripts, boxed/submath fields, and explicit ordinary
-kern/glue/rule/penalty material. Fractions, radicals, accents, over/under/vcenter,
+kern/glue/rule/penalty material. It also converts fractions, radicals, overline,
+underline, vcenter, and paired standard left/right delimiters. Accents, middle
 delimiters, math scanning, mode entry, displays, and equation numbers remain
 unsupported. Their absence does not select an approximate rendering.
 
@@ -116,43 +117,89 @@ Preserve TeX's interleaved first pass: binary-atom cancellation happens at the
 specified points before ordinary-atom processing, including retrospective
 cancellation, while atoms are constructed and measured. The second pass inserts
 class-dependent spacing and permitted penalties.
-Style changes alter the appropriate later work. Operators, limits, and scripts
-use TFM parameters and integer rules. Fractions, accents, radicals, and delimiter
-sizing will use the same immutable font resources when implemented. Reuse an existing box or list where ownership permits it; conversion need
-not first flatten the math list into an unrelated render tree.
-
-Future delimiter search will use the specified family/size order,
-larger-character chains, and extensible recipes. Construct repeated pieces directly into the final box.
-Keep italic corrections, skew behavior, script clearance, and rule thickness
-separate from text space-factor rules. The exact calculations are compatibility
-code, not interchangeable typographic approximations.
+Style changes alter the appropriate later work. Operators, limits, scripts,
+fractions, radicals, and delimiters use the same immutable font resources and
+integer rules. Existing boxes and lists transfer directly wherever ownership
+permits; conversion does not flatten them into a separate render tree.
 
 TeX's `mlist_to_hlist`, `make_ord`, `clean_box`, `make_op`, `make_scripts`,
-`rebox`, and `math_glue` provide the reference behavior.
+`make_fraction`, `make_radical`, `make_over`, `make_under`, `make_vcenter`,
+`var_delimiter`, `rebox`, and `math_glue` provide the reference behavior.
 See the [TeX math implementation](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+
+### Fractions, decorations, and delimiters
+
+One affine `Fields` record carries nucleus and script fields for atoms and
+scriptable constructions. Fractions instead own numerator/denominator math lists,
+two delimiter specifications, and a typed default or explicit rule thickness.
+A delimiter specification retains small/large family and character bytes until
+conversion; it does not freeze a selected glyph. All forms remain variants in
+the same reusable arena. No auxiliary per-formula store or reference-counted
+construction object is introduced.
+
+Fraction and decoration tasks use the existing iterative clean-box work. A
+finished decorated nucleus transfers to the ordinary script task without a
+synthetic math node or another traversal framework. Every suspended field, clean
+box, partial list, and completed fraction has one owner, including on failure.
+Vcenter requires a vertical box nucleus and rejects an invalid typed input with
+`Syntax` while reclaiming its fields. Fractions have no direct script fields;
+a surrounding atom owns scripts on a grouped fraction.
+
+A standard delimited list begins with a left boundary and ends with a right
+boundary. Nested delimiter pairs belong to subsidiary lists; the surrounding
+Inner atom is explicit. Unpaired or misplaced boundaries fail with `Syntax`.
+Boundaries own no scripts and remain unconstructed during the first pass. The
+first pass measures completed noads and explicit rules, preserving binary
+cancellation and style order. The second pass constructs both delimiters using
+the original list style and measured maximum height/depth. Right-boundary style
+restoration follows e-TeX even though middle delimiters are unsupported.
+
+Delimiter search probes the small specification across the requested size down
+to text size, then the large specification in the same order. Undefined families
+are skipped; absent characters stop a larger-character chain. The first usable
+extensible candidate ends the search. Otherwise the first sufficiently large
+candidate or largest available candidate wins, with a null-delimiter box when
+none qualifies. The target uses division before multiplication, as in TeX.
+
+Extensible recipes are borrowed from already validated immutable TFM bytes.
+Optional zero top/middle/bottom pieces are absent; the repeat piece is required.
+Nonpositive repeat extent produces no repetitions. Components are constructed
+directly in the ordinary result list. The outer width comes from the repeat
+piece, height from its topmost emitted component, and depth from total extent.
+Character boxes retain signed metric height/depth, including values that natural
+horizontal packing would clamp. All delimiter boxes are centered on the current
+math axis. Running rules retain the existing ordinary rule representation.
+
+Fraction styles, equal-width reboxing, null delimiters, default/zero/explicit
+thickness, and clearances follow `make_fraction`. Overline and radicals clean
+cramped nuclei; underline uses the current style and resets packed height/depth.
+Radicals use their selected delimiter height as overbar thickness. Vcenter
+redistributes the existing vertical box height/depth around the math axis.
 
 ### Typed-core validation
 
 Ordinary tests use controlled in-memory TFM resources and typed ASTs. They cover
 arena and ordinary box-slot reuse, absent versus empty fields, font failures,
 capacity rejection, spacing overflow, deeply nested conversion/release, and every
-suspended ownership handoff. A retained unrelated ordinary box/store version
-survives conversion failures. These tests require no host font files.
+suspended ownership handoff. A retained unrelated ordinary box, checkpoint, and store version survive
+conversion failures and both engine/store drop orders. These tests require no host font files.
 
 The ignored native adapters construct ASTs and independent TeX source expressions.
 They compare natural box dimensions, shifts, glue settings, and DVI glyph positions
 through the existing ordinary packing/publication adapter. Cases include the full
 spacing-class matrix, all math ligature operations, choice/style propagation,
 eight styles, signed parameters, scripts, operators/limits, missing glyphs, boxed
-fields, and real CM fonts. Native-only overline wrappers expose cramped root styles;
-comparisons select their inner box and relative formula glyph positions. This does
-not implement overline conversion in Umber.
+fields, fractions, radicals, decorations, growing delimiters, and real CM fonts.
+Native-only overline wrappers expose cramped root styles; comparisons select their
+inner box and relative formula glyph/rule positions, excluding the wrapper rule.
+Controlled recipe cases cover optional and zero repeat pieces, nonpositive repeat
+extent, negative metric geometry, search fallback, and division thresholds.
 
 Set `UMBER_PDFTEX` to an explicit pdfTeX executable and, for CM cases,
 `UMBER_TFM_DIR` to the TeX distribution's `fonts/tfm/public` directory, then run
 `cargo test --lib math::oracle_tests -- --ignored`. The oracle is pdfTeX 1.40.25
 (TeX Live 2023/Debian), invoked as INITEX with e-TeX. Adapter files are isolated in
-`umber-math-core-*` temporary directories and removed afterward. Portable tests,
+`umber-math-forms-*` temporary directories and removed afterward. Portable tests,
 Miri, and Wasm builds do not invoke this host adapter.
 
 ## 3. Inline and display math
