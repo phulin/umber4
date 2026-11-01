@@ -16,6 +16,10 @@ fn append(e: &mut Engine<'_>, list: &mut List, kind: Kind) {
     let node = e.document.nodes.alloc(kind).unwrap();
     e.document.nodes.append(list, node);
 }
+fn append_box(e: &mut Engine<'_>, list: &mut List, data: BoxData) {
+    let node = e.document.nodes.alloc_box(data).unwrap();
+    e.document.nodes.append(list, node);
+}
 fn character(c: u8) -> Kind {
     Kind::Character {
         font: 1,
@@ -120,27 +124,27 @@ fn nested_empty_boxes_glue_kerns_and_unpainted_rules_end_runs_exactly() {
             explicit: false,
         },
     );
-    append(
+    append_box(
         &mut e,
         &mut list,
-        Kind::Box(BoxData {
+        BoxData {
             width: Scaled(-11),
             ..BoxData::default()
-        }),
+        },
     );
     append(&mut e, &mut list, character(b'c'));
     let mut child = List::default();
     append(&mut e, &mut child, character(b'a'));
     append(&mut e, &mut child, character(b'b'));
-    append(
+    append_box(
         &mut e,
         &mut list,
-        Kind::Box(BoxData {
+        BoxData {
             list: child,
             width: Scaled(100),
             shift: Scaled(5),
             ..BoxData::default()
-        }),
+        },
     );
     append(&mut e, &mut list, character(b'a'));
     append(
@@ -181,7 +185,7 @@ fn nested_empty_boxes_glue_kerns_and_unpainted_rules_end_runs_exactly() {
     let page = e
         .document
         .nodes
-        .alloc(Kind::Box(BoxData {
+        .alloc_box(BoxData {
             list,
             height: Scaled(10),
             glue_set: GlueSet {
@@ -190,7 +194,7 @@ fn nested_empty_boxes_glue_kerns_and_unpainted_rules_end_runs_exactly() {
                 ..GlueSet::default()
             },
             ..BoxData::default()
-        }))
+        })
         .unwrap();
     e.publish_page(page, 0).unwrap();
     let out = e.outcome();

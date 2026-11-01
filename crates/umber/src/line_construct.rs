@@ -102,9 +102,7 @@ impl Engine<'_> {
             };
             let shape = parameters.line(line_number);
             let b = self.hpack(contents, shape.width)?;
-            if let Kind::Box(data) = self.document.nodes.kind_mut(b.id()) {
-                data.shift = shape.indent;
-            }
+            self.document.nodes.box_mut(b.id()).shift = shape.indent;
             self.append_to_vlist(b)?;
             if line_number + 1 != best_line {
                 let mut penalty = parameters.integer(P::InterlinePenalty);

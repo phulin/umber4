@@ -82,7 +82,10 @@ impl Engine<'_> {
             width: self.document.layout_values.dimens[DimenParam::ParIndent.index()].value,
             ..BoxData::default()
         };
-        self.append_horizontal(Kind::Box(b))?;
+        let node = self.document.nodes.alloc_box(b)?;
+        self.document
+            .nodes
+            .append(&mut self.document.text.horizontal, node);
         self.document.text.space_factor = 1000;
         Ok(())
     }

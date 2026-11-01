@@ -25,7 +25,8 @@ integers and primitive operands; `expression.rs` evaluates integer expressions;
 formatting, `layout_values.rs` owns typed COW bindings, and `layout_assign.rs`
 applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
-`nodes.rs` owns versioned chunked node storage and consuming list/node transfers,
+`nodes.rs` owns versioned chunked node storage and consuming list/node transfers;
+`node_boxes.rs` owns its dense reusable COW box payload slots,
 with branch/reclamation tests in `nodes_tests.rs`; page construction uses
 the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`

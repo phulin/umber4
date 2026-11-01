@@ -62,7 +62,7 @@ fn transfer_split_pop_and_nested_release_reuse_backing() {
     let first = store.pop_front(&mut a).unwrap();
     store.release_node(first, &mut scratch);
     let data = BoxData::new(a);
-    let parent = store.alloc(Kind::Box(data)).unwrap();
+    let parent = store.alloc_box(data).unwrap();
     store.release_node(parent, &mut scratch);
     assert!(scratch.pending.is_empty());
     assert!(store.pages.iter().all(Option::is_none));
@@ -133,7 +133,7 @@ fn ligature_and_discretionary_children_release_and_capacity_failure_cleans_up() 
     let children = list(&mut store, CELLS);
     let weak = Rc::downgrade(&store.pool);
     assert!(matches!(
-        store.alloc_with_limit(Kind::Box(BoxData::new(children)), 1),
+        store.alloc_box_with_limit(BoxData::new(children), 1),
         Err(Error::Capacity)
     ));
     assert!(store.pages.iter().all(Option::is_none));
@@ -146,7 +146,7 @@ fn deeply_nested_lists_release_iteratively_and_old_roots_outlive_live_store() {
     let mut store = NodeStore::default();
     let mut children = List::default();
     for _ in 0..2048 {
-        let node = store.alloc(Kind::Box(BoxData::new(children))).unwrap();
+        let node = store.alloc_box(BoxData::new(children)).unwrap();
         children = List::default();
         store.append(&mut children, node);
     }
@@ -169,7 +169,7 @@ fn rejected_owned_payloads_free_live_children_without_touching_old_versions() {
         let old_children = children.snapshot();
         let old = live.clone();
         let kind = match form {
-            0 => Kind::Box(BoxData::new(children)),
+            0 => Kind::Box(live.boxes.alloc(BoxData::new(children))),
             1 => Kind::ligature(3, b'f', children, false, true),
             _ => {
                 let mut midpoint = children.head();
@@ -214,7 +214,7 @@ fn mixed_owned_children_span_chunks_and_release_without_recursion() {
     let disc = live.alloc(Kind::discretionary(pre, post, 0)).unwrap();
     let mut contents = List::default();
     live.append(&mut contents, disc);
-    let parent = live.alloc(Kind::Box(BoxData::new(contents))).unwrap();
+    let parent = live.alloc_box(BoxData::new(contents)).unwrap();
     let id = parent.id();
     let mut root = List::default();
     live.append(&mut root, parent);
@@ -224,6 +224,7 @@ fn mixed_owned_children_span_chunks_and_release_without_recursion() {
     let Kind::Box(boxed) = &old.get(id).kind else {
         panic!("box lost")
     };
+    let boxed = old.box_data(boxed);
     let Kind::Discretionary { pre, post, .. } = &old.get(boxed.list.head()).kind else {
         panic!("disc lost")
     };
@@ -232,4 +233,93 @@ fn mixed_owned_children_span_chunks_and_release_without_recursion() {
     };
     assert_eq!(values(&old, components).len(), CELLS + 10);
     assert_eq!(values(&old, post).len(), CELLS + 20);
+}
+
+fn box_id(store: &NodeStore, node: NodeId) -> &BoxId {
+    let Kind::Box(id) = &store.get(node).kind else {
+        panic!("box lost")
+    };
+    id
+}
+#[test]
+fn box_payload_mutation_and_slot_reuse_preserve_snapshot_children() {
+    let mut live = NodeStore::default();
+    let contents = list(&mut live, CELLS + 3);
+    let parent = live
+        .alloc_box(BoxData {
+            list: contents,
+            width: Scaled(77),
+            ..BoxData::default()
+        })
+        .unwrap();
+    let node = parent.id();
+    let slot = box_id(&live, node).0;
+    let mut root = List::default();
+    live.append(&mut root, parent);
+    let old_root = root.snapshot();
+    let mut old = live.clone();
+    let page = NodeStore::address(node).0;
+    let shared = Rc::as_ptr(old.page(page));
+    live.box_mut(node).shift = Scaled(-9);
+    assert_eq!(
+        shared,
+        Rc::as_ptr(live.page(page)),
+        "header mutation preserves node sharing"
+    );
+    assert_eq!(old.box_data(box_id(&old, node)).shift, Scaled(0));
+    assert_eq!(live.box_data(box_id(&live, node)).shift, Scaled(-9));
+    live.release(root, &mut ReleaseScratch::default());
+    let replacement = live.alloc_box(BoxData::default()).unwrap();
+    assert_eq!(box_id(&live, replacement.id()).0, slot);
+    let data = old.box_data(box_id(&old, node));
+    assert_eq!(data.width, Scaled(77));
+    assert_eq!(
+        values(&old, &data.list),
+        (0..(CELLS + 3) as i32).collect::<Vec<_>>()
+    );
+    assert!(
+        live.box_data(box_id(&live, replacement.id()))
+            .list
+            .is_empty()
+    );
+    live.release_node(replacement, &mut ReleaseScratch::default());
+    drop(live);
+    old.release(old_root, &mut ReleaseScratch::default());
+    assert!(old.pages.iter().all(Option::is_none));
+}
+#[test]
+fn box_capacity_rejection_precedes_payload_growth_and_releases_nested_children() {
+    let mut live = NodeStore::default();
+    assert!(matches!(
+        live.alloc_box_with_limit(BoxData::default(), 0),
+        Err(Error::Capacity)
+    ));
+    assert_eq!(live.boxes.len(), 0);
+    let child = leaf(&mut live, 1);
+    let mut contents = List::default();
+    live.append(&mut contents, child);
+    let child = live.alloc_box(BoxData::new(contents)).unwrap();
+    let mut contents = List::default();
+    live.append(&mut contents, child);
+    let fillers = list(&mut live, CELLS - 2);
+    let old_contents = contents.snapshot();
+    let old = live.clone();
+    assert_eq!(live.boxes.len(), 1);
+    assert!(matches!(
+        live.alloc_box_with_limit(BoxData::new(contents), 1),
+        Err(Error::Capacity)
+    ));
+    assert_eq!(live.boxes.len(), 1, "rejection allocates no outer payload");
+    let old_child = old.box_data(box_id(&old, old_contents.head()));
+    assert_eq!(values(&old, &old_child.list), [1]);
+    live.release(fillers, &mut ReleaseScratch::default());
+    assert!(live.pages.iter().all(Option::is_none));
+    assert!(live.pool.failed_release.borrow().pending.is_empty());
+    let empty = live.alloc_box(BoxData::default()).unwrap();
+    assert_eq!(
+        box_id(&live, empty.id()).0,
+        1,
+        "rejected nested box slot is reusable"
+    );
+    live.release_node(empty, &mut ReleaseScratch::default());
 }

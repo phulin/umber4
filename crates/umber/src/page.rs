@@ -80,6 +80,7 @@ impl Engine<'_> {
             let mut penalty = None;
             match &node.kind {
                 Kind::Box(b) => {
+                    let b = self.document.nodes.box_data(b);
                     let (height, depth) = (b.height.0, b.depth.0);
                     if !state.started {
                         self.start_page(height)?;
@@ -300,11 +301,14 @@ impl Engine<'_> {
         }
         self.back_read(read);
         let width = self.document.layout_values.dimens[DimenParam::HSize.index()].value;
+        let node = self.document.nodes.alloc_box(BoxData {
+            width,
+            ..BoxData::default()
+        })?;
+        self.document
+            .nodes
+            .append(&mut self.document.text.vertical, node);
         for kind in [
-            Kind::Box(BoxData {
-                width,
-                ..BoxData::default()
-            }),
             Kind::Glue {
                 spec: Glue {
                     stretch: Scaled::ONE,

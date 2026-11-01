@@ -51,6 +51,7 @@ fn glyphs(e: &Engine<'_>) -> Vec<Vec<u8>> {
                 let Kind::Box(b) = &e.document.nodes.get(id).kind else {
                     unreachable!()
                 };
+                let b = e.document.nodes.box_data(b);
                 let mut p = b.list.head();
                 let mut text = Vec::new();
                 while !p.is_null() {
@@ -97,6 +98,7 @@ fn forced_break_transfers_lines_and_interline_material() {
         let Kind::Box(b) = &e.document.nodes.get(id).kind else {
             unreachable!()
         };
+        let b = e.document.nodes.box_data(b);
         assert_eq!(b.width, Scaled(50 * 65536));
     }
     assert!(e.paragraph.records.is_empty());
@@ -124,6 +126,7 @@ fn paragraph_shapes_reset_locally_and_restore_with_checkpoints() {
             let Kind::Box(b) = &e.document.nodes.get(id).kind else {
                 unreachable!()
             };
+            let b = e.document.nodes.box_data(b);
             (b.width, b.shift)
         })
         .collect();
@@ -247,6 +250,7 @@ fn discretionary_break_transfers_children_and_reuses_original_ids() {
         let Kind::Box(data) = &e.document.nodes.get(line).kind else {
             unreachable!()
         };
+        let data = e.document.nodes.box_data(data);
         let mut p = data.list.head();
         while !p.is_null() {
             reused.push(p);

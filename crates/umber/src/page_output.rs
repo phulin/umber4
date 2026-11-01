@@ -92,6 +92,7 @@ impl Engine<'_> {
         let Kind::Box(b) = &self.document.nodes.get(node.id()).kind else {
             unreachable!()
         };
+        let b = self.document.nodes.box_data(b);
         if b.height.0 > crate::numeric::Scaled::MAX.0
             || b.depth.0 > crate::numeric::Scaled::MAX.0
             || i64::from(b.height.0) + i64::from(b.depth.0)
@@ -134,6 +135,7 @@ impl Engine<'_> {
         let Kind::Box(b) = &self.document.nodes.get(id).kind else {
             return Err(Error::Unsupported);
         };
+        let b = self.document.nodes.box_data(b);
         // Geometry precedes any backend-specific origin offset.
         let index = page.box_record(record(b, None, 0, b.height.0));
         scratch.frames.push(Frame::new(b, index, 0, b.height.0));
@@ -182,6 +184,7 @@ impl Engine<'_> {
                     frame.x = frame.x.wrapping_add(m.width.0);
                 }
                 Kind::Box(b) => {
+                    let b = self.document.nodes.box_data(b);
                     let (x, y) = if frame.vertical {
                         (
                             frame.left.wrapping_add(b.shift.0),

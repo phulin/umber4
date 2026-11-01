@@ -80,6 +80,23 @@ internal references, never independent owners. Copying a root for a checkpoint
 is distinct from copying a mutable TeX list. Future semantic list-copy commands
 must allocate fresh nodes, while immutable font metrics can remain shared.
 
+Box headers live in a dense reusable `Table` with 64-entry COW pages inside the
+node store. A box node owns an opaque non-`Copy`, non-`Clone` slot handle; only
+the private node snapshot copier duplicates it into another store version.
+Box-table roots and their free-slot head clone and restore with the node roots.
+The private slot copier snapshots child-list handles only when a shared table
+page becomes writable. Box reads borrow the header directly, and header mutation
+makes only the payload page writable. There is no per-box allocation or reference
+count. The table retains its peak slot range and reuses released slots.
+
+Box construction checks the existing node address budget before allocating a
+payload slot. Rejection releases the transferred contents without growing the
+payload table. Releasing a box first takes its header from the writable table
+and links the slot into that version's free list, then traverses its owned
+children. Retained versions preserve their own header and child-node roots.
+Dropping a whole node-store version discards both directories together; dropping
+numeric child handles does not recursively traverse nodes.
+
 Nested release walks owned child lists using reusable session scratch, avoiding
 recursion and allocations per node. Scratch must be empty on return and is not
 checkpoint state. Chunk references retain their backing independently of engine

@@ -70,6 +70,7 @@ impl Engine<'_> {
                     depth = depth.max(m.depth.0);
                 }
                 Kind::Box(b) => {
+                    let b = self.document.nodes.box_data(b);
                     natural = natural.wrapping_add(b.width.0);
                     height = height.max(b.height.0.wrapping_sub(b.shift.0));
                     depth = depth.max(b.depth.0.wrapping_add(b.shift.0));
@@ -101,14 +102,14 @@ impl Engine<'_> {
             shrink,
             !list.is_empty(),
         );
-        self.document.nodes.alloc(Kind::Box(BoxData {
+        self.document.nodes.alloc_box(BoxData {
             list,
             width,
             height: Scaled(height),
             depth: Scaled(depth),
             glue_set,
             ..BoxData::default()
-        }))
+        })
     }
     pub(crate) fn vpackage(
         &mut self,
@@ -123,6 +124,7 @@ impl Engine<'_> {
             let n = self.document.nodes.get(p);
             match &n.kind {
                 Kind::Box(b) => {
+                    let b = self.document.nodes.box_data(b);
                     natural = natural.wrapping_add(depth).wrapping_add(b.height.0);
                     depth = b.depth.0;
                     width = width.max(b.width.0.wrapping_add(b.shift.0));
@@ -162,7 +164,7 @@ impl Engine<'_> {
             shrink,
             !list.is_empty(),
         );
-        self.document.nodes.alloc(Kind::Box(BoxData {
+        self.document.nodes.alloc_box(BoxData {
             list,
             vertical: true,
             width: Scaled(width),
@@ -170,11 +172,14 @@ impl Engine<'_> {
             depth: Scaled(depth),
             glue_set,
             ..BoxData::default()
-        }))
+        })
     }
     pub(crate) fn append_to_vlist(&mut self, b: DetachedNode) -> Result<()> {
         let (height, depth) = match &self.document.nodes.get(b.id()).kind {
-            Kind::Box(b) => (b.height, b.depth),
+            Kind::Box(b) => {
+                let b = self.document.nodes.box_data(b);
+                (b.height, b.depth)
+            }
             _ => unreachable!(),
         };
         if self.document.text.prev_depth.0 > -65_536_000 {

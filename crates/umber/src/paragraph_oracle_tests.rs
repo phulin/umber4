@@ -53,6 +53,7 @@ fn list(e: &Engine<'_>, contents: &List, level: usize, out: &mut Vec<String>) {
                 )
             }
             Kind::Box(b) => {
+                let b = e.document.nodes.box_data(b);
                 let mut s = format!(
                     "\\hbox({}+{})x{}",
                     scaled(b.height),

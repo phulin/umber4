@@ -7,6 +7,9 @@ use crate::{
 };
 use std::{cell::RefCell, rc::Rc};
 
+#[path = "node_boxes.rs"]
+mod box_slots;
+
 const CELLS: usize = 256;
 const CACHED: usize = 16;
 const NONE: u16 = CELLS as u16;
@@ -82,6 +85,10 @@ impl BoxData {
         }
     }
 }
+/// An affine owner of one payload slot in the matching node-store version.
+#[derive(Debug)]
+pub(crate) struct BoxId(u32);
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) enum GlueKind {
     #[default]
@@ -125,7 +132,7 @@ pub(crate) enum Kind {
         height: Scaled,
         depth: Scaled,
     },
-    Box(BoxData),
+    Box(BoxId),
     Discretionary {
         pre: List,
         post: List,
@@ -217,15 +224,7 @@ impl Node {
                 height: *height,
                 depth: *depth,
             },
-            Kind::Box(b) => Kind::Box(BoxData {
-                list: b.list.snapshot(),
-                vertical: b.vertical,
-                width: b.width,
-                height: b.height,
-                depth: b.depth,
-                shift: b.shift,
-                glue_set: b.glue_set,
-            }),
+            Kind::Box(b) => Kind::Box(BoxId(b.0)),
             Kind::Discretionary {
                 pre,
                 post,
@@ -312,6 +311,7 @@ pub(crate) struct NodeStore {
     pages: Buffer<Option<Page>>,
     pool: Rc<Pool>,
     allocation: Option<usize>,
+    boxes: box_slots::Boxes,
 }
 impl Default for NodeStore {
     fn default() -> Self {
@@ -319,6 +319,7 @@ impl Default for NodeStore {
             pages: Buffer::new(&Rc::default()),
             pool: Rc::default(),
             allocation: None,
+            boxes: box_slots::Boxes::default(),
         }
     }
 }
@@ -381,6 +382,44 @@ impl NodeStore {
     }
     fn alloc_with_limit(&mut self, kind: Kind, limit: usize) -> Result<DetachedNode> {
         assert!(!matches!(kind, Kind::Free));
+        let page = match self.allocation_page(limit) {
+            Ok(page) => page,
+            Err(error) => {
+                let pool = self.pool.clone();
+                let mut scratch = pool.failed_release.borrow_mut();
+                self.release_kind(kind, &mut scratch);
+                return Err(error);
+            }
+        };
+        Ok(self.install(page, kind))
+    }
+    pub fn alloc_box(&mut self, data: BoxData) -> Result<DetachedNode> {
+        self.alloc_box_with_limit(data, (u32::MAX as usize) / CELLS)
+    }
+    fn alloc_box_with_limit(&mut self, data: BoxData, limit: usize) -> Result<DetachedNode> {
+        let page = match self.allocation_page(limit) {
+            Ok(page) => page,
+            Err(error) => {
+                let pool = self.pool.clone();
+                let mut scratch = pool.failed_release.borrow_mut();
+                self.release(data.list, &mut scratch);
+                return Err(error);
+            }
+        };
+        let id = self.boxes.alloc(data);
+        Ok(self.install(page, Kind::Box(id)))
+    }
+    pub fn box_data(&self, id: &BoxId) -> &BoxData {
+        self.boxes.get(id)
+    }
+    pub fn box_mut(&mut self, node: NodeId) -> &mut BoxData {
+        let Kind::Box(id) = &self.get(node).kind else {
+            panic!("not a box")
+        };
+        let id = id.0;
+        self.boxes.get_mut(id)
+    }
+    fn allocation_page(&mut self, limit: usize) -> Result<usize> {
         let page = if let Some(index) = self.allocation.filter(|&i| self.available(i)) {
             index
         } else if let Some(index) = (0..self.pages.len()).find(|&i| self.available(i)) {
@@ -392,11 +431,6 @@ impl NodeStore {
                 .position(Option::is_none)
                 .unwrap_or(self.pages.len());
             if index >= limit {
-                // Rejected owned payloads must not strand their child lists.
-                // The pool's scratch is session storage, empty outside release.
-                let pool = self.pool.clone();
-                let mut scratch = pool.failed_release.borrow_mut();
-                self.release_kind(kind, &mut scratch);
                 return Err(Error::Capacity);
             }
             let entry = Some(Page {
@@ -410,6 +444,9 @@ impl NodeStore {
             }
             index
         };
+        Ok(page)
+    }
+    fn install(&mut self, page: usize, kind: Kind) -> DetachedNode {
         self.allocation = Some(page);
         let chunk = self.writable(page);
         let offset = if chunk.free != NONE {
@@ -426,9 +463,7 @@ impl NodeStore {
             kind,
         };
         chunk.live += 1;
-        Ok(DetachedNode(NodeId(
-            (page * CELLS + usize::from(offset) + 1) as u32,
-        )))
+        DetachedNode(NodeId((page * CELLS + usize::from(offset) + 1) as u32))
     }
     pub fn append(&mut self, list: &mut List, node: DetachedNode) {
         debug_assert!(self.get(node.0).next.is_null(), "append detached node");
@@ -499,7 +534,10 @@ impl NodeStore {
     }
     fn release_kind(&mut self, kind: Kind, scratch: &mut ReleaseScratch) {
         match kind {
-            Kind::Box(b) => self.release(b.list, scratch),
+            Kind::Box(id) => {
+                let data = self.boxes.take(id);
+                self.release(data.list, scratch);
+            }
             Kind::Ligature { components, .. } => self.release(components, scratch),
             Kind::Discretionary { pre, post, .. } => {
                 self.release(pre, scratch);
@@ -515,7 +553,10 @@ impl NodeStore {
             while !id.is_null() {
                 let node = self.free(id);
                 match node.kind {
-                    Kind::Box(b) => scratch.pending.push(b.list.head),
+                    Kind::Box(id) => {
+                        let data = self.boxes.take(id);
+                        scratch.pending.push(data.list.head);
+                    }
                     Kind::Ligature { components, .. } => scratch.pending.push(components.head),
                     Kind::Discretionary { pre, post, .. } => {
                         scratch.pending.push(pre.head);

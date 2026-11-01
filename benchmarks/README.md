@@ -55,6 +55,10 @@ fixed book/mixed release CPU samples, construction plus positioned iteration, an
 retained-output storage. It includes repeated-scan slowdown, increased backing
 request count, the sequential API contract, and singleton-record size costs.
 
+The [box payload storage comparison](results/layout-box-payloads.json) records
+compact node cells with pooled COW box headers, paired book/mixed CPU, fresh and
+retained-checkpoint heap, backing reuse, and capture/restore tradeoffs.
+
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations
 python3 benchmarks/layout.py --report target/benchmark/layout.json

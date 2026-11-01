@@ -262,10 +262,10 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
         let bad = e
             .document
             .nodes
-            .alloc(Kind::Box(BoxData {
+            .alloc_box(BoxData {
                 list,
                 ..BoxData::default()
-            }))
+            })
             .unwrap();
         assert_eq!(e.publish_page(bad, 0), Err(Error::Font));
         assert!(e.outcome().pages.is_empty());
@@ -283,11 +283,11 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
     let bad = e
         .document
         .nodes
-        .alloc(Kind::Box(BoxData {
+        .alloc_box(BoxData {
             list,
             vertical: true,
             ..BoxData::default()
-        }))
+        })
         .unwrap();
     assert_eq!(e.publish_page(bad, 0), Err(Error::Unsupported));
     assert!(e.outcome().pages.is_empty());
@@ -368,6 +368,7 @@ fn vpackage_limits_final_depth_without_clipping_contents() {
     let Kind::Box(b) = &e.document.nodes.get(boxed.id()).kind else {
         unreachable!()
     };
+    let b = e.document.nodes.box_data(b);
     assert_eq!(
         (b.width, b.height, b.depth),
         (Scaled(100), Scaled(20), Scaled(2))
@@ -428,11 +429,11 @@ fn first_accepted_page_freezes_mag_but_huge_rejection_does_not() {
     let huge = e
         .document
         .nodes
-        .alloc(Kind::Box(BoxData {
+        .alloc_box(BoxData {
             height: Scaled::MAX,
             depth: Scaled(1),
             ..BoxData::default()
-        }))
+        })
         .unwrap();
     assert_eq!(e.publish_page(huge, 0), Err(Error::Overflow));
     assert!(e.outcome().pages.is_empty());
@@ -468,10 +469,10 @@ fn output_font_binding_crosses_nested_boxes_and_resets_for_each_page() {
         }
         e.document
             .nodes
-            .alloc(Kind::Box(BoxData {
+            .alloc_box(BoxData {
                 list,
                 ..BoxData::default()
-            }))
+            })
             .unwrap()
     }
     let mut e = engine(br"\font\f=test at10pt\font\g=test at20pt\font\h=other at10pt\end");
@@ -500,10 +501,10 @@ fn output_font_binding_crosses_nested_boxes_and_resets_for_each_page() {
     let outer = e
         .document
         .nodes
-        .alloc(Kind::Box(BoxData {
+        .alloc_box(BoxData {
             list,
             ..BoxData::default()
-        }))
+        })
         .unwrap();
     e.publish_page(outer, 0).unwrap();
     // The last font on the first page is the first font on the next page.
