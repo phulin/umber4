@@ -42,7 +42,7 @@ mod values;
 mod vertical;
 pub use checkpoint::{Checkpoint, Progress};
 use names::Names;
-pub use output::{GlueSetting, PackedBox, Page, Pages, Placement};
+pub use output::{GlueSetting, OutputItem, PackedBox, Page, Pages, Placement, Placements};
 use scalars::{Scalars, Target};
 pub use tfm::{FontResource, GlyphMetrics};
 use token::*;

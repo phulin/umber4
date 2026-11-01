@@ -47,8 +47,12 @@ glyph/rule placements in scaled points, count registers, and output penalties.
 Coordinates use the page's upper-left content origin, before any backend's
 one-inch offset; positive y points down. Page records retain no live node IDs or
 document font IDs. Cumulative glue rounding follows `hlist_out` and `vlist_out`.
-Typed placement and descriptor buffers are built in their destination storage;
-reusable traversal/release scratch contains no durable semantic state.
+Typed ordered run/rule and glyph-byte buffers are built in destination storage.
+The forward placement iterator yields owned absolute glyph/rule values and reads
+retained font widths within runs; it does not return a placement slice. Run
+boundaries preserve all noncharacter nodes and box entry/exit, and glyph errors
+remain eager during lowering. Reusable traversal/release scratch contains no
+durable semantic state.
 Immutable output chunks share prefixes across checkpoint, result, and branch
 owners. Branching starts a fresh chunk linked to the retained endpoint without
 copying page history. Held partial chunks may pin at most fifteen later invisible
@@ -59,7 +63,7 @@ TFM source headers and their exact immutable buffers share one sealed resource-s
 owner. Registration is already closed before execution. Runtime scaled-font
 headers occupy fixed chunks of once-initialized slots; opaque handles retain a
 chunk and slot, with safe borrowed descriptor access. A page retains one handle
-per used font and glyphs store local indices, with no per-glyph ownership or metric
+per used font and runs store local indices, with no per-glyph ownership or metric
 copies. Both live layout and detached handles read dense immutable scaled metric
 records through the same accessor; the header's separate presence bitmap retains
 TFM character-existence semantics. Retained pages keep the entire registered source-resource set and the

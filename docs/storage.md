@@ -191,8 +191,11 @@ within the same node-ID domain, so their disappearance does not leave holes amon
 long-lived results. Table blocks use the same ownership boundary.
 
 The executable page store holds sixteen once-initialized page headers in each
-shared chunk. Headers own typed pooled buffers of packed boxes, placements, and
-font handles. A root records its endpoint and page count; restoring a shared
+shared chunk. Headers own typed pooled buffers of packed boxes, ordered glyph-run/rule records,
+glyph bytes, and font handles. Run ranges refer only to the page's immutable glyph
+bytes and page-local font table. A forward iterator reconstructs absolute glyph
+positions from each run's absolute origin and the retained scaled widths; no
+second placement array is retained. A root records its endpoint and page count; restoring a shared
 partial tail starts a new chunk linked to the retained prefix, without copying
 old descriptors. A retained partial tail may also pin at most fifteen later,
 invisible records. Iteration builds a temporary directory of borrowed chunks;

@@ -1,10 +1,11 @@
 //! Detached records and bounded append chunks. No record names a live TeX node.
 use crate::{
-    tfm::FontResource,
+    tfm::{FontResource, ScaledFont},
     value_metadata::{Buffer, Store},
 };
 use std::{
     cell::{Cell, OnceCell},
+    ops::Range,
     rc::Rc,
 };
 const PAGES: usize = 16;
@@ -45,19 +46,51 @@ pub enum Placement {
         height: i32,
     },
 }
+/// Ordered immutable page output. Glyph ranges index the page's glyph bytes.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum OutputItem {
+    GlyphRun {
+        font: u32,
+        x: i32,
+        y: i32,
+        glyphs: Range<u32>,
+    },
+    Rule {
+        x: i32,
+        y: i32,
+        width: i32,
+        height: i32,
+    },
+}
 pub struct Page {
     pub counts: [i32; 256],
     pub output_penalty: i32,
     boxes: Buffer<PackedBox>,
-    placements: Buffer<Placement>,
+    items: Buffer<OutputItem>,
+    glyphs: Buffer<u8>,
+    placement_count: u32,
     fonts: Buffer<FontResource>,
 }
 impl Page {
     pub fn boxes(&self) -> &[PackedBox] {
         &self.boxes
     }
-    pub fn placements(&self) -> &[Placement] {
-        &self.placements
+    /// Reconstruct owned absolute placements in shipout order.
+    /// Each traversal reads retained font widths; no position array is cached.
+    pub fn placements(&self) -> Placements<'_> {
+        Placements {
+            items: self.items.iter(),
+            glyphs: &self.glyphs,
+            fonts: &self.fonts,
+            run: None,
+            remaining: self.placement_count as usize,
+        }
+    }
+    pub fn items(&self) -> &[OutputItem] {
+        &self.items
+    }
+    pub fn glyphs(&self) -> &[u8] {
+        &self.glyphs
     }
     pub fn fonts(&self) -> &[FontResource] {
         &self.fonts
@@ -67,7 +100,9 @@ impl Page {
             counts,
             output_penalty,
             boxes: Buffer::new(&pools.boxes),
-            placements: Buffer::new(&pools.placements),
+            items: Buffer::new(&pools.items),
+            glyphs: Buffer::new(&pools.glyphs),
+            placement_count: 0,
             fonts: Buffer::new(&pools.fonts),
         }
     }
@@ -76,8 +111,22 @@ impl Page {
         self.boxes.push(record);
         id
     }
-    pub(crate) fn place(&mut self, record: Placement) {
-        self.placements.push(record);
+    fn count_placement(&mut self) {
+        // Match the previous single placement buffer's aggregate u32 bound,
+        // even when glyphs and rules now occupy different backing buffers.
+        self.placement_count = self
+            .placement_count
+            .checked_add(1)
+            .expect("metadata capacity");
+    }
+    pub(crate) fn rule(&mut self, x: i32, y: i32, width: i32, height: i32) {
+        self.count_placement();
+        self.items.push(OutputItem::Rule {
+            x,
+            y,
+            width,
+            height,
+        });
     }
     pub(crate) fn font(&mut self, resource: &FontResource) -> u32 {
         if let Some(i) = self.fonts.iter().position(|f| f.same(resource)) {
@@ -88,10 +137,112 @@ impl Page {
         i
     }
 }
+struct Glyphs<'a> {
+    characters: std::slice::Iter<'a, u8>,
+    metrics: &'a ScaledFont,
+    font: u32,
+    x: i32,
+    y: i32,
+}
+/// A forward iterator of owned positions backed by immutable page/font data.
+pub struct Placements<'a> {
+    items: std::slice::Iter<'a, OutputItem>,
+    glyphs: &'a [u8],
+    fonts: &'a [FontResource],
+    run: Option<Glyphs<'a>>,
+    remaining: usize,
+}
+impl Iterator for Placements<'_> {
+    type Item = Placement;
+    fn next(&mut self) -> Option<Placement> {
+        loop {
+            if let Some(run) = &mut self.run {
+                if let Some(&character) = run.characters.next() {
+                    let placement = Placement::Glyph {
+                        font: run.font,
+                        character,
+                        x: run.x,
+                        y: run.y,
+                    };
+                    if run.characters.len() != 0 {
+                        // Lowering checked every character before publication.
+                        let width = run
+                            .metrics
+                            .metrics(character)
+                            .expect("published glyph")
+                            .width
+                            .0;
+                        run.x = run.x.wrapping_add(width);
+                    }
+                    self.remaining -= 1;
+                    return Some(placement);
+                }
+                self.run = None;
+            }
+            match self.items.next()? {
+                OutputItem::GlyphRun { font, x, y, glyphs } => {
+                    self.run = Some(Glyphs {
+                        characters: self.glyphs[glyphs.start as usize..glyphs.end as usize].iter(),
+                        metrics: self.fonts[*font as usize].descriptor(),
+                        font: *font,
+                        x: *x,
+                        y: *y,
+                    });
+                }
+                OutputItem::Rule {
+                    x,
+                    y,
+                    width,
+                    height,
+                } => {
+                    self.remaining -= 1;
+                    return Some(Placement::Rule {
+                        x: *x,
+                        y: *y,
+                        width: *width,
+                        height: *height,
+                    });
+                }
+            }
+        }
+    }
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.remaining, Some(self.remaining))
+    }
+}
+impl ExactSizeIterator for Placements<'_> {}
+impl std::iter::FusedIterator for Placements<'_> {}
+
+#[derive(Default)]
+pub(crate) struct Runs {
+    pending: Option<(u32, i32, i32, u32)>,
+}
+impl Runs {
+    pub(crate) fn finish(&mut self, page: &mut Page) {
+        if let Some((font, x, y, start)) = self.pending.take() {
+            page.items.push(OutputItem::GlyphRun {
+                font,
+                x,
+                y,
+                glyphs: start..page.glyphs.len() as u32,
+            });
+        }
+    }
+    pub(crate) fn glyph(&mut self, page: &mut Page, font: u32, character: u8, x: i32, y: i32) {
+        page.count_placement();
+        if self.pending.is_some_and(|run| run.0 != font) {
+            self.finish(page);
+        }
+        self.pending
+            .get_or_insert((font, x, y, page.glyphs.len() as u32));
+        page.glyphs.push(character);
+    }
+}
 #[derive(Default)]
 pub(crate) struct Pools {
     boxes: Rc<Store<PackedBox>>,
-    placements: Rc<Store<Placement>>,
+    items: Rc<Store<OutputItem>>,
+    glyphs: Rc<Store<u8>>,
     fonts: Rc<Store<FontResource>>,
 }
 struct Chunk {
@@ -172,3 +323,7 @@ impl Drop for Chunk {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "output_tests.rs"]
+mod tests;

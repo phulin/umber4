@@ -1,0 +1,555 @@
+{
+  "date": "2026-11-01",
+  "baseline_commit": "6439f83528160f7fbb63acafd154d9c245113ae3",
+  "change": "Retain ordered 24-byte glyph-run/rule records and one pooled glyph-byte buffer instead of absolute per-glyph placements. Runs use absolute origins and page-local immutable font metrics. Forward owned Placement iteration reconstructs intra-run positions without a cached position array.",
+  "build": {
+    "cpu": 3,
+    "cpu_model": "AMD EPYC 7642 48-Core Processor",
+    "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+    "build": "cargo build --release --bin umber --lib; default features, workspace fat LTO and one codegen unit, no extra RUSTFLAGS"
+  },
+  "measurement_scope": {
+    "ordinary_CLI": "Warm fixed input/font files; includes process startup, source/font reads, registration/scaling, execution/layout, page lowering and publication, message handling and normal teardown. Existing layout.child measures child user+system CPU. One warmup and seven measured serial alternating before/after pairs per case.",
+    "external_construction": "External adapter linked with rustc -C opt-level=3 -C lto=fat -C codegen-units=1 to each ordinary release library. CLOCK_THREAD_CPUTIME_ID spans Engine::new, register_tfm for preloaded resources, advance(MAX), and outcome(). Includes parsing/copying/scaling font resources, execution/layout, page lowering/node release, prefix publication and outcome count/message copying. Excludes host source/TFM reads and Engine/Outcome teardown. The preceding independent Outcome remains live during the next construction; replacement/drop is outside timing.",
+    "one_scan": "Immediately after construction, visit every owned Placement and checksum font/character/coordinates or rule geometry. Includes the temporary Pages::iter chunk directory and its allocation/drop. Engine remains live; no positions are materialized.",
+    "external_sampling": "Eight invocations per version/case in serial alternating order; first invocation discarded. Each invocation constructs seven fresh engines and discards its first engine sample. The retained 42 construction/one-scan pairs are grouped in seven processes, with six consecutive pairs per process. They are not 42 independent processes.",
+    "repeat_scan": "After dropping Engine, retain the final Outcome and scan it 100 times. Report seven batch means per version/case and their median. Cache warmth differs from the immediate first scan.",
+    "limitations": "Short shared-host measurements do not establish general TeX/LaTeX or browser behavior. CLI and external adapter have different call graphs and teardown/input scopes. No attribution of mixed-specific excess over native is claimed."
+  },
+  "allocation_scope": "A separate external counting allocator measures ordinary release engine construction/execution, excluding host source/TFM buffers. Record completion live/peak/requested bytes, then retain Outcome while dropping Engine, validate retained glyph/font access, and release all owners. Separate source-copy instrumentation counts output backing/class growth/copies; its extra 32 bytes per Store header are excluded from descriptor totals. Allocator headers/rounding, stack and OS mappings are excluded. No counters enter timing binaries. Earlier baseline output backing totals apply because output/lowering layouts and the fixed outputs were unchanged through 6439f83.",
+  "record_sizes": {
+    "Placement": 20,
+    "OutputItem": 24,
+    "Page_before": 1104,
+    "Page_after": 1128,
+    "header_chunk_request_before": 17712,
+    "header_chunk_request_after": 18096,
+    "singleton_character_live_before": 20,
+    "singleton_character_live_after": 25
+  },
+  "tradeoffs": [
+    "Requests increase 472 -> 590 for book and 545 -> 654 for mixed. Additional glyph-buffer backing and descriptors increase request counts while requested bytes fall 56.0% and 42.8%. Output backing allocations increase 172 -> 258 and 227 -> 305; allocations remain pooled backing requests, not per-run or per-glyph owners.",
+    "First positioned scans slow 2.63x for book and 1.86x for mixed. Warm repeated scans slow 3.82x and 2.71x. Added scan CPU ranges from 0.37 to 0.85 ms across these first/warm measurements; every consumer scan repeats metric reads and coordinate reconstruction.",
+    "All-singleton glyph output uses 25 bytes per glyph instead of 20, a 25% live-record increase before header/pool effects. There is no fallback representation.",
+    "placements() deliberately changes from a borrowed slice with indexing/slicing to forward owned iteration. Immutable compact records and glyph bytes are exposed for sequential consumers.",
+    "One record enum, one extra typed pool/buffer, scalar pending-run state and one positioning iterator replace the old placement array. Output and lowering modules remain below 600 lines."
+  ],
+  "validation": {
+    "prototype": "179 ordinary tests and all three native font/paragraph/page adapters passed. Fixed book/mixed complete outputs, native DVI placements and retained-checkpoint replay matched baseline. Full checks preceded measurement; no full suite was repeated for source-identical integration.",
+    "focused_semantics": "New tests cover wrapping positions and retained metrics after engine drop, eager aggregate u32 glyph/rule capacity, nested and empty box entry/exit, zero/negative glue, kerns, painted/unpainted rules and cumulative rounding.",
+    "miri": "All three new output tests, lowering_error_publishes_nothing_and_reuses_cleared_scratch, and output_font_binding_crosses_nested_boxes_and_resets_for_each_page passed nightly Miri with strict provenance.",
+    "prototype_checks": "rustfmt, all-target Clippy with warnings denied, ordinary release CLI/library build and wasm32-unknown-unknown library build passed.",
+    "independent_review": "No actionable correctness findings; reviewed eager errors/order, aliases and first-use resources, aggregate/ranges, wrapping, boundaries, ownership and consumer/API tradeoffs.",
+    "integration": "Exact runtime/test source identity with measured prototype verified. Three output tests and seventeen page tests, rustfmt, all-target Clippy, Wasm and ordinary release rebuild passed."
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "complete_output_sha256": "05a458d1fdc108032cd7f1810bc81574473669608b2d6adafb8258a21a49967c",
+      "complete_output_bytes": 11525861,
+      "exact_full_output_equal": true,
+      "checkpoint_replay_equal": true,
+      "native_equal": true,
+      "heap_before": {
+        "complete": {
+          "calls": 472,
+          "requested": 7444720,
+          "live": 7286384,
+          "peak": 7300744
+        },
+        "outcome_only": {
+          "live": 6875493,
+          "calls": 486,
+          "requested": 7445389
+        },
+        "records": {
+          "glyphs": 227323,
+          "rules": 0
+        },
+        "all_owners_released": {
+          "live": 0
+        }
+      },
+      "heap_after": {
+        "complete": {
+          "calls": 590,
+          "requested": 3273904,
+          "live": 3112016,
+          "peak": 3126376
+        },
+        "outcome_only": {
+          "live": 2701125,
+          "calls": 604,
+          "requested": 3274573
+        },
+        "records": {
+          "glyphs": 227323,
+          "rules": 0
+        },
+        "all_owners_released": {
+          "live": 0
+        }
+      },
+      "heap_change_percent": {
+        "calls": 25.0,
+        "requested": -56.023812849912424,
+        "live": -57.28998087391497,
+        "peak": -57.177295902992896
+      },
+      "retained_outcome_change_percent": -60.713726273883196,
+      "output_before": {
+        "arrays_live_bytes": 4749180,
+        "array_capacity_bytes": 6645440,
+        "free_backing_bytes": 105872,
+        "backing_bytes": 6751312,
+        "backing_allocations": 172,
+        "growth_copy_bytes": 6618896,
+        "headers": {
+          "chunks": 5,
+          "page_size": 1104,
+          "chunk_size": 17696,
+          "requested": 88560,
+          "pages_root": 24
+        }
+      },
+      "output_after": {
+        "record_sizes": {
+          "umber::output::PackedBox": 48,
+          "umber::output::OutputItem": 24,
+          "u8": 1,
+          "umber::tfm::FontResource": 16
+        },
+        "records": {
+          "boxes": 4197,
+          "items": 53696,
+          "glyphs": 227323,
+          "fonts": 79
+        },
+        "live_arrays": 1718747,
+        "array_capacity": 2485440,
+        "unused_array_capacity": 766693,
+        "pool_free_backing": 82304,
+        "backing_bytes": 2567744,
+        "backing_allocations": 258,
+        "pool_descriptors": 18160,
+        "growth_copy_bytes": 2457316,
+        "header": {
+          "chunks": 5,
+          "page_size": 1128,
+          "chunk_size": 18080,
+          "requested": 90480,
+          "pages_root": 24
+        }
+      },
+      "median": {
+        "before": {
+          "construct_ns": 42678371.0,
+          "scan_ns": 450486.5,
+          "construct_plus_scan_ns": 43201485.5,
+          "repeat_scan_ns": 301248,
+          "cli_cpu_seconds": 0.048242
+        },
+        "after": {
+          "construct_ns": 40532524.5,
+          "scan_ns": 1182796.0,
+          "construct_plus_scan_ns": 41764301.5,
+          "repeat_scan_ns": 1151472,
+          "cli_cpu_seconds": 0.045225999999999995
+        }
+      },
+      "cpu_change_percent": {
+        "construct_ns": -5.027948465980581,
+        "scan_ns": 162.55969934726124,
+        "construct_plus_scan_ns": -3.326700420984363,
+        "repeat_scan_ns": 282.2339069471,
+        "cli_cpu_seconds": -6.251813772231674
+      },
+      "cli_samples": {
+        "before": [
+          [0.048457859, 0.048242, 0.040375, 0.007866999999999999, 1580],
+          [0.04941202, 0.049083, 0.043073, 0.00601, 1580],
+          [0.048675696, 0.048413, 0.04337, 0.005043, 1580],
+          [0.048314145, 0.048053, 0.044049, 0.004004, 1580],
+          [0.047499432, 0.047292, 0.042261, 0.005031, 1579],
+          [0.04963921, 0.049345, 0.046324, 0.003021, 1578],
+          [0.047554487, 0.047353, 0.043323, 0.00403, 1578]
+        ],
+        "after": [
+          [0.045454595, 0.045225999999999995, 0.044220999999999996, 0.001005, 868],
+          [0.045732568, 0.045459, 0.042429, 0.0030299999999999997, 870],
+          [0.046121031, 0.045746, 0.042697, 0.003049, 869],
+          [0.044868975, 0.044678999999999996, 0.041700999999999995, 0.0029779999999999997, 868],
+          [0.044479325, 0.044259, 0.041242, 0.0030169999999999997, 869],
+          [0.047426272, 0.047069, 0.043059, 0.00401, 869],
+          [0.044657967, 0.04443, 0.041401, 0.003029, 871]
+        ]
+      },
+      "external_samples": {
+        "before": [
+          [48129673, 525955],
+          [43178018, 409155],
+          [43887436, 522771],
+          [42681938, 380733],
+          [42674804, 503238],
+          [43531518, 453059],
+          [46413462, 535262],
+          [42639568, 585361],
+          [42968439, 480930],
+          [42323731, 451277],
+          [53369752, 809834],
+          [47606138, 501485],
+          [45932871, 502407],
+          [43122428, 368194],
+          [43070727, 418193],
+          [42407106, 392474],
+          [42196393, 449696],
+          [42448585, 542238],
+          [44711709, 374289],
+          [42228259, 428598],
+          [42372113, 406093],
+          [41683850, 366913],
+          [42017929, 438507],
+          [41615341, 387118],
+          [45126040, 419382],
+          [42733477, 550275],
+          [42976898, 352391],
+          [41818868, 368005],
+          [41605796, 578985],
+          [41855442, 402890],
+          [44861957, 485894],
+          [42397613, 422836],
+          [43030647, 542767],
+          [43668757, 550354],
+          [42183515, 528578],
+          [42515008, 452898],
+          [44787159, 416070],
+          [43397151, 577714],
+          [42597687, 400038],
+          [41726621, 414188],
+          [41332350, 354053],
+          [41874146, 477538]
+        ],
+        "after": [
+          [42226839, 1176866],
+          [40237695, 1203517],
+          [44288270, 1184943],
+          [41678982, 1161625],
+          [40696669, 1127700],
+          [40846073, 1155159],
+          [41781235, 1162626],
+          [40343085, 1205499],
+          [40654027, 1164766],
+          [40530302, 1179508],
+          [43826618, 1213995],
+          [44401872, 1215015],
+          [42504431, 1188216],
+          [41153562, 1241286],
+          [40506638, 1145793],
+          [40924478, 1132171],
+          [40693080, 1213142],
+          [42471445, 1564726],
+          [41602414, 1130150],
+          [40135788, 1146142],
+          [40057852, 1151989],
+          [39946602, 1133492],
+          [39917510, 1140948],
+          [40228547, 1147395],
+          [41864565, 1241456],
+          [40412860, 1194729],
+          [40388763, 1214366],
+          [40356488, 1206419],
+          [40021119, 1160985],
+          [39834634, 1142070],
+          [41733789, 1255426],
+          [41000594, 1181770],
+          [40791313, 1195930],
+          [40265038, 1177486],
+          [40465648, 1503127],
+          [40427113, 1192587],
+          [41650113, 1221870],
+          [40534747, 1141619],
+          [40239290, 1183822],
+          [39935842, 1138327],
+          [40004255, 1239084],
+          [40099810, 1206080]
+        ]
+      },
+      "repeated_scan_batch_means_ns": {
+        "before": [309181, 301248, 303487, 293632, 294246, 303821, 292875],
+        "after": [1135301, 1219320, 1164600, 1169570, 1128799, 1138485, 1151472]
+      },
+      "scan_checksum": 1904949122900862965
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "complete_output_sha256": "3bea7cd03633569198cf30ccfc5b302dc4dbd774a0052abd1823b80f76fbf27e",
+      "complete_output_bytes": 15645200,
+      "exact_full_output_equal": true,
+      "checkpoint_replay_equal": true,
+      "native_equal": true,
+      "heap_before": {
+        "complete": {
+          "calls": 545,
+          "requested": 6835976,
+          "live": 6824360,
+          "peak": 6824360
+        },
+        "outcome_only": {
+          "live": 6404549,
+          "calls": 560,
+          "requested": 6836693
+        },
+        "records": {
+          "glyphs": 214500,
+          "rules": 300
+        },
+        "all_owners_released": {
+          "live": 0
+        }
+      },
+      "heap_after": {
+        "complete": {
+          "calls": 654,
+          "requested": 3909064,
+          "live": 3894920,
+          "peak": 3894920
+        },
+        "outcome_only": {
+          "live": 3475109,
+          "calls": 669,
+          "requested": 3909781
+        },
+        "records": {
+          "glyphs": 214500,
+          "rules": 300
+        },
+        "all_owners_released": {
+          "live": 0
+        }
+      },
+      "heap_change_percent": {
+        "calls": 19.999999999999996,
+        "requested": -42.8163001157406,
+        "live": -42.92622311835835,
+        "peak": -42.92622311835835
+      },
+      "retained_outcome_change_percent": -45.73998887353349,
+      "output_before": {
+        "arrays_live_bytes": 4608624,
+        "array_capacity_bytes": 6148736,
+        "free_backing_bytes": 74192,
+        "backing_bytes": 6222928,
+        "backing_allocations": 227,
+        "growth_copy_bytes": 6113120,
+        "headers": {
+          "chunks": 7,
+          "page_size": 1104,
+          "chunk_size": 17696,
+          "requested": 123984,
+          "pages_root": 24
+        }
+      },
+      "output_after": {
+        "record_sizes": {
+          "umber::output::PackedBox": 48,
+          "umber::output::OutputItem": 24,
+          "u8": 1,
+          "umber::tfm::FontResource": 16
+        },
+        "records": {
+          "boxes": 6407,
+          "items": 66600,
+          "glyphs": 214500,
+          "fonts": 318
+        },
+        "live_arrays": 2125524,
+        "array_capacity": 3216000,
+        "unused_array_capacity": 1090476,
+        "pool_free_backing": 68544,
+        "backing_bytes": 3284544,
+        "backing_allocations": 305,
+        "pool_descriptors": 18576,
+        "growth_copy_bytes": 3178264,
+        "header": {
+          "chunks": 7,
+          "page_size": 1128,
+          "chunk_size": 18080,
+          "requested": 126672,
+          "pages_root": 24
+        }
+      },
+      "median": {
+        "before": {
+          "construct_ns": 41009504.5,
+          "scan_ns": 426043.0,
+          "construct_plus_scan_ns": 41414900.5,
+          "repeat_scan_ns": 283651,
+          "cli_cpu_seconds": 0.04799199999999999
+        },
+        "after": {
+          "construct_ns": 39813966.0,
+          "scan_ns": 793821.5,
+          "construct_plus_scan_ns": 40679826.5,
+          "repeat_scan_ns": 769215,
+          "cli_cpu_seconds": 0.043991999999999996
+        }
+      },
+      "cpu_change_percent": {
+        "construct_ns": -2.915271751210746,
+        "scan_ns": 86.32426773823299,
+        "construct_plus_scan_ns": -1.774902248044763,
+        "repeat_scan_ns": 171.18360238462054,
+        "cli_cpu_seconds": -8.334722453742282
+      },
+      "cli_samples": {
+        "before": [
+          [0.049072581, 0.048815, 0.043834, 0.004981, 1533],
+          [0.04738017, 0.047141999999999996, 0.044133, 0.003009, 1534],
+          [0.047499328, 0.047227, 0.038371999999999996, 0.008855, 1533],
+          [0.049305181, 0.049012999999999994, 0.044011999999999996, 0.005000999999999999, 1532],
+          [0.048737772, 0.048434, 0.043491999999999996, 0.004941999999999999, 1533],
+          [0.048274026, 0.04799199999999999, 0.042992999999999996, 0.004999, 1533],
+          [0.046830392, 0.046605, 0.044579, 0.002026, 1533]
+        ],
+        "after": [
+          [0.046580467, 0.046304, 0.041270999999999995, 0.005033, 990],
+          [0.044225698, 0.043991999999999996, 0.040992999999999995, 0.002999, 990],
+          [0.044268133, 0.044051, 0.041048, 0.003003, 991],
+          [0.044663966, 0.044346, 0.040315, 0.004031, 991],
+          [0.044122403, 0.04387099999999999, 0.038886, 0.004985, 990],
+          [0.043860708, 0.04364, 0.040665, 0.0029749999999999998, 991],
+          [0.04398404, 0.043739, 0.041705, 0.002034, 990]
+        ]
+      },
+      "external_samples": {
+        "before": [
+          [43474583, 409165],
+          [40853121, 387188],
+          [40851398, 388700],
+          [40382856, 361088],
+          [40135708, 347397],
+          [40117565, 422956],
+          [44870650, 689831],
+          [44608002, 537424],
+          [46214161, 488124],
+          [41070379, 413850],
+          [42750280, 608217],
+          [40133400, 369525],
+          [43919919, 411207],
+          [41609822, 369525],
+          [40963960, 384045],
+          [40333841, 346237],
+          [40555720, 460995],
+          [40165559, 429130],
+          [47949663, 608088],
+          [41725601, 377581],
+          [41004278, 352702],
+          [40526948, 345026],
+          [40800000, 545617],
+          [41053145, 466009],
+          [43997192, 449048],
+          [42569080, 472984],
+          [41014731, 333006],
+          [40564278, 391772],
+          [40323161, 337100],
+          [40864923, 607898],
+          [43755515, 562723],
+          [41425720, 608940],
+          [41665166, 359657],
+          [40643128, 377250],
+          [40764379, 390260],
+          [40619449, 563716],
+          [43709541, 488866],
+          [45704284, 556719],
+          [50518417, 724358],
+          [43347750, 637501],
+          [40575248, 607326],
+          [40335692, 571531]
+        ],
+        "after": [
+          [41014255, 791279],
+          [39501339, 864386],
+          [39521295, 769812],
+          [39327717, 761695],
+          [38981157, 765330],
+          [38857228, 793821],
+          [43236320, 800036],
+          [40676255, 777959],
+          [40856697, 822724],
+          [40243821, 796502],
+          [39965638, 764198],
+          [40677354, 808352],
+          [42201328, 848574],
+          [39962913, 765959],
+          [40211114, 793822],
+          [39194784, 762775],
+          [39164778, 764759],
+          [39106515, 790079],
+          [41336923, 765790],
+          [39784938, 804050],
+          [39509305, 808963],
+          [40316837, 813757],
+          [39199759, 760447],
+          [39483786, 872781],
+          [41066715, 765769],
+          [40368056, 1273671],
+          [40681699, 949111],
+          [40548464, 807262],
+          [39487098, 1032938],
+          [41066104, 886261],
+          [43063872, 796422],
+          [39747990, 790678],
+          [39704006, 819180],
+          [39306750, 788336],
+          [39039865, 765559],
+          [39489532, 1292005],
+          [41335150, 826067],
+          [39408327, 774828],
+          [39980195, 770244],
+          [39149018, 773777],
+          [39842994, 787787],
+          [39202650, 797094]
+        ]
+      },
+      "repeated_scan_batch_means_ns": {
+        "before": [283651, 285088, 283037, 285861, 283183, 288575, 281849],
+        "after": [769215, 798545, 746788, 800684, 752376, 774037, 755423]
+      },
+      "scan_checksum": 2058211850901121664
+    }
+  ],
+  "binary_sha256": {
+    "before_cli": "7a4eb280826b966f4bc69383768ecd120d8636943af98d4d439005f34cb367f5",
+    "after_cli": "d04544019300d5fb6c30e211b3dd0a00aacb9e9abc115f4901ad3d38d1ecc414",
+    "before_phase_adapter": "ddf4ea9f6db452e89e1f58ab7efff02f8676b953fb3f48bc5bd201d596cc0c8f",
+    "after_phase_adapter": "892bb0b860c40b03d332a8ca480c6c3359f3abf9ba784e26bc3929c260991851"
+  },
+  "binary_scope": "Hashes identify the timed isolated prototype and baseline. Integration uses byte-identical reviewed runtime sources and the same ordinary release profile; build paths differ.",
+  "runtime_source_sha256": {
+    "crates/umber/examples/layout_support/mod.rs": "13f755a11e3da544917b8a8538b7bf321a46321a08ee9ee326fac84046a401ef",
+    "crates/umber/src/lib.rs": "9391a56fa82cbf37fd23d1c306174cac2a2d5b903e237ef4c13abb3d3a0cbd9a",
+    "crates/umber/src/output.rs": "67c62c524fa53948fba08d87b9dcaba1b965449eb659ef6a017f0f80baffb471",
+    "crates/umber/src/page_oracle_tests.rs": "252d1c885b2da754c50431e7e50f6d367d75539e0ccd28f9b8b2f9a98e8c39b8",
+    "crates/umber/src/page_output.rs": "c2a7455c0a6fdb728f44c9d28e312b3898e7595d9948c404b5c21334d43e4997",
+    "crates/umber/src/page_tests.rs": "993b0af6aa9e820ca013613deb5b4e105a46cc55451907bb633ae3acb3ddb56d",
+    "crates/umber/src/paragraph_tests.rs": "9fe9a398f8b81292b9a0ed637f36a1b1463645cd9a64bf2d74bc668a9a480cef",
+    "crates/umber/src/output_tests.rs": "6bf715afbe0a861b53828249ff72ddbc020b2d8cc9db1a990e98920b88ca8473"
+  },
+  "sample_columns": {
+    "cli": [
+      "wall_seconds",
+      "cpu_seconds",
+      "user_cpu_seconds",
+      "system_cpu_seconds",
+      "minor_page_faults"
+    ],
+    "external": [
+      "construction_cpu_ns",
+      "one_scan_cpu_ns"
+    ],
+    "external_process_group_size": 6,
+    "repeated_scan_batch_iterations": 100
+  }
+}

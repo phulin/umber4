@@ -3,7 +3,7 @@ use crate::{
     Engine, Error, Result,
     nodes::{BoxData, DetachedNode, GlueSet, GlueSign, Kind, NodeId},
     numeric::Glue,
-    output::{GlueSetting, PackedBox, Page, Placement},
+    output::{GlueSetting, PackedBox, Page, Runs},
     value_metadata::Buffer,
 };
 #[derive(Clone, Copy)]
@@ -137,14 +137,19 @@ impl Engine<'_> {
         // Geometry precedes any backend-specific origin offset.
         let index = page.box_record(record(b, None, 0, b.height.0));
         scratch.frames.push(Frame::new(b, index, 0, b.height.0));
+        let mut runs = Runs::default();
         let mut font_binding: Option<(u32, &crate::tfm::ScaledFont, u32)> = None;
         while let Some(frame) = scratch.frames.last_mut() {
             if frame.next.is_null() {
+                runs.finish(page);
                 scratch.frames.pop();
                 continue;
             }
             let node = self.document.nodes.get(frame.next);
             frame.next = node.next;
+            if !matches!(node.kind, Kind::Character { .. } | Kind::Ligature { .. }) {
+                runs.finish(page);
+            }
             match &node.kind {
                 Kind::Character { font, character }
                 | Kind::Ligature {
@@ -167,17 +172,13 @@ impl Engine<'_> {
                             let resource = &self.font_catalog.scaled[scaled];
                             let metrics = resource.descriptor();
                             let m = metrics.metrics(*character).ok_or(Error::Font)?;
+                            runs.finish(page);
                             let local = page.font(resource);
                             font_binding = Some((*font, metrics, local));
                             (m, local)
                         }
                     };
-                    page.place(Placement::Glyph {
-                        font: local,
-                        character: *character,
-                        x: frame.x,
-                        y: frame.baseline,
-                    });
+                    runs.glyph(page, local, *character, frame.x, frame.baseline);
                     frame.x = frame.x.wrapping_add(m.width.0);
                 }
                 Kind::Box(b) => {
@@ -232,12 +233,7 @@ impl Engine<'_> {
                         (x, frame.baseline.wrapping_sub(h))
                     };
                     if w > 0 && thickness > 0 {
-                        page.place(Placement::Rule {
-                            x,
-                            y,
-                            width: w,
-                            height: thickness,
-                        });
+                        page.rule(x, y, w, thickness);
                     }
                 }
                 Kind::Glue { spec, .. } => {

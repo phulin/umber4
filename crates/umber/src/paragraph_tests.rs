@@ -35,7 +35,7 @@ fn glyphs(e: &Engine<'_>) -> Vec<Vec<u8>> {
     for page in e.document.page.output.iter() {
         let mut last = None;
         for p in page.placements() {
-            if let crate::Placement::Glyph { character, y, .. } = *p {
+            if let crate::Placement::Glyph { character, y, .. } = p {
                 if last != Some(y) {
                     output.push(Vec::new());
                     last = Some(y);

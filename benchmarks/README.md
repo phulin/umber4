@@ -50,6 +50,10 @@ complete four-case output/replay equality, and the CPU sampling tool limitation.
 The [raw TFM table-view comparison](results/tfm-raw-table-views.json) records
 elimination of duplicate character/program storage, measured pooled and whole-engine
 retention, registration cost, and bounded ordinary-release nonregression checks.
+The [detached glyph-run comparison](results/layout-glyph-runs.json) records
+fixed book/mixed release CPU samples, construction plus positioned iteration, and
+retained-output storage. It includes repeated-scan slowdown, increased backing
+request count, the sequential API contract, and singleton-record size costs.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

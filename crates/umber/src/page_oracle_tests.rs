@@ -148,7 +148,7 @@ impl Oracle {
         let expected: Vec<Vec<Placement>> = outcome
             .pages
             .iter()
-            .map(|p| p.placements().to_vec())
+            .map(|p| p.placements().collect::<Vec<_>>())
             .collect();
         assert_eq!(expected, actual, "DVI placements: {source}");
     }

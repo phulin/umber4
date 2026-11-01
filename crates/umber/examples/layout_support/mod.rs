@@ -16,7 +16,7 @@ fn equal(a: &Outcome, b: &Outcome) {
         assert_eq!(a.counts, b.counts);
         assert_eq!(a.output_penalty, b.output_penalty);
         assert_eq!(a.boxes(), b.boxes());
-        assert_eq!(a.placements(), b.placements());
+        assert!(a.placements().eq(b.placements()));
         assert_eq!(a.fonts().len(), b.fonts().len());
         for (a, b) in a.fonts().iter().zip(b.fonts()) {
             assert_eq!(a.name(), b.name());
@@ -33,11 +33,11 @@ fn inspect(outcome: &Outcome) {
             println!(",");
         }
         print!("{{\"boxes\":{},\"placements\":[", page.boxes().len());
-        for (j, placement) in page.placements().iter().enumerate() {
+        for (j, placement) in page.placements().enumerate() {
             if j != 0 {
                 print!(",");
             }
-            match *placement {
+            match placement {
                 Placement::Glyph {
                     font,
                     character,
@@ -174,7 +174,7 @@ pub fn run(mut mark: impl FnMut(&'static str)) {
     // Retained prefix endpoints must still describe the same old pages.
     for prefix in &prefixes {
         for (old, final_page) in prefix.pages.iter().zip(uninterrupted.pages.iter()) {
-            assert_eq!(old.placements(), final_page.placements());
+            assert!(old.placements().eq(final_page.placements()));
         }
     }
     drop(engine);

@@ -39,7 +39,8 @@ lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glu
 `page.rs` owns incremental page state and default output, `vertical.rs` executes
 vertical contributions and page quantities, `page_output.rs` lowers owned nodes
 with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/
-rule records in immutable prefixes. `page_tests.rs` covers page/replay/resource
+rule records in immutable prefixes; `output_tests.rs` checks positioned run
+iteration, aggregate capacity, and nested movement boundaries. `page_tests.rs` covers page/replay/resource
 ownership; `page_oracle_tests.rs` compares native boxes and placements with the
 small test-only DVI reader in `page_dvi_tests.rs`. Scaled font headers use safe
 once-initialized chunk handles in `tfm.rs`, retaining the sealed resource set;

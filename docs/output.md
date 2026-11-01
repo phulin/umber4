@@ -10,8 +10,18 @@ and immutable resource owners, not live TeX node IDs.
 The [page contract](pages.md) defines the current default output path, without
 DVI/PDF serialization. `Outcome.pages` is a cheap retained prefix; `Pages::iter`
 and `get` expose immutable `Page` records. Each page owns packed box records
-(including parent indices and glue settings), ordered absolute `Placement` glyphs
-and rules, count registers, output penalty, and an immutable font-resource table.
+(including parent indices and glue settings), ordered glyph-run/rule records and
+glyph bytes, count registers, output penalty, and an immutable font-resource table.
+`Page::items` exposes compact ordered records; run ranges index `Page::glyphs`.
+`Page::placements` yields owned absolute `Placement` values through a forward,
+exact-size iterator. It does not expose a placement slice, element borrows, range
+slicing, or constant-time random placement access. Each traversal reconstructs
+intra-run x coordinates using the retained immutable scaled font widths and
+wrapping integer addition; it borrows the font descriptor once per run. Consumers
+that need an owned position array can collect the iterator explicitly. Repeated
+scans repeat the font-width reads and coordinate additions; no scan cache is
+retained.
+
 All coordinates/dimensions use scaled points from the upper-left content origin;
 glyph and box y coordinates denote baselines, while rules use top-left corners.
 Font indices are page-local. `FontResource` exposes source name, exact retained TFM
@@ -22,8 +32,17 @@ immutable metrics and page-local index. Every glyph still checks character
 existence before placement; resource registration follows successful validation.
 The binding spans nested boxes and is discarded before the next page.
 
+Runs stop at noncharacter nodes, document-font changes, and both nested-box entry
+and exit, including empty boxes and rules that move without painting. Each run
+starts at the exact absolute position computed by lowering, so negative kerns,
+box shifts, and cumulative glue rounding remain eager. Every glyph/font and the
+aggregate glyph-plus-rule `u32` capacity limit is checked during lowering;
+iteration never postpones a TeX error. Single-glyph runs require more storage
+than one absolute placement; the representation does not promise a saving for
+every page.
+
 The traversal uses existing node lists and cumulative glue rounding, writes
-records directly into typed pooled buffers, and releases the live page tree on
+records and glyph bytes directly into typed pooled buffers, and releases the live page tree on
 success or failure. Only complete successful traversals append a page record.
 Huge boxes are consumed and return `Overflow`; incompatible magnification returns
 `Number`. The first accepted page prepares magnification, paired with the existing

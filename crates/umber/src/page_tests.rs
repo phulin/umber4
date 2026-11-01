@@ -26,7 +26,7 @@ fn signature(pages: &Pages) -> Vec<Signature> {
             (
                 p.output_penalty,
                 p.boxes().to_vec(),
-                p.placements().to_vec(),
+                p.placements().collect::<Vec<_>>(),
                 p.fonts()
                     .iter()
                     .map(|f| (f.name().to_vec(), f.size()))
@@ -50,7 +50,7 @@ fn end_flush_is_exact_height_with_fill_and_no_empty_job_page() {
     assert_eq!((b.glue.sign, b.glue.order), (1, 2));
     assert_eq!(p.output_penalty, -1_073_741_824);
     assert!(matches!(
-        p.placements()[0],
+        p.placements().next().unwrap(),
         Placement::Glyph {
             x: 0,
             y: 655360,
@@ -192,11 +192,10 @@ fn mixed_font_line_uses_each_glyphs_metrics_and_retains_both_resources() {
     assert_eq!(page.fonts()[1].size(), 20 * 65536);
     let glyphs: Vec<_> = page
         .placements()
-        .iter()
         .filter_map(|p| match p {
             Placement::Glyph {
                 font, character, x, ..
-            } => Some((*font, *character, *x)),
+            } => Some((font, character, x)),
             _ => None,
         })
         .collect();
@@ -306,8 +305,13 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
     let good = e.vpackage(list, Scaled(10), Scaled(0)).unwrap();
     e.publish_page(good, 0).unwrap();
     assert_eq!(
-        e.outcome().pages.get(0).unwrap().placements(),
-        &[Placement::Rule {
+        e.outcome()
+            .pages
+            .get(0)
+            .unwrap()
+            .placements()
+            .collect::<Vec<_>>(),
+        [Placement::Rule {
             x: 0,
             y: 0,
             width: 10,
@@ -370,7 +374,13 @@ fn vpackage_limits_final_depth_without_clipping_contents() {
     );
     e.publish_page(boxed, 0).unwrap();
     assert_eq!(
-        e.outcome().pages.get(0).unwrap().placements()[0],
+        e.outcome()
+            .pages
+            .get(0)
+            .unwrap()
+            .placements()
+            .next()
+            .unwrap(),
         Placement::Rule {
             x: 0,
             y: 0,
@@ -515,9 +525,8 @@ fn output_font_binding_crosses_nested_boxes_and_resets_for_each_page() {
     );
     let indices = |p: &crate::Page| {
         p.placements()
-            .iter()
             .map(|x| match x {
-                Placement::Glyph { font, .. } => *font,
+                Placement::Glyph { font, .. } => font,
                 _ => panic!("expected glyph"),
             })
             .collect::<Vec<_>>()
