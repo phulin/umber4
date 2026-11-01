@@ -134,6 +134,8 @@ pub(crate) mod cmd {
         CHAR_GIVEN = 38 => [];
         MACRO = 64 => [] expandable;
         PROTECTED_MACRO = 65 => [] expandable;
+        OUTER_MACRO = 124 => [] expandable;
+        PROTECTED_OUTER_MACRO = 125 => [] expandable;
         UNDEFINED = 66 => [] expandable;
         RELAX = 16 => [b"relax"];
         DEF = 17 => [b"def"] assignment;
@@ -143,6 +145,7 @@ pub(crate) mod cmd {
         LET = 21 => [b"let"] assignment;
         GLOBAL = 22 => [b"global"];
         LONG = 23 => [b"long"];
+        OUTER = 123 => [b"outer"];
         BEGIN_GROUP = 24 => [b"begingroup"];
         END_GROUP = 25 => [b"endgroup"];
         COUNT = 26 => [b"count"] assignment;
@@ -244,7 +247,19 @@ impl Meaning {
         value: 257,
     };
     pub fn is_macro(self) -> bool {
-        matches!(self.command, cmd::MACRO | cmd::PROTECTED_MACRO)
+        matches!(
+            self.command,
+            cmd::MACRO | cmd::PROTECTED_MACRO | cmd::OUTER_MACRO | cmd::PROTECTED_OUTER_MACRO
+        )
+    }
+    pub fn is_outer_macro(self) -> bool {
+        matches!(self.command, cmd::OUTER_MACRO | cmd::PROTECTED_OUTER_MACRO)
+    }
+    pub fn is_protected_macro(self) -> bool {
+        matches!(
+            self.command,
+            cmd::PROTECTED_MACRO | cmd::PROTECTED_OUTER_MACRO
+        )
     }
     pub fn is_conditional(self) -> bool {
         cmd::is_conditional(self.command)

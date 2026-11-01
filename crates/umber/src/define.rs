@@ -8,8 +8,22 @@ impl Engine<'_> {
         long: bool,
         global: bool,
         protected: bool,
+        outer: bool,
     ) -> Result<()> {
         let cs = self.scan_cs()?;
+        self.with_scanner(crate::scanner::Scanner::Defining, |engine| {
+            engine.define_body(cs, expanded, long, global, protected, outer)
+        })
+    }
+    fn define_body(
+        &mut self,
+        cs: usize,
+        expanded: bool,
+        long: bool,
+        global: bool,
+        protected: bool,
+        outer: bool,
+    ) -> Result<()> {
         let mut tokens = self.values.builder(crate::values::Class::Durable)?;
         let mut prefix_end = None;
         let mut parameters = 0u8;
@@ -104,10 +118,11 @@ impl Engine<'_> {
         self.assign_meaning(
             cs,
             Meaning {
-                command: if protected {
-                    cmd::PROTECTED_MACRO
-                } else {
-                    cmd::MACRO
+                command: match (protected, outer) {
+                    (false, false) => cmd::MACRO,
+                    (true, false) => cmd::PROTECTED_MACRO,
+                    (false, true) => cmd::OUTER_MACRO,
+                    (true, true) => cmd::PROTECTED_OUTER_MACRO,
                 },
                 value: id as i32,
             },

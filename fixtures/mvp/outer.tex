@@ -1,0 +1,27 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode94=7\relax
+\outer\def\out{}\outer\long\def\longout{}
+\protected\outer\def\protectedout{}\outer\protected\long\def\allflags{}
+\def\ordinary{}\let\alias=\out
+\message{UMBER:\meaning\out/\meaning\longout/\meaning\protectedout/\meaning\allflags:END}
+\message{UMBER:\ifx\out\alias ALIAS\else BAD\fi/\ifx\out\ordinary BAD\else OUTER\fi/\ifx\out\longout BAD\else LONG\fi/\ifx\out\protectedout BAD\else PROTECTED\fi:END}
+\outer\def\run{\advance\count0by1\relax}\run
+\outer\long\def\take#1{\advance\count1by1\relax}\take{\par}
+\protected\outer\long\def\twice#1{#1#1}\twice{\advance\count2by1\relax}
+\edef\saved{\noexpand\run}\saved
+\message{UMBER:\the\count0/\the\count1/\the\count2:END}
+\message{UMBER:\string\out/\meaning\alias/\noexpand\out:END}
+\edef\test{\ifdefined\out YES\else BAD\fi/\ifx\out\alias SAME\else BAD\fi}
+\message{UMBER:\test/\meaning\saved:END}
+{\outer\def\local{}\global\protected\outer\long\def\globalall{}}
+\message{UMBER:\ifdefined\local BAD\else LOCAL\fi/\meaning\globalall:END}
+{\globaldefs=-1\relax\outer\gdef\forcedlocal{}}
+{\globaldefs=1\relax\outer\def\forcedglobal{}}
+\message{UMBER:\ifdefined\forcedlocal BAD\else LOCAL\fi/\meaning\forcedglobal:END}
+\def\latercarrier{\later}\toks0={\later}\outer\def\later{\advance\count3by1\relax}
+\latercarrier\edef\transferred{\the\toks0}\transferred
+\message{UMBER:\the\count3/\meaning\transferred:END}
+\catcode64=13\outer\def@{\advance\count4by1\relax}\let\activealias=@ @\activealias
+\message{UMBER:\the\count4/\ifdefined@ACTIVE\else BAD\fi/\ifx@\activealias ALIAS\else BAD\fi:END}
+\catcode`\^^L=13 \outer\def^^L{\par}
+\message{UMBER:\meaning^^L:END}
+\end

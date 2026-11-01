@@ -133,14 +133,18 @@ impl Engine<'_> {
             let owner = self.values.get(id as u32);
             let definition = owner.definition();
             let long = definition.long;
-            let protected = meaning.command == cmd::PROTECTED_MACRO;
+            let protected = meaning.is_protected_macro();
+            let outer = meaning.is_outer_macro();
             if protected {
                 self.escaped_text(b"protected", emit)?;
             }
             if long {
                 self.escaped_text(b"long", emit)?;
             }
-            if protected || long {
+            if outer {
+                self.escaped_text(b"outer", emit)?;
+            }
+            if protected || long || outer {
                 emit(self, b' ')?;
             }
             self.emit_text(b"macro:", emit)?;
@@ -237,17 +241,20 @@ impl Engine<'_> {
     ) -> Result<()> {
         match read.meaning.command {
             cmd::STRING => {
-                let token = self.next_raw()?.token;
+                let token = self
+                    .with_scanner(crate::scanner::Scanner::Normal, |engine| engine.next_raw())?
+                    .token;
                 self.token_text(token, false, &mut emit)?;
             }
             cmd::MEANING => {
-                let token = self.next_token()?;
+                let token = self.with_scanner(crate::scanner::Scanner::Normal, |engine| {
+                    engine.next_token()
+                })?;
                 self.meaning_text(token, &mut emit)?;
             }
             cmd::DETOKENIZE => {
-                self.opening_brace()?;
                 let mut emission = Ok(());
-                self.scan_raw_body(&mut |engine: &mut Self, token: Token| {
+                self.scan_raw_text(&mut |engine: &mut Self, token: Token| {
                     engine.token_text(token, true, |engine, byte| {
                         if DEFER_EMISSION {
                             // A direct destination error follows operand scan
@@ -291,9 +298,8 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn change_case(&mut self, which: usize) -> Result<()> {
-        self.opening_brace()?;
         let mut output = Generated::default();
-        self.scan_raw_body(&mut |engine: &mut Self, mut token: Token| {
+        self.scan_raw_text(&mut |engine: &mut Self, mut token: Token| {
             let byte = if token.is_cs() {
                 token.active_byte()
             } else {

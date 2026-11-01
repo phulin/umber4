@@ -24,6 +24,9 @@ the destination, bypassing further expansion, brace accounting, and macro
 parameter interpretation. Ordinary execution of these primitives installs a
 source whose tokens subsequently undergo ordinary expansion. Protected macros
 remain identities in expanded lists and expand in ordinary execution.
+`\outer` combines with long/protected and local/global definition prefixes.
+It preserves upstream scanner-validity restrictions and the transient context
+exceptions described in [execution.md](execution.md#scanner-contexts-and-outer-macros).
 
 Add `\if`, `\ifcat`, `\ifodd`, `\ifcase`, `\or`, `\ifdefined`, `\ifcsname`,
 and `\unless`. Character comparisons use expanded meanings, including character

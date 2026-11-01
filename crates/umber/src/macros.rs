@@ -123,9 +123,13 @@ impl Engine<'_> {
             return self.push_body(owner, None);
         }
         if definition.uses_parameters {
-            self.begin_macro_with_arguments::<true>(owner, arity)
+            self.with_scanner(crate::scanner::Scanner::Matching, |engine| {
+                engine.begin_macro_with_arguments::<true>(owner, arity)
+            })
         } else {
-            self.begin_macro_with_arguments::<false>(owner, arity)
+            self.with_scanner(crate::scanner::Scanner::Matching, |engine| {
+                engine.begin_macro_with_arguments::<false>(owner, arity)
+            })
         }
     }
     #[inline(always)]
@@ -162,6 +166,11 @@ impl Engine<'_> {
         } else {
             token
         };
+        // Fall back so the ordinary reader consumes and rejects an outer token
+        // in its matching context, rather than hiding the validity error.
+        if token.is_cs() && self.resolve(token).is_outer_macro() {
+            return false;
+        }
         if !token.is_plain_character()
             && (token.is_begin() || token.is_end() || (!long && token == self.document.par))
         {

@@ -295,13 +295,23 @@ impl Engine<'_> {
     }
     #[inline]
     pub(crate) fn next_raw(&mut self) -> Result<Raw> {
-        self.next_raw_with::<true>()
+        let raw = self.next_raw_with::<true>()?;
+        self.check_raw_outer(raw)?;
+        Ok(raw)
+    }
+    #[inline(always)]
+    pub(crate) fn next_token(&mut self) -> Result<Read> {
+        let raw = self.next_raw_with::<true>()?;
+        Ok(Read {
+            token: raw.token,
+            meaning: self.raw_meaning(raw)?,
+        })
     }
     // Consumers of non-inserting file lookup receive only the effective
     // meaning, so a missing spelling cannot escape as a token identity.
     pub(crate) fn next_lookup_meaning(&mut self) -> Result<Meaning> {
         let raw = self.next_raw_with::<false>()?;
-        Ok(self.raw_meaning(raw))
+        self.raw_meaning(raw)
     }
     // Debug scanner recursion keeps a reader call boundary instead of
     // duplicating its unoptimized temporaries in every expansion frame.

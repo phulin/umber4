@@ -30,7 +30,11 @@ impl Engine<'_> {
             cmd::IFFALSE => false,
             cmd::IFCASE => choice == 0,
             cmd::IFODD => self.scan_int()? & 1 != 0,
-            cmd::IFDEFINED => self.next_lookup_meaning()? != Meaning::UNDEFINED,
+            cmd::IFDEFINED => {
+                self.with_scanner(crate::scanner::Scanner::Normal, |engine| {
+                    engine.next_lookup_meaning()
+                })? != Meaning::UNDEFINED
+            }
             cmd::IFCSNAME => {
                 let id = self.scan_name_with(|engine, name| Ok(engine.names.lookup(name)))?;
                 id.is_some_and(|id| {
@@ -38,8 +42,9 @@ impl Engine<'_> {
                 })
             }
             cmd::IFX => {
-                let a = self.next_lookup_meaning()?;
-                let b = self.next_lookup_meaning()?;
+                let (a, b) = self.with_scanner(crate::scanner::Scanner::Normal, |engine| {
+                    Ok((engine.next_lookup_meaning()?, engine.next_lookup_meaning()?))
+                })?;
                 self.same_meaning(a, b)
             }
             cmd::IF | cmd::IFCAT => {
@@ -130,6 +135,11 @@ impl Engine<'_> {
         Ok(())
     }
     fn skip_boundary(&mut self) -> Result<u8> {
+        self.with_scanner(crate::scanner::Scanner::Skipping, |engine| {
+            engine.skip_boundary_inner()
+        })
+    }
+    fn skip_boundary_inner(&mut self) -> Result<u8> {
         let mut depth = 0;
         loop {
             self.skip_characters();

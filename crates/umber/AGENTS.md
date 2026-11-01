@@ -19,6 +19,8 @@ scratch ownership, reuse, and failure cleanup;
 `define.rs` builds macro definitions; `macros.rs` builds invocation packets and
 captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;
+`scanner.rs` scopes transient scanner contexts and outer validity, with
+replay, error, and lifetime coverage in `scanner_tests.rs`;
 `scalars.rs` stores integer tables and their group levels;
 `numeric.rs` supplies scaled arithmetic/glue and `numeric_tests.rs` checks it;
 `dimension_scan.rs` scans dimensions/glue, `quantities.rs` shares internal-value

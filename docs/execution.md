@@ -5,6 +5,48 @@ construction. Primitive execution uses ordinary Rust functions. Groups and modes
 are semantic TeX state; scanners and the unfinished work of a primitive stay in
 Rust control flow.
 
+## Scanner contexts and outer macros
+
+`\outer` is a definition prefix, independently combinable with `\long`,
+`\protected`, and local/global assignment. Outer status is part of the macro's
+meaning: aliases preserve it, `\meaning` prints it, and `\ifx` distinguishes
+otherwise identical outer and non-outer macros. Protected outer macros remain
+unexpanded in expanded definitions, subject to the same outer validity checks.
+
+The engine keeps a transient scanner context: normal execution, definition
+scanning, macro parameter matching, balanced text absorption, or conditional
+skipping. Definition scanning starts after the target control sequence has been
+read and includes both signature and body. Matching includes compulsory prefix
+tokens, even when the macro has no parameters. Balanced text contexts cover
+message/token-list text, case conversion, `\unexpanded`, and `\detokenize`;
+their opening-brace scans use the context required by the invoking primitive.
+Skipped text is unexpanded and uses non-inserting name lookup.
+
+An outer control sequence read in any non-normal context fails with
+`Error::Outer`, whether it comes from a file, active character, stored token list,
+or substituted parameter. This is the fail-fast counterpart of upstream's
+`check_outer_validity`; no recovery tokens are inserted. Existing EOF and other
+scanner errors retain their consumption order. Character-run paths do not
+contain control-sequence tokens and need no outer check. Direct emission of an
+already-retained token list by `\the` into an expanded list does not reread its
+tokens and therefore does not impose another validity check.
+
+The operands of executed `\noexpand`, `\string`, `\meaning`, `\ifdefined`, and
+`\ifx` temporarily use normal context. A token already marked for one-read
+expansion suppression bypasses the outer check on that suppressed read.
+Unexpanded text containing literal `\noexpand` still checks subsequent tokens;
+it does not execute the primitive. Other expanded operands, including
+`\ifcsname`, keep the enclosing scanner context.
+
+Context scopes restore their caller's context on both success and failure.
+They live in ordinary Rust calls, allocate no frames or owners, and are absent
+from checkpoints. A public quiescent boundary requires normal context; restore
+resets transient context before rebuilding document roots. Future included-file
+EOF handling must check context before crossing back to a parent file.
+These rules follow the scanner status, token-reader, macro-call, conversion, and
+conditional routines in the [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web)
+and the corresponding [e-TeX extensions](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/etexdir/etex.ch).
+
 ## 1. The execution loop
 
 The outer loop asks `next_expanded` for the next command and its current meaning,

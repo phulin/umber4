@@ -42,9 +42,8 @@ impl Engine<'_> {
             },
             cmd::STRING | cmd::MEANING | cmd::ROMAN | cmd::DETOKENIZE => self.convert(read),
             cmd::UNEXPANDED => {
-                self.opening_brace()?;
                 let mut output = crate::convert::Generated::default();
-                self.scan_raw_body(&mut |engine: &mut Self, token: Token| {
+                self.scan_raw_text(&mut |engine: &mut Self, token: Token| {
                     engine.generated_token(&mut output, token)
                 })?;
                 self.finish_generated(output)
@@ -63,7 +62,9 @@ impl Engine<'_> {
                 Ok(())
             }
             cmd::NOEXPAND => {
-                let token = self.next_raw()?.token;
+                let token = self
+                    .with_scanner(crate::scanner::Scanner::Normal, |engine| engine.next_raw())?
+                    .token;
                 self.push_inline([token, Token(0)], 1, true);
                 Ok(())
             }

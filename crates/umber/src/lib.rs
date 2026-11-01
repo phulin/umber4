@@ -33,6 +33,7 @@ mod paragraph;
 mod quantities;
 mod scalars;
 mod scan;
+mod scanner;
 mod tables;
 mod text;
 mod tfm;
@@ -58,6 +59,7 @@ pub enum Error {
     Group,
     Conditional,
     Argument,
+    Outer,
     Capacity,
     Checkpoint,
     Font,
@@ -85,6 +87,7 @@ pub struct Engine<'a> {
     pub(crate) packet_links: Vec<u32>,
     pub(crate) name_spills: Vec<value_metadata::Buffer<u8>>,
     pub(crate) expansion_depth: u16,
+    pub(crate) scanner: scanner::Scanner,
     pub(crate) font_catalog: tfm::Catalog,
     font_name: Vec<u8>,
     ligatures: ligatures::Scratch,
@@ -146,6 +149,7 @@ impl<'a> Engine<'a> {
             packet_links: Vec::new(),
             name_spills: Vec::new(),
             expansion_depth: 0,
+            scanner: scanner::Scanner::Normal,
             font_catalog: tfm::Catalog::default(),
             font_name: Vec::new(),
             ligatures: ligatures::Scratch::default(),
@@ -221,20 +225,14 @@ impl<'a> Engine<'a> {
         }
     }
     #[inline(always)]
-    pub(crate) fn next_token(&mut self) -> Result<Read> {
-        let raw = self.next_raw()?;
-        Ok(Read {
-            token: raw.token,
-            meaning: self.raw_meaning(raw),
-        })
-    }
-    #[inline(always)]
-    pub(crate) fn raw_meaning(&self, raw: Raw) -> Meaning {
+    pub(crate) fn raw_meaning(&self, raw: Raw) -> Result<Meaning> {
         let mut meaning = self.resolve(raw.token);
         if raw.suppress && meaning.expandable() {
             meaning = Meaning::NOEXPAND_RELAX;
+        } else {
+            self.check_outer(meaning)?;
         }
-        meaning
+        Ok(meaning)
     }
     #[inline(always)]
     pub(crate) fn next_expanded(&mut self) -> Result<Read> {

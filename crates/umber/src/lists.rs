@@ -134,6 +134,20 @@ impl<'a> Engine<'a> {
         parameters: Option<u8>,
         emit: &mut impl Emit<'a>,
     ) -> Result<bool> {
+        let scanner = if parameters.is_some() {
+            crate::scanner::Scanner::Defining
+        } else {
+            crate::scanner::Scanner::Absorbing
+        };
+        self.with_scanner(scanner, |engine| {
+            engine.scan_body_inner::<EXPANDED>(parameters, emit)
+        })
+    }
+    fn scan_body_inner<const EXPANDED: bool>(
+        &mut self,
+        parameters: Option<u8>,
+        emit: &mut impl Emit<'a>,
+    ) -> Result<bool> {
         let mut depth = 1;
         let mut uses_parameters = false;
         loop {
@@ -141,7 +155,7 @@ impl<'a> Engine<'a> {
             let read = if EXPANDED {
                 loop {
                     let read = self.next_token()?;
-                    if !read.meaning.expandable() || read.meaning.command == cmd::PROTECTED_MACRO {
+                    if !read.meaning.expandable() || read.meaning.is_protected_macro() {
                         break read;
                     }
                     match read.meaning.command {
@@ -182,8 +196,7 @@ impl<'a> Engine<'a> {
                             })?;
                         }
                         cmd::UNEXPANDED => {
-                            self.opening_brace()?;
-                            self.scan_raw_body(emit)?;
+                            self.scan_raw_text(emit)?;
                         }
                         _ if read.meaning.is_macro() => {
                             self.begin_macro(read.meaning.value as u32)?;
@@ -228,6 +241,17 @@ impl<'a> Engine<'a> {
         }
     }
     pub(crate) fn scan_raw_body(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
+        self.with_scanner(crate::scanner::Scanner::Absorbing, |engine| {
+            engine.scan_raw_body_inner(emit)
+        })
+    }
+    pub(crate) fn scan_raw_text(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
+        self.with_scanner(crate::scanner::Scanner::Absorbing, |engine| {
+            engine.opening_brace()?;
+            engine.scan_raw_body_inner(emit)
+        })
+    }
+    fn scan_raw_body_inner(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
         let mut depth = 1;
         loop {
             self.emit_characters(emit)?;

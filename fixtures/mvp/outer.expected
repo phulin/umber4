@@ -1,0 +1,10 @@
+UMBER:\outer macro:->/\long\outer macro:->/\protected\outer macro:->/\protected\long\outer macro:->:END
+UMBER:ALIAS/OUTER/LONG/PROTECTED:END
+UMBER:2/1/2:END
+UMBER:\out/\outer macro:->/\out :END
+UMBER:YES/SAME/macro:->\run :END
+UMBER:LOCAL/\protected\long\outer macro:->:END
+UMBER:LOCAL/\outer macro:->:END
+UMBER:2/macro:->\later :END
+UMBER:2/ACTIVE/ALIAS:END
+UMBER:\outer macro:->\par :END

@@ -79,14 +79,16 @@ impl<'a> Engine<'a> {
     /// assignment groups are allowed. Horizontal construction defers handoff
     /// until a successful return to external vertical mode.
     pub fn can_checkpoint(&self) -> bool {
-        self.quiescent && self.document.text.mode == crate::text::Mode::Vertical
+        self.quiescent
+            && self.scanner == crate::scanner::Scanner::Normal
+            && self.document.text.mode == crate::text::Mode::Vertical
     }
 
     /// Execute up to `command_budget` complete outer commands. Expansion and
     /// operand scanning finish before a boundary is returned. Horizontal mode
     /// defers handoff until an eligible vertical boundary. Zero only polls.
     pub fn advance(&mut self, command_budget: usize) -> Result<Progress> {
-        if !self.quiescent {
+        if !self.quiescent || self.scanner != crate::scanner::Scanner::Normal {
             return Err(Error::Checkpoint);
         }
         if command_budget > 0 {
@@ -124,6 +126,7 @@ impl<'a> Engine<'a> {
             self.execute(read)?;
             // Scanners have returned, and all pending reads belong to sources.
             debug_assert_eq!(self.expansion_depth, 0);
+            debug_assert_eq!(self.scanner, crate::scanner::Scanner::Normal);
             self.quiescent = true;
             commands = commands.saturating_add(1);
         }
@@ -255,6 +258,7 @@ impl<'a> Engine<'a> {
             return Err(Error::Checkpoint);
         }
         self.quiescent = false;
+        self.scanner = crate::scanner::Scanner::Normal;
         // Sources are discarded before packets; no borrowed argument window is
         // read after this point. Clear every packet, including scanner failures
         // that never installed a body owner, and rebuild only allocator lists.

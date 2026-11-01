@@ -146,6 +146,9 @@ impl Engine<'_> {
                 && cursor.next != cursor.end
                 // SAFETY: next precedes end in the retained immutable window.
                 && unsafe { cursor.next.read() } == self.document.par
+                // An outer paragraph must be consumed and rejected by the
+                // ordinary reader before the non-long paragraph check.
+                && !self.resolve(self.document.par).is_outer_macro()
             {
                 return Err(Error::Argument);
             }

@@ -22,14 +22,14 @@ impl Engine<'_> {
         }
         let (read, prefix) = if matches!(
             read.meaning.command,
-            cmd::GLOBAL | cmd::LONG | cmd::PROTECTED
+            cmd::GLOBAL | cmd::LONG | cmd::PROTECTED | cmd::OUTER
         ) {
             self.assignment_prefixes(read)?
         } else {
             (read, 0)
         };
         let global = prefix & 1 != 0;
-        if prefix & 6 != 0
+        if prefix & 14 != 0
             && !matches!(
                 read.meaning.command,
                 cmd::DEF | cmd::GDEF | cmd::EDEF | cmd::XDEF
@@ -60,6 +60,7 @@ impl Engine<'_> {
                 prefix & 2 != 0,
                 assignment_global,
                 prefix & 4 != 0,
+                prefix & 8 != 0,
             ),
             cmd::LET => {
                 let id = self.scan_cs()?;
@@ -202,14 +203,16 @@ impl Engine<'_> {
             }
             cmd::CHANGE_CASE if !global => self.change_case(read.meaning.value as usize),
             cmd::MESSAGE if !global => {
-                self.opening_brace()?;
-                let mut bytes = Vec::new();
-                self.scan_body::<true>(None, &mut |engine: &mut Self, token: Token| {
-                    engine.print_token(token, &mut bytes);
+                self.with_scanner(crate::scanner::Scanner::Absorbing, |engine| {
+                    engine.opening_brace()?;
+                    let mut bytes = Vec::new();
+                    engine.scan_body::<true>(None, &mut |engine: &mut Self, token: Token| {
+                        engine.print_token(token, &mut bytes);
+                        Ok(())
+                    })?;
+                    engine.document.messages.push(bytes);
                     Ok(())
-                })?;
-                self.document.messages.push(bytes);
-                Ok(())
+                })
             }
             _ => Err(Error::Unsupported),
         };
@@ -230,6 +233,7 @@ impl Engine<'_> {
                 cmd::GLOBAL => 1,
                 cmd::LONG => 2,
                 cmd::PROTECTED => 4,
+                cmd::OUTER => 8,
                 _ => return Ok((read, prefix)),
             };
             loop {
