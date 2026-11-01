@@ -64,6 +64,60 @@ fn borrowed_metrics_switch_fonts_and_check_each_character() {
     assert_eq!(metrics.get(2, b'A').unwrap().width, Scaled(196608));
 }
 #[test]
+fn italic_correction_uses_tail_glyph_font_and_retains_zero_explicit_kerns() {
+    let source = br"\font\f=test\f\noindent a\/fi\/d\font\g=test at20pt\g\/c\char200\/d\nullfont\char0\spacefactor=1777\/\end";
+    let mut bytes = basic();
+    // Original f/i have zero italic metrics; their fi ligature retains its own.
+    for c in *b"afi" {
+        bytes[32 + 4 * c as usize + 2] &= 3;
+    }
+    let mut e = Engine::new(source);
+    e.register_tfm(b"test", &bytes).unwrap();
+    build(&mut e);
+    let mut p = e.document.text.horizontal.head();
+    let mut kerns = Vec::new();
+    while !p.is_null() {
+        let node = e.document.nodes.get(p);
+        if let Kind::Kern {
+            width,
+            explicit: true,
+        } = node.kind
+        {
+            kerns.push(width.0);
+        }
+        p = node.next;
+    }
+    assert_eq!(kerns, [0, 65536, 65536, 131072, 131072]);
+    assert_eq!(e.document.text.space_factor, 1777);
+}
+#[test]
+fn italic_correction_ignores_empty_and_noncharacter_tails_and_rejects_vertical() {
+    let mut e = engine(br"\font\f=test\f\hyphenchar\f=45\noindent\/\hbox{}\/\kern2pt\/\hskip1pt\/\penalty3\/\setlanguage1\/a-\/\end");
+    build(&mut e);
+    let mut p = e.document.text.horizontal.head();
+    let mut kerns = Vec::new();
+    while !p.is_null() {
+        let node = e.document.nodes.get(p);
+        if let Kind::Kern { width, explicit } = node.kind {
+            kerns.push((width.0, explicit));
+        }
+        p = node.next;
+    }
+    assert_eq!(kerns, [(2 * 65536, true)]);
+    for source in [
+        br"\/\end".as_slice(),
+        br"\catcode123=1\catcode125=2\setbox0=\vbox{\/}\end",
+    ] {
+        let mut e = Engine::new(source);
+        let before = e.checkpoint().unwrap();
+        for _ in 0..2 {
+            assert_eq!(e.advance(usize::MAX), Err(Error::Syntax));
+            assert_eq!(e.document.nodes.live_count(), 0);
+            e.restore(&before).unwrap();
+        }
+    }
+}
+#[test]
 fn loaded_fonts_grouping_mutation_and_restore() {
     let mut e=engine(br"\font\a=test \a \fontdimen2\a=3pt {\nullfont\fontdimen2\a=4pt}\relax \font\b=test \font\c=test at 12pt \fontdimen8\c=9pt \c\end");
     e.advance(5).unwrap();

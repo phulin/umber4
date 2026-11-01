@@ -128,6 +128,15 @@ component adds an empty discretionary with zero replacement count in unrestricte
 horizontal mode. Automatic hyphenation reconstructs these retained components
 at paragraph breaking, as described in [paragraphs.md](paragraphs.md).
 
+In either horizontal mode, `\/` inspects the actual list tail. A character or
+ligature appends an explicit kern using that glyph's italic metric and font,
+including a zero correction; an empty or other tail appends nothing. Selecting a
+different current font does not change the preceding glyph's correction. Missing
+input glyphs leave the previous tail in place, and explicit-hyphen discretionaries
+can prevent a correction in unrestricted mode. Space factor is unchanged.
+Vertical use is illegal. The separate math frontend must implement TeX's normal
+zero kern for `\/` in math; ordinary horizontal correction does not shape math.
+
 Spaces freeze inline glue at execution, using current font parameters, spaceskip,
 xspaceskip, and exact space-factor arithmetic. Control space uses the normal
 space path without changing the current factor. Font mutations affect subsequent

@@ -240,6 +240,7 @@ pub(crate) mod cmd {
         SHIPOUT = 152 => [b"shipout"];
         DEAD_CYCLES = 153 => [b"deadcycles", b"insertpenalties"] assignment;
         INSERT_ADJUST = 154 => [b"insert", b"vadjust"];
+        ITALIC_CORRECTION = 155 => [b"/"];
         UNSUPPORTED_LAYOUT = 122 => [b"mark", b"marks", b"vsplit", b"leaders", b"mathsurround"];
         IFDIM = 99 => [b"ifdim"] conditional;
         MATH_CODE = 126 => [b"mathcode"] assignment;

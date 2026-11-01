@@ -1,6 +1,6 @@
 //! Owned external/internal text lists and paragraph handoff.
 use crate::{
-    Engine, Result,
+    Engine, Error, Result,
     language::Language,
     layout_values::{DimenParam, GlueParam},
     nodes::{BoxData, GlueKind, Kind, List},
@@ -182,6 +182,7 @@ impl Engine<'_> {
             return Ok(true);
         }
         match cmd {
+            cmd::ITALIC_CORRECTION => self.append_italic_correction()?,
             11 | 12 | cmd::CHAR_GIVEN | cmd::CHAR => {
                 if self.document.text.mode.is_vertical() {
                     self.new_graf(true)?;
@@ -278,6 +279,30 @@ impl Engine<'_> {
     pub(crate) fn head_for_vertical(&mut self, read: Read) {
         self.back_read(read);
         self.back(self.document.par);
+    }
+    fn append_italic_correction(&mut self) -> Result<()> {
+        if !self.document.text.mode.is_horizontal() {
+            return Err(Error::Syntax);
+        }
+        let tail = self.document.text.horizontal.tail();
+        if tail.is_null() {
+            return Ok(());
+        }
+        let (Kind::Character { font, character }
+        | Kind::Ligature {
+            font, character, ..
+        }) = self.document.nodes.get(tail).kind
+        else {
+            return Ok(());
+        };
+        let width = self
+            .character_metrics(font, character)
+            .ok_or(Error::Font)?
+            .italic;
+        self.append_horizontal(Kind::Kern {
+            width,
+            explicit: true,
+        })
     }
     pub(crate) fn back_read(&mut self, read: Read) {
         self.push_backed(read.token, read.meaning == Meaning::NOEXPAND_RELAX);

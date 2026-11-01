@@ -326,7 +326,7 @@ impl Engine<'_> {
                 std::mem::take(components),
             );
         }
-        if disc {
+        if disc && self.document.text.mode == crate::text::Mode::Horizontal {
             self.append_horizontal(Kind::discretionary(List::default(), List::default(), 0))?;
         }
         Ok(())

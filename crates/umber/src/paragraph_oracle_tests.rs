@@ -341,3 +341,61 @@ fn upstream_paragraph_lines_and_glue() {
         oracle.compare(&bytes,&format!("{common}\\hsize=80pt"),r"\noindent The quick brown fox jumps over the lazy dog. Office affine AV a-b-c. The quick brown fox jumps.");
     }
 }
+#[test]
+#[ignore = "native italic correction: set UMBER_PDFTEX and UMBER_TFM_DIR"]
+fn upstream_italic_correction_nodes() {
+    let oracle = Oracle::new();
+    let settings = r"\hsize=400pt\parfillskip=0pt plus1fil\hyphenchar\f=45 ";
+    for body in [
+        r"\noindent\/a\/\/fi\/ffi\/AV\/a-\/b",
+        r"\noindent\hbox{}\/a\kern2pt\/b\hskip1pt\/c\penalty0\/d\setlanguage1\/e",
+        r"\noindent a\font\g=test at20pt\g\/b\char200\/c\nullfont\char0\/d",
+        r"\noindent\hbox{\/a\/\/fi\/a-\/}\hbox{}\/x",
+    ] {
+        oracle.compare(&basic(), settings, body);
+    }
+    let mut zero = basic();
+    for c in *b"afi" {
+        zero[32 + 4 * c as usize + 2] &= 3;
+    }
+    oracle.compare(&zero, settings, r"\noindent a\/fi\/ffi\/f\/i");
+    let root = PathBuf::from(std::env::var_os("UMBER_TFM_DIR").expect("real TFM corpus directory"));
+    oracle.compare(&std::fs::read(root.join("cm/cmti10.tfm")).unwrap(), settings, r"\noindent Office\/ affinity\/ fi\/ ff\/ f\/ a\font\g=test at20pt\g\/b\char200\/c\nullfont\char0\/");
+    for (name, body, message) in [
+        ("vertical", r"\/", "You can't use"),
+        ("internal", r"\setbox0=\vbox{\/}", "You can't use"),
+        (
+            "math",
+            r"\font\m=test\fontdimen22\m=0pt\textfont2=\m\scriptfont2=\m\scriptscriptfont2=\m\textfont3=\m\scriptfont3=\m\scriptscriptfont3=\m\setbox0=\hbox{$\/$}\showbox0",
+            "\\kern0.0",
+        ),
+    ] {
+        // Math's normal zero-kern case belongs to the future frontend; retain
+        // the native distinction from horizontal explicit correction here.
+        let source = format!(
+            r"\catcode123=1\catcode125=2\catcode36=3\showboxbreadth=100\showboxdepth=100 {body}\end"
+        );
+        std::fs::write(oracle.dir.join("probe.tex"), source).unwrap();
+        let output = Command::new(&oracle.binary)
+            .current_dir(&oracle.dir)
+            .env("TEXMFCNF", &oracle.dir)
+            .args([
+                "-ini",
+                "-etex",
+                "-no-shell-escape",
+                "-interaction=nonstopmode",
+                "probe.tex",
+            ])
+            .output()
+            .unwrap();
+        let log = std::fs::read_to_string(oracle.dir.join("probe.log")).unwrap();
+        assert!(
+            log.contains(message),
+            "{name}: {}\n{log}",
+            String::from_utf8_lossy(&output.stdout)
+        );
+        if name == "math" {
+            assert!(!log.contains("\\kern 0.0"));
+        }
+    }
+}
