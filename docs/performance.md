@@ -101,6 +101,12 @@ resource caches. This comparison covers text composition with different output
 endpoints; it excludes package/format loading, hyphenation patterns, math, custom
 output routines, and PDF serialization.
 
+The process helper also retains user CPU, system CPU, and minor page faults from
+the same child usage record. These include startup, input, output, and teardown;
+they do not isolate interpreter phases. Per-field medians need not sum to the
+median total CPU. RSS uses the separate grandchild measurement described in the
+benchmark runner rather than the child usage record's inherited high-water mark.
+
 The [latest cumulative measurement](../benchmarks/results/layout-current.json)
 records the current measured release, preserved original prose inputs, the mixed
 workload, and paired ordinary CLI/native samples. The [report](../benchmarks/results/layout.md)

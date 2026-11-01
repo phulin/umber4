@@ -736,5 +736,794 @@
     "Profile current book/mixed separately: taskset -c3 valgrind --tool=callgrind --callgrind-out-file=FILE target/release/umber INPUT --tfm NAME=TFM_PATH [...]."
   ],
   "validation_summary": "All four exact native glyph/font/rule coordinate comparisons, complete pre-metadata/current signatures, and retained-root midpoint replay checks passed. Original fixed-source hashes match layout-native.json, and original glyph coordinates and paragraph/page counts were independently rechecked.",
-  "complete": true
+  "complete": true,
+  "process_usage_diagnostic": {
+    "date": "2026-11-01T09:57:42.371572+00:00",
+    "production_commit": "03148baec158a64d8b5f0aefee5d90756d21099a",
+    "repository_before_helper_change": "8a586ca",
+    "cpu": 3,
+    "warmups": 1,
+    "repeats": 7,
+    "order": "alternate current/pdftex within each sequential pair; no original rerun",
+    "scope": "Separate complete-process user/system usage diagnostic on unchanged ordinary binaries and fixed inputs; no new instruction-profile run and no RSS measurement.",
+    "fields": "user_cpu_seconds=wait4.ru_utime; system_cpu_seconds=wait4.ru_stime; cpu_seconds=sum; minor_page_faults=wait4.ru_minflt; wall_seconds=elapsed process time",
+    "identity": "CLI/native hashes and every source/font hash equal main current milestone. No production code changed. Existing exact native placement/output/replay checks remain applicable; each new process final counter message and exit status checked.",
+    "medians": "Each field is independently median-reduced; user/system medians need not sum to median total.",
+    "cases": [
+      {
+        "case": "book",
+        "samples": {
+          "current": [
+            {
+              "wall_seconds": 0.048379895,
+              "cpu_seconds": 0.048055999999999995,
+              "user_cpu_seconds": 0.043049,
+              "system_cpu_seconds": 0.005007,
+              "minor_page_faults": 1606
+            },
+            {
+              "wall_seconds": 0.04800897,
+              "cpu_seconds": 0.047679,
+              "user_cpu_seconds": 0.042601,
+              "system_cpu_seconds": 0.005078,
+              "minor_page_faults": 1606
+            },
+            {
+              "wall_seconds": 0.048039444,
+              "cpu_seconds": 0.04779699999999999,
+              "user_cpu_seconds": 0.040812999999999995,
+              "system_cpu_seconds": 0.006984,
+              "minor_page_faults": 1606
+            },
+            {
+              "wall_seconds": 0.047139283,
+              "cpu_seconds": 0.046926,
+              "user_cpu_seconds": 0.040936,
+              "system_cpu_seconds": 0.00599,
+              "minor_page_faults": 1606
+            },
+            {
+              "wall_seconds": 0.04652255,
+              "cpu_seconds": 0.046319,
+              "user_cpu_seconds": 0.041392,
+              "system_cpu_seconds": 0.004927,
+              "minor_page_faults": 1608
+            },
+            {
+              "wall_seconds": 0.047147587,
+              "cpu_seconds": 0.046989,
+              "user_cpu_seconds": 0.040991,
+              "system_cpu_seconds": 0.005998,
+              "minor_page_faults": 1606
+            },
+            {
+              "wall_seconds": 0.04721265,
+              "cpu_seconds": 0.04699199999999999,
+              "user_cpu_seconds": 0.041992999999999996,
+              "system_cpu_seconds": 0.004999,
+              "minor_page_faults": 1607
+            }
+          ],
+          "pdftex": [
+            {
+              "wall_seconds": 0.047085535,
+              "cpu_seconds": 0.046769,
+              "user_cpu_seconds": 0.041794,
+              "system_cpu_seconds": 0.004974999999999999,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.047376626,
+              "cpu_seconds": 0.047034,
+              "user_cpu_seconds": 0.042031,
+              "system_cpu_seconds": 0.005003,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.04713923,
+              "cpu_seconds": 0.046784,
+              "user_cpu_seconds": 0.040826,
+              "system_cpu_seconds": 0.005958,
+              "minor_page_faults": 668
+            },
+            {
+              "wall_seconds": 0.046866018,
+              "cpu_seconds": 0.046563999999999994,
+              "user_cpu_seconds": 0.042599,
+              "system_cpu_seconds": 0.003965,
+              "minor_page_faults": 668
+            },
+            {
+              "wall_seconds": 0.047046703,
+              "cpu_seconds": 0.046689999999999995,
+              "user_cpu_seconds": 0.042717,
+              "system_cpu_seconds": 0.003973,
+              "minor_page_faults": 667
+            },
+            {
+              "wall_seconds": 0.046494576,
+              "cpu_seconds": 0.046142999999999997,
+              "user_cpu_seconds": 0.042130999999999995,
+              "system_cpu_seconds": 0.004012,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.046502102,
+              "cpu_seconds": 0.046204999999999996,
+              "user_cpu_seconds": 0.042187999999999996,
+              "system_cpu_seconds": 0.004017,
+              "minor_page_faults": 668
+            }
+          ]
+        },
+        "medians": {
+          "current": {
+            "wall_seconds": 0.04721265,
+            "cpu_seconds": 0.04699199999999999,
+            "user_cpu_seconds": 0.041392,
+            "system_cpu_seconds": 0.005078,
+            "minor_page_faults": 1606
+          },
+          "pdftex": {
+            "wall_seconds": 0.047046703,
+            "cpu_seconds": 0.046689999999999995,
+            "user_cpu_seconds": 0.042130999999999995,
+            "system_cpu_seconds": 0.004017,
+            "minor_page_faults": 668
+          }
+        },
+        "ranges": {
+          "current": {
+            "wall_seconds": [
+              0.04652255,
+              0.048379895
+            ],
+            "cpu_seconds": [
+              0.046319,
+              0.048055999999999995
+            ],
+            "user_cpu_seconds": [
+              0.040812999999999995,
+              0.043049
+            ],
+            "system_cpu_seconds": [
+              0.004927,
+              0.006984
+            ],
+            "minor_page_faults": [
+              1606,
+              1608
+            ]
+          },
+          "pdftex": {
+            "wall_seconds": [
+              0.046494576,
+              0.047376626
+            ],
+            "cpu_seconds": [
+              0.046142999999999997,
+              0.047034
+            ],
+            "user_cpu_seconds": [
+              0.040826,
+              0.042717
+            ],
+            "system_cpu_seconds": [
+              0.003965,
+              0.005958
+            ],
+            "minor_page_faults": [
+              667,
+              669
+            ]
+          }
+        },
+        "current_native_total_cpu_ratio": 1.0064681944741913,
+        "means": {
+          "current": {
+            "wall_seconds": 0.047492911285714284,
+            "cpu_seconds": 0.04725114285714285,
+            "user_cpu_seconds": 0.041682142857142855,
+            "system_cpu_seconds": 0.005569,
+            "minor_page_faults": 1606.4285714285713
+          },
+          "pdftex": {
+            "wall_seconds": 0.04693011285714286,
+            "cpu_seconds": 0.04659842857142857,
+            "user_cpu_seconds": 0.042040857142857144,
+            "system_cpu_seconds": 0.004557571428571428,
+            "minor_page_faults": 668.2857142857143
+          }
+        },
+        "mean_current_minus_native": {
+          "cpu_seconds": 0.0006527142857142842,
+          "user_cpu_seconds": -0.0003587142857142886,
+          "system_cpu_seconds": 0.001011428571428572,
+          "minor_page_faults": 938.142857142857
+        }
+      },
+      {
+        "case": "narrow",
+        "samples": {
+          "current": [
+            {
+              "wall_seconds": 0.047985674,
+              "cpu_seconds": 0.047724,
+              "user_cpu_seconds": 0.042753,
+              "system_cpu_seconds": 0.004971,
+              "minor_page_faults": 1918
+            },
+            {
+              "wall_seconds": 0.047693577,
+              "cpu_seconds": 0.047439,
+              "user_cpu_seconds": 0.040374,
+              "system_cpu_seconds": 0.007065,
+              "minor_page_faults": 1916
+            },
+            {
+              "wall_seconds": 0.047811063,
+              "cpu_seconds": 0.047492999999999994,
+              "user_cpu_seconds": 0.037388,
+              "system_cpu_seconds": 0.010105,
+              "minor_page_faults": 1916
+            },
+            {
+              "wall_seconds": 0.047593765,
+              "cpu_seconds": 0.04737999999999999,
+              "user_cpu_seconds": 0.042339999999999996,
+              "system_cpu_seconds": 0.005039999999999999,
+              "minor_page_faults": 1918
+            },
+            {
+              "wall_seconds": 0.047477759,
+              "cpu_seconds": 0.047258,
+              "user_cpu_seconds": 0.038209,
+              "system_cpu_seconds": 0.009049,
+              "minor_page_faults": 1917
+            },
+            {
+              "wall_seconds": 0.047940757,
+              "cpu_seconds": 0.04767099999999999,
+              "user_cpu_seconds": 0.036746999999999995,
+              "system_cpu_seconds": 0.010924,
+              "minor_page_faults": 1919
+            },
+            {
+              "wall_seconds": 0.049713333,
+              "cpu_seconds": 0.049403999999999997,
+              "user_cpu_seconds": 0.039321999999999996,
+              "system_cpu_seconds": 0.010081999999999999,
+              "minor_page_faults": 1916
+            }
+          ],
+          "pdftex": [
+            {
+              "wall_seconds": 0.048259173,
+              "cpu_seconds": 0.047875999999999995,
+              "user_cpu_seconds": 0.043886999999999995,
+              "system_cpu_seconds": 0.0039889999999999995,
+              "minor_page_faults": 660
+            },
+            {
+              "wall_seconds": 0.047469472,
+              "cpu_seconds": 0.047139,
+              "user_cpu_seconds": 0.043128,
+              "system_cpu_seconds": 0.004011,
+              "minor_page_faults": 660
+            },
+            {
+              "wall_seconds": 0.048456146,
+              "cpu_seconds": 0.048062999999999995,
+              "user_cpu_seconds": 0.043057,
+              "system_cpu_seconds": 0.005006,
+              "minor_page_faults": 659
+            },
+            {
+              "wall_seconds": 0.047568048,
+              "cpu_seconds": 0.047249,
+              "user_cpu_seconds": 0.040348999999999996,
+              "system_cpu_seconds": 0.0069,
+              "minor_page_faults": 659
+            },
+            {
+              "wall_seconds": 0.049146481,
+              "cpu_seconds": 0.048781,
+              "user_cpu_seconds": 0.041812999999999996,
+              "system_cpu_seconds": 0.006967999999999999,
+              "minor_page_faults": 660
+            },
+            {
+              "wall_seconds": 0.048485666,
+              "cpu_seconds": 0.048116,
+              "user_cpu_seconds": 0.047113999999999996,
+              "system_cpu_seconds": 0.0010019999999999999,
+              "minor_page_faults": 660
+            },
+            {
+              "wall_seconds": 0.048478716,
+              "cpu_seconds": 0.048046,
+              "user_cpu_seconds": 0.044043,
+              "system_cpu_seconds": 0.004003,
+              "minor_page_faults": 658
+            }
+          ]
+        },
+        "medians": {
+          "current": {
+            "wall_seconds": 0.047811063,
+            "cpu_seconds": 0.047492999999999994,
+            "user_cpu_seconds": 0.039321999999999996,
+            "system_cpu_seconds": 0.009049,
+            "minor_page_faults": 1917
+          },
+          "pdftex": {
+            "wall_seconds": 0.048456146,
+            "cpu_seconds": 0.048046,
+            "user_cpu_seconds": 0.043128,
+            "system_cpu_seconds": 0.004011,
+            "minor_page_faults": 660
+          }
+        },
+        "ranges": {
+          "current": {
+            "wall_seconds": [
+              0.047477759,
+              0.049713333
+            ],
+            "cpu_seconds": [
+              0.047258,
+              0.049403999999999997
+            ],
+            "user_cpu_seconds": [
+              0.036746999999999995,
+              0.042753
+            ],
+            "system_cpu_seconds": [
+              0.004971,
+              0.010924
+            ],
+            "minor_page_faults": [
+              1916,
+              1919
+            ]
+          },
+          "pdftex": {
+            "wall_seconds": [
+              0.047469472,
+              0.049146481
+            ],
+            "cpu_seconds": [
+              0.047139,
+              0.048781
+            ],
+            "user_cpu_seconds": [
+              0.040348999999999996,
+              0.047113999999999996
+            ],
+            "system_cpu_seconds": [
+              0.0010019999999999999,
+              0.006967999999999999
+            ],
+            "minor_page_faults": [
+              658,
+              660
+            ]
+          }
+        },
+        "current_native_total_cpu_ratio": 0.9884901968946426,
+        "means": {
+          "current": {
+            "wall_seconds": 0.04803084685714286,
+            "cpu_seconds": 0.047767,
+            "user_cpu_seconds": 0.03959042857142857,
+            "system_cpu_seconds": 0.008176571428571429,
+            "minor_page_faults": 1917.142857142857
+          },
+          "pdftex": {
+            "wall_seconds": 0.04826624314285714,
+            "cpu_seconds": 0.047895714285714285,
+            "user_cpu_seconds": 0.043341571428571424,
+            "system_cpu_seconds": 0.004554142857142857,
+            "minor_page_faults": 659.4285714285714
+          }
+        },
+        "mean_current_minus_native": {
+          "cpu_seconds": -0.00012871428571428756,
+          "user_cpu_seconds": -0.0037511428571428557,
+          "system_cpu_seconds": 0.0036224285714285716,
+          "minor_page_faults": 1257.7142857142858
+        }
+      },
+      {
+        "case": "dense",
+        "samples": {
+          "current": [
+            {
+              "wall_seconds": 0.043461092,
+              "cpu_seconds": 0.04314899999999999,
+              "user_cpu_seconds": 0.037128999999999995,
+              "system_cpu_seconds": 0.006019999999999999,
+              "minor_page_faults": 1625
+            },
+            {
+              "wall_seconds": 0.042816414,
+              "cpu_seconds": 0.042554,
+              "user_cpu_seconds": 0.036615,
+              "system_cpu_seconds": 0.005939,
+              "minor_page_faults": 1627
+            },
+            {
+              "wall_seconds": 0.042939587,
+              "cpu_seconds": 0.042618,
+              "user_cpu_seconds": 0.033692,
+              "system_cpu_seconds": 0.008926,
+              "minor_page_faults": 1626
+            },
+            {
+              "wall_seconds": 0.043300993,
+              "cpu_seconds": 0.043015,
+              "user_cpu_seconds": 0.037013,
+              "system_cpu_seconds": 0.0060019999999999995,
+              "minor_page_faults": 1626
+            },
+            {
+              "wall_seconds": 0.048547411,
+              "cpu_seconds": 0.048251999999999996,
+              "user_cpu_seconds": 0.043329,
+              "system_cpu_seconds": 0.004922999999999999,
+              "minor_page_faults": 1627
+            },
+            {
+              "wall_seconds": 0.043256893,
+              "cpu_seconds": 0.042921,
+              "user_cpu_seconds": 0.036932,
+              "system_cpu_seconds": 0.0059889999999999995,
+              "minor_page_faults": 1626
+            },
+            {
+              "wall_seconds": 0.043150836,
+              "cpu_seconds": 0.042874999999999996,
+              "user_cpu_seconds": 0.035896,
+              "system_cpu_seconds": 0.006979,
+              "minor_page_faults": 1625
+            }
+          ],
+          "pdftex": [
+            {
+              "wall_seconds": 0.042549828,
+              "cpu_seconds": 0.042168,
+              "user_cpu_seconds": 0.038245999999999995,
+              "system_cpu_seconds": 0.003922,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.040918702,
+              "cpu_seconds": 0.040597999999999995,
+              "user_cpu_seconds": 0.036638,
+              "system_cpu_seconds": 0.00396,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.041150073,
+              "cpu_seconds": 0.040778999999999996,
+              "user_cpu_seconds": 0.034811999999999996,
+              "system_cpu_seconds": 0.005967,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.046040341,
+              "cpu_seconds": 0.045593999999999996,
+              "user_cpu_seconds": 0.042554999999999996,
+              "system_cpu_seconds": 0.003039,
+              "minor_page_faults": 668
+            },
+            {
+              "wall_seconds": 0.046795838,
+              "cpu_seconds": 0.046428,
+              "user_cpu_seconds": 0.038526,
+              "system_cpu_seconds": 0.007902,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.041411109,
+              "cpu_seconds": 0.041044,
+              "user_cpu_seconds": 0.03704,
+              "system_cpu_seconds": 0.004004,
+              "minor_page_faults": 669
+            },
+            {
+              "wall_seconds": 0.041793605,
+              "cpu_seconds": 0.041425,
+              "user_cpu_seconds": 0.038394,
+              "system_cpu_seconds": 0.003031,
+              "minor_page_faults": 670
+            }
+          ]
+        },
+        "medians": {
+          "current": {
+            "wall_seconds": 0.043256893,
+            "cpu_seconds": 0.042921,
+            "user_cpu_seconds": 0.036932,
+            "system_cpu_seconds": 0.0060019999999999995,
+            "minor_page_faults": 1626
+          },
+          "pdftex": {
+            "wall_seconds": 0.041793605,
+            "cpu_seconds": 0.041425,
+            "user_cpu_seconds": 0.038245999999999995,
+            "system_cpu_seconds": 0.00396,
+            "minor_page_faults": 669
+          }
+        },
+        "ranges": {
+          "current": {
+            "wall_seconds": [
+              0.042816414,
+              0.048547411
+            ],
+            "cpu_seconds": [
+              0.042554,
+              0.048251999999999996
+            ],
+            "user_cpu_seconds": [
+              0.033692,
+              0.043329
+            ],
+            "system_cpu_seconds": [
+              0.004922999999999999,
+              0.008926
+            ],
+            "minor_page_faults": [
+              1625,
+              1627
+            ]
+          },
+          "pdftex": {
+            "wall_seconds": [
+              0.040918702,
+              0.046795838
+            ],
+            "cpu_seconds": [
+              0.040597999999999995,
+              0.046428
+            ],
+            "user_cpu_seconds": [
+              0.034811999999999996,
+              0.042554999999999996
+            ],
+            "system_cpu_seconds": [
+              0.003031,
+              0.007902
+            ],
+            "minor_page_faults": [
+              668,
+              670
+            ]
+          }
+        },
+        "current_native_total_cpu_ratio": 1.036113458056729,
+        "means": {
+          "current": {
+            "wall_seconds": 0.04392474657142857,
+            "cpu_seconds": 0.043626285714285715,
+            "user_cpu_seconds": 0.03722942857142857,
+            "system_cpu_seconds": 0.0063968571428571425,
+            "minor_page_faults": 1626
+          },
+          "pdftex": {
+            "wall_seconds": 0.042951356571428574,
+            "cpu_seconds": 0.04257657142857142,
+            "user_cpu_seconds": 0.03803014285714285,
+            "system_cpu_seconds": 0.004546428571428571,
+            "minor_page_faults": 669
+          }
+        },
+        "mean_current_minus_native": {
+          "cpu_seconds": 0.0010497142857142927,
+          "user_cpu_seconds": -0.0008007142857142796,
+          "system_cpu_seconds": 0.0018504285714285714,
+          "minor_page_faults": 957
+        }
+      },
+      {
+        "case": "mixed",
+        "samples": {
+          "current": [
+            {
+              "wall_seconds": 0.047296182,
+              "cpu_seconds": 0.04695,
+              "user_cpu_seconds": 0.040949,
+              "system_cpu_seconds": 0.006000999999999999,
+              "minor_page_faults": 1553
+            },
+            {
+              "wall_seconds": 0.046963453,
+              "cpu_seconds": 0.046721,
+              "user_cpu_seconds": 0.038769,
+              "system_cpu_seconds": 0.007951999999999999,
+              "minor_page_faults": 1555
+            },
+            {
+              "wall_seconds": 0.046809952,
+              "cpu_seconds": 0.046568,
+              "user_cpu_seconds": 0.039625,
+              "system_cpu_seconds": 0.0069429999999999995,
+              "minor_page_faults": 1554
+            },
+            {
+              "wall_seconds": 0.046837311,
+              "cpu_seconds": 0.046591999999999995,
+              "user_cpu_seconds": 0.043616999999999996,
+              "system_cpu_seconds": 0.0029749999999999998,
+              "minor_page_faults": 1554
+            },
+            {
+              "wall_seconds": 0.047000803,
+              "cpu_seconds": 0.046689,
+              "user_cpu_seconds": 0.039736,
+              "system_cpu_seconds": 0.006953,
+              "minor_page_faults": 1554
+            },
+            {
+              "wall_seconds": 0.046647262,
+              "cpu_seconds": 0.046417,
+              "user_cpu_seconds": 0.043455,
+              "system_cpu_seconds": 0.002962,
+              "minor_page_faults": 1554
+            },
+            {
+              "wall_seconds": 0.046593433,
+              "cpu_seconds": 0.046318,
+              "user_cpu_seconds": 0.040272999999999996,
+              "system_cpu_seconds": 0.006045,
+              "minor_page_faults": 1554
+            }
+          ],
+          "pdftex": [
+            {
+              "wall_seconds": 0.04142409,
+              "cpu_seconds": 0.041068,
+              "user_cpu_seconds": 0.035058,
+              "system_cpu_seconds": 0.00601,
+              "minor_page_faults": 644
+            },
+            {
+              "wall_seconds": 0.042697562,
+              "cpu_seconds": 0.042416999999999996,
+              "user_cpu_seconds": 0.036499,
+              "system_cpu_seconds": 0.005918,
+              "minor_page_faults": 646
+            },
+            {
+              "wall_seconds": 0.041203381,
+              "cpu_seconds": 0.04086,
+              "user_cpu_seconds": 0.037794,
+              "system_cpu_seconds": 0.0030659999999999997,
+              "minor_page_faults": 644
+            },
+            {
+              "wall_seconds": 0.040393211,
+              "cpu_seconds": 0.040114,
+              "user_cpu_seconds": 0.034095,
+              "system_cpu_seconds": 0.006019,
+              "minor_page_faults": 646
+            },
+            {
+              "wall_seconds": 0.041367934,
+              "cpu_seconds": 0.041026999999999994,
+              "user_cpu_seconds": 0.038024999999999996,
+              "system_cpu_seconds": 0.003002,
+              "minor_page_faults": 644
+            },
+            {
+              "wall_seconds": 0.040920587,
+              "cpu_seconds": 0.040604,
+              "user_cpu_seconds": 0.037631,
+              "system_cpu_seconds": 0.002973,
+              "minor_page_faults": 645
+            },
+            {
+              "wall_seconds": 0.041084659,
+              "cpu_seconds": 0.040742999999999994,
+              "user_cpu_seconds": 0.036767999999999995,
+              "system_cpu_seconds": 0.003975,
+              "minor_page_faults": 645
+            }
+          ]
+        },
+        "medians": {
+          "current": {
+            "wall_seconds": 0.046837311,
+            "cpu_seconds": 0.046591999999999995,
+            "user_cpu_seconds": 0.040272999999999996,
+            "system_cpu_seconds": 0.006045,
+            "minor_page_faults": 1554
+          },
+          "pdftex": {
+            "wall_seconds": 0.041203381,
+            "cpu_seconds": 0.04086,
+            "user_cpu_seconds": 0.036767999999999995,
+            "system_cpu_seconds": 0.003975,
+            "minor_page_faults": 645
+          }
+        },
+        "ranges": {
+          "current": {
+            "wall_seconds": [
+              0.046593433,
+              0.047296182
+            ],
+            "cpu_seconds": [
+              0.046318,
+              0.04695
+            ],
+            "user_cpu_seconds": [
+              0.038769,
+              0.043616999999999996
+            ],
+            "system_cpu_seconds": [
+              0.002962,
+              0.007951999999999999
+            ],
+            "minor_page_faults": [
+              1553,
+              1555
+            ]
+          },
+          "pdftex": {
+            "wall_seconds": [
+              0.040393211,
+              0.042697562
+            ],
+            "cpu_seconds": [
+              0.040114,
+              0.042416999999999996
+            ],
+            "user_cpu_seconds": [
+              0.034095,
+              0.038024999999999996
+            ],
+            "system_cpu_seconds": [
+              0.002973,
+              0.006019
+            ],
+            "minor_page_faults": [
+              644,
+              646
+            ]
+          }
+        },
+        "current_native_total_cpu_ratio": 1.1402838962310327,
+        "means": {
+          "current": {
+            "wall_seconds": 0.04687834228571429,
+            "cpu_seconds": 0.04660785714285714,
+            "user_cpu_seconds": 0.040917714285714286,
+            "system_cpu_seconds": 0.005690142857142857,
+            "minor_page_faults": 1554
+          },
+          "pdftex": {
+            "wall_seconds": 0.04129877485714286,
+            "cpu_seconds": 0.04097614285714286,
+            "user_cpu_seconds": 0.036552857142857144,
+            "system_cpu_seconds": 0.004423285714285714,
+            "minor_page_faults": 644.8571428571429
+          }
+        },
+        "mean_current_minus_native": {
+          "cpu_seconds": 0.0056317142857142816,
+          "user_cpu_seconds": 0.0043648571428571425,
+          "system_cpu_seconds": 0.0012668571428571434,
+          "minor_page_faults": 909.1428571428571
+        }
+      }
+    ],
+    "interpretation": [
+      "Per-field medians are descriptive and are not additive; use arithmetic mean component differences for an additive comparison across the same seven pairs.",
+      "System CPU and minor-fault counts are higher for current Umber in all four cases. In the original three, current mean user CPU is lower than native; the system CPU excess offsets that advantage.",
+      "Mixed mean total excess is 5.632 ms, composed of 4.365 ms user and 1.267 ms system CPU. These are whole-process costs, not an engine-only phase attribution.",
+      "System-time ranges are wide on these short shared-host processes; minor faults do not identify which buffers/backing paths cause the time. No RSS measurement or kernel/backing causal attribution is made."
+    ]
+  }
 }

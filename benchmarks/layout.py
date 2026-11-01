@@ -148,7 +148,10 @@ def child(command, env=None):
         output = stdout.read()
     assert process.returncode == 0, output.decode(errors="replace")
     return output, {"wall_seconds": elapsed,
-                    "cpu_seconds": usage.ru_utime + usage.ru_stime}
+                    "cpu_seconds": usage.ru_utime + usage.ru_stime,
+                    "user_cpu_seconds": usage.ru_utime,
+                    "system_cpu_seconds": usage.ru_stime,
+                    "minor_page_faults": usage.ru_minflt}
 
 
 def rss(command, env=None):

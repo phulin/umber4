@@ -47,6 +47,32 @@ expansion-only timings cover a different feature scope and cannot establish a
 layout regression. Original measurements and focused change reports remain below
 and in the [benchmark guide](../README.md).
 
+### Process CPU split diagnostic
+
+A separate seven-pair run uses the same unchanged current/native binaries,
+resources, and four inputs on CPU 3, alternating order after one warmup. The
+existing process helper now retains user CPU, system CPU, and minor faults from
+the same `wait4` record as total CPU. The [current raw result](layout-current.json)
+keeps these samples in a separate diagnostic section, including every range.
+No original-engine or instruction-profile run was repeated, and RSS was not measured.
+
+| Case | User CPU Umber/native (ms) | System CPU Umber/native (ms) | Total CPU Umber/native (ms) | Minor faults Umber/native |
+| ---- | -------------------------- | ---------------------------- | --------------------------- | ------------------------- |
+| Book | 41.392 / 42.131 | 5.078 / 4.017 | 46.992 / 46.690 | 1,606 / 668 |
+| Narrow | 39.322 / 43.128 | 9.049 / 4.011 | 47.493 / 48.046 | 1,917 / 660 |
+| Dense | 36.932 / 38.246 | 6.002 / 3.960 | 42.921 / 41.425 | 1,626 / 669 |
+| Mixed | 40.273 / 36.768 | 6.045 / 3.975 | 46.592 / 40.860 | 1,554 / 645 |
+
+These are independently computed medians: user and system medians need not sum
+to median total CPU. Using additive arithmetic means over the same samples,
+Umber has lower user CPU and higher system CPU in all three original prose cases.
+For mixed text, the 5.632 ms mean total excess comprises 4.365 ms user and
+1.267 ms system CPU. System CPU and minor faults are higher in all four cases,
+but the data do not identify a particular allocator, buffer, or kernel operation
+as the cause. System-time ranges are wide: mixed Umber/native spans
+2.962–7.952/2.973–6.019 ms. These full-process records include startup, CLI/input,
+output, and teardown; they do not isolate engine execution or backing costs.
+
 ## Initial page-capable baseline
 
 Measured on 2026-10-31 at engine revision `159ebe5f114ce6621c59909f2afe9f8fb1f90a00`,
