@@ -55,6 +55,9 @@ pub(crate) struct ScaledFont {
     pub params: Buffer<Scaled>,
 }
 impl ScaledFont {
+    pub fn kern(&self, index: usize) -> Scaled {
+        self.kerns[index]
+    }
     pub fn exists(&self, character: u8) -> bool {
         self.present[character as usize / 64] & (1u64 << (character % 64)) != 0
     }
@@ -94,7 +97,7 @@ impl FontResource {
     pub(crate) fn descriptor(&self) -> &ScaledFont {
         self.chunk.slots[self.slot].get().expect("published font")
     }
-    fn source(&self) -> &Resource {
+    pub(crate) fn source(&self) -> &Resource {
         &self.chunk.resources[self.descriptor().resource]
     }
     pub fn name(&self) -> &[u8] {
@@ -416,9 +419,6 @@ impl Catalog {
     }
     pub fn metric_fields(&self, scaled: usize, c: u8) -> Option<Metrics> {
         self.scaled[scaled].descriptor().metric_fields(c)
-    }
-    pub fn kern(&self, scaled: usize, index: usize) -> Scaled {
-        self.scaled[scaled].descriptor().kerns[index]
     }
 }
 fn validate_fix(raw: &[u8]) -> Result<()> {

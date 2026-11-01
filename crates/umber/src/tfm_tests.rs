@@ -12,7 +12,7 @@ fn checked_tables_scaling_and_signed_slant() {
     assert_eq!(m.depth.0, 131071);
     assert_eq!(m.italic.0, 65536);
     assert_eq!(c.scaled[s].descriptor().params[0].0, 6553);
-    assert_eq!(c.kern(s, 0).0, -65537);
+    assert_eq!(c.scaled[s].descriptor().kern(0).0, -65537);
     assert!(c.metrics(s, 0).is_none());
     assert_eq!(c.scaled(0, Scaled(655360)).unwrap(), s);
     let large = c.scaled(0, Scaled(13_107_201)).unwrap();

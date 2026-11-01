@@ -264,6 +264,19 @@ fn false_boundary_missing_glyphs_and_nullfont_preserve_input() {
     assert_eq!(glyphs(&e), vec![(b'b', false)]);
 }
 #[test]
+fn missing_only_character_runs_preserve_following_assignments() {
+    let mut nullfont = Engine::new(br"\noindent abc\relax\count0=7\end");
+    build(&mut nullfont);
+    assert!(nullfont.document.text.horizontal.is_empty());
+    assert_eq!(nullfont.outcome().counts[0], 7);
+
+    let mut missing = engine(br"\font\f=test \f\noindent\char0\char200\relax\count0=7\end");
+    build(&mut missing);
+    assert!(missing.document.text.horizontal.is_empty());
+    assert_eq!(missing.outcome().counts[0], 7);
+}
+
+#[test]
 fn everypar_precedes_implicit_character_and_budget_waits_for_vertical_mode() {
     let mut e = engine(br"\everypar{A}\font\f=test \f fi\relax\end");
     build(&mut e);

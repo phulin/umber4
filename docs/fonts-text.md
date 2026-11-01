@@ -68,6 +68,10 @@ terminate a paragraph.
 
 Character runs use the selected font, look ahead through expansion and `\char`,
 and preserve a noncharacter lookahead in pending input without executing it.
+Each non-nullfont run retains one immutable font-resource handle and borrows its
+scaled descriptor and source TFM for existence, ligature-program, boundary, and
+kern access across input expansion. Mutable font parameters remain in document
+state; an unexpandable assignment ends the run before execution.
 All TFM ligature operations retain original components and boundary-hit flags.
 Boundary programs, false boundary characters, and `\noboundary` follow upstream.
 TFM kerns remain distinct from explicit kerns. An explicit hyphen-character

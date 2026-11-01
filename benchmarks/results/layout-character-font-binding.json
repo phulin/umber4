@@ -1,0 +1,149 @@
+{
+  "date": "2026-11-01T09:16:50.138077+00:00",
+  "baseline_commit": "9649a537aad70357b4aa96f800c6fc2d8de729ed",
+  "change": "Retain one existing FontResource per character run and borrow immutable scaled metrics and source TFM across input expansion; keep mutable font parameters in document state.",
+  "build": "cargo build --release --bin umber --lib; ordinary default features, no extra rustflags",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "cpu": 3,
+  "warmups_per_pass": 1,
+  "repetitions_per_pass": [9, 20],
+  "order": "two bounded passes of serial alternating pairs; instrumentation and Callgrind separate from CPU timing",
+  "scope": "Complete ordinary release CLI on unchanged three 600-paragraph inputs and existing authentic Gentle mixed source. Short shared-host samples; these modest gains do not establish general TeX/LaTeX performance.",
+  "binary_sha256": {
+    "before": "425c52d7ae1367580db06ffdb59d459255e89dd7c03886854af63b7b384f1c08",
+    "after": "02af939ac83ab8b0c1cd17449e5c1f2b28d2b232549d505f319125f397af4354"
+  },
+  "measured_candidate": "Isolated prototype with runtime source byte-identical to integration; source and binary hashes distinguish measured inputs and build paths.",
+  "runtime_sources_sha256": {
+    "crates/umber/src/ligatures.rs": "1489fc050d24348774be440b540c8f0ff14e7765e42cce1c0e229a4dd83128e2",
+    "crates/umber/src/tfm.rs": "1036c2d0494bb2349321164cd187f49d6f31346f94e3475b3d82ff5f3b66fcbc"
+  },
+  "font_sha256": {
+    "aer10": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+    "aeti10": "243599dca0a4928095620eb211da7313bb697d2a8f94dc9400a2a08f063de09e",
+    "aett10": "a9d121fc0cdd2bb8da196b14d83dab942550822a74bdae00bbece241434c4c42",
+    "lcmss8": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+    "icmtt8": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24"
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "cpu_ms": {
+        "before": [49.362, 49.757, 49.535, 49.261, 49.689, 49.973, 49.823, 49.446, 49.114, 48.885, 50.205, 49.208, 49.798, 49.718, 49.165, 50.228, 49.86, 49.717, 48.89, 48.982, 49.631, 49.81, 50.164, 50.186, 49.35, 50.575, 49.281, 48.914, 51.888],
+        "after": [48.503, 49.494, 48.024, 48.087, 48.348, 48.5, 47.813, 48.684, 47.793, 47.702, 48.023, 47.501, 48.078, 48.175, 47.809, 48.971, 48.78, 48.635, 47.586, 47.83, 47.973, 49.002, 48.436, 48.812, 48.578, 49.479, 48.504, 47.922, 48.828]
+      },
+      "median_cpu_ms": {
+        "before": 49.689,
+        "after": 48.348
+      },
+      "cpu_change_percent": -2.6988,
+      "pass_cpu_change_percent": [-2.3963, -2.84]
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "cpu_ms": {
+        "before": [50.417, 52.172, 50.517, 51.099, 51.247, 52.182, 50.06, 51.343, 50.524, 52.002, 50.052, 49.036, 49.933, 49.634, 49.766, 50.808, 49.101, 50.195, 49.614, 49.596, 49.86, 50.29, 50.669, 50.885, 50.666, 49.693, 49.151, 50.067, 50.065],
+        "after": [48.933, 52.835, 49.387, 49.204, 53.102, 52.008, 48.809, 49.209, 50.36, 49.322, 47.955, 48.206, 48.658, 47.888, 48.149, 47.763, 47.283, 49.351, 48.412, 48.988, 48.464, 49.172, 51.212, 49.082, 48.854, 48.164, 47.919, 48.896, 48.933]
+      },
+      "median_cpu_ms": {
+        "before": 50.195,
+        "after": 48.933
+      },
+      "cpu_change_percent": -2.5142,
+      "pass_cpu_change_percent": [-3.3504, -2.8634]
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "cpu_ms": {
+        "before": [43.242, 43.532, 43.142, 45.521, 44.164, 44.903, 44.899, 42.909, 43.0, 44.438, 44.247, 43.822, 43.812, 44.619, 43.514, 43.392, 44.428, 43.719, 43.994, 44.71, 43.737, 43.496, 44.239, 44.258, 44.232, 43.283, 43.544, 42.898, 44.555],
+        "after": [42.414, 42.036, 42.208, 42.605, 47.307, 43.919, 44.261, 42.345, 41.929, 43.408, 44.548, 43.009, 42.815, 44.228, 42.309, 41.998, 42.49, 42.572, 42.407, 43.335, 44.314, 42.742, 42.715, 45.43, 47.295, 45.849, 43.232, 43.905, 42.943]
+      },
+      "median_cpu_ms": {
+        "before": 43.822,
+        "after": 42.943
+      },
+      "cpu_change_percent": -2.0058,
+      "pass_cpu_change_percent": [-2.5682, -1.7935]
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "cpu_ms": {
+        "before": [50.816, 48.186, 48.127, 49.019, 49.238, 49.574, 49.415, 49.942, 48.334, 50.703, 49.035, 48.528, 49.02, 48.731, 49.735, 49.098, 48.677, 48.259, 48.919, 48.453, 48.937, 49.331, 49.36, 48.892, 53.746, 48.82, 48.734, 48.186, 48.895],
+        "after": [47.844, 47.565, 47.743, 47.897, 49.329, 47.887, 48.249, 48.14, 48.152, 48.416, 48.888, 47.741, 47.422, 48.333, 47.934, 47.976, 47.437, 47.487, 47.967, 47.747, 48.09, 48.319, 49.022, 47.834, 49.52, 49.531, 49.754, 47.905, 48.246]
+      },
+      "median_cpu_ms": {
+        "before": 48.937,
+        "after": 47.976
+      },
+      "cpu_change_percent": -1.9637,
+      "pass_cpu_change_percent": [-2.7235, -1.7871]
+    }
+  ],
+  "mixed_callgrind": {
+    "instructions": {
+      "before": 331374675,
+      "after": 324805525
+    },
+    "change_percent": -1.9824,
+    "interpretation": "Whole-process default release instructions include the added per-run handle retain/release and necessary TFM program traversal."
+  },
+  "logical_shaping_counts": [
+    {
+      "case": "book",
+      "runs": 37799,
+      "nonpseudo_existence_checks": 228277,
+      "program_attempts": 228277,
+      "noncharacter_right_early_returns": 37799,
+      "repeated_source_lookups_before": 190478,
+      "character_info_reads": 190478,
+      "program_reads": 760273,
+      "kerns": 15897,
+      "restarts": 109709
+    },
+    {
+      "case": "narrow",
+      "runs": 37799,
+      "nonpseudo_existence_checks": 228277,
+      "program_attempts": 228277,
+      "noncharacter_right_early_returns": 37799,
+      "repeated_source_lookups_before": 190478,
+      "character_info_reads": 190478,
+      "program_reads": 383389,
+      "kerns": 13307,
+      "restarts": 0
+    },
+    {
+      "case": "dense",
+      "runs": 37799,
+      "nonpseudo_existence_checks": 228277,
+      "program_attempts": 228277,
+      "noncharacter_right_early_returns": 37799,
+      "repeated_source_lookups_before": 190478,
+      "character_info_reads": 190478,
+      "program_reads": 0,
+      "kerns": 0,
+      "restarts": 0
+    },
+    {
+      "case": "mixed",
+      "runs": 52500,
+      "nonpseudo_existence_checks": 214800,
+      "program_attempts": 214800,
+      "noncharacter_right_early_returns": 52500,
+      "repeated_source_lookups_before": 162300,
+      "character_info_reads": 162300,
+      "program_reads": 672000,
+      "kerns": 15000,
+      "restarts": 93900
+    }
+  ],
+  "ownership": "One existing 16-byte FontResource handle per non-nullfont run retains its scaled-header chunk and sealed resource set. No allocation, per-character ownership, persistent state, wrapper, cache, unsafe code or raw pointer is added.",
+  "validation": "Isolated exact runtime candidate: 169 library tests, three native oracle adapters, rustfmt, Clippy with warnings denied and Wasm check pass. Complete output, native placements and retained-root replay match for all four workloads.",
+  "integration_validation": "Runtime files match the measured candidate exactly. Focused font/text and TFM tests include nullfont with no registered resource and loaded-font missing-only runs followed by assignments; rustfmt, Clippy and ordinary default release rebuild pass.",
+  "reproduction": "Preserve target/benchmark/layout/{book,narrow,dense}.tex because layout.py would regenerate revised documentation prose. Use benchmarks/layout.py child CPU accounting on CPU 3 with one warmup per pass and serial alternating pairs. Mixed source/resources and INITEX setup follow layout-metric-reader.json and benchmarks/corpus/gentle-layout.py; match recorded hashes. No extra corpus excerpts or harness are retained."
+}

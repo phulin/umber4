@@ -2,6 +2,7 @@
 use crate::{
     Engine, Result,
     nodes::{DetachedNode, Kind, List, ReleaseScratch},
+    tfm::Resource,
     token::*,
 };
 struct Item {
@@ -51,8 +52,9 @@ impl Engine<'_> {
             self.document.text.cancel_boundary = false;
             return Ok(());
         };
-        let resource = self.font_catalog.scaled[scaled].descriptor().resource;
-        let r = &self.font_catalog.resources[resource];
+        let resource = self.font_catalog.scaled[scaled].clone();
+        let metrics = resource.descriptor();
+        let r = resource.source();
         let mut boundary = r.boundary;
         let false_boundary = r.false_boundary;
         let boundary_label = r.boundary_label;
@@ -95,11 +97,7 @@ impl Engine<'_> {
                 }
                 State::Consume => {
                     let item = scratch.stack.pop().unwrap();
-                    if !item.pseudo
-                        && !self.font_catalog.scaled[scaled]
-                            .descriptor()
-                            .exists(left as u8)
-                    {
+                    if !item.pseudo && !metrics.exists(left as u8) {
                         if let Some(node) = item.original {
                             self.document.nodes.release_node(node, &mut scratch.release);
                         }
@@ -191,7 +189,7 @@ impl Engine<'_> {
                     state = State::Move;
                 }
                 State::Program => {
-                    let instruction = self.lig_instruction(resource, left, right, start.take());
+                    let instruction = r.lig_instruction(left, right, start.take());
                     let Some([_, _, op, rem]) = instruction else {
                         state = State::Wrap;
                         continue;
@@ -206,9 +204,7 @@ impl Engine<'_> {
                             &mut right_hit,
                             scratch.stack.is_empty(),
                         )?;
-                        let width = self
-                            .font_catalog
-                            .kern(scaled, 256 * (op as usize - 128) + rem as usize);
+                        let width = metrics.kern(256 * (op as usize - 128) + rem as usize);
                         self.append_horizontal(Kind::Kern {
                             width,
                             explicit: false,
@@ -284,45 +280,6 @@ impl Engine<'_> {
             }
         }
     }
-    fn lig_instruction(
-        &self,
-        resource: usize,
-        left: u16,
-        right: u16,
-        start: Option<usize>,
-    ) -> Option<[u8; 4]> {
-        if right == 256 {
-            return None;
-        }
-        let r = &self.font_catalog.resources[resource];
-        let mut i = if let Some(i) = start {
-            i
-        } else {
-            if left == 256 || (left as usize) < r.bc || left as usize > r.ec {
-                return None;
-            }
-            let info = r.chars[left as usize - r.bc];
-            if info.tag != 1 {
-                return None;
-            }
-            let mut i = info.remainder;
-            let p = r.program[i];
-            if p[0] > 128 {
-                i = 256 * p[2] as usize + p[3] as usize;
-            }
-            i
-        };
-        loop {
-            let p = r.program[i];
-            if p[0] <= 128 && p[1] as u16 == right {
-                return Some(p);
-            }
-            if p[0] >= 128 {
-                return None;
-            }
-            i += p[0] as usize + 1;
-        }
-    }
     #[allow(clippy::too_many_arguments)]
     fn wrap_ligature(
         &mut self,
@@ -369,5 +326,41 @@ impl Engine<'_> {
             self.append_horizontal(Kind::discretionary(List::default(), List::default(), 0))?;
         }
         Ok(())
+    }
+}
+
+impl Resource {
+    fn lig_instruction(&self, left: u16, right: u16, start: Option<usize>) -> Option<[u8; 4]> {
+        if right == 256 {
+            return None;
+        }
+        let r = self;
+        let mut i = if let Some(i) = start {
+            i
+        } else {
+            if left == 256 || (left as usize) < r.bc || left as usize > r.ec {
+                return None;
+            }
+            let info = r.chars[left as usize - r.bc];
+            if info.tag != 1 {
+                return None;
+            }
+            let mut i = info.remainder;
+            let p = r.program[i];
+            if p[0] > 128 {
+                i = 256 * p[2] as usize + p[3] as usize;
+            }
+            i
+        };
+        loop {
+            let p = r.program[i];
+            if p[0] <= 128 && p[1] as u16 == right {
+                return Some(p);
+            }
+            if p[0] >= 128 {
+                return None;
+            }
+            i += p[0] as usize + 1;
+        }
     }
 }

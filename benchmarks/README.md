@@ -30,6 +30,9 @@ borrowed font descriptor and page-local index within each detached page traversa
 The [literal character-reader comparison](results/layout-character-input.json)
 retains paired ordinary release samples on the same four workloads and instruction
 attribution for consuming current-line literals through the existing reader operation.
+The [character-run font-binding comparison](results/layout-character-font-binding.json)
+retains paired release samples and instruction counts for resolving immutable font
+data once per run while keeping mutable font parameters in document state.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations
