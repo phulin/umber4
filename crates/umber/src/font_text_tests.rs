@@ -37,6 +37,16 @@ fn glyphs(e: &Engine<'_>) -> Vec<(u8, bool)> {
     }
     out
 }
+fn discretionaries(e: &Engine<'_>) -> usize {
+    let mut p = e.document.text.horizontal.head();
+    let mut count = 0;
+    while !p.is_null() {
+        let node = e.document.nodes.get(p);
+        count += usize::from(matches!(node.kind, Kind::Discretionary { .. }));
+        p = node.next;
+    }
+    count
+}
 #[test]
 fn loaded_fonts_grouping_mutation_and_restore() {
     let mut e=engine(br"\font\a=test \a \fontdimen2\a=3pt {\nullfont\fontdimen2\a=4pt}\relax \font\b=test \font\c=test at 12pt \fontdimen8\c=9pt \c\end");
@@ -155,19 +165,27 @@ fn spacing_sf_codes_and_control_spaces() {
 #[test]
 fn boundary_ligatures_noboundary_and_retaining_operations() {
     for op in [0, 1, 2, 3, 5, 6, 7, 11] {
-        let program = [[128, b'b', op, b'c']];
-        let mut e = Engine::new(br"\font\f=test \f\noindent ab\relax\end");
-        e.register_tfm(b"test", &tfm(&program, &[(b'a', 1, 0)]))
-            .unwrap();
-        build(&mut e);
-        let chars: Vec<u8> = glyphs(&e).iter().map(|x| x.0).collect();
-        let expected = match op {
-            0 => vec![b'c'],
-            1 | 5 => vec![b'c', b'b'],
-            2 | 6 => vec![b'a', b'c'],
-            _ => vec![b'a', b'c', b'b'],
-        };
-        assert_eq!(chars, expected, "op {op}");
+        for hyphen in *b"abc" {
+            let program = [[128, b'b', op, b'c']];
+            let source =
+                format!("\\defaulthyphenchar={hyphen}\\font\\f=test \\f\\noindent ab\\relax\\end");
+            let mut e = Engine::new(source.as_bytes());
+            e.register_tfm(b"test", &tfm(&program, &[(b'a', 1, 0)]))
+                .unwrap();
+            build(&mut e);
+            let chars: Vec<u8> = glyphs(&e).iter().map(|x| x.0).collect();
+            let expected = match op {
+                0 => vec![b'c'],
+                1 | 5 => vec![b'c', b'b'],
+                2 | 6 => vec![b'a', b'c'],
+                _ => vec![b'a', b'c', b'b'],
+            };
+            assert_eq!(chars, expected, "op {op}");
+            // Breaks follow original components, including retained characters,
+            // rather than the replacement glyph c or an empty inserted ligature.
+            let expected = usize::from(hyphen == b'b' || (hyphen == b'a' && op != 0));
+            assert_eq!(discretionaries(&e), expected, "op {op}, hyphen {hyphen}");
+        }
     }
     let program = [
         [255, b'|', 0, 1],
@@ -176,10 +194,13 @@ fn boundary_ligatures_noboundary_and_retaining_operations() {
         [255, 0, 0, 1],
     ];
     let bytes = tfm(&program, &[(b'a', 1, 2)]);
-    let mut e = Engine::new(br"\font\f=test \f\noindent a\relax\noboundary a\noboundary\relax\end");
+    let mut e = Engine::new(
+        br"\defaulthyphenchar=97\font\f=test \f\noindent a\relax\noboundary a\noboundary\relax\end",
+    );
     e.register_tfm(b"test", &bytes).unwrap();
     build(&mut e);
     assert_eq!(glyphs(&e), vec![(b'c', true), (b'a', false)]);
+    assert_eq!(discretionaries(&e), 2);
     let first = e.document.nodes.get(e.document.text.horizontal.head());
     assert!(matches!(
         &first.kind,
@@ -209,10 +230,12 @@ fn paragraph_end_transfers_nodes_and_restore_returns_to_vertical_root() {
 #[test]
 fn false_boundary_missing_glyphs_and_nullfont_preserve_input() {
     let bytes = tfm(&[[255, 200, 0, 1], [128, 200, 0, b'd']], &[(b'a', 1, 1)]);
-    let mut e = Engine::new(br"\font\f=test \f\noindent a\relax a\char200a\relax\end");
+    let mut e =
+        Engine::new(br"\defaulthyphenchar=97\font\f=test \f\noindent a\relax a\char200a\relax\end");
     e.register_tfm(b"test", &bytes).unwrap();
     build(&mut e);
     assert_eq!(glyphs(&e), vec![(b'd', true), (b'a', false), (b'd', true)]);
+    assert_eq!(discretionaries(&e), 3);
     assert!(matches!(
         &e.document.nodes.get(e.document.text.horizontal.head()).kind,
         Kind::Ligature {

@@ -12,6 +12,9 @@ are described in [performance.md](../docs/performance.md#implemented-layout-meas
 The [borrowed-node width comparison](results/layout-loaded-node-width.json)
 retains paired ordinary release samples on the same inputs, full inspection/native
 placement checks, checkpoint replay validation, and the isolated prototype evidence.
+The [character hyphen-check comparison](results/layout-character-hyphen.json)
+records the paired release samples and instruction reduction from using the known
+unligated character during discretionary construction.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

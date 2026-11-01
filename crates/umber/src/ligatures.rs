@@ -329,6 +329,9 @@ impl Engine<'_> {
         let hyphen = self.document.fonts.descriptors[font as usize].hyphen;
         let disc = if components.is_empty() {
             false
+        } else if !*ligature {
+            // An unchanged left character owns exactly its original component.
+            i32::from(left) == hyphen
         } else {
             matches!(self.document.nodes.get(components.tail()).kind,Kind::Character{character,..} if i32::from(character)==hyphen)
         };
