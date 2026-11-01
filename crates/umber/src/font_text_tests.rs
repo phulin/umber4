@@ -362,12 +362,6 @@ fn everypar_precedes_implicit_character_and_budget_waits_for_vertical_mode() {
     assert!(e.can_checkpoint());
 }
 #[test]
-fn unsupported_internal_font_tokens_are_explicit() {
-    let mut e = engine(br"\font\f=test \f\message{\the\font}\end");
-    assert_eq!(e.advance(100), Err(Error::Unsupported));
-}
-
-#[test]
 fn same_source_initex_font_defaults() {
     let o = Engine::new(include_bytes!("../../../fixtures/mvp/font-defaults.tex"))
         .run()

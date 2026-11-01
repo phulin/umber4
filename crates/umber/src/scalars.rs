@@ -9,7 +9,8 @@ const CASE_BASE: usize = PARAM_BASE + PARAMS;
 const SF_BASE: usize = CASE_BASE + 2 * 256;
 const MATH_BASE: usize = SF_BASE + 256;
 const DEL_BASE: usize = MATH_BASE + 256;
-const SLOTS: usize = DEL_BASE + 256;
+const FAMILY_BASE: usize = DEL_BASE + 256;
+const SLOTS: usize = FAMILY_BASE + 48;
 use std::ops::{Index, IndexMut};
 
 // Scalar values have the same representation and group-save lifetime. A target
@@ -25,6 +26,12 @@ impl Target {
     pub const DEFAULT_HYPHEN: Self = Self((PARAM_BASE + 7) as u16);
     pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
     pub const NEWLINECHAR: Self = Self((PARAM_BASE + 32) as u16);
+    pub const FAM: Self = Self((PARAM_BASE + 37) as u16);
+    // Font IDs share assignment/save storage, but these targets deliberately
+    // have no numeric scalar_target conversion.
+    pub fn family(style: usize, family: usize) -> Self {
+        Self((FAMILY_BASE + style * 16 + family) as u16)
+    }
     pub fn paragraph(parameter: ParagraphParam) -> Self {
         Self::parameter(9 + parameter as usize)
     }
@@ -79,6 +86,7 @@ impl Default for Scalars {
             level: 0,
         });
         state[Target::ENDLINE].value = 13;
+        state[Target::FAM].value = 0;
         for (index, value) in [0, 92, 0, 1, 1, 1970, 1000, 0, 0].into_iter().enumerate() {
             state[Target::parameter(index)].value = value;
         }

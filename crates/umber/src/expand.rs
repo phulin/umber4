@@ -25,6 +25,11 @@ impl Engine<'_> {
                 self.insert_number(value)
             }
             cmd::THE => match self.the_value()? {
+                crate::lists::Internal::Font(token) => {
+                    self.check_source_limit()?;
+                    self.back(token);
+                    Ok(())
+                }
                 crate::lists::Internal::Quantity(crate::quantities::Quantity::Integer(value)) => {
                     self.insert_number(value)
                 }

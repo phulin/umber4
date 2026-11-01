@@ -198,6 +198,9 @@ impl<'a> Engine<'a> {
                 if command == cmd::PAR {
                     engine.document.par = Token::cs(id);
                 }
+                if command == cmd::SELECT_FONT {
+                    engine.document.fonts.descriptors[0].identifier = id as usize;
+                }
             }
         }
         engine
@@ -237,7 +240,14 @@ impl<'a> Engine<'a> {
     #[inline(always)]
     pub(crate) fn resolve(&self, token: Token) -> Meaning {
         if token.is_cs() {
-            self.document.bindings[token.id()].meaning()
+            if let Some(font) = token.font_id() {
+                Meaning {
+                    command: cmd::SELECT_FONT,
+                    value: font as i32,
+                }
+            } else {
+                self.document.bindings[token.id()].meaning()
+            }
         } else {
             Meaning {
                 command: token.cat(),
@@ -289,6 +299,8 @@ mod math_glue_tests;
 #[cfg(test)]
 mod parameter_tests;
 
+#[cfg(test)]
+mod font_state_tests;
 #[cfg(test)]
 mod font_test_data;
 #[cfg(test)]

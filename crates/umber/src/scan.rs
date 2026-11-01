@@ -48,7 +48,14 @@ impl Engine<'_> {
             }
             // Engine::resolve would borrow the engine across this cursor.
             let meaning = if token.is_cs() {
-                self.document.bindings[token.id()].meaning()
+                if let Some(font) = token.font_id() {
+                    Meaning {
+                        command: cmd::SELECT_FONT,
+                        value: font as i32,
+                    }
+                } else {
+                    self.document.bindings[token.id()].meaning()
+                }
             } else {
                 Meaning {
                     command: token.cat(),
@@ -314,7 +321,7 @@ impl Engine<'_> {
                 break read;
             }
         };
-        if !read.token.is_cs() || read.token == FROZEN_RELAX {
+        if !read.token.is_cs() || read.token == FROZEN_RELAX || read.token.font_id().is_some() {
             return Err(Error::Syntax);
         }
         Ok(read.token.id())

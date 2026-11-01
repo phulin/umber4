@@ -96,15 +96,24 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn scan_font_ident(&mut self) -> Result<usize> {
-        let read = loop {
-            let r = self.nonspace(true)?;
-            if r.meaning.command != cmd::RELAX {
-                break r;
-            }
-        };
+        let read = self.nonspace(true)?;
+        self.font_ident(read)
+    }
+    pub(crate) fn family_target(&mut self, style: usize) -> Result<Target> {
+        let family = self.scan_int()?;
+        if !(0..=15).contains(&family) {
+            return Err(Error::Number);
+        }
+        Ok(Target::family(style, family as usize))
+    }
+    pub(crate) fn font_ident(&mut self, read: Read) -> Result<usize> {
         match read.meaning.command {
             cmd::FONT => Ok(self.document.fonts.current.value as usize),
             cmd::SELECT_FONT => Ok(read.meaning.value as usize),
+            cmd::FONT_FAMILY => {
+                let target = self.family_target(read.meaning.value as usize)?;
+                Ok(self.document.scalars[target].value as usize)
+            }
             _ => Err(Error::Syntax),
         }
     }
@@ -178,6 +187,12 @@ impl Engine<'_> {
     pub(crate) fn font_assignment(&mut self, read: Read, global: bool) -> Result<()> {
         match read.meaning.command {
             cmd::FONT => self.define_font(global),
+            cmd::FONT_FAMILY => {
+                let target = self.family_target(read.meaning.value as usize)?;
+                self.scan_equals()?;
+                let font = self.scan_font_ident()? as i32;
+                self.update_integer(target, global, |_| Ok(font))
+            }
             cmd::SELECT_FONT => {
                 let old = self.document.fonts.current;
                 if !global && old.value == read.meaning.value {
@@ -284,6 +299,8 @@ impl Engine<'_> {
         let f = if let Some(f) = found {
             f
         } else {
+            let f = self.document.fonts.len;
+            i32::try_from(f).map_err(|_| Error::Capacity)?;
             let scaled = self.font_catalog.scaled(resource, size)?;
             let baseline = &self.font_catalog.scaled[scaled].descriptor().params;
             let count = baseline.len();
@@ -291,7 +308,6 @@ impl Engine<'_> {
             for (i, &value) in baseline.iter().enumerate() {
                 self.document.fonts.parameters[params + i] = value;
             }
-            let f = self.document.fonts.len;
             self.document.fonts.descriptors[f] = Font {
                 scaled: Some(scaled),
                 params,
@@ -304,8 +320,8 @@ impl Engine<'_> {
             self.document.fonts.parameter_end += count;
             f
         };
-        // The last alias becomes the font identifier of record, independently
-        // of the scoped selector meaning. A future \the\font uses that record.
+        // The last FONT alias supplies the frozen identifier's display name,
+        // independently of the scoped selector meaning and frozen token ID.
         self.document.fonts.descriptors[f].identifier = id;
         self.document.bindings[id] = Binding::new(
             Meaning {

@@ -69,6 +69,25 @@ impl Engine<'_> {
         show: bool,
         mut emit: impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
+        if let Some(font) = token.font_id() {
+            self.emit_escape(&mut emit)?;
+            let id = self.document.fonts.descriptors[font].identifier;
+            if id == NULL_CS as usize {
+                self.emit_text(b"FONT", &mut emit)?;
+            } else if (ACTIVE_BASE as usize..ACTIVE_BASE as usize + 256).contains(&id) {
+                self.emit_text(b"FONT", &mut emit)?;
+                emit(self, (id - ACTIVE_BASE as usize) as u8)?;
+            } else {
+                let length = self.names.spelling(id).len();
+                for index in 0..length {
+                    emit(self, self.names.spelling(id)[index])?;
+                }
+            }
+            if show {
+                emit(self, b' ')?;
+            }
+            return Ok(());
+        }
         if let Some(byte) = token.active_byte() {
             return emit(self, byte);
         }
@@ -131,6 +150,30 @@ impl Engine<'_> {
         if meaning.command == cmd::END_WRITE {
             self.escaped_text(b"outer", emit)?;
             return self.emit_text(b" macro:->", emit);
+        }
+        if meaning.command == cmd::SELECT_FONT {
+            self.emit_text(b"select font ", emit)?;
+            let font = self.document.fonts.descriptors[meaning.value as usize];
+            if let Some(scaled) = font.scaled {
+                let scaled = self.font_catalog.scaled[scaled].descriptor();
+                let resource = scaled.resource;
+                let size = scaled.size;
+                let length = self.font_catalog.resources[resource].name.len();
+                for index in 0..length {
+                    emit(self, self.font_catalog.resources[resource].name[index])?;
+                }
+                if size != self.font_catalog.resources[resource].design {
+                    self.emit_text(b" at ", emit)?;
+                    let mut text = [0; 128];
+                    let length = crate::quantities::quantity_text(
+                        crate::quantities::Quantity::Dimension(size),
+                        &mut text,
+                    );
+                    self.emit_text(&text[..length], emit)?;
+                }
+                return Ok(());
+            }
+            return self.emit_text(b"nullfont", emit);
         }
         if meaning.is_macro() {
             let id = meaning.value as usize;

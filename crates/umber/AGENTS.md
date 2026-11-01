@@ -56,7 +56,8 @@ ownership; `page_oracle_tests.rs` compares native boxes and placements with the
 small test-only DVI reader in `page_dvi_tests.rs`. Scaled font headers use safe
 once-initialized chunk handles in `tfm.rs`, retaining the sealed resource set;
 `paragraph_tests.rs` covers ownership/replay and `paragraph_oracle_tests.rs`
-compares packed structures with native INITEX. `ligatures.rs`
+compares packed structures with native INITEX. `font_state_tests.rs` covers frozen
+font identifiers, family bindings, and scoped replay against native TeX. `ligatures.rs`
 builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
 `tfm_tests.rs` use controlled metrics from `font_test_data.rs`;
 `ligature_entry_tests.rs` checks prepared program entries, while the explicitly

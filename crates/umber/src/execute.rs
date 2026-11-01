@@ -147,9 +147,12 @@ impl Engine<'_> {
             | cmd::MUSKIP
             | cmd::MUSKIP_REF
             | cmd::MU_GLUE_PARAM => self.layout_assignment(read, assignment_global),
-            cmd::FONT | cmd::SELECT_FONT | cmd::FONT_DIMEN | cmd::FONT_INT | cmd::SPACE_FACTOR => {
-                self.font_assignment(read, assignment_global)
-            }
+            cmd::FONT
+            | cmd::SELECT_FONT
+            | cmd::FONT_FAMILY
+            | cmd::FONT_DIMEN
+            | cmd::FONT_INT
+            | cmd::SPACE_FACTOR => self.font_assignment(read, assignment_global),
             cmd::SF_CODE
             | cmd::MATH_CODE
             | cmd::DEL_CODE

@@ -1,4 +1,7 @@
 pub(crate) const CS: u32 = 1 << 24;
+// Ordinary CS words are below 2*CS; that exact word is the private missing-name
+// sentinel. Frozen font words carry a nonnegative i32 document font number.
+const FONT_BASE: u32 = 2 * CS + 1;
 pub(crate) const PARAM: u32 = 1 << 23;
 pub(crate) const SINGLE: u32 = u32::MAX - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
@@ -23,6 +26,16 @@ impl Token {
     }
     pub fn cs(id: u32) -> Self {
         Self(CS | id)
+    }
+    pub fn font(font: usize) -> crate::Result<Self> {
+        let font = i32::try_from(font).map_err(|_| crate::Error::Capacity)?;
+        Ok(Self(FONT_BASE + font as u32))
+    }
+    pub fn font_id(self) -> Option<usize> {
+        self.0
+            .checked_sub(FONT_BASE)
+            .filter(|&font| font <= i32::MAX as u32)
+            .map(|font| font as usize)
     }
     pub fn single(byte: u8) -> Self {
         Self::cs(SINGLE_BASE + u32::from(byte))
@@ -176,7 +189,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines", b"fam"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -204,6 +217,7 @@ pub(crate) mod cmd {
         GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip", b"abovedisplayskip", b"abovedisplayshortskip", b"belowdisplayskip", b"belowdisplayshortskip", b"splittopskip"] assignment;
         FONT = 100 => [b"font"] assignment;
         SELECT_FONT = 101 => [b"nullfont"] assignment;
+        FONT_FAMILY = 136 => [b"textfont", b"scriptfont", b"scriptscriptfont"] assignment;
         FONT_DIMEN = 102 => [b"fontdimen"] assignment;
         FONT_INT = 103 => [b"hyphenchar", b"skewchar"] assignment;
         FONT_METRIC = 104 => [b"fontcharwd", b"fontcharht", b"fontchardp", b"fontcharic"];

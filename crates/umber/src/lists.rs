@@ -3,6 +3,7 @@ use crate::{Engine, Error, Result, token::*, values::Builder};
 pub(crate) enum Internal {
     Quantity(crate::quantities::Quantity),
     Tokens(Option<crate::values::Owner>),
+    Font(Token),
 }
 
 /// A list destination. Token builders take each character run in place;
@@ -110,8 +111,11 @@ impl<'a> Engine<'a> {
     }
     pub(crate) fn the_value(&mut self) -> Result<Internal> {
         let read = self.next_expanded()?;
-        if matches!(read.meaning.command, cmd::FONT | cmd::SELECT_FONT) {
-            return Err(Error::Unsupported);
+        if matches!(
+            read.meaning.command,
+            cmd::FONT | cmd::SELECT_FONT | cmd::FONT_FAMILY
+        ) {
+            return Ok(Internal::Font(Token::font(self.font_ident(read)?)?));
         }
         if matches!(
             read.meaning.command,
@@ -160,6 +164,7 @@ impl<'a> Engine<'a> {
                     }
                     match read.meaning.command {
                         cmd::THE => match self.the_value()? {
+                            Internal::Font(token) => emit.token(self, token)?,
                             Internal::Tokens(owner) => {
                                 if let Some(owner) = owner {
                                     for token in owner.tokens.iter() {

@@ -48,6 +48,35 @@ and resolved size. Cached baselines never resurrect abandoned mutations or font
 IDs after rollback. Parameter extension is allowed only for the last loaded
 font, including reads, following upstream `find_font_dimen`.
 
+The three math-font selectors, `\textfont`, `\scriptfont`, and
+`\scriptscriptfont`, each bind families 0 through 15. Their 48 initially nullfont
+bindings use ordinary local/global assignment levels and checkpointed scalar
+slots; they are font identifiers, not numeric quantities or arithmetic targets.
+`\fam` is a separate unrestricted signed integer parameter, initially zero.
+Font-identifier scanning accepts the current font, a font selector, or a family
+selector and its checked four-bit index, including aliases and expanded operands.
+Only spaces are skipped before the identifier; `\relax` is not a font identifier.
+
+`\the` of a font identifier emits one frozen font token containing the document
+font number. These four-byte tokens occupy a namespace disjoint from characters,
+ordinary control sequences, and internal sentinels. They need no additional
+binding, allocation, or resource reference. Their immutable meaning selects that
+font even after its user selector changes; they may be copied, compared, or used
+as assignment operands, but cannot themselves be redefined. Macro-text comparison
+retains their identity, distinct from an ordinary selector with the same meaning.
+Expanded balanced scans emit these tokens directly, as for `\the` token lists.
+
+A frozen token's printed name uses the font descriptor's identifier spelling,
+independently of the selector's current binding. A later `\font` definition that
+reuses the same loaded font updates that spelling; `\let` does not. Empty and
+active definition targets supply `FONT` and `FONT` followed by the character byte,
+respectively. The initial nullfont spelling is `nullfont`. String conversion adds
+the current escape character without a trailing space; token-list display adds a
+trailing space even for a single nonletter name. Meaning conversion describes the
+selected resource and any size differing from its design size. Checkpoints retain
+font-token bodies, family slots, and the matching descriptor/identifier roots;
+session metric-cache indices are not document font identities.
+
 TFM loading validates size fields, character indices, next-larger cycles,
 ligature/restart/kern references, and extensible recipes. Extra trailing bytes
 are permitted, as in TeX. Character existence means a nonzero width index;
@@ -115,8 +144,7 @@ budget defers handoff while horizontal construction continues. Font tables,
 current selector, text state and lists are captured with their matching node-store
 version. Errors require restore before execution continues.
 
-Internal font-token conversion (`\the\font`), restricted boxes, general
-discretionary syntax, accents, math, alignments,
+Restricted boxes, general discretionary syntax, accents, math construction, alignments,
 automatic hyphenation, pdfTeX font extensions, arbitrary I/O and output backends
 remain unsupported. Tests explicitly set document dimensions and spacing; no
 plain-format defaults are assumed.
