@@ -7,7 +7,7 @@ use crate::{
     layout_values::DimenParam,
     math::{
         Atom, Class, Delimiter, Field, FieldSlot, FieldTarget, Kind, Limits, MathId, MathList,
-        Side, Style,
+        RuleThickness, Side, Style,
     },
     nodes::{self, DetachedNode},
     numeric::Scaled,
@@ -23,6 +23,7 @@ pub(crate) enum Context {
 }
 pub(crate) struct Frame {
     pub list: MathList,
+    pub incomplete: Option<MathList>,
     pub context: Context,
     pub level: u16,
 }
@@ -107,6 +108,7 @@ impl Engine<'_> {
                 ))?;
             }
             cmd::LEFT_RIGHT => self.math_left_right(read.meaning.value != 0)?,
+            cmd::MATH_FRACTION => self.math_fraction(read.meaning.value)?,
             cmd::MATH_LIMITS => {
                 let tail = self
                     .document
@@ -185,6 +187,7 @@ impl Engine<'_> {
         );
         self.document.math_frames.push(Frame {
             list: MathList::default(),
+            incomplete: None,
             context: Context::Inline(outer),
             level: self.document.level,
         });
@@ -210,8 +213,8 @@ impl Engine<'_> {
         // objects avoids borrowing self twice and allocates no replacement.
         let mut math = self.math.take().expect("math store outside conversion");
         let mut scratch = self.math_scratch.take().expect("conversion scratch");
-        let result =
-            self.math_to_hlist(&mut math, frame.list, Style::TEXT, penalties, &mut scratch);
+        let list = math.finish_list(frame.list, frame.incomplete, None);
+        let result = self.math_to_hlist(&mut math, list, Style::TEXT, penalties, &mut scratch);
         self.math = Some(math);
         self.math_scratch = Some(scratch);
         let output = result?;
@@ -236,7 +239,8 @@ impl Engine<'_> {
         };
         debug_assert_eq!(frame.level, self.document.level + 1);
         let math = self.math.as_mut().unwrap();
-        let field = math.field_from_list(frame.list);
+        let list = math.finish_list(frame.list, frame.incomplete, None);
+        let field = math.field_from_list(list);
         math.fill_field(target, field, &mut self.document.nodes)
     }
 }
@@ -254,6 +258,8 @@ fn class(code: i32) -> Class {
 }
 #[path = "math_delimiter_frontend.rs"]
 mod delimiters;
+#[path = "math_fraction_frontend.rs"]
+mod fractions;
 #[path = "math_scan.rs"]
 mod scan;
 #[cfg(test)]

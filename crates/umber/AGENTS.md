@@ -36,6 +36,11 @@ boundaries, and `math_delimiter_frontend_oracle_tests.rs` compares scanned
 formulas and unchanged plain size macros with native geometry and DVI.
 `math_delimiter_ownership_tests.rs` bounds the existing arena to check rejection
 at right-boundary and final Inner transfers without production allocation hooks.
+`math_fraction_frontend.rs` captures rooted generalized fractions and scans their
+operands; `math_fraction_frontend_tests.rs` and
+`math_fraction_frontend_oracle_tests.rs` cover failure/closure/replay and native
+source geometry/DVI. `math_fraction_ownership_tests.rs` checks bounded rejection
+and the consuming numerator/denominator/boundary splice.
 `math_frontend_tests.rs` covers mode/group/ownership/replay boundaries and
 `math_frontend_oracle_tests.rs` compares unchanged inline sources with native
 box geometry and DVI placements.

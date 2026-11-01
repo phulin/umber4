@@ -106,7 +106,8 @@ impl Oracle {
         for &(name, bytes) in fonts {
             e.register_tfm(name, bytes).unwrap();
         }
-        e.advance(usize::MAX).unwrap();
+        e.advance(usize::MAX)
+            .unwrap_or_else(|error| panic!("{error:?}: {source}"));
         let outcome = e.outcome();
         // The native-only routine observes outputpenalty and consumes box255 just
         // like default output; it adds no material or assignments to the job.

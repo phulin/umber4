@@ -125,6 +125,26 @@ a mismatched intervening group fails before that operand is scanned. Boundary
 temporaries are released on scanning/group-entry failure, independently of live
 outer math and box owners.
 
+Generalized fractions support `\over`, `\atop`, `\above`, and their `withdelims`
+variants. Each math frame can own one incomplete Fraction in an affine singleton
+list. The first fraction command allocates and roots it before operand scanning,
+transfers the accumulated list into its numerator, and builds the denominator in
+the frame's current list. Over retains default rule thickness, atop uses zero,
+and above scans a signed ordinary dimension. A second fraction command scans its
+prescribed delimiters/thickness before failing without replacing the original
+numerator or denominator. Operand errors retain the established owners until
+ordinary failure cleanup or checkpoint abandonment.
+
+One consuming finalizer completes inline, field, and left/right lists. It moves
+the denominator into its fraction and, at a right boundary, removes the leading
+Left from the numerator and returns Left–Fraction–Right. No cell or child list has
+two owners during that splice. Field restoration precedes finalization and
+unwrapping; left/right finalization precedes restoration; inline conversion still
+precedes formula restoration. Completed fractions preserve live font and
+parameter resolution until enclosing conversion, including assignments following
+`\right`. An incomplete fraction has no direct script fields; scripts in the
+denominator or on a completed surrounding field retain ordinary atom semantics.
+
 Assignments, definitions, and diagnostics retain their ordinary execution paths.
 Physical kern/glue/rule/penalty material retains ordinary units. `\/` contributes
 a normal zero kern in math. `\mkern` retains math units in a scalar arena node
@@ -136,10 +156,8 @@ math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
 owners. Active math frames exclude checkpoint handoff. Scanned choices,
-fractions, radicals, decorations, accents, mu glue, displays,
+radicals, decorations, accents, mu glue, displays,
 and alignments remain unsupported; their pure conversion support is separate.
-Future fraction frames will own incomplete fractions until their
-semantic groups close.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters

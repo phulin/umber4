@@ -10,6 +10,9 @@ pub(crate) enum FieldSlot {
 #[cfg(test)]
 #[path = "math_delimiter_ownership_tests.rs"]
 mod delimiter_tests;
+#[cfg(test)]
+#[path = "math_fraction_ownership_tests.rs"]
+mod fraction_tests;
 #[derive(Clone, Copy)]
 pub(crate) struct FieldTarget {
     pub atom: MathId,
@@ -25,31 +28,108 @@ impl FieldSlot {
     }
 }
 impl MathStore {
+    pub fn start_fraction(
+        &mut self,
+        current: &mut MathList,
+        nodes: &mut NodeStore,
+    ) -> Result<MathList> {
+        let mut incomplete = MathList::default();
+        let id = self.append(&mut incomplete, Kind::Fraction(Fraction::default()), nodes)?;
+        // Rejection leaves the existing numerator untouched. All ownership
+        // transfers after successful allocation are infallible.
+        let Kind::Fraction(fraction) = &mut self.node_mut(id).kind else {
+            unreachable!()
+        };
+        fraction.numerator = std::mem::take(current);
+        Ok(incomplete)
+    }
     pub fn set_boundary_delimiter(&mut self, id: MathId, value: Delimiter) {
         let Kind::Boundary { delimiter, .. } = &mut self.node_mut(id).kind else {
             unreachable!("boundary operand target")
         };
         *delimiter = value;
     }
-    pub fn close_delimited(&mut self, mut list: MathList, right: MathList) -> MathList {
-        debug_assert!(matches!(
-            self.node(list.head).kind,
-            Kind::Boundary {
-                side: Side::Left,
-                ..
+    pub fn set_fraction_parameters(
+        &mut self,
+        id: MathId,
+        left: Delimiter,
+        right: Delimiter,
+        thickness: RuleThickness,
+    ) {
+        let Kind::Fraction(fraction) = &mut self.node_mut(id).kind else {
+            unreachable!("incomplete fraction operand target")
+        };
+        fraction.left = left;
+        fraction.right = right;
+        fraction.thickness = thickness;
+    }
+    /// Transfer the three disjoint construction owners without allocating.
+    pub fn finish_list(
+        &mut self,
+        list: MathList,
+        incomplete: Option<MathList>,
+        right: Option<MathList>,
+    ) -> MathList {
+        let mut output = if let Some(fraction) = incomplete {
+            debug_assert_eq!(fraction.head, fraction.tail);
+            let numerator = {
+                let Kind::Fraction(data) = &mut self.node_mut(fraction.head).kind else {
+                    unreachable!("incomplete fraction owner")
+                };
+                debug_assert!(data.denominator.is_empty());
+                data.denominator = list;
+                right.as_ref().map(|_| std::mem::take(&mut data.numerator))
+            };
+            if let Some(mut numerator) = numerator {
+                let left = numerator.head;
+                debug_assert!(matches!(
+                    self.node(left).kind,
+                    Kind::Boundary {
+                        side: Side::Left,
+                        ..
+                    }
+                ));
+                numerator.head = self.node(left).next;
+                if numerator.head == MathId::NULL {
+                    numerator.tail = MathId::NULL;
+                }
+                self.node_mut(left).next = MathId::NULL;
+                let Kind::Fraction(data) = &mut self.node_mut(fraction.head).kind else {
+                    unreachable!()
+                };
+                data.numerator = numerator;
+                let mut output = MathList {
+                    head: left,
+                    tail: left,
+                };
+                self.insert_after(&mut output, left, fraction);
+                output
+            } else {
+                fraction
             }
-        ));
-        debug_assert_eq!(right.head, right.tail);
-        debug_assert!(matches!(
-            self.node(right.head).kind,
-            Kind::Boundary {
-                side: Side::Right,
-                ..
-            }
-        ));
-        let tail = list.tail;
-        self.insert_after(&mut list, tail, right);
-        list
+        } else {
+            list
+        };
+        if let Some(right) = right {
+            debug_assert!(matches!(
+                self.node(output.head).kind,
+                Kind::Boundary {
+                    side: Side::Left,
+                    ..
+                }
+            ));
+            debug_assert_eq!(right.head, right.tail);
+            debug_assert!(matches!(
+                self.node(right.head).kind,
+                Kind::Boundary {
+                    side: Side::Right,
+                    ..
+                }
+            ));
+            let tail = output.tail;
+            self.insert_after(&mut output, tail, right);
+        }
+        output
     }
     pub fn atom_class(&self, id: MathId) -> Option<Class> {
         match &self.node(id).kind {

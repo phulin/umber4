@@ -66,6 +66,7 @@ impl Engine<'_> {
                     self.open_group(GroupKind::MathField)?;
                     self.document.math_frames.push(Frame {
                         list: MathList::default(),
+                        incomplete: None,
                         context: Context::Field(target),
                         level: self.document.level,
                     });

@@ -156,10 +156,6 @@ pub(crate) enum Side {
     Left,
     Right,
 }
-#[cfg_attr(
-    not(test),
-    expect(dead_code, reason = "explicit thickness awaits math frontend")
-)]
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) enum RuleThickness {
     #[default]

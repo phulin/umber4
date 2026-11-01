@@ -75,6 +75,7 @@ impl Engine<'_> {
             }
             self.document.math_frames.push(Frame {
                 list: boundary,
+                incomplete: None,
                 context: Context::LeftRight,
                 level: self.document.level,
             });
@@ -85,11 +86,11 @@ impl Engine<'_> {
             unreachable!("left/right group")
         };
         debug_assert_eq!(frame.level, self.document.level);
-        let list = self
-            .math
-            .as_mut()
-            .unwrap()
-            .close_delimited(frame.list, boundary);
+        let list =
+            self.math
+                .as_mut()
+                .unwrap()
+                .finish_list(frame.list, frame.incomplete, Some(boundary));
         if let Err(error) = self.close_group(GroupKind::MathLeft) {
             self.math
                 .as_mut()
