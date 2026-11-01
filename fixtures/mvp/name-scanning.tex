@@ -5,6 +5,11 @@
 \def\nested{nested}\expandafter\def\csname\prefix\prefix\prefix\nested\endcsname{LONG}
 \message{UMBER:\csname\prefix\endcsname/\csname\prefix x\endcsname/\csname\prefix\prefix\prefix\csname nested\endcsname\endcsname:END}
 \message{UMBER:\ifcsname\prefix x\endcsname Y\else N\fi/\ifcsname\prefix y\endcsname Y\else N\fi:END}
+\message{UMBER:\ifcsname trulyunseenquery\endcsname BAD\else ABSENT\fi/\ifcsname\prefix\prefix unseensuffix\endcsname BAD\else ABSENT\fi:END}
+\message{UMBER:\ifcsname\endcsname BAD\else EMPTYABSENT\fi/\ifcsname q\endcsname BAD\else SINGLEABSENT\fi:END}
+{\expandafter\let\csname q\endcsname=\relax\message{UMBER:\ifcsname q\endcsname SINGLEDEFINED\else BAD\fi:END}}
+{\escapechar=-1\message{UMBER:\ifcsname\expandafter\string\csname sideeffectname\endcsname suffix\endcsname BAD\else ABSENT\fi/\ifcsname sideeffectname\endcsname CREATED\else BAD\fi:END}}
+\message{UMBER:\ifcsname sideeffectname\endcsname BAD\else RESTORED\fi:END}
 \expandafter\def\csname\endcsname{EMPTY}\message{UMBER:\csname\endcsname:END}
 \message{UMBER:\ifcsname\prefix\prefix\prefix\nested\endcsname Y\else N\fi:END}
 \end

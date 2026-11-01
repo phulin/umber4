@@ -27,8 +27,12 @@ remain identities in expanded lists and expand in ordinary execution.
 
 Add `\if`, `\ifcat`, `\ifodd`, `\ifcase`, `\or`, `\ifdefined`, `\ifcsname`,
 and `\unless`. Character comparisons use expanded meanings, including character
-aliases and suppressed active characters. Name tests do not define a previously
-undefined name. Skipping recognizes every supported conditional by its current
+aliases and suppressed active characters. `\ifcsname` expands its character input
+and performs a non-inserting lookup: a missing name acquires neither a symbol ID
+nor retained spelling bytes. Expansion while building that name preserves its
+ordinary side effects, including creation by nested `\csname`. Name tests do not
+define a previously undefined name. This follows the [e-TeX conditional lookup contract](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/etexdir/etex.ch#L4616).
+Skipping recognizes every supported conditional by its current
 meaning and leaves skipped macro bodies unexpanded. Case selection and boolean
 selection share the existing conditional stack; their operand progress remains
 in ordinary Rust calls. `\unless` reads an unexpanded boolean conditional.

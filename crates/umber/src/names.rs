@@ -58,23 +58,42 @@ impl Names {
         if name.len() == 1 {
             return Ok(SINGLE_BASE + u32::from(name[0]));
         }
-        let mut hash = Self::HASH_START;
-        for &b in name {
-            hash = Self::hash_byte(hash, b);
+        self.intern_hashed(name, Self::hash(name))
+    }
+    pub fn lookup(&self, name: &[u8]) -> Option<u32> {
+        if name.is_empty() {
+            return Some(NULL_CS);
         }
-        self.intern_hashed(name, hash)
+        if name.len() == 1 {
+            return Some(SINGLE_BASE + u32::from(name[0]));
+        }
+        let bucket = self.buckets[self.find_slot(name, Self::hash(name))];
+        (bucket != 0).then_some(bucket as u32)
+    }
+    fn hash(name: &[u8]) -> u64 {
+        name.iter()
+            .fold(Self::HASH_START, |hash, &byte| Self::hash_byte(hash, byte))
     }
     // Both callers select multi-byte names after the fixed-symbol path. The
     // lexer hashes consumed, translated letters; intern hashes its whole slice.
     #[cfg_attr(feature = "native-profile", inline(never))]
     pub fn intern_hashed(&mut self, name: &[u8], hash: u64) -> Result<u32> {
+        let slot = self.find_slot(name, hash);
+        let bucket = self.buckets[slot];
+        if bucket == 0 {
+            self.insert(name, u64::from(hash as u32), slot)
+        } else {
+            Ok(bucket as u32)
+        }
+    }
+    fn find_slot(&self, name: &[u8], hash: u64) -> usize {
         let mask = self.buckets.len() - 1;
         let mut slot = hash as usize & mask;
         let fragment = u64::from(hash as u32);
         loop {
             let bucket = self.buckets[slot];
             if bucket == 0 {
-                return self.insert(name, fragment, slot);
+                return slot;
             }
             if bucket >> 32 == fragment {
                 let id = bucket as u32;
@@ -88,7 +107,7 @@ impl Names {
                 // SAFETY: occupied buckets refer to initialized immutable
                 // ranges retained by bytes. This view ends before insertion.
                 if same_spelling(unsafe { spelling.as_ref() }, name) {
-                    return Ok(id);
+                    return slot;
                 }
             }
             slot = (slot + 1) & mask;

@@ -50,6 +50,9 @@ state, including node free-slot links and the box-payload free-list head and
 high-water range, is retained and restored with the matching node and payload
 roots. Names discovered on an abandoned branch remain interned with undefined
 restored meanings until assigned again.
+Negative `\ifcsname` lookup does not intern its completed name; ordinary token
+reads and `\csname` creation during its operand expansion retain their usual
+name identities across restore.
 
 Live packet slots remain reusable expansion storage. A checkpoint copies only
 active argument span descriptors into its own immutable metadata buffers and

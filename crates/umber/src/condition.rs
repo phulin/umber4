@@ -32,8 +32,10 @@ impl Engine<'_> {
             cmd::IFODD => self.scan_int()? & 1 != 0,
             cmd::IFDEFINED => self.next_token()?.meaning != Meaning::UNDEFINED,
             cmd::IFCSNAME => {
-                let id = self.scan_name()?;
-                self.document.bindings[id as usize].meaning() != Meaning::UNDEFINED
+                let id = self.scan_name_with(|engine, name| Ok(engine.names.lookup(name)))?;
+                id.is_some_and(|id| {
+                    self.document.bindings[id as usize].meaning() != Meaning::UNDEFINED
+                })
             }
             cmd::IFX => {
                 let a = self.next_token()?.meaning;
@@ -176,6 +178,12 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn scan_name(&mut self) -> Result<u32> {
+        self.scan_name_with(|engine, name| engine.intern(name))
+    }
+    fn scan_name_with<T>(
+        &mut self,
+        finish: impl FnOnce(&mut Self, &[u8]) -> Result<T>,
+    ) -> Result<T> {
         // Common names stay on the stack. A long-name buffer remains checked
         // out while nested expansion runs, so nested scanners use disjoint blocks.
         let mut prefix = [0; 64];
@@ -184,11 +192,14 @@ impl Engine<'_> {
         let result = (|| loop {
             let read = self.next_expanded()?;
             if read.meaning.command == cmd::ENDCSNAME {
-                return self.intern(if let Some(spill) = &spill {
-                    spill
-                } else {
-                    &prefix[..length]
-                });
+                return finish(
+                    self,
+                    if let Some(spill) = &spill {
+                        spill
+                    } else {
+                        &prefix[..length]
+                    },
+                );
             }
             if read.token.is_cs() {
                 return Err(Error::Syntax);
