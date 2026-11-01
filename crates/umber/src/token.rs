@@ -218,7 +218,7 @@ pub(crate) mod cmd {
         SKIP_REF = 95 => [] assignment;
         SKIP_DEF = 96 => [b"skipdef"] assignment;
         DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz", b"overfullrule", b"splitmaxdepth", b"boxmaxdepth", b"delimitershortfall", b"nulldelimiterspace", b"scriptspace", b"hoffset", b"voffset", b"mathsurround", b"predisplaysize", b"displaywidth", b"displayindent"] assignment;
-        GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip", b"abovedisplayskip", b"abovedisplayshortskip", b"belowdisplayskip", b"belowdisplayshortskip", b"splittopskip"] assignment;
+        GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip", b"abovedisplayskip", b"abovedisplayshortskip", b"belowdisplayskip", b"belowdisplayshortskip", b"splittopskip", b"tabskip"] assignment;
         FONT = 100 => [b"font"] assignment;
         SELECT_FONT = 101 => [b"nullfont"] assignment;
         FONT_FAMILY = 136 => [b"textfont", b"scriptfont", b"scriptscriptfont"] assignment;
@@ -233,7 +233,7 @@ pub(crate) mod cmd {
         CONTROL_SPACE = 110 => [b" "];
         HSKIP = 111 => [b"hskip", b"hfil", b"hfill", b"hss", b"hfilneg"];
         KERN = 112 => [b"kern"];
-        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox", b"everymath", b"everydisplay"] assignment;
+        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox", b"everymath", b"everydisplay", b"everycr"] assignment;
         PAR_SHAPE = 114 => [b"parshape"] assignment;
         PENALTY = 115 => [b"penalty"];
         VSKIP = 116 => [b"vskip", b"vfil", b"vfill", b"vss", b"vfilneg"];
@@ -290,7 +290,10 @@ pub(crate) mod cmd {
         ALIGN_SPAN = 172 => [b"span"];
         END_TEMPLATE = 173 => [] expandable;
         ENDV = 9 => [];
-        UNSUPPORTED_MATH = 161 => [b"middle", b"mskip", b"nonscript", b"halign", b"valign"];
+        HALIGN = 174 => [b"halign"];
+        OMIT = 175 => [b"omit"];
+        NOALIGN = 176 => [b"noalign"];
+        UNSUPPORTED_MATH = 161 => [b"middle", b"mskip", b"nonscript", b"valign"];
     }
 }
 
@@ -553,6 +556,7 @@ pub(crate) enum SourceRole {
     Output,
     AlignmentU(u32),
     AlignmentV(u32),
+    RetiredAlignmentV,
 }
 pub(crate) struct Cursor {
     pub role: SourceRole,

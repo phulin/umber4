@@ -461,17 +461,46 @@ captures, and conditionals observe template insertion at the native read boundar
 Backtick brace operands and macro delimiters ending in `#{` compensate their
 special reads; write expansion isolates its temporary alignment counter.
 
-Preamble parsing, rows, and production `\halign`/`\valign` execution are not part
-of this reader contract.
+Ordinary `\halign` execution uses two Align save levels and typed execution
+frames. External/internal vertical entry creates an internal vertical body with
+the inherited previous depth; unrestricted horizontal entry replays after
+paragraph completion. Restricted horizontal and negative math entry fail, while
+direct display alignment, `\valign`, and directional alignment remain unsupported.
+Preamble tokens build one owned immutable value; columns borrow U/V ranges and
+capture tabskip values. Only `\span` single expansion and the special tabskip
+assignment are executed during copying. That assignment uses positive globaldefs
+and does not trigger afterassignment; an explicit preceding global token is
+copied. One parameter marker is required per column. Leading repetition markers
+and `&&` extend columns by reusing immutable ranges and captured scalar glue.
 
-An alignment owns a preamble, column measurements, span records, rows, and current
-entry information until the alignment group closes. This is TeX's semantic state
-for `\halign`/`\valign`, not a scanner continuation. Nested alignments push an
+The first-row protected peek sees the actual internal vertical body. Subsequent
+non-span peeks see a fresh Cell H list with space factor 1000; span peeks retain
+the current Cell H list, group, and space factor. The Row H/SF0 nest executes no
+input; its list stays in the backend. Body take/put operations move the sole body
+owner to ordinary TextState roots while input executes. A non-span cell unsaves
+and reopens its entry group before packing; a span postpones both. Packed rows and
+migrated material precede
+everycr and noalign execution. Noalign scans its opening brace before opening
+its group, ends any paragraph before unsave, and resumes peeking without repeating
+everycr. Between rows crcr is ignored; in a cell it ends a row like cr.
+
+Finalization unsaves entry and outer alignment groups before resolving the
+captured prototype. The completed ordinary vertical body is spliced into its
+restored parent and carries the final previous depth, without appending baseline
+glue a second time. Only external vertical completion runs page work. Reader,
+execution, and layout owners all exclude checkpoints; restore clears sources,
+reader backing, execution handles, and layout handles before replacing node roots.
+Per-depth execution metadata and layout buffers retain capacity; periodic columns
+copy scalar metadata, never template tokens or owners.
+
+An ordinary horizontal alignment owns its preamble, column measurements, span
+records, rows, and current entry information until the alignment group closes.
+This is TeX's semantic state, not a scanner continuation. Nested alignments push an
 alignment owner and restore the enclosing one on completion.
 
 Scan preamble tokens into alignment-owned immutable chunks using the same span
-builders as definitions and arguments. Completed templates and their consuming
-cursors own those chunks. A definition or argument capturing a template range
+builders as definitions and arguments. The reader frame owns completed templates; consuming
+cursors borrow those chunks. A definition or argument capturing a template range
 retains its actual backing chunk directly, so it can outlive the alignment.
 Each column has its before/after-parameter
 templates and `\tabskip` state; repeated preamble regions are represented by

@@ -98,6 +98,7 @@ pub(crate) enum GlueParam {
     BelowDisplay,
     BelowDisplayShort,
     SplitTop,
+    TabSkip,
 }
 #[allow(dead_code)]
 impl GlueParam {

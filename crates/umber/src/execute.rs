@@ -13,6 +13,8 @@ pub(crate) enum GroupKind {
     MathField,
     MathChoice,
     MathLeft,
+    Align,
+    NoAlign,
 }
 pub(crate) enum Save {
     Boundary(GroupKind),
@@ -56,6 +58,9 @@ impl Engine<'_> {
         set_box_allowed: bool,
     ) -> Result<()> {
         if read.meaning.command == cmd::RELAX {
+            return Ok(());
+        }
+        if self.alignment_command(read)? {
             return Ok(());
         }
         if self.math_command(read)? {
@@ -428,6 +433,9 @@ impl Engine<'_> {
     }
     pub(crate) fn close_group(&mut self, kind: GroupKind) -> Result<()> {
         let saved = self.current_group().ok_or(Error::Group)?;
+        if kind == GroupKind::Simple && saved == GroupKind::NoAlign {
+            return self.finish_noalign();
+        }
         if saved != kind
             && !(kind == GroupKind::Simple
                 && matches!(

@@ -134,6 +134,8 @@ pub struct Engine<'a> {
     output_pools: output::Pools,
     checkpoint_stores: checkpoint::Stores,
     alignment_layout_pool: Vec<Option<alignment_layout::LayoutBuffers>>,
+    alignment_execution_pool:
+        Vec<Option<value_metadata::Buffer<alignment_execute::ColumnTemplate>>>,
     session: std::rc::Rc<()>,
     quiescent: bool,
 }
@@ -152,6 +154,7 @@ pub(crate) struct Document<'a> {
     pub boxes: boxes::Registers,
     pub box_frames: Vec<boxes::Frame>,
     pub alignment_layouts: Vec<alignment_layout::LayoutFrame>,
+    pub alignment_frames: Vec<alignment_execute::Frame>,
     pub math_frames: Vec<math_frontend::Frame>,
     pub output_frame: Option<page::OutputFrame>,
     pub fonts: fonts::Fonts,
@@ -188,6 +191,7 @@ impl<'a> Engine<'a> {
                 boxes: boxes::Registers::default(),
                 box_frames: Vec::new(),
                 alignment_layouts: Vec::new(),
+                alignment_frames: Vec::new(),
                 math_frames: Vec::new(),
                 output_frame: None,
                 fonts: fonts::Fonts::default(),
@@ -227,6 +231,7 @@ impl<'a> Engine<'a> {
             output_pools: output::Pools::default(),
             checkpoint_stores: checkpoint::Stores::default(),
             alignment_layout_pool: Vec::new(),
+            alignment_execution_pool: Vec::new(),
             session: std::rc::Rc::new(()),
             quiescent: true,
         };
@@ -357,6 +362,7 @@ impl<'a> Engine<'a> {
         }
     }
 }
+mod alignment_execute;
 mod alignment_reader;
 #[cfg(test)]
 mod extended_tests;

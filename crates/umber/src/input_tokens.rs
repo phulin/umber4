@@ -316,7 +316,7 @@ impl Engine<'_> {
         while self.current_source_exhausted() {
             if matches!(
                 self.document.sources.last().map(Source::role),
-                Some(SourceRole::AlignmentV(_))
+                Some(SourceRole::AlignmentV(_) | SourceRole::RetiredAlignmentV)
             ) {
                 break;
             }

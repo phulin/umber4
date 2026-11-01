@@ -23,6 +23,12 @@ brace/interception state, frozen end-template boundaries and protected lookahead
 `alignment_reader_tests.rs` checks source, scanner, capture, nesting, and restore
 lifetimes; `alignment_reader_oracle_tests.rs` compares a small explicit reader
 driver with native alignment diagnostics and errors.
+`alignment_execute.rs` owns ordinary horizontal alignment execution states and
+reusable column metadata; `alignment_preamble.rs` copies selective preambles into
+one immutable value. `alignment_execute_tests.rs` and
+`alignment_execute_oracle_tests.rs` check execution, native geometry, and DVI;
+`alignment_execute_ownership_tests.rs` checks partial forests, pending sources,
+capacity, auxiliary state and checkpoint reuse.
 `define.rs` builds macro definitions; `macros.rs` builds invocation packets and
 captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;

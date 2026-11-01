@@ -90,6 +90,7 @@ impl<'a> Engine<'a> {
             && self.scanner == crate::scanner::Scanner::Normal
             && self.document.text.mode == crate::text::Mode::Vertical
             && self.document.alignment_layouts.is_empty()
+            && self.document.alignment_frames.is_empty()
             && self.document.box_frames.is_empty()
             && self.document.math_frames.is_empty()
             && !self.alignment_reader.active()
@@ -301,6 +302,7 @@ impl<'a> Engine<'a> {
         // that never installed a body owner, and rebuild only allocator lists.
         self.document.sources.clear();
         self.alignment_reader.abandon();
+        self.abandon_alignment_execution();
         // Template cursors and backing owners are gone before layout handles.
         // These IDs belong to the abandoned whole node-store root: returning
         // their buffers is inert and must precede installing restored storage.
@@ -386,6 +388,7 @@ impl<'a> Engine<'a> {
             boxes,
             box_frames: _,
             alignment_layouts: _,
+            alignment_frames: _,
             math_frames: _,
             output_frame: _,
             fonts,

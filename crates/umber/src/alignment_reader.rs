@@ -146,15 +146,6 @@ impl Engine<'_> {
     }
 }
 
-// These concrete entry points are used by the alignment frontend. Until that
-// frontend is admitted, the reader tests drive them directly.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "alignment execution is separate from its reader foundations"
-    )
-)]
 impl Engine<'_> {
     pub(crate) fn begin_alignment_reader(&mut self) -> Result<()> {
         if self.alignment_reader.frames.len() >= 10000 {
@@ -243,6 +234,9 @@ impl Engine<'_> {
             if !self.source_exhausted(source) {
                 return Err(Error::Syntax);
             }
+            if source.role() == SourceRole::RetiredAlignmentV {
+                return Err(Error::Syntax);
+            }
             if let SourceRole::AlignmentV(d) = source.role() {
                 if d != depth {
                     return Err(Error::Syntax);
@@ -260,7 +254,32 @@ impl Engine<'_> {
     }
     pub(crate) fn end_alignment_reader(&mut self) -> Result<()> {
         let depth = self.alignment_reader.frames.len() as u32;
-        if depth==0 || self.document.sources.iter().any(|s|matches!(s.role(),SourceRole::AlignmentU(d)|SourceRole::AlignmentV(d) if d==depth)) {return Err(Error::Syntax);}
+        if depth == 0 {
+            return Err(Error::Syntax);
+        }
+        for source in &self.document.sources {
+            match source.role() {
+                SourceRole::AlignmentU(d) if d == depth => return Err(Error::Syntax),
+                SourceRole::AlignmentV(d) if d == depth && !self.source_exhausted(source) => {
+                    return Err(Error::Syntax);
+                }
+                _ => {}
+            }
+        }
+        for source in &mut self.document.sources {
+            if source.role() == SourceRole::AlignmentV(depth) {
+                // A backed aftergroup closer can leave an exhausted V below it.
+                // Preserve its native eager-cleanup barrier, but remove borrowed
+                // pointers before the backing owner is released.
+                *source = Source::Inline {
+                    role: SourceRole::RetiredAlignmentV,
+                    tokens: [Token(0); 2],
+                    position: 0,
+                    len: 0,
+                    suppress: false,
+                };
+            }
+        }
         self.alignment_reader.state = self.alignment_reader.frames.pop().unwrap().saved_state;
         Ok(())
     }

@@ -151,6 +151,24 @@ impl Cell {
     }
 }
 impl Engine<'_> {
+    pub(crate) fn extend_alignment_columns(&mut self, skips: &[Glue]) -> Result<()> {
+        let frame = self
+            .document
+            .alignment_layouts
+            .last_mut()
+            .ok_or(Error::Group)?;
+        if frame.body_out {
+            return Err(Error::Group);
+        }
+        for &after in skips {
+            frame.buffers.columns.push(Column {
+                width: None,
+                after,
+                spans: None,
+            });
+        }
+        Ok(())
+    }
     pub(crate) fn begin_alignment_layout(&mut self, tabskips: &[Glue]) -> Result<()> {
         if tabskips.len() < 2 {
             return Err(Error::Syntax);
