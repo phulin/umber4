@@ -10,10 +10,12 @@ mod expand;
 mod expression;
 mod fonts;
 mod hyphenation;
+mod hyphenation_render;
 mod hyphenation_scan;
 mod input;
 mod input_files;
 mod input_tokens;
+mod language;
 mod layout_assign;
 mod layout_values;
 #[cfg(feature = "lexing-prototype")]

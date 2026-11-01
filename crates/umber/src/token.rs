@@ -246,7 +246,7 @@ pub(crate) mod cmd {
         DEL_CODE = 127 => [b"delcode"] assignment;
         MATH_CHAR_DEF = 128 => [b"mathchardef"] assignment;
         MATH_GIVEN = 129 => [];
-        EXTENSION = 130 => [b"openout", b"write", b"closeout", b"special", b"immediate"];
+        EXTENSION = 130 => [b"openout", b"write", b"closeout", b"special", b"immediate", b"setlanguage"];
         END_WRITE = 131 => [] expandable;
         INPUT = 146 => [b"input", b"endinput"] expandable;
         MUSKIP = 132 => [b"muskip"] assignment;

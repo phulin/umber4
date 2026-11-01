@@ -43,6 +43,33 @@ struct Oracle {
     dir: PathBuf,
     binary: PathBuf,
 }
+#[test]
+#[ignore = "native hyphenation pages: set UMBER_PDFTEX and UMBER_TFM_DIR"]
+fn upstream_automatic_hyphenation_page_placements() {
+    let oracle = Oracle::new();
+    let mut settings =
+        String::from(r"\hyphenchar\f=45\pretolerance=-1\lefthyphenmin=1\righthyphenmin=1 ");
+    for c in b'a'..=b'z' {
+        settings.push_str(&format!("\\lccode{c}={c}"));
+    }
+    let body = r"\noindent\ affine difficult affine difficult affine difficult\par\noindent\ difficult affine difficult affine difficult affine\par";
+    for width in [25, 40, 70] {
+        oracle.compare(
+            &basic(),
+            &format!(
+                r"{settings}\hyphenation{{af-fi-ne dif-fi-cult}}\hsize={width}pt\tolerance=10000"
+            ),
+            body,
+        );
+    }
+    let root = PathBuf::from(std::env::var_os("UMBER_TFM_DIR").expect("real font corpus"));
+    let cmr = std::fs::read(root.join("cm/cmr10.tfm")).unwrap();
+    let patterns =
+        std::fs::read_to_string(root.join("../../../tex/generic/hyphen/hyphen.tex")).unwrap();
+    for width in [40, 70, 120] {
+        oracle.compare(&cmr, &format!(r"{settings}{patterns}\hsize={width}pt\tolerance=200"), r"\noindent\ difficult efficient affirmation office affinity shelfful hyphenation representation mathematical mathematics extraordinarily unprecedented.\par\noindent\ difficult efficient affirmation office affinity shelfful hyphenation representation mathematical mathematics extraordinarily unprecedented.\par");
+    }
+}
 impl Drop for Oracle {
     fn drop(&mut self) {
         let _ = std::fs::remove_dir_all(&self.dir);

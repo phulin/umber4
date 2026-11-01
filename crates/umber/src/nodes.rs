@@ -123,6 +123,7 @@ pub(crate) enum GlueKind {
 }
 #[derive(Debug, Default)]
 pub(crate) enum Kind {
+    Language(crate::language::Language),
     #[default]
     Free,
     Character {
@@ -208,6 +209,7 @@ impl Node {
     // Copy an owned record ONLY into a different COW store version.
     fn snapshot_copy(&self) -> Self {
         let kind = match &self.kind {
+            Kind::Language(language) => Kind::Language(*language),
             Kind::Free => Kind::Free,
             Kind::Character { font, character } => Kind::Character {
                 font: *font,

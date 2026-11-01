@@ -73,9 +73,6 @@ impl Default for Fonts {
     }
 }
 impl Engine<'_> {
-    pub(crate) fn metric_reader(&self) -> MetricReader<'_> {
-        MetricReader::new(&self.document.fonts, &self.font_catalog)
-    }
     /// Register an immutable metric resource before the first nonzero advance.
     /// Names are exact bytes, with an optional terminal `.tfm`; no file is opened.
     /// Registration remains sealed after restoring an earlier checkpoint.

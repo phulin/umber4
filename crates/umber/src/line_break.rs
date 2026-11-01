@@ -45,7 +45,6 @@ pub(crate) fn find_breaks(
         );
         scratch.records[0].next = initial;
         let mut search = Search {
-            engine,
             parameters,
             scratch,
             width: background,
@@ -57,10 +56,13 @@ pub(crate) fn find_breaks(
         };
         let mut p = engine.document.text.horizontal.head();
         let mut previous = p;
-        let mut metrics = engine.metric_reader();
+        let mut metrics =
+            crate::fonts::MetricReader::new(&engine.document.fonts, &engine.font_catalog);
+        let mut language = engine.document.text.initial_language;
         while !p.is_null() && search.scratch.records[0].next != 0 {
             search.point = p;
             let node = engine.document.nodes.get(p);
+            let mut next = node.next;
             match &node.kind {
                 Kind::Character { font, character }
                 | Kind::Ligature {
@@ -80,6 +82,7 @@ pub(crate) fn find_breaks(
                             | Kind::Ligature { .. }
                             | Kind::Insertion(_)
                             | Kind::Adjustment(_)
+                            | Kind::Language(_)
                             | Kind::Box(_)
                             | Kind::Rule { .. }
                             | Kind::Discretionary { .. }
@@ -88,20 +91,36 @@ pub(crate) fn find_breaks(
                                 ..
                             }
                     ) {
-                        search.try_break(0, false)?;
+                        search.try_break(engine, 0, false)?;
                     }
                     add_glue(&mut search.width, *spec, 1);
+                    if second {
+                        crate::hyphenation_render::after_glue(
+                            p,
+                            &mut engine.document.nodes,
+                            &mut engine.document.text.horizontal,
+                            &crate::hyphenation_render::Inputs {
+                                scalars: &engine.document.scalars,
+                                fonts: &engine.document.fonts,
+                                catalog: &engine.font_catalog,
+                                tables: &engine.document.hyphenation,
+                            },
+                            &mut language,
+                            &mut search.scratch.hyphenation,
+                        )?;
+                        next = engine.document.nodes.get(p).next;
+                    }
                 }
                 Kind::Kern { width, explicit } => {
                     if *explicit
                         && !node.next.is_null()
                         && matches!(engine.document.nodes.get(node.next).kind, Kind::Glue { .. })
                     {
-                        search.try_break(0, false)?;
+                        search.try_break(engine, 0, false)?;
                     }
                     search.width[0] = search.width[0].wrapping_add(width.0);
                 }
-                Kind::Penalty(penalty) => search.try_break(*penalty, false)?,
+                Kind::Penalty(penalty) => search.try_break(engine, *penalty, false)?,
                 Kind::Discretionary {
                     pre, replace_count, ..
                 } => {
@@ -115,6 +134,7 @@ pub(crate) fn find_breaks(
                     search.disc_width = width;
                     search.width[0] = search.width[0].wrapping_add(width);
                     search.try_break(
+                        engine,
                         parameters.integer(if pre.is_empty() {
                             P::ExHyphenPenalty
                         } else {
@@ -134,14 +154,15 @@ pub(crate) fn find_breaks(
                     continue;
                 }
                 Kind::Insertion(_) | Kind::Adjustment(_) => {}
+                Kind::Language(new) => language = *new,
                 Kind::Free => unreachable!(),
             }
             previous = p;
-            p = node.next;
+            p = next;
         }
         if p.is_null() {
             search.point = NodeId::NULL;
-            search.try_break(-10000, true)?;
+            search.try_break(engine, -10000, true)?;
             if let Some((mut passive, line, actual)) = search.best()
                 && (parameters.integer(P::Looseness) == 0
                     || actual == parameters.integer(P::Looseness)

@@ -16,9 +16,9 @@ components, fitness classes, demerits, equal-cost selection, pretolerance and
 tolerance passes, emergency stretch, looseness, and final-pass recovery. Existing
 discretionary nodes participate in every pass. Hyphenation tables can be loaded
 and queried as described below; inserting automatic discretionary breaks into
-paragraphs remains unsupported. A loaded pattern or exception root therefore
-causes an explicit unsupported error if a tolerance/hyphenating pass is needed;
-a successful pretolerance pass can still complete normally.
+paragraphs uses the bounded, ligature-aware reconstruction contract below.
+The pretolerance pass leaves words unchanged; subsequent passes inspect only
+words following glue actually visited by the line search.
 
 Paragraph completion consumes the horizontal list, transforms its final glue
 into the terminal penalty, and appends paragraph-fill glue. Selected breaks
@@ -55,8 +55,7 @@ their upstream behavior. These rules follow `hpack` and `vpackage` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 Native comparisons inspect node dimensions and displayed glue settings; the
 page adapter additionally checks cumulative absolute output placements. Diagnostic text, overfull
-rules,
-general discretionary syntax, automatic hyphenation, math,
+rules, general discretionary syntax, math,
 last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
 Unsupported infinite paragraph shrink fails explicitly rather than applying
 TeX's interactive recovery.
@@ -268,10 +267,8 @@ directories and only modified pages; later exception updates do not copy pattern
 directories. Freezing rejects subsequent pattern loading but permits exceptions;
 restoring an earlier checkpoint restores both data and readiness. The first
 tolerance/hyphenating pass freezes the tables, even when no patterns were loaded;
-a successful pretolerance pass does not. Rendering rejects a hyphenating pass
-with either loaded root until discretionary reconstruction is implemented.
-Language nodes, ligature reconstruction, and e-TeX's saved hyphenation-code maps
-are not implemented.
+a successful pretolerance pass does not. e-TeX's saved hyphenation-code maps
+remain unsupported; the renderer uses live lowercase codes.
 
 These rules follow `new_patterns`, `new_hyph_exceptions`, and `hyphenate` in
 [TeX](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web),
@@ -280,16 +277,43 @@ including Web2C's replacement of repeated exceptions in
 
 ### Paragraph integration
 
-Language switches and left/right minima in the paragraph list control which
-words are eligible. A future e-TeX saved-code map belongs with the pattern root;
+Paragraph entry captures normalized language and left/right minima before
+`\everypar`. A positive-horizontal character-run entry compares the current
+language parameter with the list's current language and, when different, appends
+a zero-width language node carrying the normalized language and current minima.
+This occurs even if the character's glyph is absent. Assigning minima alone does
+not change the captured state. Explicit `\setlanguage` always appends such a node
+in either horizontal mode, including for an unchanged language, without assigning
+the language parameter. Nodes survive copying, packing, line-leading pruning and
+output traversal; both the main search and its word lookahead update language
+state when crossing them.
+
+Each hyphenating pass begins with the paragraph's initial language/minima. It
+inspects a candidate only after visiting glue, using live lowercase codes,
+uppercase-word permission and the font's hyphen character. Initial punctuation,
+normal kerns, font changes, complete ligature components, terminating node types
+and the 63-letter candidate prefix follow TeX's pre-hyphenation traversal.
+Existing discretionaries and math/box boundaries constrain eligibility. An
+emergency pass reuses inserted nodes, but can inspect later words that an earlier
+pass did not reach. A future e-TeX saved-code map belongs with the pattern root;
 when present, it replaces live `\lccode` lookup for that language, with absent
 characters mapping to zero.
 
-Reuse small word buffers for character codes, lowercase codes, hyphen positions,
-and ligature reconstruction work. Hyphenation reconstructs character/ligature
-ranges with TeX's `reconstitute` algorithm, producing discretionary nodes directly
-in the paragraph's node store. It cannot simply insert a penalty between final
-glyphs: a ligature may have different forms on either side of a break.
+Fixed word arrays retain original and lowercase codes and a position mask;
+reusable stack capacity holds pending ligature operations. Hyphenation reconstructs
+cut prefixes with TeX's `reconstitute` algorithm directly in the paragraph's node
+store, preserving original components and boundary flags. It synchronizes the
+no-break and post-break translations before fixing each discretionary's replacement
+count, and reconstructs the pre-break translation with the font boundary and an
+existing hyphen glyph, if available. A replacement exceeding 127 nodes retains
+the no-break translation and discards that discretionary's alternatives.
+
+Temporary output lists have disjoint owners. The original range remains in the
+paragraph until complete reconstruction succeeds; failure releases new branches.
+An infallible list splice then installs the result and releases the original
+range. Font resources and the existing table roots are borrowed, without per-word
+resource ownership or character buffers. Search engine borrows are confined to
+individual break trials, allowing mutation at the native visited-glue point.
 
 A discretionary owns detached pre-break and post-break lists. Its no-break
 replacement is the next `replace_count` ordinary nodes in the enclosing list,
@@ -299,6 +323,20 @@ its material as TeX does. Unchosen discretionaries keep their pre/post lists
 inside finished lines where diagnostics and later unboxing can observe them.
 Discard only the material upstream discards. Later passes reuse paragraph structures
 as upstream does, without multiplying complete word or paragraph copies.
+
+Portable reconstruction tests check every allocation-failure boundary against an
+unchanged retained source version, scratch reuse, checkpoint replay, and the
+127-node replacement boundary. Native tests compare complete pre/post branches,
+component/boundary flags and replacement counts using controlled ligature programs
+and real cmr10 with the English pattern source. They cover language/minima timing,
+live lowercase codes, uppercase permission, missing hyphen glyphs, font changes,
+63-letter prefixes, exceptional ligature growth and selected line breaks. The
+page adapter also compares detached glyph placements with native DVI records.
+Use the same explicit executable/corpus environment as the other native adapters:
+
+```bash
+cargo test --lib automatic_hyphenation -- --ignored
+```
 
 ## 7. pdfTeX spacing extensions
 

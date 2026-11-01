@@ -221,13 +221,7 @@ pub(crate) struct Hyphenation {
 impl Hyphenation {
     pub fn begin_pass(&mut self) -> Result<()> {
         self.frozen = true;
-        if self.patterns.is_some() || self.exceptions.is_some() {
-            // Lookup is available, but ligature-aware discretionary rebuilding
-            // is not. Never silently ignore tables on a hyphenating pass.
-            Err(Error::Unsupported)
-        } else {
-            Ok(())
-        }
+        Ok(())
     }
     pub fn check_patterns(&self) -> Result<()> {
         if self.frozen {
@@ -250,7 +244,6 @@ impl Hyphenation {
     }
     // Paragraph rendering supplies eligibility and original-to-lowercase
     // mapping. This lookup deliberately accepts only the bounded lowered word.
-    #[allow(dead_code)] // Automatic paragraph reconstruction is a separate phase.
     pub fn positions(&self, language: u8, word: &[u8], left: i32, right: i32) -> u64 {
         let left = left.clamp(1, 63) as usize;
         let right = right.clamp(1, 63) as usize;

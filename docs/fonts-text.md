@@ -125,7 +125,8 @@ TFM range and its possibly substituted glyph must exist. Left-boundary programs
 run first, so their earlier ligature or kern effects survive a rejected original.
 TFM kerns remain distinct from explicit kerns. An explicit hyphen-character
 component adds an empty discretionary with zero replacement count in unrestricted
-horizontal mode. Pattern hyphenation is absent.
+horizontal mode. Automatic hyphenation reconstructs these retained components
+at paragraph breaking, as described in [paragraphs.md](paragraphs.md).
 
 Spaces freeze inline glue at execution, using current font parameters, spaceskip,
 xspaceskip, and exact space-factor arithmetic. Control space uses the normal
@@ -145,7 +146,7 @@ current selector, text state and lists are captured with their matching node-sto
 version. Errors require restore before execution continues.
 
 Restricted boxes, general discretionary syntax, accents, math construction, alignments,
-automatic hyphenation, pdfTeX font extensions, arbitrary I/O and output backends
+pdfTeX font extensions, arbitrary I/O and output backends
 remain unsupported. Tests explicitly set document dimensions and spacing; no
 plain-format defaults are assumed.
 

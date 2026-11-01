@@ -87,6 +87,7 @@ impl NodeStore {
         // Copy scalar fields and child references before allocation can COW or
         // grow either directory. No source owner is moved or snapshot-copied.
         let copied = match &node.kind {
+            Kind::Language(language) => self.alloc_with_limit(Kind::Language(*language), limit)?,
             Kind::Free => unreachable!(),
             Kind::Character { font, character } => self.alloc_with_limit(
                 Kind::Character {

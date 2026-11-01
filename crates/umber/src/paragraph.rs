@@ -38,6 +38,7 @@ pub(crate) struct Passive {
 }
 #[derive(Default)]
 pub(crate) struct Scratch {
+    pub hyphenation: crate::hyphenation_render::Scratch,
     pub records: Vec<Record>,
     pub passive: Vec<Passive>,
     pub breaks: Vec<NodeId>,

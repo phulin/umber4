@@ -1,6 +1,7 @@
 //! Owned external/internal text lists and paragraph handoff.
 use crate::{
     Engine, Result,
+    language::Language,
     layout_values::{DimenParam, GlueParam},
     nodes::{BoxData, GlueKind, Kind, List},
     numeric::{Glue, Scaled},
@@ -37,6 +38,8 @@ pub(crate) struct TextState {
     pub prev_depth: Scaled,
     pub prev_graf: i32,
     pub cancel_boundary: bool,
+    pub initial_language: Language,
+    pub language: u8,
 }
 impl Default for TextState {
     fn default() -> Self {
@@ -49,6 +52,8 @@ impl Default for TextState {
             prev_depth: Scaled(-65_536_000),
             prev_graf: 0,
             cancel_boundary: false,
+            initial_language: Language::default(),
+            language: 0,
         }
     }
 }
@@ -63,6 +68,8 @@ impl TextState {
             prev_depth: self.prev_depth,
             prev_graf: self.prev_graf,
             cancel_boundary: self.cancel_boundary,
+            initial_language: self.initial_language,
+            language: self.language,
         }
     }
 }
@@ -89,6 +96,12 @@ impl Engine<'_> {
         }
         self.document.text.mode = Mode::Horizontal;
         self.document.text.space_factor = 1000;
+        let initial = Language::capture(
+            &self.document.scalars,
+            self.document.scalars[Target::LANGUAGE].value,
+        );
+        self.document.text.initial_language = initial;
+        self.document.text.language = initial.number;
         if indented {
             self.indent()?;
         }

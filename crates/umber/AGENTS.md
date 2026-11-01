@@ -64,7 +64,13 @@ paragraph parameters, pooled shape roots, and reusable search storage,
 `hyphenation.rs` owns shared pattern/exception roots and bounded lookup;
 `hyphenation_scan.rs` reads expanded pattern/exception assignments, with native,
 lookup, ownership, and replay coverage in `hyphenation_tests.rs` and
-`hyphenation_oracle_tests.rs`;
+`hyphenation_oracle_tests.rs`; `hyphenation_render.rs` finds eligible words at
+visited glue and synchronizes discretionary branches, while
+`hyphenation_reconstitute.rs` rebuilds bounded cut prefixes with reusable ligature
+scratch. `hyphenation_render_tests.rs` checks failure cleanup, version ownership
+and replay, and `hyphenation_render_oracle_tests.rs` compares controlled and real
+English paragraph lists; `language.rs` captures paragraph language/minima
+and emits zero-width language nodes, with timing/copy tests in `language_tests.rs`;
 `line_break.rs` traverses legal breaks and passes, `line_search.rs` implements
 active/delta/passive search, `line_construct.rs` transfers selected ranges into
 lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glue;

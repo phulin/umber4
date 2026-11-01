@@ -226,7 +226,7 @@ fn hyphenation_state_is_scoped_but_tables_are_global_and_snapshots_restore_both(
 }
 
 #[test]
-fn hyphenation_real_pass_boundary_freezes_and_guards_unimplemented_reconstruction() {
+fn hyphenation_real_pass_boundary_freezes_and_accepts_loaded_roots() {
     for first_pass in [true, false] {
         let text = format!(
             r"{BOOT}\font\f=test \f\hsize100pt\vsize1000pt\parfillskip0pt plus1fil
@@ -267,9 +267,8 @@ fn hyphenation_real_pass_boundary_freezes_and_guards_unimplemented_reconstructio
         engine
             .register_tfm(b"test", &font_test_data::basic())
             .unwrap();
-        assert_eq!(engine.advance(usize::MAX), Err(Error::Unsupported));
+        assert_eq!(engine.advance(usize::MAX), Ok(Progress::Complete));
         assert!(engine.document.hyphenation.frozen);
-        assert!(!engine.can_checkpoint());
     }
     let mut tables = Hyphenation::default();
     tables.begin_pass().unwrap();

@@ -10,8 +10,7 @@ use crate::{
     scalars::ParagraphParam as P,
 };
 
-pub(crate) struct Search<'a, 's, 'source> {
-    pub engine: &'a Engine<'source>,
+pub(crate) struct Search<'a, 's> {
     pub parameters: &'a Parameters,
     pub scratch: &'s mut Scratch,
     pub width: Widths,
@@ -21,7 +20,7 @@ pub(crate) struct Search<'a, 's, 'source> {
     pub final_pass: bool,
     pub disc_width: i32,
 }
-impl Search<'_, '_, '_> {
+impl Search<'_, '_> {
     fn delta(&self, id: usize) -> Option<Widths> {
         if let RecordKind::Delta(w) = self.scratch.records[id].kind {
             Some(w)
@@ -41,11 +40,11 @@ impl Search<'_, '_, '_> {
     fn next(&self, id: usize) -> usize {
         self.scratch.records[id].next
     }
-    fn break_width(&self, hyphenated: bool) -> Result<Widths> {
+    fn break_width(&self, engine: &Engine<'_>, hyphenated: bool) -> Result<Widths> {
         let mut width = self.background;
         let mut s = self.point;
         if hyphenated && !s.is_null() {
-            let (post, count) = match &self.engine.document.nodes.get(s).kind {
+            let (post, count) = match &engine.document.nodes.get(s).kind {
                 Kind::Discretionary {
                     post,
                     replace_count,
@@ -55,25 +54,24 @@ impl Search<'_, '_, '_> {
             };
             let mut v = s;
             for _ in 0..count {
-                v = self.engine.document.nodes.get(v).next;
-                width[0] = width[0]
-                    .wrapping_sub(self.engine.node_width(self.engine.document.nodes.get(v))?);
+                v = engine.document.nodes.get(v).next;
+                width[0] = width[0].wrapping_sub(engine.node_width(engine.document.nodes.get(v))?);
             }
             let mut p = post;
             while !p.is_null() {
-                let node = self.engine.document.nodes.get(p);
-                width[0] = width[0].wrapping_add(self.engine.node_width(node)?);
+                let node = engine.document.nodes.get(p);
+                width[0] = width[0].wrapping_add(engine.node_width(node)?);
                 p = node.next;
             }
             width[0] = width[0].wrapping_add(self.disc_width);
             s = if post.is_null() {
-                self.engine.document.nodes.get(v).next
+                engine.document.nodes.get(v).next
             } else {
                 NodeId::NULL
             };
         }
         while !s.is_null() {
-            let node = self.engine.document.nodes.get(s);
+            let node = engine.document.nodes.get(s);
             match node.kind {
                 Kind::Glue { spec, .. } => add_glue(&mut width, spec, -1),
                 Kind::Penalty(_) => {}
@@ -89,7 +87,12 @@ impl Search<'_, '_, '_> {
     }
     /// The loop and insert/deactivate ordering intentionally follow WEB. In
     /// particular, equal demerits choose the later predecessor in active order.
-    pub fn try_break(&mut self, mut penalty: i32, hyphenated: bool) -> Result<()> {
+    pub fn try_break(
+        &mut self,
+        engine: &Engine<'_>,
+        mut penalty: i32,
+        hyphenated: bool,
+    ) -> Result<()> {
         if penalty >= 10000 {
             return Ok(());
         }
@@ -121,7 +124,7 @@ impl Search<'_, '_, '_> {
                     let bw = if let Some(w) = computed_break {
                         w
                     } else {
-                        let w = self.break_width(hyphenated)?;
+                        let w = self.break_width(engine, hyphenated)?;
                         computed_break = Some(w);
                         w
                     };

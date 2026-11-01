@@ -31,6 +31,9 @@ impl Target {
     pub const HOLDING_INSERTS: Self = Self((PARAM_BASE + 43) as u16);
     pub const MAX_DEAD_CYCLES: Self = Self((PARAM_BASE + 41) as u16);
     pub const LANGUAGE: Self = Self((PARAM_BASE + 38) as u16);
+    pub const LEFT_HYPHEN_MIN: Self = Self((PARAM_BASE + 39) as u16);
+    pub const RIGHT_HYPHEN_MIN: Self = Self((PARAM_BASE + 40) as u16);
+    pub const UC_HYPH: Self = Self((PARAM_BASE + 31) as u16);
     // Font IDs share assignment/save storage, but these targets deliberately
     // have no numeric scalar_target conversion.
     pub fn family(style: usize, family: usize) -> Self {

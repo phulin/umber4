@@ -282,7 +282,8 @@ impl Engine<'_> {
                 Kind::Penalty(_)
                 | Kind::Discretionary { .. }
                 | Kind::Insertion(_)
-                | Kind::Adjustment(_) => {}
+                | Kind::Adjustment(_)
+                | Kind::Language(_) => {}
                 Kind::Free => unreachable!(),
             }
         }

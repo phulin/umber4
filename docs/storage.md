@@ -361,6 +361,15 @@ ownership. Line breaking can reuse paragraph nodes while adding line boxes aroun
 the selected ranges. Packing computes dimensions over an existing list and
 constructs its box header directly beside it.
 
+Automatic hyphenation borrows font resources and pattern/exception roots for a
+visited word. Fixed character arrays and a reusable ligature stack describe its
+reconstruction; the stack contains scalar codes rather than per-character owners.
+The original paragraph range remains owned while disjoint no-break, pre-break and
+post-break lists are built directly in the node store. Failure releases the new
+forest; success replaces the original range with infallible consuming splices.
+Each discretionary owns its two alternatives, while its replacement nodes belong
+only to the enclosing list. No reconstruction owner survives paragraph handoff.
+
 A box register owns the list it names. `\box` takes the box, and `\unhbox` or
 `\unvbox` takes its contents. Their copying variants create new mutable node
 records because the two resulting lists can subsequently change independently.

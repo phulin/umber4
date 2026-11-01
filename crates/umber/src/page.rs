@@ -147,7 +147,10 @@ impl Engine<'_> {
                                 .nodes
                                 .get(self.document.page.current.tail())
                                 .kind,
-                            Kind::Box(_) | Kind::Rule { .. } | Kind::Insertion(_)
+                            Kind::Box(_)
+                                | Kind::Rule { .. }
+                                | Kind::Insertion(_)
+                                | Kind::Language(_)
                         )
                     {
                         penalty = Some(0);
@@ -173,6 +176,7 @@ impl Engine<'_> {
                     penalty = Some(*pi);
                 }
                 Kind::Insertion(_) => self.consider_insertion(p)?,
+                Kind::Language(_) => {}
                 _ => return Err(Error::Unsupported),
             }
             if let Some(pi) = penalty.filter(|&pi| pi < 10000)

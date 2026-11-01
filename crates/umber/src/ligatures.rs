@@ -47,6 +47,7 @@ impl Engine<'_> {
     ) -> Result<()> {
         let font = self.document.fonts.current.value as u32;
         self.adjust_space_factor(first);
+        self.fix_language()?;
         let Some(scaled) = self.document.fonts.descriptors[font as usize].scaled else {
             // Missing nullfont glyphs are discarded, but their sfcode still ran.
             self.document.text.cancel_boundary = false;

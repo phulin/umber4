@@ -6,6 +6,8 @@ use crate::{
     numeric::{GlueOrder, Scaled, print_scaled},
 };
 use std::{path::PathBuf, process::Command};
+#[path = "hyphenation_render_oracle_tests.rs"]
+mod hyphenation_render;
 fn scaled(v: Scaled) -> String {
     let mut b = Vec::new();
     print_scaled(v, |c| b.push(c));
@@ -22,17 +24,24 @@ fn byte(c: u8) -> String {
 }
 fn list(e: &Engine<'_>, contents: &List, level: usize, out: &mut Vec<String>) {
     let prefix = ".".repeat(level);
+    list_at(e, contents, &prefix, out);
+}
+fn list_at(e: &Engine<'_>, contents: &List, prefix: &str, out: &mut Vec<String>) {
     let mut p = contents.head();
     while !p.is_null() {
         let node = e.document.nodes.get(p);
         let mut children = None;
+        let mut alternatives = None;
         let text = match &node.kind {
-            Kind::Character { character, .. } => format!("\\f {}", byte(*character)),
+            Kind::Character { font, character } => {
+                format!("\\{} {}", font_name(e, *font), byte(*character))
+            }
             Kind::Ligature {
                 character,
                 components,
                 left_boundary,
                 right_boundary,
+                font,
                 ..
             } => {
                 let mut q = components.head();
@@ -45,7 +54,8 @@ fn list(e: &Engine<'_>, contents: &List, level: usize, out: &mut Vec<String>) {
                     q = n.next;
                 }
                 format!(
-                    "\\f {} (ligature {}{}{})",
+                    "\\{} {} (ligature {}{}{})",
+                    font_name(e, *font),
                     byte(*character),
                     if *left_boundary { "|" } else { "" },
                     text,
@@ -110,23 +120,41 @@ fn list(e: &Engine<'_>, contents: &List, level: usize, out: &mut Vec<String>) {
                 scaled(*width)
             ),
             Kind::Penalty(p) => format!("\\penalty {p}"),
+            Kind::Language(language) => format!(
+                "\\setlanguage{} (hyphenmin {},{})",
+                language.number, language.left, language.right
+            ),
             Kind::Discretionary {
                 pre,
                 post,
                 replace_count,
             } => {
-                assert!(pre.is_empty() && post.is_empty());
-                assert_eq!(*replace_count, 0);
-                "\\discretionary".into()
+                alternatives = Some((pre, post));
+                if *replace_count == 0 {
+                    "\\discretionary".into()
+                } else {
+                    format!("\\discretionary replacing {replace_count}")
+                }
             }
             other => panic!("unexpected oracle node {other:?}"),
         };
         out.push(format!("{prefix}{text}"));
         if let Some(child) = children {
-            list(e, child, level + 1, out);
+            list_at(e, child, &format!("{prefix}."), out);
+        }
+        if let Some((pre, post)) = alternatives {
+            list_at(e, pre, &format!("{prefix}."), out);
+            list_at(e, post, &format!("{prefix}|"), out);
         }
         p = node.next;
     }
+}
+fn font_name(e: &Engine<'_>, font: u32) -> String {
+    String::from_utf8_lossy(
+        e.names
+            .spelling(e.document.fonts.descriptors[font as usize].identifier),
+    )
+    .into_owned()
 }
 struct Oracle {
     dir: PathBuf,

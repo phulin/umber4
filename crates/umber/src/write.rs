@@ -9,6 +9,9 @@ const IMMEDIATE: i32 = 4;
 
 impl Engine<'_> {
     pub(crate) fn extension(&mut self, operation: i32) -> Result<()> {
+        if operation == 5 {
+            return self.set_language();
+        }
         if operation != IMMEDIATE {
             return Err(Error::Unsupported);
         }

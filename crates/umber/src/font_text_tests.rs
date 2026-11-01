@@ -51,7 +51,7 @@ fn discretionaries(e: &Engine<'_>) -> usize {
 fn borrowed_metrics_switch_fonts_and_check_each_character() {
     let mut e = engine(br"\font\a=test\font\b=test at12pt\end");
     build(&mut e);
-    let mut metrics = e.metric_reader();
+    let mut metrics = crate::fonts::MetricReader::new(&e.document.fonts, &e.font_catalog);
     assert_eq!(metrics.get(1, b'a').unwrap().width, Scaled(491520));
     // A cached font must still reject absent and out-of-range characters.
     assert!(metrics.get(1, 0).is_none());

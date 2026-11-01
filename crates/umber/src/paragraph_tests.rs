@@ -392,7 +392,6 @@ fn equal_demerit_predecessors_choose_later_but_terminal_selection_chooses_first(
         0,
     );
     let mut search = Search {
-        engine: &e,
         parameters: &parameters,
         scratch: &mut scratch,
         width: [0; 6],
@@ -402,7 +401,7 @@ fn equal_demerit_predecessors_choose_later_but_terminal_selection_chooses_first(
         final_pass: false,
         disc_width: 0,
     };
-    search.try_break(-10000, true).unwrap();
+    search.try_break(&e, -10000, true).unwrap();
     let (best, _, _) = search.best().unwrap();
     assert_eq!(search.scratch.passive[best].previous, 1);
     search.scratch.reset();
@@ -470,7 +469,6 @@ fn final_pass_artificial_candidate_preserves_existing_demerits() {
             0,
         );
         let mut search = Search {
-            engine: &e,
             parameters: &parameters,
             scratch: &mut scratch,
             width: [100, 0, 0, 0, 0, 0],
@@ -480,7 +478,7 @@ fn final_pass_artificial_candidate_preserves_existing_demerits() {
             final_pass,
             disc_width: 0,
         };
-        search.try_break(-10000, true).unwrap();
+        search.try_break(&e, -10000, true).unwrap();
         if final_pass {
             let (passive, _, _) = search.best().unwrap();
             let record = search
@@ -616,7 +614,6 @@ fn terminal_break_uses_final_hyphen_demerits_and_disc_uses_double_hyphen_demerit
             0,
         );
         let mut search = Search {
-            engine: &e,
             parameters: &parameters,
             scratch: &mut scratch,
             width: [0; 6],
@@ -630,7 +627,7 @@ fn terminal_break_uses_final_hyphen_demerits_and_disc_uses_double_hyphen_demerit
             final_pass: false,
             disc_width: 0,
         };
-        search.try_break(-10000, true).unwrap();
+        search.try_break(&e, -10000, true).unwrap();
         let (passive, _, _) = search.best().unwrap();
         let demerits = search
             .scratch
