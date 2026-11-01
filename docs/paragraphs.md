@@ -14,9 +14,11 @@ The executable baseline completes external horizontal paragraphs with TeX82's
 and immutable font metrics. It preserves active-list order, six relative width
 components, fitness classes, demerits, equal-cost selection, pretolerance and
 tolerance passes, emergency stretch, looseness, and final-pass recovery. Existing
-discretionary nodes participate in every pass; automatic hyphenation remains
-unsupported. INITEX has no patterns, so the supported unhyphenated search does
-not invent word breaks.
+discretionary nodes participate in every pass. Hyphenation tables can be loaded
+and queried as described below; inserting automatic discretionary breaks into
+paragraphs remains unsupported. A loaded pattern or exception root therefore
+causes an explicit unsupported error if a tolerance/hyphenating pass is needed;
+a successful pretolerance pass can still complete normally.
 
 Paragraph completion consumes the horizontal list, transforms its final glue
 into the terminal penalty, and appends paragraph-fill glue. Selected breaks
@@ -227,14 +229,59 @@ See the [TeX line-breaking source](https://github.com/TeX-Live/texlive-source/bl
 
 ## 6. Hyphenation and discretionary material
 
-Format-owned hyphenation patterns can be immutable packed tries indexed by
-language. Runtime exceptions are globally effective document state, with
-snapshot sharing where needed. Language switches and left/right minima in the
-paragraph list control which words are eligible. Lowercase mapping uses a saved
-per-language map when e-TeX's `\savinghyphcodes` recorded one with the patterns;
-absent characters then map to zero. Otherwise it uses the live `\lccode` table.
-Hyphenation and exception scanning preserve that selection rule. Saved maps
-belong with immutable patterns; eligibility follows the corresponding operations.
+### Executable loading and lookup
+
+`\language`, `\lefthyphenmin`, and `\righthyphenmin` are signed integer
+parameters, initially zero, with ordinary assignment, arithmetic, grouping, and
+checkpoint behavior. Table loading normalizes language values outside 1 through
+255 to zero. `\patterns` and `\hyphenation` publish globally within the document,
+independently of grouping and `\globaldefs`; successful completion releases
+`\afterassignment`. Both scanners expand tokens in the normal scanner context.
+They accept a mandatory opening brace after spaces or relax commands, then
+publish each completed entry at a space or closing brace. An invalid later entry
+does not undo earlier entries. Patterns accept letter and other-character
+meanings; exceptions also accept character definitions and `\char`.
+
+Patterns lowercase through the live `\lccode` table, use a dot for the word
+boundary, and alternate digit weights with letters as in TeX. Words and patterns
+retain at most 63 letters while continuing to validate subsequent input. Sparse
+nonzero weights occupy contiguous ranges in a pooled operation table. An indexed
+sorted-child trie includes the language edge; it needs neither packed-trie
+preprocessing nor operation interning. A terminal with no nonzero weights remains
+unset for duplicate detection: zero-weight patterns can repeat or acquire weights,
+but redefining an already weighted terminal fails, including with zero weights.
+
+Exception entries retain bounded lowercase keys, language, and a hyphen-position
+bitmask. Replacing an existing exception updates its mask. A zero mask still
+overrides patterns. A growing bucket directory keeps the indexed dictionary's
+load bounded. Lookup accepts an already lowercase word, checks exceptions first,
+then takes maximum overlapping pattern weights and applies odd-weight and
+normalized left/right minimum tests. Fixed stack arrays hold scanner and lookup
+working data; no word needs a separate allocation.
+
+Two lazily created shared roots own pattern and exception COW tables. A checkpoint
+retains those roots and a document freeze flag in constant time with respect to
+the table inventory. The first mutation after a retained snapshot copies table
+directories and only modified pages; later exception updates do not copy pattern
+directories. Freezing rejects subsequent pattern loading but permits exceptions;
+restoring an earlier checkpoint restores both data and readiness. The first
+tolerance/hyphenating pass freezes the tables, even when no patterns were loaded;
+a successful pretolerance pass does not. Rendering rejects a hyphenating pass
+with either loaded root until discretionary reconstruction is implemented.
+Language nodes, ligature reconstruction, and e-TeX's saved hyphenation-code maps
+are not implemented.
+
+These rules follow `new_patterns`, `new_hyph_exceptions`, and `hyphenate` in
+[TeX](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web),
+including Web2C's replacement of repeated exceptions in
+[tex.ch](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.ch).
+
+### Paragraph integration
+
+Language switches and left/right minima in the paragraph list control which
+words are eligible. A future e-TeX saved-code map belongs with the pattern root;
+when present, it replaces live `\lccode` lookup for that language, with absent
+characters mapping to zero.
 
 Reuse small word buffers for character codes, lowercase codes, hyphen positions,
 and ligature reconstruction work. Hyphenation reconstructs character/ligature

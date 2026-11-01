@@ -56,6 +56,7 @@ pub struct Checkpoint<'a> {
     nodes: crate::nodes::NodeStore,
     boxes: crate::boxes::Registers,
     fonts: crate::fonts::Fonts,
+    hyphenation: crate::hyphenation::Hyphenation,
     text: crate::text::TextState,
     page: crate::page::PageState,
     after_assignment: Option<Token>,
@@ -230,6 +231,7 @@ impl<'a> Engine<'a> {
             nodes: d.nodes.clone(),
             boxes: d.boxes.snapshot(),
             fonts: d.fonts.clone(),
+            hyphenation: d.hyphenation.clone(),
             text: d.text.snapshot(),
             page: d.page.snapshot(),
             after_assignment: d.after_assignment,
@@ -353,6 +355,7 @@ impl<'a> Engine<'a> {
             boxes,
             box_frames: _,
             fonts,
+            hyphenation,
             text,
             page,
             after_assignment,
@@ -374,6 +377,7 @@ impl<'a> Engine<'a> {
         nodes.clone_from(&checkpoint.nodes);
         *boxes = checkpoint.boxes.snapshot();
         fonts.clone_from(&checkpoint.fonts);
+        hyphenation.clone_from(&checkpoint.hyphenation);
         *text = checkpoint.text.snapshot();
         *page = checkpoint.page.snapshot();
         *after_assignment = checkpoint.after_assignment;

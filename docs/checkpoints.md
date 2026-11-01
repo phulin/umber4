@@ -35,6 +35,10 @@ keep their detached pages and exact font resources. Paragraph shape COW pages an
 with the other layout values; active/delta/passive search scratch resets before
 returning to the outer driver. Replay can resume pending macro arguments and
 ordinary open groups after a paragraph.
+Hyphenation tables retain separate lazy pattern and exception owners plus the
+document freeze flag. Capturing these roots does not walk trie nodes, operations,
+or dictionary entries; later updates copy only the affected root's COW directories
+and pages. Restoring a pre-freeze checkpoint restores pattern-loading eligibility.
 Horizontal box registers and their saved owners are retained with the matching
 node-store root through explicit snapshot operations. Restricted horizontal box
 construction excludes eligibility even between complete commands. Restore clears

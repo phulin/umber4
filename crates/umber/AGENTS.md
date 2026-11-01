@@ -48,6 +48,10 @@ scoped transfers, and box geometry/status primitives; `boxes_tests.rs` checks
 native ordering, ownership, replay, failure cleanup, and executable packing;
 `text.rs` owns external/restricted modes and horizontal/vertical lists, `paragraph.rs` owns
 paragraph parameters, pooled shape roots, and reusable search storage,
+`hyphenation.rs` owns shared pattern/exception roots and bounded lookup;
+`hyphenation_scan.rs` reads expanded pattern/exception assignments, with native,
+lookup, ownership, and replay coverage in `hyphenation_tests.rs` and
+`hyphenation_oracle_tests.rs`;
 `line_break.rs` traverses legal breaks and passes, `line_search.rs` implements
 active/delta/passive search, `line_construct.rs` transfers selected ranges into
 lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glue;

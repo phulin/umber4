@@ -9,6 +9,8 @@ mod execute;
 mod expand;
 mod expression;
 mod fonts;
+mod hyphenation;
+mod hyphenation_scan;
 mod input;
 mod input_files;
 mod input_tokens;
@@ -136,6 +138,7 @@ pub(crate) struct Document<'a> {
     pub boxes: boxes::Registers,
     pub box_frames: Vec<boxes::Frame>,
     pub fonts: fonts::Fonts,
+    pub hyphenation: hyphenation::Hyphenation,
     pub text: text::TextState,
     pub page: page::PageState,
     pub after_assignment: Option<Token>,
@@ -168,6 +171,7 @@ impl<'a> Engine<'a> {
                 boxes: boxes::Registers::default(),
                 box_frames: Vec::new(),
                 fonts: fonts::Fonts::default(),
+                hyphenation: hyphenation::Hyphenation::default(),
                 text: text::TextState::default(),
                 page: page::PageState::default(),
                 after_assignment: None,

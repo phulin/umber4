@@ -27,6 +27,7 @@ impl Target {
     pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
     pub const NEWLINECHAR: Self = Self((PARAM_BASE + 32) as u16);
     pub const FAM: Self = Self((PARAM_BASE + 37) as u16);
+    pub const LANGUAGE: Self = Self((PARAM_BASE + 38) as u16);
     // Font IDs share assignment/save storage, but these targets deliberately
     // have no numeric scalar_target conversion.
     pub fn family(style: usize, family: usize) -> Self {

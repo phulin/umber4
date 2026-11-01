@@ -274,6 +274,7 @@ impl Engine<'_> {
                 }
                 Ok(())
             }
+            cmd::HYPHENATION => self.hyphenation_assignment(read.meaning.value != 0),
             cmd::CHANGE_CASE if !global => self.change_case(read.meaning.value as usize),
             cmd::EXTENSION if !global => self.extension(read.meaning.value),
             cmd::MESSAGE if !global => {

@@ -7,7 +7,7 @@ use crate::{
     scalars::ParagraphParam as P,
 };
 pub(crate) fn find_breaks(
-    engine: &Engine<'_>,
+    engine: &mut Engine<'_>,
     parameters: &Parameters,
     scratch: &mut Scratch,
 ) -> Result<i32> {
@@ -19,6 +19,9 @@ pub(crate) fn find_breaks(
     let mut final_pass = second && parameters.emergency <= 0;
     let mut background = parameters.background;
     loop {
+        if second {
+            engine.document.hyphenation.begin_pass()?;
+        }
         scratch.reset();
         scratch.alloc(
             RecordKind::Active(Active {

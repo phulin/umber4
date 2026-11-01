@@ -189,7 +189,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines", b"fam"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines", b"fam", b"language", b"lefthyphenmin", b"righthyphenmin"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -259,6 +259,7 @@ pub(crate) mod cmd {
         IFHMODE = 143 => [b"ifhmode"] conditional;
         IFVMODE = 144 => [b"ifvmode"] conditional;
         IFINNER = 145 => [b"ifinner"] conditional;
+        HYPHENATION = 147 => [b"hyphenation", b"patterns"] assignment;
     }
 }
 
