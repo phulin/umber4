@@ -5,8 +5,9 @@ construction, and checkpoint replay. It checks all native DVI glyph coordinates
 and pages, then compares the ordinary release CLI with same-input INITEX using
 one warmup and five interleaved samples. Native-only diagnostic thresholds suppress
 underfull logging. Separate examples inspect/time replay and count allocations;
-their counters never enter CLI or checkpoint timings. See the
-[current layout results](../docs/layout-results.md) and
+their counters never enter CLI or checkpoint timings. Current scope and methodology
+are described in [performance.md](../docs/performance.md#implemented-layout-measurement-scope). See the
+[layout measurement report](results/layout.md) and
 [raw samples](results/layout-native.json) for endpoint differences and limitations.
 
 ```bash
@@ -18,8 +19,10 @@ The prose is extracted from six repository design documents; `--paragraphs`
 defaults to 600 and can be changed in multiples of 100. Local real TFMs use the
 corpus paths from [fast-lexing.md](../docs/fast-lexing.md). The helper adapters share
 `crates/umber/examples/layout_support/mod.rs`; generated inputs and native output
-stay in `target/benchmark/layout/`. No format, package loading, hyphenation patterns,
-math, custom output routine, or PDF backend is exercised.
+stay in `target/benchmark/layout/`. Preserve and reuse these files for paired
+revision measurements: regenerating after documentation edits changes the corpus.
+No format, package loading, hyphenation patterns, math, custom output routine,
+or PDF backend is exercised.
 
 ## Expansion benchmarks
 
@@ -46,7 +49,8 @@ python3 benchmarks/expansion.py --report target/benchmark/expansion.json
 Use `--cases`, `--sizes`, and `--repeats` for focused runs. Both accept
 `--pdftex /path/to/pdftex` and `--baseline /path/to/previous/umber`; the expanded
 suite's baseline must support its primitive set. Default reports live under
-`target/`. Reviewed measurements live in `results/`.
+`target/`. Reviewed measurements live in `results/`, including the
+[expansion measurement report](results/expansion.md).
 
 The [shared-token-store comparison](results/unified-token-storage.json) measures
 one pool for definitions, captures, and generated output against `dc64762`.

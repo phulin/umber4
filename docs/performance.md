@@ -2,11 +2,11 @@
 
 Native full compilation should perform comparably to native pdfTeX. The same Rust
 interpreter runs on Wasm, and editing sessions should reuse useful work without
-excessive snapshot or retention costs. [mvp-results.md](mvp-results.md) records
-historical expansion/register measurements; those do not establish layout,
-checkpoint, or browser runtime performance.
-The [paragraph/page report](layout-results.md) records ordinary-release prose
-composition against INITEX and same-source checkpoint timing/allocation costs.
+excessive snapshot or retention costs. Retained
+[expansion measurements](../benchmarks/results/expansion.md) and
+[paragraph/page measurements](../benchmarks/results/layout.md) describe their named
+builds and workloads; neither establishes browser runtime or broad TeX/LaTeX
+performance.
 
 Architecture comes first: preserve exact TeX semantics, clear ownership,
 semantic-lifetime allocation of headers and buffers, in-place construction, and
@@ -74,6 +74,50 @@ Real workloads should include package loading, ordinary paragraphs, math and
 alignments, insertions/output routines, and PDF resources. Smaller cases isolate
 costs within those paths. Extensive tuning of an expansion microbenchmark cannot
 substitute for the paragraph/page/checkpoint slice.
+
+### Implemented layout measurement scope
+
+The [layout runner](../benchmarks/layout.py) exercises real TFM loading, character
+construction, nonhyphenating paragraph breaking, line packing, page construction,
+final flushing, and detached output retention. It extracts distinct prose
+paragraphs from six repository design documents, then repeats their sequence to
+600 paragraphs per case by default. Book, narrow, and dense geometries use
+`ae/aer10`, `latex-fonts/lcmss8`, and `latex-fonts/icmtt8`, respectively, at 10 pt.
+The runner compares every page and glyph character/x/y with native DVI through an
+independent reader and raw-TFM width scaling before timing.
+
+The ordinary release CLI retains detached pages; native pdfTeX runs INITEX with
+e-TeX, writes DVI and a log, and suppresses underfull diagnostics through startup
+settings. The typesetting input is identical. One warmup and interleaved samples
+measure complete-process wall and user-plus-system CPU time with warm input and
+resource caches. This comparison covers text composition with different output
+endpoints; it excludes package/format loading, hyphenation patterns, math, custom
+output routines, and PDF serialization.
+
+The retained dense-metric report measures revision `02c29ec` on 2026-11-01 with
+rustc 1.98.1, ordinary release, fat LTO, and one codegen unit on an AMD EPYC 7642.
+Median CPU times for book/narrow/dense were 59.290/59.069/52.366 ms, or
+1.227/1.183/1.259 times quiet native INITEX. These are short shared-machine process
+measurements of the named build, not performance guarantees for later revisions.
+The [report](../benchmarks/results/layout.md) retains distributions, input/build
+identities, instruction attribution, allocation/retention data, and limitations.
+
+The layout examples also measure same-source checkpoint replay while retaining
+old output prefixes. Early/middle/late suffixes must equal uninterrupted execution
+in counts, messages, boxes/glue, placements, penalties, and font resources. Separate
+allocation adapters count successful system allocation/reallocation requests and
+requested payload bytes; timing binaries contain no counters. Host input/TFM
+buffers, allocator headers, stack, and OS mappings are excluded. Requested live
+heap includes reserved pooled backing. Warmed capture/release and unchanged-root
+restore batches allocate no additional backing in the retained measurements;
+fixed suffix replay still allocates, and partial shared output chunks can retain
+invisible later records. Same-source replay does not cover source edits, resource
+rebinding, or a production scheduler.
+
+The [benchmark guide](../benchmarks/README.md) supplies reproduction commands.
+The runner regenerates documentation-derived inputs, so paired revision comparisons
+must preserve and reuse the same `.tex` files and verify their hashes. Regenerating
+a corpus after editing documentation changes the workload.
 
 ## 4. Editing sessions and resource replay
 

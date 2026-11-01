@@ -14,8 +14,8 @@ checkpointable completed paragraphs. The [page baseline](pages.md) adds exact
 incremental page breaks, default detached publication, and retained page roots.
 
 The slice is implemented in [crates/umber](../crates/umber/). Its
-[native measurements](mvp-results.md) record the tested behavior, optimization
-results, and reproduction commands. The [broader expansion slice](expansion-mvp.md)
+[native measurements](../benchmarks/results/expansion.md) record the tested
+behavior, optimization results, and reproduction commands. The [broader expansion slice](expansion-mvp.md)
 adds token registers, conversions, further conditionals, deferred tokens, case
 changes, and integer expressions. The table below records the original baseline.
 
@@ -129,7 +129,8 @@ metadata acquires equal-capacity blocks from three typed page stores, so growing
 live definitions shares backing allocations too. Ordinary blocks share pages;
 arrays larger than 4 KiB can receive individual large backing blocks. Store pages
 retain their class high-water capacity until the last buffer owner disappears.
-Historical counts in [mvp-results.md](mvp-results.md) include their original layouts.
+The [expansion measurements](../benchmarks/results/expansion.md) identify the
+layouts used for their allocation counts.
 
 Publication exposes initialized storage without flattening or moving descriptors.
 Failed builders release their reservations. Published readers cannot observe a

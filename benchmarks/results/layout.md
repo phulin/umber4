@@ -5,7 +5,7 @@ using ordinary `cargo build --release` with default features, fat LTO, one codeg
 unit, no extra Rust flags, and rustc 1.98.1. The native baseline is pdfTeX
 1.40.25 (TeX Live 2023/Debian), running INITEX with e-TeX. The machine is Linux
 6.8, x86-64, AMD EPYC 7642; sequential processes were pinned to allowed CPU 0.
-The [raw report](../benchmarks/results/layout-native.json) retains binary/source
+The [raw report](layout-native.json) retains binary/source
 hashes, all samples, geometry, allocation phases, and runtime identities.
 
 This is a bounded measurement of the implemented text slice, after paragraph,
@@ -18,7 +18,7 @@ on exactly the same input files.
 
 ## Prose and native comparison
 
-The [runner](../benchmarks/layout.py) extracts 194 distinct prose paragraphs from
+The [runner](../layout.py) extracts 194 distinct prose paragraphs from
 the repository's architecture, storage, checkpoint, font/text, paragraph, and page
 documents. It removes fenced examples, Markdown links/notation, and TeX
 metacharacters, and repeats that text sequence to 600 paragraphs, about 271 KB,
@@ -137,7 +137,7 @@ benchmark gates and starts no optimization work.
 
 Measured on 2026-11-01, comparing preserved baseline executables from `930cc4d`
 (the same engine binary as the initial `159ebe5` report) with `02c29ec`.
-The [raw comparison](../benchmarks/results/layout-dense-metrics.json) records
+The [raw comparison](layout-dense-metrics.json) records
 binary and input hashes, every sample, allocation stages, checkpoint results,
 and instruction attribution. Both use ordinary release builds with the settings
 and toolchain above. No instrumentation executes in timing binaries.

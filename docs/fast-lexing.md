@@ -388,19 +388,18 @@ so a restored run translates names it has already resolved without any lookup.
 That benefit belongs to [checkpoints.md](checkpoints.md) and needs its own
 measurements.
 
-## 7. Recommendations and next steps
+## 7. Integration tradeoffs
 
-1. Land input.md section 3's line lookahead first. In this prototype, reading
-   lines in place without a per-token call is the largest single gain.
-2. Adopt raw-byte line lexing and the word hash on the lookahead path. Both are
-   portable, need no unsafe code beyond the bounded output writes, and give
-   1.25–1.78× here.
-3. Add stage 1 as an optional, target-specific accelerator behind the same
-   interface, with the scalar loops as the portable reference. Its gain is large
-   on prose and moderate on macro code.
-4. Before taking cross-line speculation or a thread further, measure lexing's
-   share of end-to-end engine time on real documents and catcode-write
-   frequency.
+Line lookahead in [input.md](input.md) section 3 provides a bounded integration
+point. In this prototype, reading lines in place without a per-token call is the
+largest single gain. Raw-byte line lexing and the word hash are portable, need no
+unsafe code beyond the bounded output writes, and give 1.25–1.78× here.
+
+Stage 1 can remain an optional, target-specific accelerator behind the same
+interface, with scalar loops as the portable reference. Its gain is large on
+prose and moderate on macro code. Cross-line speculation and worker lexing need
+end-to-end measurements of lexing time and catcode-write frequency before their
+additional state and coordination are justified.
 
 Untested prototype ideas:
 

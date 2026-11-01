@@ -12,7 +12,7 @@ name table and unchanged dependencies. The earlier reclamation
 sweeps measure `a7f8be0`; subsequent sections retain the representation,
 structural, and name/scanner comparisons with their original baselines.
 
-The [original MVP](mvp.md) and [broader expansion slice](expansion-mvp.md) implement
+The [original MVP](../../docs/mvp.md) and [broader expansion slice](../../docs/expansion-mvp.md) implement
 63 primitive names, covering parsing, expansion, macros, groups, integer state,
 and token registers. Immutable definitions and token lists now follow semantic
 ownership and reuse their backing storage. The reclamation build peaked at
@@ -28,7 +28,7 @@ implemented slice.
 
 ## Historical allocator execution follow-up
 
-The [execution follow-up report](../benchmarks/results/token-execution-followup.json)
+The [execution follow-up report](token-execution-followup.json)
 records that build and its measured tradeoffs. Builders
 construct token descriptors directly in unpublished value slots. Registered slabs
 need no per-object occupancy-counter updates; registry teardown transfers retention
@@ -107,7 +107,7 @@ pooled scratch only on spill; nested scanners and failed scans return that stora
 Dense ID lookup remains one checked pointer load. Owners remain one pointer;
 token windows and hot definition fields remain directly accessible.
 
-The [historical paired report](../benchmarks/results/token-slab-metadata.json) retains
+The [historical paired report](token-slab-metadata.json) retains
 seven alternating ordinary-release repetitions at 100,000 core iterations and
 10,000 broader records, all compact-source memory cases, nine repetitions at one million iterations for
 affected cases, actual allocation diagnostics, and executable/source
@@ -158,7 +158,7 @@ therefore use depths 10, 30, and 50. Larger depths 100, 1,000, and 3,000 retain
 allocation counts from both Umber adapters with validated identical sources;
 they make no native-oracle or timing claim beyond that limit. Independently owned
 message byte vectors remain at the public result boundary. The final
-[storage allocation audit](storage.md#mvp-allocation-boundaries) distinguishes
+[storage allocation audit](../../docs/storage.md#mvp-allocation-boundaries) distinguishes
 those outputs from reusable internal metadata.
 
 All 82 debug/release tests and 87 release all-feature tests pass, alongside rustfmt,
@@ -179,7 +179,7 @@ owners before slot reuse. Ordinary invocation fields precede cold fallback stora
 Individual shared-header allocations on live-set growth remain; denser slabs and
 size-class pooling remain future layout work.
 
-The [paired report](../benchmarks/results/token-metadata-reuse.json) measures
+The [paired report](token-metadata-reuse.json) measures
 `317c54d` against the preceding allocator build. It uses ordinary release, fat LTO,
 rustc 1.98.1, AMD EPYC 7642, and pdfTeX 3.141592653-2.6-1.40.25 (TeX Live
 2023/Debian). Seven alternating repetitions cover nine core cases at 100,000
@@ -246,7 +246,7 @@ also be one active block per class, plus blocks retained by actual semantic owne
 Existing input ranges retain their original owners; class does not trigger release
 or copying. Value-header slabs and reusable variable metadata remain later work.
 
-The [paired report](../benchmarks/results/token-allocation-classes.json)
+The [paired report](token-allocation-classes.json)
 compares `ad5c07b` with `e88cad7`: seven alternating full-process repetitions after
 warmup, nine core cases at 100,000 iterations, nine broader cases at 10,000 records,
 and the existing bounded churn/live-growth sizes. Both use ordinary release with
@@ -309,7 +309,7 @@ code plus read-only data shrinks 4.4%. Across the simplification passes, reviewe
 non-test Rust and Python drop from 5,301 to 4,816 lines, a reduction of 9.1%.
 Dependencies, primitive coverage, and benchmark generators are unchanged.
 
-The [comparison report](../benchmarks/results/unified-token-storage.json)
+The [comparison report](unified-token-storage.json)
 retains seven paired repetitions at 1,000,000 core iterations and 50,000 broader
 records, twenty-one-repetition confirmations, and separate allocation diagnostics.
 Both builds use ordinary native release, fat LTO, and the same compiler. CPU
@@ -359,7 +359,7 @@ These retained changes remove 23 production Rust lines relative to `e0007e5`:
 3,916 to 3,893. Across both simplification passes, application-owned Rust and
 Python drop from 5,301 to 4,852 physical non-test lines, a reduction of 449 (8.5%).
 
-The [historical comparison report](../benchmarks/results/name-scanner-simplification.json)
+The [historical comparison report](name-scanner-simplification.json)
 measures `c154e34`, which used `hashbrown`. Its CPU and heap measurements describe
 that earlier build. The shared-token-store comparison uses the restored
 implementation as its baseline.
@@ -388,7 +388,7 @@ before/after comparison from a control rebuilding `d8a8c28` with fat LTO. These
 are ordinary native builds without PGO. The profile tables later in this document
 remain measurements of the older reclamation build.
 
-The [comparison report](../benchmarks/results/structural-simplification.json)
+The [comparison report](structural-simplification.json)
 retains seven repetitions at 1,000,000 core iterations and 50,000 broader records,
 21-repetition confirmations, nine paired repetitions for the same-LTO control,
 and separate allocation diagnostics. These runs use the same host and compiler
@@ -476,7 +476,7 @@ independently generated expected tokens, and compares them with `\ifx` before
 incrementing the checksum. Those validation operations are timed. Contents
 serialization compares detokenized text; native fixtures separately verify token
 categories. Payloads vary from 8 to 1,024 characters. The
-[benchmark guide](../benchmarks/README.md) and [corpus provenance](../benchmarks/corpus/gentle.json)
+[benchmark guide](../README.md) and [corpus provenance](../corpus/gentle.json)
 record the consumers and adaptations.
 
 The comparison binary is the preceding spelling-store implementation at
@@ -485,7 +485,7 @@ trained native build for profile comparisons. The reports retain input,
 generator, executable, and Rust-source hashes. Earlier optimization reports
 remain in `benchmarks/results/` and Git history. Copies of an identical binary
 previously differed by 1.5–2.3% in CPU medians; see the
-[control samples](../benchmarks/results/identical-binary-control.json).
+[control samples](identical-binary-control.json).
 
 ## Ordinary release CPU
 
@@ -525,8 +525,8 @@ Wasm runtime speed. The current benchmark families have also received extensive
 optimization, so independent document workloads remain valuable.
 
 Full three-size sweeps and paired samples are retained in
-[mvp-native.json](../benchmarks/results/mvp-native.json) and
-[expansion-native.json](../benchmarks/results/expansion-native.json).
+[mvp-native.json](mvp-native.json) and
+[expansion-native.json](expansion-native.json).
 
 ## Reclamation and memory
 
@@ -550,7 +550,7 @@ reference counts change at ownership transitions, while token loops advance plai
 pointers. The inspected native append path stores one token, advances the cached
 write pointer, and updates its bounds; exhausted reservations call the separate
 growth helper. The
-[storage design](storage.md) documents layout, publication, and reclamation.
+[storage design](../../docs/storage.md) documents layout, publication, and reclamation.
 
 The compact-source memory workloads execute their loop in TeX, keeping host input
 under 1 KiB. `churn` overwrites a fixed set of definitions and token registers,
@@ -572,7 +572,7 @@ These are peak requested engine heap bytes measured by a separate allocation
 adapter, excluding host input, stack, allocator overhead, and pdfTeX memory.
 They are not RSS or a separate measurement of live token payload. CPU samples
 come from the ordinary CLI with no counting allocator. The
-[memory report](../benchmarks/results/memory-native.json) retains all samples,
+[memory report](memory-native.json) retains all samples,
 allocation totals, and source identities.
 
 The broader suite also shows whether reusing storage changes the original
@@ -590,7 +590,7 @@ memory-heavy comparisons:
 | Optional-argument parser           |              0.105 |               163.1 |             145,412 |               10,254 |
 | Numbered references                |              0.128 |                10.3 |             101,114 |                  456 |
 
-[Allocation diagnostics](../benchmarks/results/reclamation-allocations.json)
+[Allocation diagnostics](reclamation-allocations.json)
 retain all nine cases at 1,000, 10,000, and 50,000 records. Allocation counts can
 increase even while peak space falls: the MVP still heap-allocates whole-value
 owners and chunk descriptors. Small surviving values can pin partially occupied
@@ -636,10 +636,10 @@ Core entries use one million iterations; broader entries use 50,000 records:
 Training uses these same eighteen workload families at different sizes, plus
 instrumented native-oracle executions. It is not a held-out performance result.
 The native-only feature, LLVM inlining choices, and function alignment are
-recorded in [native-pgo-build.json](../benchmarks/results/native-pgo-build.json).
+recorded in [native-pgo-build.json](native-pgo-build.json).
 The final profile binary passes the native oracle. Full timing samples are in
-[mvp-native-pgo.json](../benchmarks/results/mvp-native-pgo.json) and
-[expansion-native-pgo.json](../benchmarks/results/expansion-native-pgo.json).
+[mvp-native-pgo.json](mvp-native-pgo.json) and
+[expansion-native-pgo.json](expansion-native-pgo.json).
 
 ## Compatibility and reproduction
 

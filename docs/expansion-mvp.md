@@ -97,9 +97,9 @@ value. Group restoration and local/global ownership behavior follow
 [execution.md](execution.md). Scanner fast paths must preserve the same token
 consumption and errors as the complete reader.
 
-Implementation tuning history and measured comparisons belong in
-[mvp-results.md](mvp-results.md). Common validation and timing methodology lives in
-[performance.md](performance.md).
+Measured expansion comparisons are retained in the
+[benchmark report](../benchmarks/results/expansion.md). Common validation and timing
+methodology lives in [performance.md](performance.md).
 
 ## Corpus and measurements
 

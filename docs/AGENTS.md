@@ -2,6 +2,10 @@
 
 Read the root `AGENTS.md` first.
 
+Describe current contracts, capabilities, proposals, and methodology in `docs/`.
+Keep implementation histories, before/after reports, and validation logs out of
+`docs/`; retained benchmark reports belong in `benchmarks/results/`.
+
 - `architecture.md` is the high-level design proposal. It records goals,
   recommended boundaries, tradeoffs, and unresolved design questions.
 - `expansion.md` develops the input and expansion loops, token-source cursors,
@@ -35,15 +39,10 @@ Read the root `AGENTS.md` first.
   DVI/PDF resources, and direct serialization.
 - `formats.md` develops bootstrap, Umber format export/read, shared semantic
   baselines, and document startup.
-- `performance.md` develops native/Wasm hot paths, allocation experiments,
-  comparable upstream measurements, and compatibility checks.
-- `layout-results.md` records prose paragraph/page timings against INITEX,
-  same-source checkpoint replay, allocation, retention, and the dense scaled
-  metric comparison.
+- `performance.md` describes native/Wasm hot paths, current layout measurement
+  scope, allocation methodology, comparable upstream runs, and compatibility checks.
 - `mvp.md` defines the first executable expansion/register slice, supported
   primitives, compatibility fixtures, and same-source performance comparison.
-- `mvp-results.md` records the implemented slice, native measurements, allocation
-  measurements, and reproduction commands.
 - `expansion-mvp.md` specifies the broader parsing/expansion slice and corpus
   benchmark contracts.
 - Distinguish requirements, proposed choices, measured results, and open questions.

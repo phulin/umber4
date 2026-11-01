@@ -21,9 +21,9 @@ rule records through `Outcome.pages`, with retained font resources and checkpoin
 rollback. Output backends, custom output routines, formats, and restart after
 source edits remain design proposals.
 
-[Native measurements](docs/mvp-results.md) compare nine core workloads and
+[Native measurements](benchmarks/results/expansion.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.
-The [paragraph/page measurements](docs/layout-results.md) cover repository prose,
+The [paragraph/page measurements](benchmarks/results/layout.md) cover repository prose,
 real fonts, native DVI correspondence, checkpoint replay, and retained memory.
 The implementation builds new data in place and reuses captured token ranges,
 token-register values, and invocation storage.

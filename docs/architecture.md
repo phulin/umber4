@@ -361,7 +361,7 @@ Source-edit restart, full output backends, and scheduling remain proposals.
 | Native/Wasm execution and performance methodology   | [performance.md](performance.md)         |
 
 The [expansion/register MVP](mvp.md) exercises the central representations and
-provides [native measurements](mvp-results.md). The next architectural slice should
-connect paragraph/page construction to snapshot, mutation, and restore, including
-pending macro input and saved bindings. That exercises the storage model before
-broader format and backend compatibility.
+provides [native measurements](../benchmarks/results/expansion.md). Paragraph/page
+construction supports snapshot, mutation, and restore, including pending macro
+input and saved bindings.
+Broader format and backend compatibility remain proposed.
