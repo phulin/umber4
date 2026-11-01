@@ -1,4 +1,4 @@
-//! External modes and owned text lists, with paragraph-to-vertical handoff.
+//! Owned text lists, restricted horizontal mode, and paragraph handoff.
 use crate::{
     Engine, Result,
     layout_values::{DimenParam, GlueParam},
@@ -13,7 +13,13 @@ pub(crate) enum Mode {
     #[default]
     Vertical,
     Horizontal,
+    RestrictedHorizontal,
     Write,
+}
+impl Mode {
+    pub fn is_horizontal(self) -> bool {
+        matches!(self, Self::Horizontal | Self::RestrictedHorizontal)
+    }
 }
 pub(crate) struct TextState {
     pub mode: Mode,
@@ -103,6 +109,10 @@ impl Engine<'_> {
     }
     /// Returns true when this complete command belongs to horizontal execution.
     pub(crate) fn text_command(&mut self, read: Read) -> Result<bool> {
+        if read.meaning.command == cmd::MAKE_BOX {
+            self.make_box(read.meaning.value, crate::boxes::Destination::Append)?;
+            return Ok(true);
+        }
         if self.vertical_command(read)? {
             return Ok(true);
         }
@@ -135,7 +145,7 @@ impl Engine<'_> {
                 self.character_run(c)?;
             }
             cmd::SPACE => {
-                if self.document.text.mode == Mode::Horizontal {
+                if self.document.text.mode.is_horizontal() {
                     self.append_space(false)?;
                 }
             }
@@ -175,7 +185,7 @@ impl Engine<'_> {
                 if self.document.text.mode == Mode::Vertical {
                     self.new_graf(true)?;
                 }
-                let spec = self.scan_glue()?;
+                let spec = self.scan_skip(read.meaning.value)?;
                 self.append_horizontal(Kind::Glue {
                     spec,
                     subtype: GlueKind::Normal,
@@ -184,7 +194,7 @@ impl Engine<'_> {
             cmd::PENALTY => {
                 let penalty = self.scan_int()?;
                 let node = self.document.nodes.alloc(Kind::Penalty(penalty))?;
-                let list = if self.document.text.mode == Mode::Horizontal {
+                let list = if self.document.text.mode.is_horizontal() {
                     &mut self.document.text.horizontal
                 } else {
                     &mut self.document.text.vertical
@@ -200,7 +210,7 @@ impl Engine<'_> {
                     width,
                     explicit: true,
                 })?;
-                if self.document.text.mode == Mode::Horizontal {
+                if self.document.text.mode.is_horizontal() {
                     self.document
                         .nodes
                         .append(&mut self.document.text.horizontal, node);

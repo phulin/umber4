@@ -52,7 +52,7 @@ their upstream behavior. These rules follow `hpack` and `vpackage` in the
 Native comparisons inspect node dimensions and displayed glue settings; the
 page adapter additionally checks cumulative absolute output placements. Diagnostic text, overfull
 rules,
-restricted boxes, general discretionary syntax, automatic hyphenation, math,
+vertical box construction, unboxing, general discretionary syntax, automatic hyphenation, math,
 last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
 Unsupported infinite paragraph shrink fails explicitly rather than applying
 TeX's interactive recovery.

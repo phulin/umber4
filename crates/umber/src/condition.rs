@@ -26,6 +26,10 @@ impl Engine<'_> {
         let is_case = command == cmd::IFCASE;
         let mut choice = if is_case { self.scan_int()? } else { 0 };
         let yes = match command {
+            cmd::IFVOID | cmd::IFHBOX | cmd::IFVBOX => self.box_condition(command)?,
+            cmd::IFHMODE => self.document.text.mode.is_horizontal(),
+            cmd::IFVMODE => self.document.text.mode == crate::text::Mode::Vertical,
+            cmd::IFINNER => self.document.text.mode == crate::text::Mode::RestrictedHorizontal,
             cmd::IFTRUE => true,
             cmd::IFFALSE => false,
             cmd::IFCASE => choice == 0,

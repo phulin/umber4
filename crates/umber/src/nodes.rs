@@ -331,13 +331,6 @@ pub(crate) struct ReleaseScratch {
     pending: Vec<NodeId>,
 }
 impl NodeStore {
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "Semantic node copying currently has no frontend callers."
-        )
-    )]
     pub fn copy_list(&mut self, source: NodeId, scratch: &mut CopyScratch) -> Result<List> {
         copying::copy_list(self, source, scratch, (u32::MAX as usize) / CELLS)
     }

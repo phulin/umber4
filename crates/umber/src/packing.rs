@@ -7,13 +7,6 @@ use crate::{
 };
 
 #[derive(Clone, Copy, Debug)]
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "Natural and spread packing currently have no production callers."
-    )
-)]
 pub(crate) enum PackSpec {
     Natural,
     To(Scaled),

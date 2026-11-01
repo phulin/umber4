@@ -41,7 +41,7 @@ impl Engine<'_> {
                         _ => Quantity::Glue(crate::numeric::Glue::default()),
                     }));
                 }
-                let list = if self.document.text.mode == Mode::Horizontal {
+                let list = if self.document.text.mode.is_horizontal() {
                     &self.document.text.horizontal
                 } else {
                     &self.document.text.vertical
@@ -78,28 +78,14 @@ impl Engine<'_> {
         match read.meaning.command {
             cmd::UNSUPPORTED_LAYOUT => return Err(Error::Unsupported),
             cmd::VSKIP => {
+                if self.document.text.mode == Mode::RestrictedHorizontal {
+                    return Err(Error::Syntax);
+                }
                 if self.document.text.mode == Mode::Horizontal {
                     self.head_for_vertical(read);
                     return Ok(true);
                 }
-                let spec = match read.meaning.value {
-                    0 => self.scan_glue()?,
-                    n => Glue {
-                        stretch: Scaled(if n == 4 { -65536 } else { 65536 }),
-                        stretch_order: if n == 2 {
-                            GlueOrder::Fill
-                        } else {
-                            GlueOrder::Fil
-                        },
-                        shrink: Scaled(if n == 3 { 65536 } else { 0 }),
-                        shrink_order: if n == 3 {
-                            GlueOrder::Fil
-                        } else {
-                            GlueOrder::Normal
-                        },
-                        ..Glue::default()
-                    },
-                };
+                let spec = self.scan_skip(read.meaning.value)?;
                 let node = self.document.nodes.alloc(Kind::Glue {
                     spec,
                     subtype: GlueKind::Normal,
@@ -110,6 +96,9 @@ impl Engine<'_> {
             }
             cmd::RULE => {
                 let horizontal = read.meaning.value == 1;
+                if !horizontal && self.document.text.mode == Mode::RestrictedHorizontal {
+                    return Err(Error::Syntax);
+                }
                 if !horizontal && self.document.text.mode == Mode::Horizontal {
                     self.head_for_vertical(read);
                     return Ok(true);
@@ -155,5 +144,25 @@ impl Engine<'_> {
             _ => return Ok(false),
         }
         Ok(true)
+    }
+    pub(crate) fn scan_skip(&mut self, operation: i32) -> Result<Glue> {
+        Ok(match operation {
+            0 => self.scan_glue()?,
+            n => Glue {
+                stretch: Scaled(if n == 4 { -65536 } else { 65536 }),
+                stretch_order: if n == 2 {
+                    GlueOrder::Fill
+                } else {
+                    GlueOrder::Fil
+                },
+                shrink: Scaled(if n == 3 { 65536 } else { 0 }),
+                shrink_order: if n == 3 {
+                    GlueOrder::Fil
+                } else {
+                    GlueOrder::Normal
+                },
+                ..Glue::default()
+            },
+        })
     }
 }

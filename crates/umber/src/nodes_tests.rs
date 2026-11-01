@@ -50,6 +50,54 @@ fn boundary_range_rejection_releases_original_and_preserved_effects() {
 }
 
 #[test]
+fn box_register_replacement_global_overrides_and_saved_owners_reclaim_all_nodes() {
+    let mut source = String::from("\\catcode123=1\\catcode125=2\\endlinechar=-1\\relax\n");
+    for _ in 0..64 {
+        source.push_str("\\setbox1=\\hbox{\\hbox{\\kern1pt}}{\\setbox1=\\hbox{\\hbox{\\kern2pt}}{\\global\\setbox1=\\copy1}}\\setbox1=\\box255\n");
+        source.push_str("{\\setbox0=\\hbox{\\hbox{\\kern1pt}}\\global\\setbox0=\\copy0\\global\\setbox0=\\box255}\n");
+    }
+    source.push_str("\\end");
+    let mut engine = crate::Engine::new(source.as_bytes());
+    engine.run_input().unwrap();
+    assert!(engine.document.nodes.pages.iter().all(Option::is_none));
+    assert!(engine.document.nodes.boxes.len() <= 6);
+    assert!(engine.document.box_frames.is_empty());
+    assert!(engine.document.save.is_empty());
+    assert!(engine.document.nodes.pool.free.borrow().len() <= CACHED);
+}
+
+#[test]
+fn restricted_box_nesting_and_reclamation_use_owned_work_stacks() {
+    let mut source =
+        String::from("\\catcode123=1\\catcode125=2\\endlinechar=-1\\relax\n\\setbox0=\\hbox{\n");
+    for _ in 0..2048 {
+        source.push_str("\\hbox{\n");
+    }
+    source.push_str("\\kern1pt\n");
+    for _ in 0..2049 {
+        source.push_str("}\n");
+    }
+    source.push_str("\\count0=1\\relax\\setbox0=\\box255\\end");
+    let mut engine = crate::Engine::new(source.as_bytes());
+    while engine.outcome().counts[0] != 1 {
+        engine.advance(1).unwrap();
+    }
+    assert!(engine.document.box_frames.is_empty());
+    assert_eq!(engine.document.level, 0);
+    let live: usize = engine
+        .document
+        .nodes
+        .pages
+        .iter()
+        .flatten()
+        .map(|page| usize::from(page.data.as_ref().unwrap().live))
+        .sum();
+    assert_eq!(live, 2050);
+    engine.run_input().unwrap();
+    assert!(engine.document.nodes.pages.iter().all(Option::is_none));
+}
+
+#[test]
 fn transfer_split_pop_and_nested_release_reuse_backing() {
     let mut store = NodeStore::default();
     let mut scratch = ReleaseScratch::default();

@@ -49,6 +49,52 @@ and the corresponding [e-TeX extensions](https://github.com/TeX-Live/texlive-sou
 
 ## 1. The execution loop
 
+### Horizontal boxes
+
+Executed `\hbox` accepts natural size, `to`, and signed `spread` specifications.
+Its brace opens a typed group and a restricted horizontal construction frame.
+The frame owns the enclosing text state, packing specification, and destination;
+the current text state owns the unfinished contents. Nested boxes use the same
+versioned nodes and payload slots. Restricted `\par` does not end a paragraph;
+vertical-only material fails at its native mode boundary. Packing restores the
+box group's assignments before measuring and transfers the resulting owner once
+to its enclosing list or box register. Appending a nonvoid box resets horizontal
+space factor or uses the existing vertical baseline-glue path. Void boxes append
+nothing. Horizontal `fil`, `fill`, `ss`, and negative `fil` glue retain their
+normal TeX orders and signs.
+
+`\setbox` captures its index and effective globalness before constructing its
+operand, but replaces the destination only when that construction finishes.
+The previous destination remains available to the body. `\everyhbox` is queued
+after entering restricted mode; an outstanding `\afterassignment` token is
+then placed ahead of that hook and the body. Immediate `\box`/`\copy` operands
+finish their register assignment before that token runs. Parent character
+shaping completes before box dispatch and cannot observe later assignments in
+the box body.
+
+Box registers hold affine singleton-list owners in the existing COW tables.
+Local assignment moves the previous owner to a typed save record; replacement,
+global override, and group restoration release displaced owners explicitly.
+Taking `\box` makes the register void without changing its assignment level;
+`\copy` allocates a semantic copy, including all owned children. In particular,
+`\setbox0=\box0` consumes its source before installing the destination and is
+not an identity assignment. `\wd`, `\ht`, and `\dp` read void as zero. Their
+assignments consume a dimension even for void registers and mutate live headers
+directly, without group saves or global-prefix effects. Empty boxes remain
+nonvoid; `\ifvoid`, `\ifhbox`, and `\ifvbox` inspect the owned header.
+
+Checkpoint capture includes register and save owners only through explicit
+snapshot operations paired with the node-store root. Open construction frames
+exclude checkpoint eligibility. Restore clears their inert handles while
+replacing the abandoned whole roots; it never releases old IDs through restored
+storage. Vertical boxes, unboxing, math destinations, and output construction
+remain outside this execution slice. Packing retains the dimension/glue baseline
+in [paragraphs.md](paragraphs.md): exposed `\badness`, packing diagnostics, and
+overfull-rule insertion are not implemented. The corresponding initialized
+parameters remain state-only. These rules follow `begin_box`, `box_end`,
+`package`, `alter_box_dimen`, and `prefixed_command` in the
+[TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+
 The outer loop asks `next_expanded` for the next command and its current meaning,
 then dispatches using the current mode. A primitive scans its operands, performs
 its immediate effects, and returns. Most assignments take effect before the next

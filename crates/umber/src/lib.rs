@@ -1,3 +1,4 @@
+mod boxes;
 mod checkpoint;
 mod condition;
 mod convert;
@@ -108,6 +109,7 @@ pub struct Engine<'a> {
     paragraph: paragraph::Scratch,
     page_lowering: Option<page_output::Scratch>,
     page_release: nodes::ReleaseScratch,
+    box_copy: nodes::CopyScratch,
     output_pools: output::Pools,
     checkpoint_stores: checkpoint::Stores,
     session: std::rc::Rc<()>,
@@ -123,6 +125,8 @@ pub(crate) struct Document<'a> {
     pub token_registers: tables::Table<TokenValue>,
     pub layout_values: layout_values::LayoutValues,
     pub nodes: nodes::NodeStore,
+    pub boxes: boxes::Registers,
+    pub box_frames: Vec<boxes::Frame>,
     pub fonts: fonts::Fonts,
     pub text: text::TextState,
     pub page: page::PageState,
@@ -144,6 +148,8 @@ impl<'a> Engine<'a> {
                 token_registers: tables::Table::new(256),
                 layout_values: layout_values::LayoutValues::default(),
                 nodes: nodes::NodeStore::default(),
+                boxes: boxes::Registers::default(),
+                box_frames: Vec::new(),
                 fonts: fonts::Fonts::default(),
                 text: text::TextState::default(),
                 page: page::PageState::default(),
@@ -170,6 +176,7 @@ impl<'a> Engine<'a> {
             paragraph: paragraph::Scratch::default(),
             page_lowering: Some(page_output::Scratch::default()),
             page_release: nodes::ReleaseScratch::default(),
+            box_copy: nodes::CopyScratch::default(),
             output_pools: output::Pools::default(),
             checkpoint_stores: checkpoint::Stores::default(),
             session: std::rc::Rc::new(()),

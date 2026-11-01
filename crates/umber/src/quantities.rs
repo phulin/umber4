@@ -41,6 +41,11 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn quantity(&mut self, read: Read) -> Result<Option<Quantity>> {
+        if read.meaning.command == cmd::BOX_DIMEN {
+            return Ok(Some(Quantity::Dimension(
+                self.box_dimension(read.meaning.value)?,
+            )));
+        }
         if let Some(value) = self.page_quantity(read)? {
             return Ok(Some(value));
         }

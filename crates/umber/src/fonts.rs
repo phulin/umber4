@@ -167,7 +167,7 @@ impl Engine<'_> {
     pub(crate) fn font_integer(&mut self, read: Read) -> Result<i32> {
         match read.meaning.command {
             cmd::SPACE_FACTOR => {
-                if self.document.text.mode != crate::text::Mode::Horizontal {
+                if !self.document.text.mode.is_horizontal() {
                     return Err(Error::Syntax);
                 }
                 Ok(self.document.text.space_factor)
@@ -227,7 +227,7 @@ impl Engine<'_> {
                 Ok(())
             }
             cmd::SPACE_FACTOR => {
-                if self.document.text.mode != crate::text::Mode::Horizontal {
+                if !self.document.text.mode.is_horizontal() {
                     return Err(Error::Syntax);
                 }
                 self.scan_equals()?;

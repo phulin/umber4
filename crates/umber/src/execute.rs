@@ -1,7 +1,12 @@
 use crate::{Engine, Error, Result, scalars::Target, token::*};
-#[derive(Clone)]
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum GroupKind {
+    Simple,
+    SemiSimple,
+    Hbox,
+}
 pub(crate) enum Save {
-    Boundary(bool),
+    Boundary(GroupKind),
     Meaning(usize, Binding, Option<crate::values::Owner>),
     Integer(Target, Integer),
     Dimension(usize, crate::layout_values::DimenSlot),
@@ -11,6 +16,25 @@ pub(crate) enum Save {
     After(Token),
     Font(Integer),
     Shape(crate::layout_values::ShapeSlot),
+    Box(usize, crate::nodes::List, u16),
+}
+impl Save {
+    /// Duplicate owners only alongside the matching checkpoint store roots.
+    pub fn snapshot(&self) -> Self {
+        match self {
+            Self::Boundary(kind) => Self::Boundary(*kind),
+            Self::Meaning(index, binding, owner) => Self::Meaning(*index, *binding, owner.clone()),
+            Self::Integer(target, value) => Self::Integer(*target, *value),
+            Self::Dimension(index, value) => Self::Dimension(*index, *value),
+            Self::Glue(index, value) => Self::Glue(*index, *value),
+            Self::MuGlue(index, value) => Self::MuGlue(*index, *value),
+            Self::Tokens(index, value) => Self::Tokens(*index, value.clone()),
+            Self::After(token) => Self::After(*token),
+            Self::Font(value) => Self::Font(*value),
+            Self::Shape(value) => Self::Shape(value.clone()),
+            Self::Box(index, list, level) => Self::Box(*index, list.snapshot(), *level),
+        }
+    }
 }
 
 impl Engine<'_> {
@@ -44,17 +68,23 @@ impl Engine<'_> {
             _ => global || matches!(read.meaning.command, cmd::GDEF | cmd::XDEF),
         };
         let result = match read.meaning.command {
+            cmd::SET_BOX => self.set_box(assignment_global),
+            cmd::BOX_DIMEN => self.assign_box_dimension(read.meaning.value),
             cmd::PAGE_DIMEN | cmd::PREV_DEPTH => self.page_assignment(read),
             cmd::PAR_SHAPE => self.shape_assignment(assignment_global),
             cmd::BEGIN | cmd::BEGIN_GROUP if !global => {
-                self.document.level = self.document.level.checked_add(1).ok_or(Error::Capacity)?;
-                self.document
-                    .save
-                    .push(Save::Boundary(read.meaning.command == cmd::BEGIN_GROUP));
-                Ok(())
+                self.open_group(if read.meaning.command == cmd::BEGIN_GROUP {
+                    GroupKind::SemiSimple
+                } else {
+                    GroupKind::Simple
+                })
             }
             cmd::END_GROUP_CHAR | cmd::END_GROUP if !global => {
-                self.close_group(read.meaning.command == cmd::END_GROUP)
+                self.close_group(if read.meaning.command == cmd::END_GROUP {
+                    GroupKind::SemiSimple
+                } else {
+                    GroupKind::Simple
+                })
             }
             cmd::DEF | cmd::GDEF | cmd::EDEF | cmd::XDEF => self.define(
                 matches!(read.meaning.command, cmd::EDEF | cmd::XDEF),
@@ -337,13 +367,22 @@ impl Engine<'_> {
             self.document.save.push(Save::Tokens(index, old));
         }
     }
-    fn close_group(&mut self, kind: bool) -> Result<()> {
+    pub(crate) fn open_group(&mut self, kind: GroupKind) -> Result<()> {
+        self.document.level = self.document.level.checked_add(1).ok_or(Error::Capacity)?;
+        self.document.save.push(Save::Boundary(kind));
+        Ok(())
+    }
+    fn close_group(&mut self, kind: GroupKind) -> Result<()> {
         if self.document.level == 0 {
             return Err(Error::Group);
         }
         loop {
             match self.document.save.pop().ok_or(Error::Group)? {
                 Save::Boundary(saved) => {
+                    if saved == GroupKind::Hbox && kind == GroupKind::Simple {
+                        self.document.level -= 1;
+                        return self.finish_hbox();
+                    }
                     if saved != kind {
                         return Err(Error::Group);
                     }
@@ -361,6 +400,7 @@ impl Engine<'_> {
                     }
                 }
                 Save::After(token) => self.back(token),
+                Save::Box(index, list, level) => self.restore_box(index, list, level),
                 Save::Tokens(index, old) => {
                     if self.document.token_registers[index].level != 0 {
                         self.document.token_registers[index] = old;

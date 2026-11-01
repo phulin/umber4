@@ -41,7 +41,10 @@ the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
 owns restorable loaded-font descriptors/parameters, font assignments, and scoped
 immutable metric readers,
-`text.rs` owns external modes and horizontal/vertical lists, `paragraph.rs` owns
+`boxes.rs` owns restricted horizontal construction frames, affine box registers,
+scoped transfers, and box geometry/status primitives; `boxes_tests.rs` checks
+native ordering, ownership, replay, failure cleanup, and executable packing;
+`text.rs` owns external/restricted modes and horizontal/vertical lists, `paragraph.rs` owns
 paragraph parameters, pooled shape roots, and reusable search storage,
 `line_break.rs` traverses legal breaks and passes, `line_search.rs` implements
 active/delta/passive search, `line_construct.rs` transfers selected ranges into

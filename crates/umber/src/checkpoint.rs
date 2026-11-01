@@ -51,6 +51,7 @@ pub struct Checkpoint<'a> {
     token_registers: Table<TokenValue>,
     layout_values: crate::layout_values::LayoutValues,
     nodes: crate::nodes::NodeStore,
+    boxes: crate::boxes::Registers,
     fonts: crate::fonts::Fonts,
     text: crate::text::TextState,
     page: crate::page::PageState,
@@ -82,6 +83,7 @@ impl<'a> Engine<'a> {
         self.quiescent
             && self.scanner == crate::scanner::Scanner::Normal
             && self.document.text.mode == crate::text::Mode::Vertical
+            && self.document.box_frames.is_empty()
     }
 
     /// Execute up to `command_budget` complete outer commands. Expansion and
@@ -207,7 +209,7 @@ impl<'a> Engine<'a> {
         }));
         let d = &self.document;
         let mut save = Buffer::new(&self.checkpoint_stores.saves);
-        save.extend(d.save.iter().cloned());
+        save.extend(d.save.iter().map(Save::snapshot));
         let mut conditions = Buffer::new(&self.checkpoint_stores.conditions);
         conditions.extend_from_slice(&d.conditions);
         Ok(Checkpoint {
@@ -220,6 +222,7 @@ impl<'a> Engine<'a> {
             token_registers: d.token_registers.clone(),
             layout_values: d.layout_values.clone(),
             nodes: d.nodes.clone(),
+            boxes: d.boxes.snapshot(),
             fonts: d.fonts.clone(),
             text: d.text.snapshot(),
             page: d.page.snapshot(),
@@ -260,6 +263,9 @@ impl<'a> Engine<'a> {
         }
         self.quiescent = false;
         self.scanner = crate::scanner::Scanner::Normal;
+        // These handles belong to the abandoned whole node-store root. Dropping
+        // them is inert; never traverse their IDs through restored storage.
+        self.document.box_frames.clear();
         // Sources are discarded before packets; no borrowed argument window is
         // read after this point. Clear every packet, including scanner failures
         // that never installed a body owner, and rebuild only allocator lists.
@@ -335,6 +341,8 @@ impl<'a> Engine<'a> {
             token_registers,
             layout_values,
             nodes,
+            boxes,
+            box_frames: _,
             fonts,
             text,
             page,
@@ -353,12 +361,13 @@ impl<'a> Engine<'a> {
         token_registers.clone_from(&checkpoint.token_registers);
         layout_values.clone_from(&checkpoint.layout_values);
         nodes.clone_from(&checkpoint.nodes);
+        *boxes = checkpoint.boxes.snapshot();
         fonts.clone_from(&checkpoint.fonts);
         *text = checkpoint.text.snapshot();
         *page = checkpoint.page.snapshot();
         *after_assignment = checkpoint.after_assignment;
         save.clear();
-        save.extend(checkpoint.save.iter().cloned());
+        save.extend(checkpoint.save.iter().map(Save::snapshot));
         *level = checkpoint.level;
         conditions.clear();
         conditions.extend_from_slice(&checkpoint.conditions);

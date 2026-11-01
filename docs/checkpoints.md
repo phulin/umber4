@@ -35,7 +35,12 @@ keep their detached pages and exact font resources. Paragraph shape COW pages an
 with the other layout values; active/delta/passive search scratch resets before
 returning to the outer driver. Replay can resume pending macro arguments and
 ordinary open groups after a paragraph.
-Future construction nests and output routines must extend eligibility and roots.
+Horizontal box registers and their saved owners are retained with the matching
+node-store root through explicit snapshot operations. Restricted horizontal box
+construction excludes eligibility even between complete commands. Restore clears
+all suspended enclosing text owners before replacing the abandoned whole roots;
+ordinary group restoration instead releases displaced boxes through the live
+store. Future construction nests and output routines must extend these rules.
 Immutable registered TFM resources share a sealed resource-set owner. Registration
 seals at the first nonzero advance, so restore cannot change observed metric bytes;
 retained output font chunks keep the resource set alive beyond session teardown.
