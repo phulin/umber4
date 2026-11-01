@@ -56,12 +56,14 @@ impl Search<'_, '_, '_> {
             let mut v = s;
             for _ in 0..count {
                 v = self.engine.document.nodes.get(v).next;
-                width[0] = width[0].wrapping_sub(self.engine.node_width(v)?);
+                width[0] = width[0]
+                    .wrapping_sub(self.engine.node_width(self.engine.document.nodes.get(v))?);
             }
             let mut p = post;
             while !p.is_null() {
-                width[0] = width[0].wrapping_add(self.engine.node_width(p)?);
-                p = self.engine.document.nodes.get(p).next;
+                let node = self.engine.document.nodes.get(p);
+                width[0] = width[0].wrapping_add(self.engine.node_width(node)?);
+                p = node.next;
             }
             width[0] = width[0].wrapping_add(self.disc_width);
             s = if post.is_null() {

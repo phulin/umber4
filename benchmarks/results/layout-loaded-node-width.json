@@ -1,0 +1,616 @@
+{
+  "date": "2026-11-01T07:29:00.090856+00:00",
+  "before_source": "291749e (same Rust source as 02c29ec4dbd78ef3008984eed8a9614dd2f48a46, preserved post-dense executables)",
+  "after_source": "291749e plus recorded source diff",
+  "source_diff": "diff --git a/crates/umber/src/line_break.rs b/crates/umber/src/line_break.rs\nindex ac9e87e..80541b7 100644\n--- a/crates/umber/src/line_break.rs\n+++ b/crates/umber/src/line_break.rs\n@@ -62,7 +62,7 @@ pub(crate) fn find_breaks(\n                 | Kind::Ligature { .. }\n                 | Kind::Box(_)\n                 | Kind::Rule { .. } => {\n-                    search.width[0] = search.width[0].wrapping_add(engine.node_width(p)?)\n+                    search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?)\n                 }\n                 Kind::Glue { spec, .. } => {\n                     let before = &engine.document.nodes.get(previous).kind;\n@@ -98,8 +98,9 @@ pub(crate) fn find_breaks(\n                     let mut q = pre.head();\n                     let mut width = 0i32;\n                     while !q.is_null() {\n-                        width = width.wrapping_add(engine.node_width(q)?);\n-                        q = engine.document.nodes.get(q).next;\n+                        let node = engine.document.nodes.get(q);\n+                        width = width.wrapping_add(engine.node_width(node)?);\n+                        q = node.next;\n                     }\n                     search.disc_width = width;\n                     search.width[0] = search.width[0].wrapping_add(width);\n@@ -114,8 +115,9 @@ pub(crate) fn find_breaks(\n                     search.width[0] = search.width[0].wrapping_sub(width);\n                     let mut next = node.next;\n                     for _ in 0..*replace_count {\n-                        search.width[0] = search.width[0].wrapping_add(engine.node_width(next)?);\n-                        next = engine.document.nodes.get(next).next;\n+                        let node = engine.document.nodes.get(next);\n+                        search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?);\n+                        next = node.next;\n                     }\n                     previous = p;\n                     p = next;\ndiff --git a/crates/umber/src/line_search.rs b/crates/umber/src/line_search.rs\nindex 48be273..d24fef2 100644\n--- a/crates/umber/src/line_search.rs\n+++ b/crates/umber/src/line_search.rs\n@@ -56,12 +56,14 @@ impl Search<'_, '_, '_> {\n             let mut v = s;\n             for _ in 0..count {\n                 v = self.engine.document.nodes.get(v).next;\n-                width[0] = width[0].wrapping_sub(self.engine.node_width(v)?);\n+                width[0] = width[0]\n+                    .wrapping_sub(self.engine.node_width(self.engine.document.nodes.get(v))?);\n             }\n             let mut p = post;\n             while !p.is_null() {\n-                width[0] = width[0].wrapping_add(self.engine.node_width(p)?);\n-                p = self.engine.document.nodes.get(p).next;\n+                let node = self.engine.document.nodes.get(p);\n+                width[0] = width[0].wrapping_add(self.engine.node_width(node)?);\n+                p = node.next;\n             }\n             width[0] = width[0].wrapping_add(self.disc_width);\n             s = if post.is_null() {\ndiff --git a/crates/umber/src/paragraph.rs b/crates/umber/src/paragraph.rs\nindex f680a16..aefc78e 100644\n--- a/crates/umber/src/paragraph.rs\n+++ b/crates/umber/src/paragraph.rs\n@@ -3,7 +3,7 @@ use crate::{\n     Engine, Error, Result,\n     execute::Save,\n     layout_values::{DimenParam, GlueParam, LineShape, ShapeSlot},\n-    nodes::{GlueKind, Kind, NodeId, ReleaseScratch},\n+    nodes::{GlueKind, Kind, Node, NodeId, ReleaseScratch},\n     numeric::{Glue, GlueOrder, Scaled},\n     scalars::{ParagraphParam as P, Target},\n     tables::Table,\n@@ -255,8 +255,8 @@ impl Engine<'_> {\n         self.paragraph = scratch;\n         result\n     }\n-    pub(crate) fn node_width(&self, id: NodeId) -> Result<i32> {\n-        Ok(match &self.document.nodes.get(id).kind {\n+    pub(crate) fn node_width(&self, node: &Node) -> Result<i32> {\n+        Ok(match &node.kind {\n             Kind::Character { font, character }\n             | Kind::Ligature {\n                 font, character, ..\n",
+  "change": "Paragraph node-width helper takes an already borrowed Node; discretionary measurement loops reuse the node for its next link.",
+  "cpu": 0,
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "build": "ordinary cargo build --release --bin umber --example layout; default features; fat LTO; codegen-units=1; no extra rustflags",
+  "source_policy": "Reuse preserved target/benchmark/layout/*.tex; do not regenerate from changed docs.",
+  "binary_sha256": {
+    "before": "86eeb54a2258e983ba89a8a5b464a64412566eb0d759055318e8a78ca62ed726",
+    "after": "3ccdfdeb53b4302980e24ff75af4eee8c241cbc519a01386e5739bf57bc0c81d"
+  },
+  "adapter_sha256": {
+    "before": "3d9721d01832a7c1a8158a588cb1f7f58725738595ca06ccd520734356a0d088",
+    "after": "0fade9e01841c93c4c1d602cf38fe3f13e95b168a99f1c283df0a9cb5665a4d8"
+  },
+  "warmups": 1,
+  "repeats": 7,
+  "order": "alternate before/after each repetition; cases sequential; all builds/tests stopped",
+  "timing_boundary": "Whole CLI process CPU and wall time, including detached page artifacts, excluding diagnostic adapters.",
+  "cases": [
+    {
+      "case": "book",
+      "source_bytes": 270608,
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "font": "ae/aer10",
+      "font_sha256": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+      "geometry_pt": [
+        360,
+        540,
+        12,
+        0
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.060399883,
+            "cpu_seconds": 0.060056
+          },
+          {
+            "wall_seconds": 0.057997451,
+            "cpu_seconds": 0.057687
+          },
+          {
+            "wall_seconds": 0.058723391,
+            "cpu_seconds": 0.058364
+          },
+          {
+            "wall_seconds": 0.061787618,
+            "cpu_seconds": 0.061373
+          },
+          {
+            "wall_seconds": 0.062604251,
+            "cpu_seconds": 0.062223
+          },
+          {
+            "wall_seconds": 0.058061971,
+            "cpu_seconds": 0.057727
+          },
+          {
+            "wall_seconds": 0.065144407,
+            "cpu_seconds": 0.064734
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.057078409,
+            "cpu_seconds": 0.056766
+          },
+          {
+            "wall_seconds": 0.060870394,
+            "cpu_seconds": 0.060461999999999995
+          },
+          {
+            "wall_seconds": 0.059616339,
+            "cpu_seconds": 0.059219
+          },
+          {
+            "wall_seconds": 0.058590463,
+            "cpu_seconds": 0.058174
+          },
+          {
+            "wall_seconds": 0.059191703,
+            "cpu_seconds": 0.058864999999999994
+          },
+          {
+            "wall_seconds": 0.060112415,
+            "cpu_seconds": 0.059768
+          },
+          {
+            "wall_seconds": 0.059376435,
+            "cpu_seconds": 0.059034
+          }
+        ]
+      },
+      "medians": {
+        "before": {
+          "wall_seconds": 0.060399883,
+          "cpu_seconds": 0.060056
+        },
+        "after": {
+          "wall_seconds": 0.059376435,
+          "cpu_seconds": 0.059034
+        }
+      },
+      "cpu_change_fraction": -0.017017450379645638,
+      "validation": "Complete before/after inspection identical; every page and glyph character/x/y equals independently decoded native DVI; checkpoint adapter validates fresh and restored full output at 10%, 50%, 90%.",
+      "inspection_sha256": "c12a4a8bd55c042bfb61cd70b923c45bf527512bd70c04e5b98d458ea1cdb015",
+      "replay_output_sha256": "e3db069b622c7ae88806643481fd05861569f3de9fd845fe92463a53d416d81b",
+      "pages": 79,
+      "glyphs": 227323
+    },
+    {
+      "case": "narrow",
+      "source_bytes": 270609,
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "font": "latex-fonts/lcmss8",
+      "font_sha256": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+      "geometry_pt": [
+        180,
+        360,
+        12,
+        3
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.058128045,
+            "cpu_seconds": 0.057817999999999994
+          },
+          {
+            "wall_seconds": 0.057944073,
+            "cpu_seconds": 0.057641
+          },
+          {
+            "wall_seconds": 0.058144309,
+            "cpu_seconds": 0.057808
+          },
+          {
+            "wall_seconds": 0.057355044,
+            "cpu_seconds": 0.057011
+          },
+          {
+            "wall_seconds": 0.058775087,
+            "cpu_seconds": 0.058433
+          },
+          {
+            "wall_seconds": 0.057756782,
+            "cpu_seconds": 0.057435999999999994
+          },
+          {
+            "wall_seconds": 0.058841996,
+            "cpu_seconds": 0.058481
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.056493877,
+            "cpu_seconds": 0.05617
+          },
+          {
+            "wall_seconds": 0.05659151,
+            "cpu_seconds": 0.056254
+          },
+          {
+            "wall_seconds": 0.059274454,
+            "cpu_seconds": 0.058967
+          },
+          {
+            "wall_seconds": 0.057501494,
+            "cpu_seconds": 0.057167
+          },
+          {
+            "wall_seconds": 0.056406162,
+            "cpu_seconds": 0.05610199999999999
+          },
+          {
+            "wall_seconds": 0.05765718,
+            "cpu_seconds": 0.057309
+          },
+          {
+            "wall_seconds": 0.057041188,
+            "cpu_seconds": 0.05670499999999999
+          }
+        ]
+      },
+      "medians": {
+        "before": {
+          "wall_seconds": 0.058128045,
+          "cpu_seconds": 0.057808
+        },
+        "after": {
+          "wall_seconds": 0.057041188,
+          "cpu_seconds": 0.05670499999999999
+        }
+      },
+      "cpu_change_fraction": -0.019080404096318948,
+      "validation": "Complete before/after inspection identical; every page and glyph character/x/y equals independently decoded native DVI; checkpoint adapter validates fresh and restored full output at 10%, 50%, 90%.",
+      "inspection_sha256": "c76c001bec594728963a2dd4cfc49bf1f1038ce07907741d823d9b2c97e0dfd7",
+      "replay_output_sha256": "1706ab47d9de9f5bc5a6ee5367400e3ee3cd6fb503d9e24689a307a2e9560167",
+      "pages": 295,
+      "glyphs": 227323
+    },
+    {
+      "case": "dense",
+      "source_bytes": 270609,
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "font": "latex-fonts/icmtt8",
+      "font_sha256": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24",
+      "geometry_pt": [
+        420,
+        600,
+        10,
+        0
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.052997414,
+            "cpu_seconds": 0.052652
+          },
+          {
+            "wall_seconds": 0.053219557,
+            "cpu_seconds": 0.052863999999999994
+          },
+          {
+            "wall_seconds": 0.053263714,
+            "cpu_seconds": 0.052886999999999997
+          },
+          {
+            "wall_seconds": 0.051747855,
+            "cpu_seconds": 0.051454
+          },
+          {
+            "wall_seconds": 0.053726082,
+            "cpu_seconds": 0.053409
+          },
+          {
+            "wall_seconds": 0.05378703,
+            "cpu_seconds": 0.053420999999999996
+          },
+          {
+            "wall_seconds": 0.052316792,
+            "cpu_seconds": 0.052046999999999996
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.05278487,
+            "cpu_seconds": 0.052432
+          },
+          {
+            "wall_seconds": 0.053832443,
+            "cpu_seconds": 0.053477
+          },
+          {
+            "wall_seconds": 0.058609728,
+            "cpu_seconds": 0.058237
+          },
+          {
+            "wall_seconds": 0.050363386,
+            "cpu_seconds": 0.050092
+          },
+          {
+            "wall_seconds": 0.050340575,
+            "cpu_seconds": 0.050086
+          },
+          {
+            "wall_seconds": 0.053919478,
+            "cpu_seconds": 0.053551999999999995
+          },
+          {
+            "wall_seconds": 0.052762523,
+            "cpu_seconds": 0.052428999999999996
+          }
+        ]
+      },
+      "medians": {
+        "before": {
+          "wall_seconds": 0.053219557,
+          "cpu_seconds": 0.052863999999999994
+        },
+        "after": {
+          "wall_seconds": 0.05278487,
+          "cpu_seconds": 0.052432
+        }
+      },
+      "cpu_change_fraction": -0.008171912832929729,
+      "validation": "Complete before/after inspection identical; every page and glyph character/x/y equals independently decoded native DVI; checkpoint adapter validates fresh and restored full output at 10%, 50%, 90%.",
+      "inspection_sha256": "f974846aea94b0e3c8445d9d2fa86229cacc40eb8e9e303db6f7260389821d66",
+      "replay_output_sha256": "a87e78ec07a3d150da203154f92df6c93705036f878974e122611baaf7c58b12",
+      "pages": 63,
+      "glyphs": 228277
+    }
+  ],
+  "prototype": {
+    "scope": "Prior isolated prototype of the same helper change, before small discretionary local-borrow cleanups; separate diagnostic evidence, not a final-build instruction count.",
+    "patch_sha256": "226c7da010b9af4723d5cde16135cf4dd1b2f3cff17b8cf5353d1109c85224b3",
+    "binary_sha256": "c4d1daa82e32d38c4263436404109d755149858adc30ba01140fb4d97e4472ec",
+    "book_instructions_before": 401112232,
+    "book_instructions_after": 391428739,
+    "node_store_lookups_removed_per_book": 284778,
+    "timing": [
+      {
+        "case": "book",
+        "median_ms": {
+          "base": 58.08899999999999,
+          "width": 56.879
+        },
+        "fraction": -0.020830105527724574,
+        "samples": {
+          "base": [
+            {
+              "wall_seconds": 0.057600772,
+              "cpu_seconds": 0.05730899999999999
+            },
+            {
+              "wall_seconds": 0.058064407,
+              "cpu_seconds": 0.057748999999999995
+            },
+            {
+              "wall_seconds": 0.059608953,
+              "cpu_seconds": 0.059275
+            },
+            {
+              "wall_seconds": 0.058983736,
+              "cpu_seconds": 0.058671999999999995
+            },
+            {
+              "wall_seconds": 0.05903831,
+              "cpu_seconds": 0.058725
+            },
+            {
+              "wall_seconds": 0.05767312,
+              "cpu_seconds": 0.05736599999999999
+            },
+            {
+              "wall_seconds": 0.059973655,
+              "cpu_seconds": 0.059598
+            },
+            {
+              "wall_seconds": 0.058259386,
+              "cpu_seconds": 0.057894999999999995
+            },
+            {
+              "wall_seconds": 0.059858551,
+              "cpu_seconds": 0.059469999999999995
+            },
+            {
+              "wall_seconds": 0.058396065,
+              "cpu_seconds": 0.058088999999999995
+            },
+            {
+              "wall_seconds": 0.056927568,
+              "cpu_seconds": 0.056664
+            }
+          ],
+          "width": [
+            {
+              "wall_seconds": 0.056724202,
+              "cpu_seconds": 0.056461
+            },
+            {
+              "wall_seconds": 0.055812445,
+              "cpu_seconds": 0.055570999999999995
+            },
+            {
+              "wall_seconds": 0.057186411,
+              "cpu_seconds": 0.056879
+            },
+            {
+              "wall_seconds": 0.057234902,
+              "cpu_seconds": 0.056917999999999996
+            },
+            {
+              "wall_seconds": 0.058432709,
+              "cpu_seconds": 0.058052
+            },
+            {
+              "wall_seconds": 0.057656594,
+              "cpu_seconds": 0.05734499999999999
+            },
+            {
+              "wall_seconds": 0.056951076,
+              "cpu_seconds": 0.05662299999999999
+            },
+            {
+              "wall_seconds": 0.056877777,
+              "cpu_seconds": 0.056566
+            },
+            {
+              "wall_seconds": 0.057086903,
+              "cpu_seconds": 0.05679599999999999
+            },
+            {
+              "wall_seconds": 0.057215845,
+              "cpu_seconds": 0.056922
+            },
+            {
+              "wall_seconds": 0.058773064,
+              "cpu_seconds": 0.058484
+            }
+          ]
+        }
+      },
+      {
+        "case": "narrow",
+        "median_ms": {
+          "base": 57.342,
+          "width": 56.653999999999996
+        },
+        "fraction": -0.01199818632067251,
+        "samples": {
+          "base": [
+            {
+              "wall_seconds": 0.05737053,
+              "cpu_seconds": 0.057071
+            },
+            {
+              "wall_seconds": 0.059057959,
+              "cpu_seconds": 0.058736000000000003
+            },
+            {
+              "wall_seconds": 0.056024235,
+              "cpu_seconds": 0.055783
+            },
+            {
+              "wall_seconds": 0.05667973,
+              "cpu_seconds": 0.0564
+            },
+            {
+              "wall_seconds": 0.05669501,
+              "cpu_seconds": 0.056406
+            },
+            {
+              "wall_seconds": 0.057814974,
+              "cpu_seconds": 0.057475
+            },
+            {
+              "wall_seconds": 0.057677979,
+              "cpu_seconds": 0.057342
+            },
+            {
+              "wall_seconds": 0.061356314,
+              "cpu_seconds": 0.061
+            },
+            {
+              "wall_seconds": 0.059419729,
+              "cpu_seconds": 0.058989999999999994
+            },
+            {
+              "wall_seconds": 0.075881241,
+              "cpu_seconds": 0.075445
+            },
+            {
+              "wall_seconds": 0.057494668,
+              "cpu_seconds": 0.057132999999999996
+            }
+          ],
+          "width": [
+            {
+              "wall_seconds": 0.056524208,
+              "cpu_seconds": 0.05616499999999999
+            },
+            {
+              "wall_seconds": 0.058426452,
+              "cpu_seconds": 0.058045
+            },
+            {
+              "wall_seconds": 0.05493501,
+              "cpu_seconds": 0.054722999999999994
+            },
+            {
+              "wall_seconds": 0.055443859,
+              "cpu_seconds": 0.055182
+            },
+            {
+              "wall_seconds": 0.056411857,
+              "cpu_seconds": 0.05613
+            },
+            {
+              "wall_seconds": 0.056960143,
+              "cpu_seconds": 0.056653999999999996
+            },
+            {
+              "wall_seconds": 0.056252235,
+              "cpu_seconds": 0.055965
+            },
+            {
+              "wall_seconds": 0.059084786,
+              "cpu_seconds": 0.058765
+            },
+            {
+              "wall_seconds": 0.06954575,
+              "cpu_seconds": 0.06912499999999999
+            },
+            {
+              "wall_seconds": 0.076989004,
+              "cpu_seconds": 0.07653
+            },
+            {
+              "wall_seconds": 0.059019651,
+              "cpu_seconds": 0.058630999999999996
+            }
+          ]
+        }
+      },
+      {
+        "case": "dense",
+        "median_ms": {
+          "base": 51.114,
+          "width": 50.543
+        },
+        "fraction": -0.011171107719998408,
+        "samples": {
+          "base": [
+            {
+              "wall_seconds": 0.050873982,
+              "cpu_seconds": 0.050624
+            },
+            {
+              "wall_seconds": 0.050919249,
+              "cpu_seconds": 0.050656
+            },
+            {
+              "wall_seconds": 0.050601023,
+              "cpu_seconds": 0.050406
+            },
+            {
+              "wall_seconds": 0.051779606,
+              "cpu_seconds": 0.051496
+            },
+            {
+              "wall_seconds": 0.052181017,
+              "cpu_seconds": 0.051917
+            },
+            {
+              "wall_seconds": 0.051395966,
+              "cpu_seconds": 0.051114
+            },
+            {
+              "wall_seconds": 0.052360504,
+              "cpu_seconds": 0.051931
+            },
+            {
+              "wall_seconds": 0.05074578,
+              "cpu_seconds": 0.050498
+            },
+            {
+              "wall_seconds": 0.050969284,
+              "cpu_seconds": 0.050672999999999996
+            },
+            {
+              "wall_seconds": 0.055225404,
+              "cpu_seconds": 0.054893
+            },
+            {
+              "wall_seconds": 0.052205264,
+              "cpu_seconds": 0.051866999999999996
+            }
+          ],
+          "width": [
+            {
+              "wall_seconds": 0.049744536,
+              "cpu_seconds": 0.049497
+            },
+            {
+              "wall_seconds": 0.052094477,
+              "cpu_seconds": 0.05183
+            },
+            {
+              "wall_seconds": 0.050107832,
+              "cpu_seconds": 0.049797999999999995
+            },
+            {
+              "wall_seconds": 0.054824165,
+              "cpu_seconds": 0.054440999999999996
+            },
+            {
+              "wall_seconds": 0.050845853,
+              "cpu_seconds": 0.050543
+            },
+            {
+              "wall_seconds": 0.04966721,
+              "cpu_seconds": 0.049435
+            },
+            {
+              "wall_seconds": 0.050194133,
+              "cpu_seconds": 0.049844
+            },
+            {
+              "wall_seconds": 0.050107982,
+              "cpu_seconds": 0.049855
+            },
+            {
+              "wall_seconds": 0.05096609,
+              "cpu_seconds": 0.050609
+            },
+            {
+              "wall_seconds": 0.051112082,
+              "cpu_seconds": 0.050809999999999994
+            },
+            {
+              "wall_seconds": 0.053699613,
+              "cpu_seconds": 0.053373
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

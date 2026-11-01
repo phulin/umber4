@@ -62,7 +62,7 @@ pub(crate) fn find_breaks(
                 | Kind::Ligature { .. }
                 | Kind::Box(_)
                 | Kind::Rule { .. } => {
-                    search.width[0] = search.width[0].wrapping_add(engine.node_width(p)?)
+                    search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?)
                 }
                 Kind::Glue { spec, .. } => {
                     let before = &engine.document.nodes.get(previous).kind;
@@ -98,8 +98,9 @@ pub(crate) fn find_breaks(
                     let mut q = pre.head();
                     let mut width = 0i32;
                     while !q.is_null() {
-                        width = width.wrapping_add(engine.node_width(q)?);
-                        q = engine.document.nodes.get(q).next;
+                        let node = engine.document.nodes.get(q);
+                        width = width.wrapping_add(engine.node_width(node)?);
+                        q = node.next;
                     }
                     search.disc_width = width;
                     search.width[0] = search.width[0].wrapping_add(width);
@@ -114,8 +115,9 @@ pub(crate) fn find_breaks(
                     search.width[0] = search.width[0].wrapping_sub(width);
                     let mut next = node.next;
                     for _ in 0..*replace_count {
-                        search.width[0] = search.width[0].wrapping_add(engine.node_width(next)?);
-                        next = engine.document.nodes.get(next).next;
+                        let node = engine.document.nodes.get(next);
+                        search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?);
+                        next = node.next;
                     }
                     previous = p;
                     p = next;

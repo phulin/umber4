@@ -3,7 +3,7 @@ use crate::{
     Engine, Error, Result,
     execute::Save,
     layout_values::{DimenParam, GlueParam, LineShape, ShapeSlot},
-    nodes::{GlueKind, Kind, NodeId, ReleaseScratch},
+    nodes::{GlueKind, Kind, Node, NodeId, ReleaseScratch},
     numeric::{Glue, GlueOrder, Scaled},
     scalars::{ParagraphParam as P, Target},
     tables::Table,
@@ -255,8 +255,8 @@ impl Engine<'_> {
         self.paragraph = scratch;
         result
     }
-    pub(crate) fn node_width(&self, id: NodeId) -> Result<i32> {
-        Ok(match &self.document.nodes.get(id).kind {
+    pub(crate) fn node_width(&self, node: &Node) -> Result<i32> {
+        Ok(match &node.kind {
             Kind::Character { font, character }
             | Kind::Ligature {
                 font, character, ..

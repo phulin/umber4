@@ -9,6 +9,9 @@ their counters never enter CLI or checkpoint timings. Current scope and methodol
 are described in [performance.md](../docs/performance.md#implemented-layout-measurement-scope). See the
 [layout measurement report](results/layout.md) and
 [raw samples](results/layout-native.json) for endpoint differences and limitations.
+The [borrowed-node width comparison](results/layout-loaded-node-width.json)
+retains paired ordinary release samples on the same inputs, full inspection/native
+placement checks, checkpoint replay validation, and the isolated prototype evidence.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations
