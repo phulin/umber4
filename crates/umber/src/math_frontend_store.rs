@@ -8,6 +8,9 @@ pub(crate) enum FieldSlot {
     Sup,
 }
 #[cfg(test)]
+#[path = "math_choice_ownership_tests.rs"]
+mod choice_tests;
+#[cfg(test)]
 #[path = "math_delimiter_ownership_tests.rs"]
 mod delimiter_tests;
 #[cfg(test)]
@@ -31,6 +34,14 @@ impl FieldSlot {
     }
 }
 impl MathStore {
+    pub fn finish_choice_branch(&mut self, id: MathId, branch: u8, list: MathList) {
+        let Kind::Choice(choices) = &mut self.node_mut(id).kind else {
+            unreachable!("choice branch destination")
+        };
+        let destination = &mut choices[branch as usize];
+        debug_assert!(destination.is_empty());
+        *destination = list;
+    }
     pub fn start_fraction(
         &mut self,
         current: &mut MathList,

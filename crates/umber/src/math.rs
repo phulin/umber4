@@ -180,13 +180,6 @@ pub(crate) struct Fraction {
     pub right: Delimiter,
     pub thickness: RuleThickness,
 }
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "style, choice, and explicit material construction awaits the math frontend"
-    )
-)]
 #[derive(Debug, Default)]
 pub(crate) enum Kind {
     #[default]

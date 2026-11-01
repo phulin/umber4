@@ -166,6 +166,18 @@ by `vpack`; `\boxmaxdepth` does not constrain it. VCenter conversion subsequentl
 uses the live math axis. Nested box/math ownership and allocation cleanup use the
 existing box frame and store mechanisms; no active construction is checkpointed.
 
+`\mathchoice` appends a rooted Choice and executes all four branches in source
+order. Each branch has a typed math frame and its own group, installed before
+expanded scanning of the mandatory opening brace. Closing restores local
+bindings before the consuming list finalizer attaches that branch, then opens
+the next branch before reading its brace. Globals and diagnostics survive each
+branch; `\everymath` and the inline family reset are not repeated. Completed
+branches belong to the Choice, while the current branch owns its unfinished
+list and fraction. Choice nodes are not script targets. Style selection and
+release of unselected lists occur only during ordinary conversion. Missing
+opening braces fail with the offending token backed; malformed closers preserve
+the active group and owners until restore abandons the old construction forest.
+
 Assignments, definitions, and diagnostics retain their ordinary execution paths.
 Physical kern/glue/rule/penalty material retains ordinary units. `\/` contributes
 a normal zero kern in math. `\mkern` retains math units in a scalar arena node
@@ -176,8 +188,8 @@ by before/after math nodes; the enclosing space factor becomes 1000. Automatic
 math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
-owners. Active math frames exclude checkpoint handoff. Scanned choices,
-mu glue, displays, and alignments remain unsupported.
+owners. Active math frames exclude checkpoint handoff. Mu glue, displays, and
+alignments remain unsupported.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters
@@ -188,11 +200,6 @@ e-TeX's `\middle` closes and reopens the left/right semantic group while keeping
 the accumulated list. It restores bindings at that boundary and resets conversion
 style and binary context as upstream specifies. The math owner retains the latest
 delimiter handle needed by incomplete fractions.
-
-Future `\mathchoice` execution constructs all four alternatives, including their
-assignments and other effects. Later conversion selects the alternative for the
-current style. Build the four lists in their owned destination; they are not four
-speculative engine branches or delayed programs.
 
 ## 2. Conversion to horizontal material
 

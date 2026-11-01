@@ -20,6 +20,7 @@ pub(crate) enum Context {
     Inline(TextState),
     Field(FieldTarget),
     LeftRight,
+    Choice { atom: MathId, branch: u8 },
 }
 pub(crate) struct Frame {
     pub list: MathList,
@@ -115,6 +116,7 @@ impl Engine<'_> {
             cmd::MATH_FRACTION => self.math_fraction(read.meaning.value)?,
             cmd::MATH_FORM => self.math_form(read.meaning.value)?,
             cmd::VCENTER => self.make_vcenter()?,
+            cmd::MATH_CHOICE => self.math_choice()?,
             cmd::MATH_LIMITS => {
                 let tail = self
                     .document
@@ -262,6 +264,8 @@ fn class(code: i32) -> Class {
         Class::Inner,
     ][code as usize]
 }
+#[path = "math_choice_frontend.rs"]
+mod choices;
 #[path = "math_delimiter_frontend.rs"]
 mod delimiters;
 #[path = "math_forms_frontend.rs"]

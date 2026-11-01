@@ -11,6 +11,7 @@ pub(crate) enum GroupKind {
     Insert,
     MathShift,
     MathField,
+    MathChoice,
     MathLeft,
 }
 pub(crate) enum Save {
@@ -438,6 +439,7 @@ impl Engine<'_> {
                         | GroupKind::Insert
                         | GroupKind::Output
                         | GroupKind::MathField
+                        | GroupKind::MathChoice
                 ))
         {
             return Err(Error::Group);
@@ -450,6 +452,10 @@ impl Engine<'_> {
                     if saved == GroupKind::MathField && kind == GroupKind::Simple {
                         self.document.level -= 1;
                         return self.finish_math_field();
+                    }
+                    if saved == GroupKind::MathChoice && kind == GroupKind::Simple {
+                        self.document.level -= 1;
+                        return self.finish_math_choice_branch();
                     }
                     if saved == GroupKind::Output && output {
                         self.document.level -= 1;

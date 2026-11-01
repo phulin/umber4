@@ -46,6 +46,12 @@ and the consuming numerator/denominator/boundary splice.
 scanning, accent folding, vcenter construction, replay, and native geometry/DVI.
 `math_forms_frontend_ownership_tests.rs` checks bounded noad rejection, stable-ID
 accent field transfer, and the native vcenter depth cap.
+`math_choice_frontend.rs` executes four locally scoped branches into a rooted
+Choice through typed frame destinations, deferring selection to conversion.
+`math_choice_frontend_tests.rs` and `math_choice_frontend_oracle_tests.rs` check
+branch effects, scope/scanning, nested plain macros, native selection and DVI,
+failure, and replay; `math_choice_ownership_tests.rs` checks bounded arena
+rejection and affine branch/fraction transfers.
 `math_frontend_tests.rs` covers mode/group/ownership/replay boundaries and
 `math_frontend_oracle_tests.rs` compares unchanged inline sources with native
 box geometry and DVI placements.

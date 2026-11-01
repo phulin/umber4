@@ -280,7 +280,8 @@ pub(crate) mod cmd {
         MATH_FRACTION = 167 => [b"above", b"over", b"atop", b"abovewithdelims", b"overwithdelims", b"atopwithdelims"];
         MATH_FORM = 168 => [b"overline", b"underline", b"radical", b"mathaccent"];
         VCENTER = 169 => [b"vcenter"];
-        UNSUPPORTED_MATH = 161 => [b"mathchoice", b"middle", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];
+        MATH_CHOICE = 170 => [b"mathchoice"];
+        UNSUPPORTED_MATH = 161 => [b"middle", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];
     }
 }
 
