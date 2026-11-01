@@ -228,15 +228,17 @@ impl Engine<'_> {
         let mut p = self.document.text.horizontal.head();
         while !p.is_null() {
             let n = self.document.nodes.get(p);
-            if let Kind::Glue { spec, .. } = n.kind
-                && p != tail
+            if p != tail
+                && let Some((spec, _)) = self.document.nodes.glue(&n.kind)
             {
                 check_shrink(spec)?;
             }
             p = n.next;
         }
-        if matches!(self.document.nodes.get(tail).kind, Kind::Glue { .. }) {
-            *self.document.nodes.kind_mut(tail) = Kind::Penalty(10000);
+        if self.document.nodes.get(tail).kind.is_glue() {
+            self.document
+                .nodes
+                .replace_kind(tail, Kind::Penalty(10000), &mut self.page_release);
         } else {
             self.append_horizontal(Kind::Penalty(10000))?;
         }

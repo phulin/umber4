@@ -13,6 +13,11 @@ mod box_slots;
 mod copying;
 #[path = "node_insertions.rs"]
 mod insertion_slots;
+#[path = "node_leaders.rs"]
+mod leader_slots;
+pub(crate) use leader_slots::{LeaderData, LeaderId};
+#[path = "node_snapshot.rs"]
+mod snapshot;
 #[path = "node_transfer.rs"]
 mod transfer;
 pub(crate) use copying::CopyScratch;
@@ -120,6 +125,17 @@ pub(crate) enum GlueKind {
     TopSkip,
     SpaceSkip,
     XSpaceSkip,
+    AlignedLeaders,
+    CenteredLeaders,
+    ExpandedLeaders,
+}
+impl GlueKind {
+    pub fn is_leader(self) -> bool {
+        matches!(
+            self,
+            Self::AlignedLeaders | Self::CenteredLeaders | Self::ExpandedLeaders
+        )
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum KernKind {
@@ -163,6 +179,7 @@ pub(crate) enum Kind {
     },
     Box(BoxId),
     Insertion(InsertionId),
+    Leader(LeaderId),
     Adjustment(List),
     Discretionary {
         pre: List,
@@ -212,70 +229,6 @@ impl DetachedNode {
         List {
             head: self.0,
             tail: self.0,
-        }
-    }
-}
-impl Node {
-    // Copy an owned record ONLY into a different COW store version.
-    fn snapshot_copy(&self) -> Self {
-        let kind = match &self.kind {
-            Kind::Language(language) => Kind::Language(*language),
-            Kind::Free => Kind::Free,
-            Kind::Character { font, character } => Kind::Character {
-                font: *font,
-                character: *character,
-            },
-            Kind::Ligature {
-                font,
-                character,
-                components,
-                left_boundary,
-                right_boundary,
-            } => Kind::Ligature {
-                font: *font,
-                character: *character,
-                components: components.snapshot(),
-                left_boundary: *left_boundary,
-                right_boundary: *right_boundary,
-            },
-            Kind::Kern { width, kind } => Kind::Kern {
-                width: *width,
-                kind: *kind,
-            },
-            Kind::MathBoundary { width, after } => Kind::MathBoundary {
-                width: *width,
-                after: *after,
-            },
-            Kind::Glue { spec, subtype } => Kind::Glue {
-                spec: *spec,
-                subtype: *subtype,
-            },
-            Kind::Penalty(p) => Kind::Penalty(*p),
-            Kind::Rule {
-                width,
-                height,
-                depth,
-            } => Kind::Rule {
-                width: *width,
-                height: *height,
-                depth: *depth,
-            },
-            Kind::Box(b) => Kind::Box(BoxId(b.0)),
-            Kind::Insertion(id) => Kind::Insertion(InsertionId(id.0)),
-            Kind::Adjustment(list) => Kind::Adjustment(list.snapshot()),
-            Kind::Discretionary {
-                pre,
-                post,
-                replace_count,
-            } => Kind::Discretionary {
-                pre: pre.snapshot(),
-                post: post.snapshot(),
-                replace_count: *replace_count,
-            },
-        };
-        Self {
-            next: self.next,
-            kind,
         }
     }
 }
@@ -351,6 +304,7 @@ pub(crate) struct NodeStore {
     allocation: Option<usize>,
     boxes: box_slots::Boxes,
     insertions: insertion_slots::Insertions,
+    leaders: leader_slots::Leaders,
 }
 impl Default for NodeStore {
     fn default() -> Self {
@@ -360,6 +314,7 @@ impl Default for NodeStore {
             allocation: None,
             boxes: box_slots::Boxes::default(),
             insertions: insertion_slots::Insertions::default(),
+            leaders: leader_slots::Leaders::default(),
         }
     }
 }
@@ -556,6 +511,10 @@ impl NodeStore {
                 let data = self.insertions.take(id);
                 self.release(data.list, scratch);
             }
+            Kind::Leader(id) => {
+                let data = self.leaders.take(id);
+                self.release(data.list, scratch);
+            }
             Kind::Adjustment(list) => self.release(list, scratch),
             Kind::Ligature { components, .. } => self.release(components, scratch),
             Kind::Discretionary { pre, post, .. } => {
@@ -580,6 +539,10 @@ impl NodeStore {
                         let data = self.insertions.take(id);
                         scratch.pending.push(data.list.head);
                     }
+                    Kind::Leader(id) => {
+                        let data = self.leaders.take(id);
+                        scratch.pending.push(data.list.head);
+                    }
                     Kind::Adjustment(list) => scratch.pending.push(list.head),
                     Kind::Ligature { components, .. } => scratch.pending.push(components.head),
                     Kind::Discretionary { pre, post, .. } => {
@@ -601,3 +564,7 @@ mod tests;
 #[cfg(test)]
 #[path = "node_insertion_tests.rs"]
 mod insertion_tests;
+
+#[cfg(test)]
+#[path = "node_leader_tests.rs"]
+mod leader_tests;

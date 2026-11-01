@@ -241,7 +241,7 @@ pub(crate) mod cmd {
         DEAD_CYCLES = 153 => [b"deadcycles", b"insertpenalties"] assignment;
         INSERT_ADJUST = 154 => [b"insert", b"vadjust"];
         ITALIC_CORRECTION = 155 => [b"/"];
-        UNSUPPORTED_LAYOUT = 122 => [b"mark", b"marks", b"vsplit", b"leaders"];
+        UNSUPPORTED_LAYOUT = 122 => [b"mark", b"marks", b"vsplit"];
         IFDIM = 99 => [b"ifdim"] conditional;
         MATH_CODE = 126 => [b"mathcode"] assignment;
         DEL_CODE = 127 => [b"delcode"] assignment;
@@ -272,6 +272,7 @@ pub(crate) mod cmd {
         MATH_STYLE = 158 => [b"displaystyle", b"textstyle", b"scriptstyle", b"scriptscriptstyle"];
         MATH_LIMITS = 159 => [b"displaylimits", b"limits", b"nolimits"];
         MKERN = 160 => [b"mkern"];
+        LEADERS = 163 => [b"leaders", b"cleaders", b"xleaders"];
         IGNORE_SPACES = 162 => [b"ignorespaces"];
         ACCENT = 164 => [b"accent"];
         UNSUPPORTED_MATH = 161 => [b"mathchoice", b"over", b"atop", b"above", b"overwithdelims", b"atopwithdelims", b"abovewithdelims", b"left", b"right", b"middle", b"delimiter", b"radical", b"mathaccent", b"overline", b"underline", b"vcenter", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];

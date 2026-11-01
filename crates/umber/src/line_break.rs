@@ -76,7 +76,8 @@ pub(crate) fn find_breaks(
                 Kind::Box(_) | Kind::Rule { .. } => {
                     search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?)
                 }
-                Kind::Glue { spec, .. } => {
+                Kind::Glue { .. } | Kind::Leader(_) => {
+                    let spec = engine.document.nodes.glue(&node.kind).unwrap().0;
                     let before = &engine.document.nodes.get(previous).kind;
                     if auto_breaking
                         && matches!(
@@ -97,7 +98,7 @@ pub(crate) fn find_breaks(
                     {
                         search.try_break(engine, 0, false)?;
                     }
-                    add_glue(&mut search.width, *spec, 1);
+                    add_glue(&mut search.width, spec, 1);
                     if second && auto_breaking {
                         crate::hyphenation_render::after_glue(
                             p,
@@ -119,7 +120,7 @@ pub(crate) fn find_breaks(
                     if *kind == KernKind::Explicit
                         && auto_breaking
                         && !node.next.is_null()
-                        && matches!(engine.document.nodes.get(node.next).kind, Kind::Glue { .. })
+                        && engine.document.nodes.get(node.next).kind.is_glue()
                     {
                         search.try_break(engine, 0, false)?;
                     }
@@ -129,7 +130,7 @@ pub(crate) fn find_breaks(
                     auto_breaking = *after;
                     if auto_breaking
                         && !node.next.is_null()
-                        && matches!(engine.document.nodes.get(node.next).kind, Kind::Glue { .. })
+                        && engine.document.nodes.get(node.next).kind.is_glue()
                     {
                         search.try_break(engine, 0, false)?;
                     }

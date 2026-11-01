@@ -50,6 +50,7 @@ pub(crate) enum Destination {
     MathAppend(Scaled),
     Register { index: usize, global: bool },
     Insertion(u8),
+    Leader(crate::nodes::GlueKind),
 }
 pub(crate) struct Frame {
     outer: TextState,
@@ -74,6 +75,13 @@ impl Engine<'_> {
                 break read;
             }
         };
+        if read.meaning.command == cmd::RULE
+            && let Destination::Leader(alignment) = destination
+        {
+            let rule = self.scan_rule(read.meaning.value == 1)?;
+            let node = self.document.nodes.alloc(rule)?;
+            return self.finish_leader(alignment, node);
+        }
         if read.meaning.command != cmd::MAKE_BOX {
             return Err(Error::Syntax);
         }
@@ -239,6 +247,13 @@ impl Engine<'_> {
         }
     }
     fn finish_box(&mut self, destination: Destination, node: Option<DetachedNode>) -> Result<()> {
+        if let Destination::Leader(alignment) = destination {
+            return if let Some(node) = node {
+                self.finish_leader(alignment, node)
+            } else {
+                Ok(())
+            };
+        }
         if let Destination::MathAppend(shift) = destination {
             if let Some(node) = node {
                 self.document.nodes.box_mut(node.id()).shift = shift;

@@ -106,7 +106,9 @@ impl Engine<'_> {
             state.last_penalty = 0;
             state.last_kern = 0;
             match node.kind {
-                Kind::Glue { spec, .. } => state.last_glue = Some(spec),
+                Kind::Glue { .. } | Kind::Leader(_) => {
+                    state.last_glue = Some(self.document.nodes.glue(&node.kind).unwrap().0)
+                }
                 Kind::Penalty(pi) => state.last_penalty = pi,
                 Kind::Kern { width, .. } => state.last_kern = width.0,
                 _ => {}
@@ -136,7 +138,7 @@ impl Engine<'_> {
                         .wrapping_add(height);
                     state.totals[7] = depth;
                 }
-                Kind::Glue { .. } => {
+                Kind::Glue { .. } | Kind::Leader(_) => {
                     if state.contents != Contents::BoxThere {
                         self.discard_contribution();
                         continue;
@@ -164,7 +166,7 @@ impl Engine<'_> {
                     if node.next.is_null() {
                         return Ok(());
                     }
-                    if matches!(self.document.nodes.get(node.next).kind, Kind::Glue { .. }) {
+                    if self.document.nodes.get(node.next).kind.is_glue() {
                         penalty = Some(0);
                     }
                 }
@@ -187,7 +189,13 @@ impl Engine<'_> {
             }
             let state = &mut self.document.page.state;
             match self.document.nodes.get(p).kind {
-                Kind::Glue { spec, .. } => {
+                Kind::Glue { .. } | Kind::Leader(_) => {
+                    let spec = self
+                        .document
+                        .nodes
+                        .glue(&self.document.nodes.get(p).kind)
+                        .unwrap()
+                        .0;
                     if spec.shrink.0 != 0 && spec.shrink_order != GlueOrder::Normal {
                         return Err(Error::Unsupported);
                     }

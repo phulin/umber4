@@ -74,7 +74,11 @@ impl Search<'_, '_> {
         while !s.is_null() {
             let node = engine.document.nodes.get(s);
             match node.kind {
-                Kind::Glue { spec, .. } => add_glue(&mut width, spec, -1),
+                Kind::Glue { .. } | Kind::Leader(_) => add_glue(
+                    &mut width,
+                    engine.document.nodes.glue(&node.kind).unwrap().0,
+                    -1,
+                ),
                 Kind::Penalty(_) => {}
                 Kind::Kern {
                     width: w,

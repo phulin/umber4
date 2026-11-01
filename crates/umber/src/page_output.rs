@@ -7,6 +7,14 @@ use crate::{
     output::{GlueSetting, PackedBox, Page, Runs},
     value_metadata::Buffer,
 };
+#[path = "page_leaders.rs"]
+mod leaders;
+use leaders::Repeat;
+#[derive(Clone, Copy)]
+enum Work {
+    List(Frame),
+    Repeat(Repeat),
+}
 #[derive(Clone, Copy)]
 struct Frame {
     next: NodeId,
@@ -59,7 +67,7 @@ impl Frame {
     }
 }
 pub(crate) struct Scratch {
-    frames: Buffer<Frame>,
+    frames: Buffer<Work>,
 }
 impl Default for Scratch {
     fn default() -> Self {
@@ -163,10 +171,29 @@ impl Engine<'_> {
                 .0,
         );
         let index = page.box_record(record(b, None, x, y));
-        scratch.frames.push(Frame::new(b, index, x, y));
+        scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
         let mut runs = Runs::default();
         let mut font_binding: Option<(u32, &crate::tfm::ScaledFont, u32)> = None;
-        while let Some(frame) = scratch.frames.last_mut() {
+        while let Some(work) = scratch.frames.last_mut() {
+            if let Work::Repeat(repeat) = work {
+                let Some((x, y)) = repeat.next() else {
+                    scratch.frames.pop();
+                    continue;
+                };
+                let Kind::Box(id) = &self.document.nodes.get(repeat.template).kind else {
+                    unreachable!()
+                };
+                let b = self.document.nodes.box_data(id);
+                runs.finish(page);
+                let index = page.box_record(record(b, Some(repeat.parent), x, y));
+                if !b.list.is_empty() {
+                    scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
+                }
+                continue;
+            }
+            let Work::List(frame) = work else {
+                unreachable!()
+            };
             if frame.next.is_null() {
                 runs.finish(page);
                 scratch.frames.pop();
@@ -225,7 +252,7 @@ impl Engine<'_> {
                         frame.x = frame.x.wrapping_add(b.width.0);
                     }
                     if !b.list.is_empty() {
-                        scratch.frames.push(Frame::new(b, index, x, y));
+                        scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
                     }
                 }
                 Kind::Rule {
@@ -233,35 +260,11 @@ impl Engine<'_> {
                     height,
                     depth,
                 } => {
-                    let (w, h, d) = (
-                        if width.0 == RUNNING {
-                            frame.width
-                        } else {
-                            width.0
-                        },
-                        if height.0 == RUNNING {
-                            frame.height
-                        } else {
-                            height.0
-                        },
-                        if depth.0 == RUNNING {
-                            frame.depth
-                        } else {
-                            depth.0
-                        },
-                    );
-                    let thickness = h.wrapping_add(d);
-                    let (x, y) = if frame.vertical {
-                        let y = frame.y;
-                        frame.y = frame.y.wrapping_add(thickness);
-                        (frame.left, y)
-                    } else {
-                        let x = frame.x;
-                        frame.x = frame.x.wrapping_add(w);
-                        (x, frame.baseline.wrapping_sub(h))
-                    };
-                    if w > 0 && thickness > 0 {
-                        page.rule(x, y, w, thickness);
+                    frame.rule(width.0, height.0, depth.0, page);
+                }
+                Kind::Leader(id) => {
+                    if let Some(repeat) = self.lower_leader(id, frame, page) {
+                        scratch.frames.push(Work::Repeat(repeat));
                     }
                 }
                 Kind::Glue { spec, .. } => {

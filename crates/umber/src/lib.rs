@@ -18,6 +18,7 @@ mod input_tokens;
 mod language;
 mod layout_assign;
 mod layout_values;
+mod leaders;
 #[cfg(feature = "lexing-prototype")]
 #[doc(hidden)]
 pub mod lexing;
@@ -373,3 +374,6 @@ mod page_oracle_tests;
 
 #[cfg(test)]
 mod insertion_tests;
+
+#[cfg(test)]
+mod leader_tests;

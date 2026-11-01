@@ -40,7 +40,9 @@ behavior; it is not natural-height shipping.
 The vertical command slice includes `\vskip`, `\vfil`, `\vfill`, `\vss`,
 `\vfilneg`, `\hrule`, horizontal `\vrule`, `\prevdepth`,
 and writable page dimensions. Rules preserve running dimensions until traversal.
-Marks, leaders, math, and output backends remain unsupported.
+Marks, display math, and output backends remain unsupported. Ordinary leader glue
+participates in page totals, last-skip reads, breaks and top discards; its template
+is owned until transfer or release. [output.md](output.md) defines placement.
 Explicit horizontal/vertical/void box shipout uses the same detached lowerer.
 Packing diagnostics and interactive recovery remain outside this fail-fast
 interpreter contract.

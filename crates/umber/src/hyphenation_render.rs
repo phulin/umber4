@@ -245,6 +245,7 @@ fn candidate(
             } => {}
             Kind::Language(_)
             | Kind::Glue { .. }
+            | Kind::Leader(_)
             | Kind::Penalty(_)
             | Kind::Insertion(_)
             | Kind::Adjustment(_)

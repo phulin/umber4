@@ -37,7 +37,7 @@ Keep implementation histories, before/after reports, and validation logs out of
 - `pages.md` contracts executable vertical contributions, page breaks, detached
   publication, output routines, unsplit insertions, adjustments, and retained unfinished pages,
   and develops insertion splitting and marks.
-- `output.md` records detached page publication and develops ordered backend
+- `output.md` records detached page publication and ordinary leader traversal, and develops ordered backend
   shipout, document state,
   DVI/PDF resources, and direct serialization.
 - `formats.md` develops bootstrap, Umber format export/read, shared semantic

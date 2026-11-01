@@ -121,6 +121,7 @@ impl Engine<'_> {
                     kind: KernKind::Explicit,
                 })?;
             }
+            cmd::LEADERS => self.begin_leaders(read.meaning.value)?,
             cmd::MKERN => {
                 let width = self.scan_mu_dimen()?;
                 self.append_math(Kind::MuKern(width))?;

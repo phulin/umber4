@@ -18,8 +18,7 @@ impl Engine<'_> {
         let mut line_number = first_line;
         for index in 0..scratch.breaks.len() {
             let point = scratch.breaks[index];
-            let glue_break = !point.is_null()
-                && matches!(self.document.nodes.get(point).kind, Kind::Glue { .. });
+            let glue_break = !point.is_null() && self.document.nodes.get(point).kind.is_glue();
             let left = if parameters.left != crate::numeric::Glue::default() {
                 Some(self.document.nodes.alloc(Kind::Glue {
                     spec: parameters.left,
@@ -54,40 +53,41 @@ impl Engine<'_> {
                     .split_after(&mut self.document.text.horizontal, point)
             };
             if !point.is_null() {
-                let kind = self.document.nodes.kind_mut(point);
-                match kind {
-                    Kind::Glue { spec, subtype } => {
-                        *spec = parameters.right;
-                        *subtype = GlueKind::RightSkip;
-                    }
-                    Kind::Kern { width, .. } | Kind::MathBoundary { width, .. } => {
-                        *width = crate::numeric::Scaled::ZERO
-                    }
-                    Kind::Discretionary {
-                        pre,
-                        post,
-                        replace_count,
-                    } => {
-                        disc_break = true;
-                        let count = std::mem::take(replace_count);
-                        let pre = std::mem::take(pre);
-                        let mut post = std::mem::take(post);
-                        for _ in 0..count {
-                            let node = self
-                                .document
-                                .nodes
-                                .pop_front(&mut remainder)
-                                .expect("discretionary replacement range");
-                            self.document.nodes.release_node(node, &mut scratch.release);
+                if glue_break {
+                    self.document
+                        .nodes
+                        .set_glue(point, parameters.right, GlueKind::RightSkip);
+                } else {
+                    match self.document.nodes.kind_mut(point) {
+                        Kind::Kern { width, .. } | Kind::MathBoundary { width, .. } => {
+                            *width = crate::numeric::Scaled::ZERO
                         }
-                        post_disc_break = !post.is_empty();
-                        self.document.nodes.splice(&mut post, remainder);
-                        remainder = post;
-                        self.document
-                            .nodes
-                            .splice(&mut self.document.text.horizontal, pre);
+                        Kind::Discretionary {
+                            pre,
+                            post,
+                            replace_count,
+                        } => {
+                            disc_break = true;
+                            let count = std::mem::take(replace_count);
+                            let pre = std::mem::take(pre);
+                            let mut post = std::mem::take(post);
+                            for _ in 0..count {
+                                let node = self
+                                    .document
+                                    .nodes
+                                    .pop_front(&mut remainder)
+                                    .expect("discretionary replacement range");
+                                self.document.nodes.release_node(node, &mut scratch.release);
+                            }
+                            post_disc_break = !post.is_empty();
+                            self.document.nodes.splice(&mut post, remainder);
+                            remainder = post;
+                            self.document
+                                .nodes
+                                .splice(&mut self.document.text.horizontal, pre);
+                        }
+                        _ => {}
                     }
-                    _ => {}
                 }
             }
             if let Some(right) = right {
@@ -159,6 +159,7 @@ impl Engine<'_> {
             if !matches!(
                 self.document.nodes.get(p).kind,
                 Kind::Glue { .. }
+                    | Kind::Leader(_)
                     | Kind::Penalty(_)
                     | Kind::Kern {
                         kind: KernKind::Explicit,

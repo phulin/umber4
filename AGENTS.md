@@ -15,7 +15,7 @@ proposal until reviewed with the user.
 - `docs/`: architecture proposals and, as implementation proceeds, subsystem
   contracts and performance methodology.
 - `crates/umber/`: portable expansion/register interpreter, TFM text, paragraph/page
-  construction, unsplit insertions/adjustments, detached page results, typed layout
+  construction, unsplit insertions/adjustments, ordinary leaders, detached page results, typed layout
   storage, in-memory checkpoints, inline math construction, a typed math
   atom/conversion core, and its native CLI.
 - `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.

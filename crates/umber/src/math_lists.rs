@@ -64,6 +64,7 @@ impl Conversion<'_, '_, '_> {
                                 self.engine.document.nodes.get(n.id()).kind,
                                 nodes::Kind::Kern { .. }
                                     | nodes::Kind::Glue { .. }
+                                    | nodes::Kind::Leader(_)
                                     | nodes::Kind::Rule { .. }
                                     | nodes::Kind::Penalty(_)
                             ) {

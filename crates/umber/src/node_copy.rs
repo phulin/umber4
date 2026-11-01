@@ -1,11 +1,14 @@
 //! Semantic copies own new cells; COW snapshots are a separate operation.
-use super::{BoxData, DetachedNode, InsertionData, Kind, List, NodeId, NodeStore, ReleaseScratch};
+use super::{
+    BoxData, DetachedNode, InsertionData, Kind, LeaderData, List, NodeId, NodeStore, ReleaseScratch,
+};
 use crate::Result;
 
 #[derive(Clone, Copy)]
 enum Child {
     Box,
     Insertion,
+    Leader,
     Adjustment,
     Components,
     Pre,
@@ -176,6 +179,16 @@ impl NodeStore {
                 };
                 self.alloc_insertion_with_limit(copy, limit)?
             }
+            Kind::Leader(id) => {
+                let data = self.leader_data(id);
+                children[0] = (data.list.head(), Child::Leader);
+                let copy = LeaderData {
+                    list: List::default(),
+                    spec: data.spec,
+                    subtype: data.subtype,
+                };
+                self.alloc_leader_with_limit(copy, limit)?
+            }
             Kind::Adjustment(list) => {
                 children[0] = (list.head(), Child::Adjustment);
                 self.alloc_with_limit(Kind::Adjustment(List::default()), limit)?
@@ -198,6 +211,7 @@ impl NodeStore {
         let target = match child {
             Child::Box => &mut self.box_mut(parent).list,
             Child::Insertion => &mut self.insertion_mut(parent).list,
+            Child::Leader => &mut self.leader_mut(parent).list,
             Child::Adjustment => {
                 let Kind::Adjustment(list) = self.kind_mut(parent) else {
                     unreachable!("copied adjustment")

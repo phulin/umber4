@@ -76,7 +76,7 @@ impl Engine<'_> {
                         _ => 0,
                     })),
                     _ => Quantity::Glue(match kind {
-                        Some(Kind::Glue { spec, .. }) => *spec,
+                        Some(kind) if kind.is_glue() => self.document.nodes.glue(kind).unwrap().0,
                         _ if vertical_empty => state.last_glue.unwrap_or_default(),
                         _ => Glue::default(),
                     }),
@@ -87,6 +87,7 @@ impl Engine<'_> {
     }
     pub(crate) fn vertical_command(&mut self, read: Read) -> Result<bool> {
         match read.meaning.command {
+            cmd::LEADERS => self.begin_leaders(read.meaning.value)?,
             cmd::INSERT_ADJUST => {
                 self.begin_insertion(read.meaning.value != 0)?;
             }

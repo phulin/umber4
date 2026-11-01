@@ -60,6 +60,9 @@ applies typed assignments/arithmetic, with operand and fixture tests in
 with branch/reclamation tests in `nodes_tests.rs`;
 `node_insertions.rs` owns compact COW insertion payload slots and
 `node_insertion_tests.rs` covers their copy, failure, and reclamation behavior;
+`node_leaders.rs` owns compact COW leader templates and glue access, with
+copy/failure/reclamation checks in `node_leader_tests.rs`;
+`node_snapshot.rs` duplicates cells only into matching COW versions;
 `node_transfer.rs` owns consuming header/list transfers; `node_copy.rs` owns iterative
 semantic list copies with ownership/failure tests in `node_copy_tests.rs`; page construction uses
 the same nodes;
@@ -69,6 +72,8 @@ immutable metric readers,
 `boxes.rs` owns horizontal/internal vertical construction frames, affine box registers,
 scoped transfers, and box geometry/status primitives; `boxes_tests.rs` checks
 native ordering, ownership, replay, failure cleanup, and executable packing;
+`leaders.rs` supplies typed box/rule destinations and axis-matching skip scanning;
+`leader_tests.rs`/`leader_oracle_tests.rs` check ownership, replay, geometry and native DVI;
 `insertions.rs` captures insertion/adjustment lists through those construction frames;
 `insertion_tests.rs` checks native page/packing behavior, failure boundaries, and replay;
 `box_transfer.rs` owns unboxing, last-box extraction, and axis-specific shifts;
@@ -98,7 +103,7 @@ returned material, counters, and checkpoint replay;
 `page_insertions.rs` accounts unsplit insertion classes and transfers selected child lists;
 `page.rs` owns incremental
 page state, default/custom output, and its suspended frame; `vertical.rs` executes
-vertical contributions and page quantities, `page_output.rs` lowers owned nodes
+vertical contributions and page quantities, `page_leaders.rs` schedules borrowed repeated templates; `page_output.rs` lowers owned nodes
 with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/
 rule records in immutable prefixes; `output_tests.rs` checks positioned run
 iteration, aggregate capacity, and nested movement boundaries. `page_tests.rs` covers page/replay/resource

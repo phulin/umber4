@@ -79,6 +79,40 @@ prefixes published before errors):
 cargo test --lib upstream_output_routine_state_and_dvi_geometry -- --ignored
 ```
 
+## Ordinary leaders
+
+`\leaders`, `\cleaders`, and `\xleaders` capture one owned box or rule and
+require a matching horizontal or vertical skip. Box construction uses the ordinary
+frames and hooks, without migrating material out of a leader template. Void box
+operands leave the following skip for ordinary execution. A nonvoid template is
+consumed even when its following skip is invalid; scanner failures release it.
+Appending leader glue changes neither space factor nor previous depth and does
+not itself run page construction.
+
+Leader nodes retain a compact handle into typed reusable COW payload slots,
+keeping ordinary nodes at 24 bytes. Each payload owns a singleton template list,
+glue specification, and subtype. Semantic copying makes one independent template
+copy; snapshots retain payload and node roots together. Ordinary release walks the
+template once. Paragraph tail conversion to a penalty releases the owner;
+conversion of a selected break to rightskip retains its now-inert template owner.
+
+Packing treats leaders as glue and includes the template's unshifted cross-axis
+dimensions. Shipout resolves cumulative glue rounding before leader placement.
+Rule leaders paint one continuous rule over that glue extent. Positive-size box
+leaders use TeX's additional ten scaled points before computing integer repetition
+positions, then restore the enclosing axis to the original glue endpoint. Aligned
+leaders use the enclosing box's left/top origin, centered leaders split the
+remainder between the ends, and expanded leaders distribute it with TeX's integer
+division order. Nonpositive template or glue extents paint nothing.
+
+Lowering repeatedly borrows the same owned template through the existing iterative
+traversal. Repeat cursors are pooled scratch bounded by nesting depth; no repeat
+allocates or copies live nodes. Each occurrence writes detached records directly
+into the existing output buffers, with exact shifts, local origins, and run
+boundaries. The parent tree remains owned until the whole shipout completes or
+fails, then releases once. Immediate writes execute during template construction;
+directional typesetting and deferred whatsits remain unsupported.
+
 ## 1. Shipout is execution
 
 Shipout walks horizontal and vertical boxes, glue, kerns, rules, leaders,

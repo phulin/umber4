@@ -130,6 +130,17 @@ impl Engine<'_> {
                     let o = spec.shrink_order as usize;
                     shrink[o] = shrink[o].wrapping_add(spec.shrink.0);
                 }
+                Kind::Leader(id) => {
+                    let data = self.document.nodes.leader_data(id);
+                    natural = natural.wrapping_add(data.spec.width.0);
+                    let o = data.spec.stretch_order as usize;
+                    stretch[o] = stretch[o].wrapping_add(data.spec.stretch.0);
+                    let o = data.spec.shrink_order as usize;
+                    shrink[o] = shrink[o].wrapping_add(data.spec.shrink.0);
+                    let (_, h, d) = self.document.nodes.leader_dimensions(id);
+                    height = height.max(h.0);
+                    depth = depth.max(d.0);
+                }
                 Kind::Insertion(_) | Kind::Adjustment(_) if adjustments.is_some() => {
                     let destination = adjustments.as_deref_mut().unwrap();
                     let node = self
@@ -208,6 +219,16 @@ impl Engine<'_> {
                     stretch[i] = stretch[i].wrapping_add(spec.stretch.0);
                     let i = spec.shrink_order as usize;
                     shrink[i] = shrink[i].wrapping_add(spec.shrink.0);
+                }
+                Kind::Leader(id) => {
+                    let spec = self.document.nodes.leader_data(id).spec;
+                    natural = natural.wrapping_add(depth).wrapping_add(spec.width.0);
+                    depth = 0;
+                    let i = spec.stretch_order as usize;
+                    stretch[i] = stretch[i].wrapping_add(spec.stretch.0);
+                    let i = spec.shrink_order as usize;
+                    shrink[i] = shrink[i].wrapping_add(spec.shrink.0);
+                    width = width.max(self.document.nodes.leader_dimensions(id).0.0);
                 }
                 _ => {}
             }

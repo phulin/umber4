@@ -144,6 +144,14 @@ Releasing either node traverses its owned children through the same iterative
 work stack. Consuming extraction can remove a cell after a known predecessor,
 without rebuilding or copying the surrounding list.
 
+Leader payloads use a separate dense reusable typed COW table. A compact handle
+owns one box/rule template list, inline glue, and its subtype. Ordinary glue stays
+inline in its node. Copies and snapshots follow the same semantic-versus-version
+ownership distinction as boxes and insertions; the ordinary cell remains 24 bytes.
+A rightskip can retain an inert template owner after a paragraph break; changing
+the node to a penalty releases that owner. Lowering borrows templates repeatedly
+without modifying their lists, and final release visits each owned edge once.
+
 Nested release walks owned child lists using reusable session scratch, avoiding
 recursion and allocations per node. Scratch must be empty on return and is not
 checkpoint state. Chunk references retain their backing independently of engine
