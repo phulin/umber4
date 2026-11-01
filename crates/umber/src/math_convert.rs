@@ -395,7 +395,17 @@ impl Conversion<'_, '_, '_> {
             _ => unreachable!("binary context cancellation"),
         };
         let spec = self.engine.document.layout_values.mu_glues[REGISTERS + index].value;
-        let spec = Glue {
+        let spec = self.mu_glue(style, spec)?;
+        self.append(
+            output,
+            nodes::Kind::Glue {
+                spec,
+                subtype: GlueKind::Normal,
+            },
+        )
+    }
+    fn mu_glue(&self, style: Style, spec: Glue) -> Result<Glue> {
+        Ok(Glue {
             width: self.mu_dimension(style, spec.width)?,
             stretch: if spec.stretch_order == GlueOrder::Normal {
                 self.mu_dimension(style, spec.stretch)?
@@ -408,14 +418,7 @@ impl Conversion<'_, '_, '_> {
                 spec.shrink
             },
             ..spec
-        };
-        self.append(
-            output,
-            nodes::Kind::Glue {
-                spec,
-                subtype: GlueKind::Normal,
-            },
-        )
+        })
     }
     fn mu_dimension(&self, style: Style, value: Scaled) -> Result<Scaled> {
         let mu = self.symbol(style, 6) / 18;

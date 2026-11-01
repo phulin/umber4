@@ -45,6 +45,15 @@ impl Conversion<'_, '_, '_> {
                             self.math.node_mut(q).kind = Kind::Material(node);
                             w.cursor = self.math.node(q).next;
                         }
+                        Kind::MuGlue(spec) => {
+                            let spec = self.mu_glue(w.style, *spec)?;
+                            let node = self.engine.document.nodes.alloc(nodes::Kind::Glue {
+                                spec,
+                                subtype: GlueKind::Normal,
+                            })?;
+                            self.math.node_mut(q).kind = Kind::Material(node);
+                            w.cursor = self.math.node(q).next;
+                        }
                         Kind::Choice(_) => {
                             let Kind::Choice(mut choices) = std::mem::replace(
                                 &mut self.math.node_mut(q).kind,
@@ -60,6 +69,20 @@ impl Conversion<'_, '_, '_> {
                             w.cursor = self.math.node(q).next;
                         }
                         Kind::Material(n) => {
+                            if w.style.script()
+                                && matches!(
+                                    self.engine.document.nodes.get(n.id()).kind,
+                                    nodes::Kind::Glue {
+                                        subtype: GlueKind::NonScript,
+                                        ..
+                                    }
+                                )
+                            {
+                                self.suppress_script_glue(&mut w.list, q);
+                            }
+                            let Kind::Material(n) = &self.math.node(q).kind else {
+                                unreachable!()
+                            };
                             if !matches!(
                                 self.engine.document.nodes.get(n.id()).kind,
                                 nodes::Kind::Kern { .. }
@@ -208,6 +231,29 @@ impl Conversion<'_, '_, '_> {
             }
         }
         Ok(Action::Again)
+    }
+    fn suppress_script_glue(&mut self, list: &mut MathList, at: MathId) {
+        let next = self.math.node(at).next;
+        if next == MathId::NULL {
+            return;
+        }
+        let remove = match &self.math.node(next).kind {
+            Kind::MuKern(_) | Kind::MuGlue(_) => true,
+            Kind::Material(node) => matches!(
+                self.engine.document.nodes.get(node.id()).kind,
+                nodes::Kind::Glue { .. } | nodes::Kind::Leader(_) | nodes::Kind::Kern { .. }
+            ),
+            _ => false,
+        };
+        if remove {
+            let removed = self.math.free(next);
+            self.math.node_mut(at).next = removed.next;
+            if list.tail == next {
+                list.tail = at;
+            }
+            self.math
+                .release_kind(removed.kind, &mut self.engine.document.nodes);
+        }
     }
     fn append_noad(&mut self, w: &mut ListWork, class: Class) -> Result<()> {
         if let Some(previous) = w.previous_class {

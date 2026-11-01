@@ -129,6 +129,7 @@ pub(crate) enum GlueKind {
     CenteredLeaders,
     ExpandedLeaders,
     TabSkip,
+    NonScript,
 }
 impl GlueKind {
     pub fn is_leader(self) -> bool {

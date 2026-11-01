@@ -85,6 +85,9 @@ and deep traversal; `math_oracle_tests.rs`, `math_real_oracle_tests.rs`, and
 `math_accent_oracle_tests.rs` compares controlled and CM accent geometry;
 `math_glue_tests.rs` checks math-glue quantity boundaries, native arithmetic and
 formatting, scoped bindings, and checkpoint replay;
+`math_mu_tests.rs` checks pending mu-glue conversion, nonscript removal, signed
+scaling and failure cleanup; `math_mu_frontend_tests.rs` checks scanned material,
+replay and native lists/DVI across styles and spacing contexts;
 `parameter_tests.rs` covers initialization parameters and newline rendering across
 messages, writes, groups, snapshots, and native comparisons;
 `ignorespaces_tests.rs` checks expanded nonspace redispatch, noexpand, mode/group

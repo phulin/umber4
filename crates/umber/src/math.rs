@@ -200,6 +200,7 @@ pub(crate) enum Kind {
     Style(Style),
     Choice([MathList; 4]),
     MuKern(crate::numeric::Scaled),
+    MuGlue(crate::numeric::Glue),
     Material(DetachedNode),
     Working(Class),
     Converted {
@@ -428,3 +429,7 @@ mod forms_tests;
 #[cfg(test)]
 #[path = "math_accent_tests.rs"]
 mod accent_tests;
+
+#[cfg(test)]
+#[path = "math_mu_tests.rs"]
+mod mu_tests;

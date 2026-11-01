@@ -92,6 +92,10 @@ fn list_at(e: &Engine<'_>, contents: &List, prefix: &str, out: &mut Vec<String>)
                 children = Some(&b.list);
                 s
             }
+            Kind::Glue {
+                subtype: GlueKind::NonScript,
+                ..
+            } => "\\glue(\\nonscript)".into(),
             Kind::Glue { spec, subtype } => {
                 let label = match subtype {
                     GlueKind::ParSkip => "(\\parskip)",

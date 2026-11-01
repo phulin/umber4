@@ -284,5 +284,7 @@ mod displays;
 mod forms;
 #[path = "math_fraction_frontend_tests.rs"]
 mod fractions;
+#[path = "math_mu_frontend_tests.rs"]
+mod mu;
 #[path = "math_frontend_oracle_tests.rs"]
 mod oracle;

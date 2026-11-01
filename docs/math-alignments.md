@@ -181,13 +181,25 @@ Assignments, definitions, and diagnostics retain their ordinary execution paths.
 Physical kern/glue/rule/penalty material retains ordinary units. `\/` contributes
 a normal zero kern in math. `\mkern` retains math units in a scalar arena node
 until the conversion pass uses the active symbol-family quad and native signed
-truncation. Conversion and both `\mathsurround` widths use the live formula
+truncation. `\mskip` retains its scalar glue specification in the same arena;
+conversion scales the width and finite stretch/shrink components, leaving infinite
+components unchanged. These material nodes preserve the surrounding binary and
+spacing context while blocking direct character ligature adjacency.
+`\nonscript` contributes an ordinary zero glue with its own subtype. In script
+or scriptscript size, its first-pass visit removes exactly the immediately
+following glue or kern, including pending math-unit material and another
+`\nonscript`. It does not look through styles, choices, or noads, and the marker
+itself remains in the output. Removal transfers and releases one arena owner;
+conversion allocates ordinary glue before replacing its pending scalar so errors
+leave every owner reachable by cleanup.
+Conversion and both `\mathsurround` widths use the live formula
 bindings before its group is restored. The resulting ordinary list is enclosed
 by before/after math nodes; the enclosing space factor becomes 1000. Automatic
 math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
-owners. Active math frames exclude checkpoint handoff. Mu glue and alignments remain unsupported.
+owners. Active math frames exclude checkpoint handoff. Direct display alignments
+and vertical alignments remain unsupported.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters

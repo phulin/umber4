@@ -117,4 +117,34 @@ fn upstream_gentle_table_plain_tabs_and_math_alignment_templates() {
     ] {
         oracle.compare_fonts(&fonts, &settings, body);
     }
+    // Exact outer math-unit wrappers and their plain prerequisites.
+    settings.push_str(
+        r"\let\rm\tenrm\def\,{\mskip\thinmuskip}
+\def\v@true{\let\ifv@\iftrue}\def\v@false{\let\ifv@\iffalse}
+\def\h@true{\let\ifh@\iftrue}\def\h@false{\let\ifh@\iffalse}
+\dimendef\jot=12\jot=3pt ",
+    );
+    for (start, end) in [
+        (r"\def\mathpalette", r"\newbox\rootbox"),
+        (r"\def\vphantom", r"\def\smash"),
+        (r"\def\matrix", r"\def\pmatrix"),
+        (r"\def\openup", r"\newif\ifdt@p"),
+    ] {
+        let start = plain.find(start).unwrap();
+        let end = plain[start..].find(end).unwrap() + start;
+        settings.push_str(&plain[start..end]);
+    }
+    for name in [r"\def\dots", r"\def\ldots", r"\mathchardef\ldotp"] {
+        let start = plain.find(name).unwrap();
+        settings.push_str(plain[start..].lines().next().unwrap());
+        settings.push('\n');
+    }
+    for body in [
+        r"\noindent He thought, ``\dots and this goes on forever.''\par",
+        r"\noindent\hbox{$\dots\quad a_{\dots}$}\par",
+        r"\noindent\hbox{$\matrix{a&b\cr c&d\cr}$}\par",
+        r"\noindent\hbox{$\eqalign{a&=b\cr c&=d\cr}$}\par",
+    ] {
+        oracle.compare_fonts(&fonts, &settings, body);
+    }
 }

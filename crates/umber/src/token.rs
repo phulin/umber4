@@ -293,7 +293,9 @@ pub(crate) mod cmd {
         HALIGN = 174 => [b"halign"];
         OMIT = 175 => [b"omit"];
         NOALIGN = 176 => [b"noalign"];
-        UNSUPPORTED_MATH = 161 => [b"middle", b"mskip", b"nonscript", b"valign"];
+        MSKIP = 177 => [b"mskip"];
+        NONSCRIPT = 178 => [b"nonscript"];
+        UNSUPPORTED_MATH = 161 => [b"middle", b"valign"];
     }
 }
 

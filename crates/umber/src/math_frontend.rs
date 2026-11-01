@@ -79,6 +79,9 @@ impl Engine<'_> {
             return Ok(true);
         }
         if !self.document.text.mode.is_math() {
+            if matches!(command, cmd::MSKIP | cmd::NONSCRIPT) {
+                return Err(Error::Syntax);
+            }
             return Ok(false);
         }
         match command {
@@ -160,6 +163,14 @@ impl Engine<'_> {
                 let width = self.scan_mu_dimen()?;
                 self.append_math(Kind::MuKern(width))?;
             }
+            cmd::MSKIP => {
+                let spec = self.scan_mu_glue()?;
+                self.append_math(Kind::MuGlue(spec))?;
+            }
+            cmd::NONSCRIPT => self.math_material(nodes::Kind::Glue {
+                spec: crate::numeric::Glue::default(),
+                subtype: nodes::GlueKind::NonScript,
+            })?,
             cmd::ITALIC_CORRECTION => self.math_material(nodes::Kind::Kern {
                 width: Scaled::ZERO,
                 kind: KernKind::Normal,
