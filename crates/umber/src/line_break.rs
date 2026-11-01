@@ -59,6 +59,7 @@ pub(crate) fn find_breaks(
         let mut metrics =
             crate::fonts::MetricReader::new(&engine.document.fonts, &engine.font_catalog);
         let mut language = engine.document.text.initial_language;
+        let mut auto_breaking = true;
         while !p.is_null() && search.scratch.records[0].next != 0 {
             search.point = p;
             let node = engine.document.nodes.get(p);
@@ -76,25 +77,27 @@ pub(crate) fn find_breaks(
                 }
                 Kind::Glue { spec, .. } => {
                     let before = &engine.document.nodes.get(previous).kind;
-                    if matches!(
-                        before,
-                        Kind::Character { .. }
-                            | Kind::Ligature { .. }
-                            | Kind::Insertion(_)
-                            | Kind::Adjustment(_)
-                            | Kind::Language(_)
-                            | Kind::Box(_)
-                            | Kind::Rule { .. }
-                            | Kind::Discretionary { .. }
-                            | Kind::Kern {
-                                explicit: false,
-                                ..
-                            }
-                    ) {
+                    if auto_breaking
+                        && matches!(
+                            before,
+                            Kind::Character { .. }
+                                | Kind::Ligature { .. }
+                                | Kind::Insertion(_)
+                                | Kind::Adjustment(_)
+                                | Kind::Language(_)
+                                | Kind::Box(_)
+                                | Kind::Rule { .. }
+                                | Kind::Discretionary { .. }
+                                | Kind::Kern {
+                                    explicit: false,
+                                    ..
+                                }
+                        )
+                    {
                         search.try_break(engine, 0, false)?;
                     }
                     add_glue(&mut search.width, *spec, 1);
-                    if second {
+                    if second && auto_breaking {
                         crate::hyphenation_render::after_glue(
                             p,
                             &mut engine.document.nodes,
@@ -113,6 +116,17 @@ pub(crate) fn find_breaks(
                 }
                 Kind::Kern { width, explicit } => {
                     if *explicit
+                        && auto_breaking
+                        && !node.next.is_null()
+                        && matches!(engine.document.nodes.get(node.next).kind, Kind::Glue { .. })
+                    {
+                        search.try_break(engine, 0, false)?;
+                    }
+                    search.width[0] = search.width[0].wrapping_add(width.0);
+                }
+                Kind::MathBoundary { width, after } => {
+                    auto_breaking = *after;
+                    if auto_breaking
                         && !node.next.is_null()
                         && matches!(engine.document.nodes.get(node.next).kind, Kind::Glue { .. })
                     {

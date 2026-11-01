@@ -64,7 +64,7 @@ arithmetic, and conversion paths. Register indices are 0–255. Dimension parame
 `\hsize`, `\vsize`, `\maxdepth`, `\parindent`, `\hangindent`,
 `\emergencystretch`, `\lineskiplimit`, `\hfuzz`, `\vfuzz`, `\overfullrule`,
 `\splitmaxdepth`, `\boxmaxdepth`, `\delimitershortfall`, `\nulldelimiterspace`,
-and `\scriptspace`.
+`\scriptspace`, `\hoffset`, `\voffset`, and `\mathsurround`.
 Glue parameters are `\baselineskip`, `\lineskip`, `\parskip`, `\topskip`,
 `\leftskip`, `\rightskip`, `\parfillskip`, `\spaceskip`, `\xspaceskip`,
 `\abovedisplayskip`, `\abovedisplayshortskip`, `\belowdisplayskip`,
@@ -100,7 +100,9 @@ than copying a shared tail merely to append. Free-slot state belongs to the same
 version as the nodes. Released empty chunks enter a bounded session reuse pool.
 
 Nodes contain links and compact tagged values, with inline glue and font IDs,
-and no per-node heap allocation or reference count. Box, insertion, adjustment, ligature-component,
+and no per-node heap allocation or reference count. Math boundaries hold only a
+signed width and before/after tag; copying and release introduce no child owners.
+They preserve the ordinary 24-byte node layout. Box, insertion, adjustment, ligature-component,
 and discretionary child lists are owned edges. A non-`Copy` `List` carries head
 and tail for building and ownership transfers. Appending/splicing consumes an
 existing list; constructing a box consumes its contents. Allocation and removal
@@ -178,8 +180,9 @@ mutable allocation or COW. These transfers follow `copy_node_list` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 
 The initial node kinds cover characters, ligatures and their boundary flags,
-explicit/TFM kerns, glue, penalties, rules, horizontal/vertical boxes, and
-discretionaries. Text execution constructs these nodes, and paragraph and page
+explicit/TFM kerns, math boundaries, glue, penalties, rules, horizontal/vertical
+boxes, and discretionaries. Text execution constructs ordinary text material;
+math-boundary construction remains internal until math scanning is available. Paragraph and page
 packing supply compatible glue calculations. Box headers carry dimensions,
 shift, and glue sign/order/ratio. Font metrics resolve through immutable font IDs
 rather than per-character owners. Paragraph/page algorithms traverse and splice these

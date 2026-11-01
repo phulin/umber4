@@ -20,6 +20,16 @@ paragraphs uses the bounded, ligature-aware reconstruction contract below.
 The pretolerance pass leaves words unchanged; subsequent passes inspect only
 words following glue actually visited by the line search.
 
+Ordinary before/after math-boundary nodes retain their signed widths and suppress
+automatic glue/kern breaks and visited-glue hyphenation inside a formula. Explicit
+penalties and discretionaries remain eligible there. An after boundary immediately
+before glue is itself a breakpoint; its width is excluded from the line ending
+there. Math boundaries are discarded with leading glue, penalties, and explicit
+kerns after a break, with the same widths subtracted during search. Packing and
+detached output preserve surviving boundary widths without emitting glyphs.
+The scoped dimension `\mathsurround` is executable state, initialized to zero;
+math scanning and formula entry remain unsupported.
+
 Paragraph completion consumes the horizontal list, transforms its final glue
 into the terminal penalty, and appends paragraph-fill glue. Selected breaks
 transfer existing nodes into line boxes with left/right skips, indentation,
@@ -55,7 +65,7 @@ their upstream behavior. These rules follow `hpack` and `vpackage` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 Native comparisons inspect node dimensions and displayed glue settings; the
 page adapter additionally checks cumulative absolute output placements. Diagnostic text, overfull
-rules, general discretionary syntax, math,
+rules, general discretionary syntax, math construction,
 last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
 Unsupported infinite paragraph shrink fails explicitly rather than applying
 TeX's interactive recovery.
@@ -77,6 +87,10 @@ skips, and penalties. Native tracing confirms the emergency pass executes in its
 fixture. Cases include attainable and unattainable looseness, equal-cost repeated
 words, forced and overfull breaks, hanging/explicit shapes, kern boundaries, and
 controlled metrics plus the three real fonts identified in [fonts-text.md](fonts-text.md).
+The math-boundary adapter compares directly constructed ordinary lists with native
+inline formulas, including signed surrounding widths, adjacent words/glue/kerns,
+explicit breaks, suppressed hyphenation, and emergency passes. Its construction
+hook is confined to tests and does not provide a production math frontend.
 
 Run the native adapter with explicit executable/corpus paths and the executable's
 library search path when needed, as for the font adapter:

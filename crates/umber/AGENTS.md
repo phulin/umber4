@@ -93,7 +93,10 @@ small test-only DVI reader in `page_dvi_tests.rs`; `page_offset_tests.rs` checks
 signed offsets, scoped replay, and huge-page rejection. Scaled font headers use safe
 once-initialized chunk handles in `tfm.rs`, retaining the sealed resource set;
 `paragraph_tests.rs` covers ownership/replay and `paragraph_oracle_tests.rs`
-compares packed structures with native INITEX. `font_state_tests.rs` covers frozen
+compares packed structures with native INITEX; `math_boundary_tests.rs` and
+`math_boundary_oracle_tests.rs` cover signed math boundaries, paragraph breaks,
+hyphenation suppression, scoped math-surround state, and detached output.
+`font_state_tests.rs` covers frozen
 font identifiers, family bindings, and scoped replay against native TeX. `ligatures.rs`
 builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
 `tfm_tests.rs` use controlled metrics from `font_test_data.rs`;

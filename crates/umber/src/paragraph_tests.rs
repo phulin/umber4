@@ -6,6 +6,8 @@ use crate::{
     scalars::{ParagraphParam as P, Target},
     text::Mode,
 };
+#[path = "math_boundary_tests.rs"]
+mod math_boundary;
 fn engine(source: &[u8]) -> Engine<'_> {
     let mut e = Engine::new(source);
     e.register_tfm(b"test", &basic()).unwrap();

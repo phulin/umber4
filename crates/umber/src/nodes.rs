@@ -141,6 +141,14 @@ pub(crate) enum Kind {
         width: Scaled,
         explicit: bool,
     },
+    #[cfg_attr(
+        not(test),
+        expect(dead_code, reason = "math entry awaits its frontend")
+    )]
+    MathBoundary {
+        width: Scaled,
+        after: bool,
+    },
     Glue {
         spec: Glue,
         subtype: GlueKind,
@@ -231,6 +239,10 @@ impl Node {
             Kind::Kern { width, explicit } => Kind::Kern {
                 width: *width,
                 explicit: *explicit,
+            },
+            Kind::MathBoundary { width, after } => Kind::MathBoundary {
+                width: *width,
+                after: *after,
             },
             Kind::Glue { spec, subtype } => Kind::Glue {
                 spec: *spec,

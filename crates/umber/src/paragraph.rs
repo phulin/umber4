@@ -267,7 +267,9 @@ impl Engine<'_> {
                     .width
                     .0
             }
-            Kind::Kern { width, .. } | Kind::Rule { width, .. } => width.0,
+            Kind::Kern { width, .. }
+            | Kind::MathBoundary { width, .. }
+            | Kind::Rule { width, .. } => width.0,
             Kind::Box(b) => self.document.nodes.box_data(b).width.0,
             _ => return Err(Error::Unsupported),
         })

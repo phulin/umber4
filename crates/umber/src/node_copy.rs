@@ -115,6 +115,13 @@ impl NodeStore {
                     limit,
                 )?
             }
+            Kind::MathBoundary { width, after } => self.alloc_with_limit(
+                Kind::MathBoundary {
+                    width: *width,
+                    after: *after,
+                },
+                limit,
+            )?,
             Kind::Kern { width, explicit } => self.alloc_with_limit(
                 Kind::Kern {
                     width: *width,

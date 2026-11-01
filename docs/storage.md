@@ -361,6 +361,12 @@ ownership. Line breaking can reuse paragraph nodes while adding line boxes aroun
 the selected ranges. Packing computes dimensions over an existing list and
 constructs its box header directly beside it.
 
+Ordinary math boundaries contain scalar width/boundary-side data in existing node
+cells. They share their enclosing list's lifetime and version, require no separate
+storage or ownership root, and follow ordinary scalar copy/release operations.
+Paragraph search discards their widths at breaks using the same consuming list
+transfers as explicit kerns.
+
 Automatic hyphenation borrows font resources and pattern/exception roots for a
 visited word. Fixed character arrays and a reusable ligature stack describe its
 reconstruction; the stack contains scalar codes rather than per-character owners.

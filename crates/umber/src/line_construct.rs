@@ -59,7 +59,9 @@ impl Engine<'_> {
                         *spec = parameters.right;
                         *subtype = GlueKind::RightSkip;
                     }
-                    Kind::Kern { width, .. } => *width = crate::numeric::Scaled::ZERO,
+                    Kind::Kern { width, .. } | Kind::MathBoundary { width, .. } => {
+                        *width = crate::numeric::Scaled::ZERO
+                    }
                     Kind::Discretionary {
                         pre,
                         post,
@@ -155,7 +157,10 @@ impl Engine<'_> {
             }
             if !matches!(
                 self.document.nodes.get(p).kind,
-                Kind::Glue { .. } | Kind::Penalty(_) | Kind::Kern { explicit: true, .. }
+                Kind::Glue { .. }
+                    | Kind::Penalty(_)
+                    | Kind::Kern { explicit: true, .. }
+                    | Kind::MathBoundary { .. }
             ) {
                 break;
             }

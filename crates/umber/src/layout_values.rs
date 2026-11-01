@@ -69,6 +69,7 @@ pub(crate) enum DimenParam {
     ScriptSpace,
     HOffset,
     VOffset,
+    MathSurround,
 }
 #[allow(dead_code)]
 impl DimenParam {

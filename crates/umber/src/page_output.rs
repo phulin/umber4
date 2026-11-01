@@ -279,6 +279,9 @@ impl Engine<'_> {
                         frame.x = frame.x.wrapping_add(width.0);
                     }
                 }
+                Kind::MathBoundary { width, .. } => {
+                    frame.x = frame.x.wrapping_add(width.0);
+                }
                 Kind::Penalty(_)
                 | Kind::Discretionary { .. }
                 | Kind::Insertion(_)

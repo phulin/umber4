@@ -8,6 +8,8 @@ use crate::{
 use std::{path::PathBuf, process::Command};
 #[path = "hyphenation_render_oracle_tests.rs"]
 mod hyphenation_render;
+#[path = "math_boundary_oracle_tests.rs"]
+mod math_boundary;
 fn scaled(v: Scaled) -> String {
     let mut b = Vec::new();
     print_scaled(v, |c| b.push(c));
@@ -119,6 +121,13 @@ fn list_at(e: &Engine<'_>, contents: &List, prefix: &str, out: &mut Vec<String>)
                 if *explicit { " " } else { "" },
                 scaled(*width)
             ),
+            Kind::MathBoundary { width, after } => {
+                let mut s = format!("\\math{}", if *after { "off" } else { "on" });
+                if width.0 != 0 {
+                    s.push_str(&format!(", surrounded {}", scaled(*width)));
+                }
+                s
+            }
             Kind::Penalty(p) => format!("\\penalty {p}"),
             Kind::Language(language) => format!(
                 "\\setlanguage{} (hyphenmin {},{})",
@@ -167,11 +176,15 @@ impl Drop for Oracle {
 }
 impl Oracle {
     fn new() -> Self {
+        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let sequence = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let binary = std::env::var_os("UMBER_PDFTEX")
             .expect("explicit native oracle")
             .into();
-        let dir =
-            std::env::temp_dir().join(format!("umber-paragraph-oracle-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!(
+            "umber-paragraph-oracle-{}-{sequence}",
+            std::process::id()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(
             dir.join("texmf.cnf"),
@@ -181,6 +194,16 @@ impl Oracle {
         Self { dir, binary }
     }
     fn compare(&self, tfm: &[u8], settings: &str, body: &str) -> String {
+        self.compare_with(tfm, settings, body, body, |_, _| false)
+    }
+    fn compare_with(
+        &self,
+        tfm: &[u8],
+        settings: &str,
+        body: &str,
+        native_body: &str,
+        mut construct: impl FnMut(&mut Engine<'_>, crate::token::Read) -> bool,
+    ) -> String {
         let boot =
             r"\catcode123=1 \catcode125=2 \font\f=test \f\defaulthyphenchar=45\hyphenchar\f=45 ";
         let source = format!("{boot}{settings}{body}\\par\\end");
@@ -193,12 +216,14 @@ impl Oracle {
                 e.break_paragraph().unwrap();
                 break;
             }
-            e.execute(read).unwrap();
+            if !construct(&mut e, read) {
+                e.execute(read).unwrap();
+            }
         }
         let mut expected = Vec::new();
         list(&e, &e.document.text.vertical, 1, &mut expected);
         let source = format!(
-            "{boot}\\tracingparagraphs=1\\showboxbreadth=10000\\showboxdepth=10000\\setbox0=\\vbox{{{settings}{body}\\par}}\\showbox0\\end\n"
+            "{boot}\\tracingparagraphs=1\\showboxbreadth=10000\\showboxdepth=10000\\setbox0=\\vbox{{{settings}{native_body}\\par}}\\showbox0\\end\n"
         );
         std::fs::write(self.dir.join("test.tfm"), tfm).unwrap();
         std::fs::write(self.dir.join("probe.tex"), source).unwrap();

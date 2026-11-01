@@ -213,7 +213,7 @@ pub(crate) mod cmd {
         SKIP = 94 => [b"skip"] assignment;
         SKIP_REF = 95 => [] assignment;
         SKIP_DEF = 96 => [b"skipdef"] assignment;
-        DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz", b"overfullrule", b"splitmaxdepth", b"boxmaxdepth", b"delimitershortfall", b"nulldelimiterspace", b"scriptspace", b"hoffset", b"voffset"] assignment;
+        DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz", b"overfullrule", b"splitmaxdepth", b"boxmaxdepth", b"delimitershortfall", b"nulldelimiterspace", b"scriptspace", b"hoffset", b"voffset", b"mathsurround"] assignment;
         GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip", b"abovedisplayskip", b"abovedisplayshortskip", b"belowdisplayskip", b"belowdisplayshortskip", b"splittopskip"] assignment;
         FONT = 100 => [b"font"] assignment;
         SELECT_FONT = 101 => [b"nullfont"] assignment;
@@ -241,7 +241,7 @@ pub(crate) mod cmd {
         DEAD_CYCLES = 153 => [b"deadcycles", b"insertpenalties"] assignment;
         INSERT_ADJUST = 154 => [b"insert", b"vadjust"];
         ITALIC_CORRECTION = 155 => [b"/"];
-        UNSUPPORTED_LAYOUT = 122 => [b"mark", b"marks", b"vsplit", b"leaders", b"mathsurround"];
+        UNSUPPORTED_LAYOUT = 122 => [b"mark", b"marks", b"vsplit", b"leaders"];
         IFDIM = 99 => [b"ifdim"] conditional;
         MATH_CODE = 126 => [b"mathcode"] assignment;
         DEL_CODE = 127 => [b"delcode"] assignment;

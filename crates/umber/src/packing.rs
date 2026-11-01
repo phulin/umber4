@@ -120,7 +120,9 @@ impl Engine<'_> {
                     height = height.max(h.0);
                     depth = depth.max(d.0);
                 }
-                Kind::Kern { width, .. } => natural = natural.wrapping_add(width.0),
+                Kind::Kern { width, .. } | Kind::MathBoundary { width, .. } => {
+                    natural = natural.wrapping_add(width.0)
+                }
                 Kind::Glue { spec, .. } => {
                     natural = natural.wrapping_add(spec.width.0);
                     let o = spec.stretch_order as usize;

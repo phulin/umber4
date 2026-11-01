@@ -78,7 +78,8 @@ impl Search<'_, '_> {
                 Kind::Kern {
                     width: w,
                     explicit: true,
-                } => width[0] = width[0].wrapping_sub(w.0),
+                }
+                | Kind::MathBoundary { width: w, .. } => width[0] = width[0].wrapping_sub(w.0),
                 _ => break,
             }
             s = node.next;
