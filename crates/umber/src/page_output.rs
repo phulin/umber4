@@ -152,13 +152,18 @@ impl Engine<'_> {
                     if frame.vertical {
                         return Err(Error::Unsupported);
                     }
-                    let m = self
-                        .character_metrics(*font, *character)
-                        .ok_or(Error::Font)?;
+                    if *font as usize >= self.document.fonts.len {
+                        return Err(Error::Font);
+                    }
                     let scaled = self.document.fonts.descriptors[*font as usize]
                         .scaled
                         .ok_or(Error::Font)?;
-                    let local = page.font(&self.font_catalog.scaled[scaled]);
+                    let resource = &self.font_catalog.scaled[scaled];
+                    let m = resource
+                        .descriptor()
+                        .metrics(*character)
+                        .ok_or(Error::Font)?;
+                    let local = page.font(resource);
                     page.place(Placement::Glyph {
                         font: local,
                         character: *character,

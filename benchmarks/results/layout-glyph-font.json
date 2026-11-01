@@ -1,0 +1,302 @@
+{
+  "date": "2026-11-01T07:37:51.420959+00:00",
+  "before_commit": "09c09d6e845fd1c8b76d2cc9b710cdcd8f2d07ce",
+  "change": "Resolve the document font once per lowered glyph; borrow its immutable resource for both metric validation and output registration.",
+  "build": "ordinary cargo build --release --bin umber --example layout; default features; fat LTO; codegen-units=1; no extra RUSTFLAGS",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 0,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "warmups": 2,
+  "samples": 15,
+  "order": "Sequential cases, alternating before/after process order; pinned CPU; no concurrent builds or tests.",
+  "scope": "Whole release CLI process CPU and wall time, including detached output construction/retention/release. Original 600-paragraph inputs reused unchanged.",
+  "binary_sha256": {
+    "before": "0d86caa70ae8a9990617f09078c657546262ed055440c6da570e7c243b8e44f5",
+    "after": "5de24e9ca6d70f16a3170b8ce639ffabdda4541ad3059c8b519729d59fa7135a"
+  },
+  "adapter_sha256": {
+    "before": "46c5af816eae9c0406d0fadab778a2f7e61f8b7c56d16c035d9801248395933f",
+    "after": "e380c36a744e8d7aefb3f8ec22b9a13a8e8d20a89c2797a0fbe3eb8be75f9f9c"
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "font_sha256": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+      "cpu_ms": {
+        "before": [
+          54.139,
+          59.00799999999999,
+          60.574999999999996,
+          54.084,
+          53.599999999999994,
+          54.125,
+          54.622,
+          53.370999999999995,
+          55.665,
+          56.18599999999999,
+          54.721999999999994,
+          54.364999999999995,
+          56.56399999999999,
+          54.800999999999995,
+          55.184
+        ],
+        "after": [
+          54.129,
+          54.330999999999996,
+          54.934,
+          54.281,
+          53.483,
+          53.397,
+          54.395999999999994,
+          54.032,
+          54.882,
+          54.421,
+          53.474000000000004,
+          55.895,
+          54.068999999999996,
+          54.334999999999994,
+          54.227
+        ]
+      },
+      "wall_ms": {
+        "before": [
+          54.41019,
+          59.372653,
+          60.986470000000004,
+          54.352653000000004,
+          53.809653,
+          54.414933,
+          54.917937,
+          53.622976,
+          55.961693,
+          56.523406,
+          55.044465,
+          54.719533,
+          56.892026,
+          55.124305,
+          55.514222000000004
+        ],
+        "after": [
+          54.37948900000001,
+          54.629236999999996,
+          55.264506999999995,
+          54.643474,
+          53.727862,
+          53.678747,
+          54.659443,
+          54.280431,
+          55.276937,
+          54.738889,
+          53.769326,
+          56.254906,
+          54.381697,
+          54.637986999999995,
+          54.614089
+        ]
+      },
+      "median_cpu_ms": {
+        "before": 54.721999999999994,
+        "after": 54.281
+      },
+      "cpu_change_fraction": -0.00805891597529329,
+      "inspection_sha256": "c12a4a8bd55c042bfb61cd70b923c45bf527512bd70c04e5b98d458ea1cdb015",
+      "pages": 79,
+      "glyphs": 227323
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "font_sha256": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+      "cpu_ms": {
+        "before": [
+          54.08299999999999,
+          54.515,
+          54.873,
+          55.705999999999996,
+          54.98599999999999,
+          54.535999999999994,
+          54.94,
+          54.19799999999999,
+          53.923,
+          56.443,
+          55.672,
+          55.553,
+          56.952999999999996,
+          54.398,
+          54.671
+        ],
+        "after": [
+          54.18,
+          54.05199999999999,
+          53.862,
+          54.197,
+          55.800999999999995,
+          52.886,
+          53.436,
+          53.574,
+          53.336,
+          53.394,
+          53.536,
+          54.18299999999999,
+          56.09,
+          55.160999999999994,
+          54.080999999999996
+        ]
+      },
+      "wall_ms": {
+        "before": [
+          54.393219,
+          54.840521,
+          55.202849,
+          55.997336000000004,
+          55.345608,
+          54.807253,
+          55.246311999999996,
+          54.484750999999996,
+          54.199797000000004,
+          56.741564000000004,
+          56.02207,
+          55.906670999999996,
+          57.297180000000004,
+          54.721686999999996,
+          54.980495
+        ],
+        "after": [
+          54.460994,
+          54.360749,
+          54.158884,
+          54.49520699999999,
+          56.176373,
+          53.150039,
+          53.714281,
+          53.878147,
+          53.610998,
+          53.666830999999995,
+          53.868457,
+          54.476322,
+          56.459988,
+          55.483937,
+          54.368992
+        ]
+      },
+      "median_cpu_ms": {
+        "before": 54.873,
+        "after": 54.05199999999999
+      },
+      "cpu_change_fraction": -0.014961820931970182,
+      "inspection_sha256": "c76c001bec594728963a2dd4cfc49bf1f1038ce07907741d823d9b2c97e0dfd7",
+      "pages": 295,
+      "glyphs": 227323
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "font_sha256": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24",
+      "cpu_ms": {
+        "before": [
+          50.538,
+          48.929,
+          49.50399999999999,
+          49.912,
+          56.092000000000006,
+          49.484,
+          51.95499999999999,
+          49.905,
+          49.236999999999995,
+          51.42699999999999,
+          52.511,
+          51.216,
+          52.341,
+          60.573,
+          59.517999999999994
+        ],
+        "after": [
+          47.734,
+          47.733,
+          48.086999999999996,
+          47.169000000000004,
+          48.587999999999994,
+          50.011,
+          51.248000000000005,
+          49.302,
+          48.916000000000004,
+          53.04,
+          50.144999999999996,
+          50.121,
+          55.04099999999999,
+          52.736999999999995,
+          52.336999999999996
+        ]
+      },
+      "wall_ms": {
+        "before": [
+          50.880899,
+          49.203877999999996,
+          49.782379,
+          50.220242999999996,
+          56.430236,
+          49.836004,
+          52.35327,
+          50.277733,
+          49.740479,
+          51.92493,
+          52.894082000000004,
+          51.562373,
+          52.735671999999994,
+          61.014934,
+          59.931389
+        ],
+        "after": [
+          48.005103,
+          47.995991000000004,
+          48.376971999999995,
+          47.449888,
+          48.985579,
+          50.394437,
+          51.673314999999995,
+          49.676254,
+          49.312827,
+          53.442707,
+          50.586617000000004,
+          50.528779,
+          55.515432000000004,
+          53.269472,
+          52.837495
+        ]
+      },
+      "median_cpu_ms": {
+        "before": 51.216,
+        "after": 50.011
+      },
+      "cpu_change_fraction": -0.023527803811308923,
+      "inspection_sha256": "f974846aea94b0e3c8445d9d2fa86229cacc40eb8e9e303db6f7260389821d66",
+      "pages": 63,
+      "glyphs": 228277
+    }
+  ],
+  "validation": "Complete before/after inspection identical; every page/glyph character/x/y equals independently decoded native DVI; same-source replay at early/middle/late checkpoints equals uninterrupted output.",
+  "measured_source_sha256": "9071215e38ed7529d4efcf89dd3d9f45289dbce81890241637995fc880a0aca6",
+  "final_source_sha256": "bfffa6675ea7297a9b283d4eb5524cf07b6f46f97e2c006be8a1b0717e2032fc",
+  "final_binary_sha256": "f5a9db573650c6e9d33a5aa001d63c06e9e95d92d16cb237aa22746b292480fa",
+  "measured_and_final_text_sha256": "00440ef8de74a1f4b66cd15ffb65cb9411cc14d8bd731a4f506f50cf6fc5f4c5",
+  "build_identity_note": "The timed candidate and final formatted build have identical executable .text sections; binary identities differ in debug/source-location data.",
+  "profile": {
+    "tool": "Valgrind Callgrind 3.22.0; separate untimed current-baseline/final release runs",
+    "case": "book",
+    "instructions": {
+      "before": 381145849,
+      "after": 369727963
+    },
+    "change_fraction": -0.02995673711246427,
+    "character_metrics_calls": {
+      "before": 738527,
+      "after": 511204
+    },
+    "glyph_calls_removed": 227323,
+    "after_binary_sha256": "f5a9db573650c6e9d33a5aa001d63c06e9e95d92d16cb237aa22746b292480fa"
+  },
+  "focused_checks": "16 page tests and 12 font-text tests, including mixed-size fonts after engine drop, logical font bounds with a populated stale slot, nullfont and absent-character errors without publication; all-target/all-feature Clippy -D warnings, rustfmt, git diff --check.",
+  "limitations": "Short shared-machine process measurements on three fixed same-source INITEX prose inputs; results do not establish broader TeX/LaTeX or PDF performance. Instruction shares are separate from measured runtime changes."
+}

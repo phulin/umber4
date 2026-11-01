@@ -179,6 +179,33 @@ fn retained_font_versions_outlive_id_reuse_and_cache_growth() {
     assert_eq!(oldfont.name(), b"test");
 }
 #[test]
+fn mixed_font_line_uses_each_glyphs_metrics_and_retains_both_resources() {
+    let mut e = engine(
+        br"\font\f=test at10pt\font\g=test at20pt\hsize=100pt\vsize=50pt\parfillskip=0pt plus1fil\noindent\f a\g a\f a\end",
+    );
+    complete(&mut e);
+    let out = e.outcome();
+    drop(e);
+    let page = out.pages.get(0).unwrap();
+    assert_eq!(page.fonts().len(), 2);
+    assert_eq!(page.fonts()[0].size(), 10 * 65536);
+    assert_eq!(page.fonts()[1].size(), 20 * 65536);
+    let glyphs: Vec<_> = page
+        .placements()
+        .iter()
+        .filter_map(|p| match p {
+            Placement::Glyph {
+                font, character, x, ..
+            } => Some((*font, *character, *x)),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(
+        glyphs,
+        [(0, b'a', 0), (1, b'a', 491520), (0, b'a', 1474560)]
+    );
+}
+#[test]
 fn output_prefix_branch_append_and_both_drop_orders() {
     let mut e=Engine::new(br"\catcode123=1\catcode125=2\vsize=10pt\def\p{\hrule width5pt height2pt\penalty-10000}\p\p\p\p\p\p\p\p\p\p\p\p\p\p\p\p\p\p\p\p\end");
     while e.document.page.output.len() < 3 {
@@ -212,6 +239,28 @@ fn output_prefix_branch_append_and_both_drop_orders() {
 fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
     let mut e = engine(br"\font\f=test\f\end");
     complete(&mut e);
+    // A populated table slot above the logical loaded-font end must still be
+    // rejected, as must nullfont and an absent character in a valid font.
+    e.document.fonts.descriptors[2] = e.document.fonts.descriptors[1];
+    for (font, character) in [(0, b'a'), (1, 0), (2, b'a'), (u32::MAX, b'a')] {
+        let mut list = List::default();
+        let glyph = e
+            .document
+            .nodes
+            .alloc(Kind::Character { font, character })
+            .unwrap();
+        e.document.nodes.append(&mut list, glyph);
+        let bad = e
+            .document
+            .nodes
+            .alloc(Kind::Box(BoxData {
+                list,
+                ..BoxData::default()
+            }))
+            .unwrap();
+        assert_eq!(e.publish_page(bad, 0), Err(Error::Font));
+        assert!(e.outcome().pages.is_empty());
+    }
     let mut list = List::default();
     let glyph = e
         .document
