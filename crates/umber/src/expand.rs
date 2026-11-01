@@ -28,7 +28,7 @@ impl Engine<'_> {
             cmd::THE => match self.the_value()? {
                 crate::lists::Internal::Font(token) => {
                     self.check_source_limit()?;
-                    self.back(token);
+                    self.push_inline([token, Token(0)], 1, false);
                     Ok(())
                 }
                 crate::lists::Internal::Quantity(crate::quantities::Quantity::Integer(value)) => {
@@ -71,7 +71,7 @@ impl Engine<'_> {
                 let token = self
                     .with_scanner(crate::scanner::Scanner::Normal, |engine| engine.next_raw())?
                     .token;
-                self.push_inline([token, Token(0)], 1, true);
+                self.push_backed(token, true);
                 Ok(())
             }
             cmd::CSNAME => {
@@ -102,7 +102,7 @@ impl Engine<'_> {
                 -9..=-1 => {
                     self.insert_pair(Token::other(b'-'), Token::other(b'0' + (-value) as u8));
                 }
-                0..=9 => self.back(Token::other(b'0' + value as u8)),
+                0..=9 => self.push_inline([Token::other(b'0' + value as u8), Token(0)], 1, false),
                 _ => self.insert_pair(
                     Token::other(b'0' + (value / 10) as u8),
                     Token::other(b'0' + (value % 10) as u8),

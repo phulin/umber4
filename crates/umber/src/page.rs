@@ -1,12 +1,14 @@
 //! Incremental TeX82 build_page/fire_up, with default detached publication.
 use crate::{
     Engine, Error, Result,
+    execute::GroupKind,
     layout_values::{DimenParam, GlueParam},
     nodes::{BoxData, GlueKind, Kind, List, NodeId},
     numeric::{Glue, GlueOrder, Scaled, badness},
     output::Pages,
     packing::PackSpec,
     scalars::{PageParam, Target},
+    text::{Mode, TextState},
     token::*,
 };
 const AWFUL: i32 = 0x3fff_ffff;
@@ -39,11 +41,16 @@ impl Default for Measurements {
         }
     }
 }
+pub(crate) struct OutputFrame {
+    pub outer: TextState,
+    pub level: u16,
+}
 #[derive(Default)]
 pub(crate) struct PageState {
     pub current: List,
     pub state: Measurements,
     pub output: Pages,
+    pub dead_cycles: i32,
 }
 impl PageState {
     pub fn snapshot(&self) -> Self {
@@ -51,6 +58,7 @@ impl PageState {
             current: self.current.snapshot(),
             state: self.state,
             output: self.output.clone(),
+            dead_cycles: self.dead_cycles,
         }
     }
     pub fn quantity(&self, index: usize) -> Scaled {
@@ -65,7 +73,7 @@ impl PageState {
 }
 impl Engine<'_> {
     pub(crate) fn build_page(&mut self) -> Result<()> {
-        while !self.document.text.vertical.is_empty() {
+        while self.document.output_frame.is_none() && !self.document.text.vertical.is_empty() {
             let p = self.document.text.vertical.head();
             let node = self.document.nodes.get(p);
             let state = &mut self.document.page.state;
@@ -259,25 +267,20 @@ impl Engine<'_> {
         cost == AWFUL || pi <= -10000
     }
     fn fire_up(&mut self, candidate: NodeId) -> Result<()> {
-        if self.document.token_registers[OUTPUT_ROUTINE]
-            .owner
-            .as_ref()
-            .is_some_and(|v| v.tokens.len != 0)
-        {
-            return Err(Error::Unsupported);
-        }
         let s = self.document.page.state;
-        let penalty = match self.document.nodes.kind_mut(s.best_break) {
-            Kind::Penalty(pi) => {
-                let old = *pi;
-                *pi = 10000;
-                old
-            }
+        let penalty = match self.document.nodes.get(s.best_break).kind {
+            Kind::Penalty(pi) => pi,
             _ => 10000,
         };
         self.update_integer(Target::page(PageParam::OutputPenalty), true, |_| {
             Ok(penalty)
         })?;
+        if let Kind::Penalty(pi) = self.document.nodes.kind_mut(s.best_break) {
+            *pi = 10000;
+        }
+        if !self.document.boxes.head(255).is_null() {
+            return Err(Error::Unsupported);
+        }
         if candidate != s.best_break {
             let rest = self
                 .document
@@ -301,10 +304,85 @@ impl Engine<'_> {
         state.last_kern = 0;
         state.best_break = NodeId::NULL;
         state.best_previous = NodeId::NULL;
-        self.publish_page(page, penalty)
+        self.install_output_box(page);
+        if let Some(owner) = self.document.token_registers[OUTPUT_ROUTINE].owner.clone() {
+            if self.document.page.dead_cycles
+                >= self.document.scalars[Target::MAX_DEAD_CYCLES].value
+            {
+                return Err(Error::Unsupported);
+            }
+            self.document.page.dead_cycles = self.document.page.dead_cycles.wrapping_add(1);
+            let level = self.document.level.checked_add(1).ok_or(Error::Capacity)?;
+            let outer = std::mem::replace(
+                &mut self.document.text,
+                TextState {
+                    mode: Mode::InternalVertical,
+                    vertical_mode: Mode::InternalVertical,
+                    ..TextState::default()
+                },
+            );
+            // The frame owns the suspended contributions even if the following
+            // group/scanner operations fail. Restore abandons the whole root.
+            self.document.output_frame = Some(OutputFrame { outer, level });
+            self.push_tokens(owner, 0)?;
+            self.document
+                .sources
+                .last_mut()
+                .and_then(Source::cursor_mut)
+                .expect("nonempty output")
+                .role = SourceRole::Output;
+            self.open_group(GroupKind::Output)?;
+            self.normal_paragraph()?;
+            self.opening_brace()?;
+            Ok(())
+        } else {
+            let page = self.take_output_box();
+            self.publish_page(page)
+        }
+    }
+    pub(crate) fn prepare_output_end(&mut self, kind: GroupKind) -> Result<bool> {
+        let Some(frame) = &self.document.output_frame else {
+            return Ok(false);
+        };
+        if frame.level != self.document.level {
+            return Ok(false);
+        }
+        if kind != GroupKind::Simple {
+            return Err(Error::Group);
+        }
+        if !self.current_source_exhausted()
+            || !self
+                .document
+                .sources
+                .last()
+                .is_some_and(|s| matches!(s.role(), SourceRole::Output | SourceRole::BackedUp))
+        {
+            return Err(Error::Syntax);
+        }
+        self.pop_source();
+        self.end_graf()?;
+        Ok(true)
+    }
+    pub(crate) fn finish_output_group(&mut self) -> Result<()> {
+        if !self.document.boxes.head(255).is_null() {
+            return Err(Error::Unsupported);
+        }
+        let frame = self.document.output_frame.take().expect("output group");
+        let material = std::mem::take(&mut self.document.text.vertical);
+        self.document.text = frame.outer;
+        let mut material = material;
+        self.document.nodes.splice(
+            &mut material,
+            std::mem::take(&mut self.document.text.vertical),
+        );
+        self.document.text.vertical = material;
+        self.build_page()
     }
     pub(crate) fn end_pages(&mut self, read: Read) -> Result<bool> {
-        if self.document.page.current.is_empty() && self.document.text.vertical.is_empty() {
+        if self.document.page.current.is_empty()
+            && self.document.text.vertical.is_empty()
+            && self.document.page.dead_cycles == 0
+        {
             return Ok(true);
         }
         self.back_read(read);

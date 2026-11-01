@@ -35,7 +35,7 @@ impl<'a> Engine<'a> {
         }
         if self.name_in_progress {
             self.check_source_limit()?;
-            self.insert_pair(FROZEN_RELAX, read.token);
+            self.insert_relax(read.token);
             return Ok(());
         }
         let mut name = self

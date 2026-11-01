@@ -196,7 +196,7 @@ fn nested_empty_boxes_glue_kerns_and_unpainted_rules_end_runs_exactly() {
             ..BoxData::default()
         })
         .unwrap();
-    e.publish_page(page, 0).unwrap();
+    e.publish_page(page).unwrap();
     let out = e.outcome();
     drop(e);
     let page = out.pages.get(0).unwrap();

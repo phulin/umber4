@@ -122,7 +122,7 @@ impl Engine<'_> {
         let phase = *self.document.conditions.last().ok_or(Error::Conditional)?;
         match phase {
             Condition::Pending => {
-                self.insert_pair(FROZEN_RELAX, read.token);
+                self.insert_relax(read.token);
                 return Ok(());
             }
             _ if read.meaning.command == cmd::FI => {

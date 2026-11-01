@@ -58,8 +58,10 @@ lookup, ownership, and replay coverage in `hyphenation_tests.rs` and
 active/delta/passive search, `line_construct.rs` transfers selected ranges into
 lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glue;
 `packing_tests.rs` checks packing specifications against fixed geometry and native boxes;
-`output_state_tests.rs` covers scoped output-token storage and rejection before
-custom page output; `page.rs` owns incremental page state and default output, `vertical.rs` executes
+`output_state_tests.rs` covers scoped output-token storage;
+`output_routine_tests.rs` checks direct shipout, output groups, native fixtures,
+returned material, counters, and checkpoint replay; `page.rs` owns incremental
+page state, default/custom output, and its suspended frame; `vertical.rs` executes
 vertical contributions and page quantities, `page_output.rs` lowers owned nodes
 with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/
 rule records in immutable prefixes; `output_tests.rs` checks positioned run

@@ -18,8 +18,9 @@ load host-supplied TFM metrics and construct horizontal lists.
 packing into an owned contribution list. [Page construction](docs/pages.md)
 implements incremental TeX page breaks and publishes immutable box, glyph, and
 rule records through `Outcome.pages`, with retained font resources and checkpoint
-rollback. Output backends, custom output routines, formats, and restart after
-source edits remain design proposals.
+rollback. Custom output routines and explicit box shipout use detached page
+publication. Output backends, formats, and restart after source edits remain
+design proposals.
 
 [Native measurements](benchmarks/results/expansion.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.

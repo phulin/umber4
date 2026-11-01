@@ -87,9 +87,12 @@ Checkpoint capture includes register and save owners only through explicit
 snapshot operations paired with the node-store root. Open construction frames
 exclude checkpoint eligibility. Restore clears their inert handles while
 replacing the abandoned whole roots; it never releases old IDs through restored
-storage. Math destinations and output construction remain outside this execution
-slice. Packing retains the dimension/glue baseline
-in [paragraphs.md](paragraphs.md): exposed `\badness`, packing diagnostics, and
+storage. `\shipout` supplies a consuming destination to the same box scanner,
+including constructed boxes and void register operands. Output groups use the
+ordinary assignment/save stack with a separate document-owned enclosing text
+frame; their closing order and fail-fast errors are contracted in
+[pages.md](pages.md). Math destinations remain outside this execution slice.
+Packing retains the dimension/glue baseline in [paragraphs.md](paragraphs.md): exposed `\badness`, packing diagnostics, and
 overfull-rule insertion are not implemented. The corresponding initialized
 parameters remain state-only. These rules follow `begin_box`, `box_end`,
 `package`, `alter_box_dimen`, and `prefixed_command` in the

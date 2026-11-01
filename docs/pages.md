@@ -22,9 +22,11 @@ before the candidate enters totals. Equal costs select the latest break. An
 awful cost or forced penalty fires the best break, returning its node and later
 material ahead of the existing contributions. The selected penalty becomes
 10000; `\outputpenalty` receives its former value globally. Selected material
-is packed to the saved goal with the frozen maximum depth, then lowered and
-released. Infinite page shrink requires unsupported interactive recovery and
-returns `Unsupported`, as in the paragraph baseline.
+is packed to the saved goal with the frozen maximum depth, then installed in
+box 255 without changing its assignment level or creating a group save. A nonvoid
+box 255 at installation fails with `Unsupported`. Infinite page shrink requires
+unsupported interactive recovery and returns `Unsupported`, as in the paragraph
+baseline.
 
 Page work runs at TeX's paragraph-entry, paragraph-completion, vertical `\par`,
 and vertical penalty points. Vertical glue, kerns, and rules alone do not drain
@@ -38,17 +40,45 @@ behavior; it is not natural-height shipping.
 The vertical command slice includes `\vskip`, `\vfil`, `\vfill`, `\vss`,
 `\vfilneg`, `\hrule`, horizontal `\vrule`, `\prevdepth`,
 and writable page dimensions. Rules preserve running dimensions until traversal.
-Insertions, marks, custom output routines, explicit shipout/box construction,
-leaders, math, and output backends remain unsupported. Packing diagnostics and
-interactive recovery remain outside this fail-fast interpreter contract.
+Insertions, marks, leaders, math, and output backends remain unsupported.
+Explicit horizontal/vertical/void box shipout uses the same detached lowerer.
+Packing diagnostics and interactive recovery remain outside this fail-fast
+interpreter contract.
 
 `\output` is a scoped token parameter and participates in token-list reads,
 copies, aliases, and checkpoints. A nonempty directly scanned body receives the
 outer brace pair TeX stores; a token-list copy preserves its existing tokens.
-Empty values select default output. Custom routine execution remains unsupported:
-`fire_up` rejects a nonempty routine before changing the selected penalty,
-packing or consuming its page, or publishing output. Merely assigning a routine
-or retaining an unfinished page does not invoke it.
+Empty values select default output. A nonempty routine executes through the
+ordinary execution loop in an output group and internal vertical mode. Its retained input
+owner survives reassignment of `\output`; copied token lists remain verbatim,
+so a missing opening brace fails with `Syntax`. The document output frame owns
+the enclosing text state (which may already be horizontal) and group level.
+Page building stops while that frame exists. Page-dimension reads inside the
+routine expose the retained raw totals, including assignments made there, even
+though the next page has not started. Outside output, an unstarted page still
+reads as the default maximum goal and zero other dimensions.
+
+Before entry, `\deadcycles` is compared with scoped `\maxdeadcycles` (INITEX 25).
+A reached limit fails with `Unsupported`, before executing the routine or
+publishing a fallback page. Entry increments the global page counter. Numeric
+reads and assignments of `\deadcycles` access that direct state; assignments
+are inherently global. Real horizontal/vertical shipout resets it to zero,
+including huge-box rejection; void shipout changes nothing. Job completion
+requires empty page/contributions and zero dead cycles. `\end` in internal
+mode or an active output group fails with `Group`; horizontal mode first runs
+the current `\par` token and retries in vertical mode.
+
+Closing an output group accepts only a logically exhausted current source with
+role output text or backed-up input, following `fire_up` and output-group closing
+in TeX82. Source storage shape does not determine its role. Logical exhaustion
+includes all spans/windows. Only that accepted current source is popped: a
+backed-up closing brace can leave old routine input to run in the enclosing mode.
+An unbalanced source fails with `Syntax`; mismatched groups fail with `Group`;
+ordinary premature source EOF remains `Eof`. The paragraph ends before group
+assignments restore. Box 255 must then be void (`Unsupported` otherwise).
+Routine-produced material moves before old contributions, the enclosing text
+owner is restored, and page building resumes, possibly entering another routine.
+Interactive recovery is outside this fail-fast contract.
 
 Detached results expose an immutable page prefix, packed box records, absolute
 glyph/rule placements in scaled points, count registers, and output penalties.
@@ -188,9 +218,9 @@ and `\outputpenalty`, then installs `\output` token input in an output group and
 internal vertical mode. The main loop executes that routine as TeX code.
 No recursive copy of the whole interpreter or host callback is needed.
 
-Before entry, `fire_up` checks the dead-cycle limit. A reached limit follows the
-upstream recovery/default-output path without first executing the routine.
-Entering a routine increments dead cycles; shipout resets them.
+Before entry, `fire_up` checks the dead-cycle limit. A reached limit fails before routine execution; the native interactive
+recovery/default-output continuation is not implemented.
+Entering a routine increments dead cycles; nonvoid shipout resets them.
 
 The routine can inspect, split, take, copy, or repack box 255 and other boxes;
 make assignments; create more material; and explicitly `\shipout` a box. These
@@ -201,8 +231,8 @@ Closing the routine restores its group and checks box 255 consumption. Splice
 held-over insertions, then routine-produced material, then existing contributions
 in that order. Page building continues according to those transitions. If no output
 routine is supplied, the engine's default output path handles the prepared box.
-An empty routine and a routine that fails to consume its box must retain their
-specified recovery behavior.
+An empty token parameter selects default output; a nonempty routine that fails
+to consume its box fails with `Unsupported`.
 
 Shipout itself is an ordinary function that consumes or rejects the supplied box
 and performs deferred effects in traversal order. Backend lowering occurs there,

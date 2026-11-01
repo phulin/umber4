@@ -24,12 +24,14 @@ pub enum Progress {
 enum SavedSource {
     FileBoundary,
     Inline {
+        role: SourceRole,
         tokens: [Token; 2],
         position: u8,
         len: u8,
         suppress: bool,
     },
     Tokens {
+        role: SourceRole,
         position: u32,
         store: u32,
         owner: Option<Owner>,
@@ -88,6 +90,7 @@ impl<'a> Engine<'a> {
             && self.scanner == crate::scanner::Scanner::Normal
             && self.document.text.mode == crate::text::Mode::Vertical
             && self.document.box_frames.is_empty()
+            && self.document.output_frame.is_none()
     }
 
     /// Execute up to `command_budget` complete outer commands. Expansion and
@@ -113,6 +116,9 @@ impl<'a> Engine<'a> {
                     self.quiescent = true;
                     commands = commands.saturating_add(1);
                     continue;
+                }
+                if self.document.output_frame.is_some() || self.document.text.mode.is_inner() {
+                    return Err(Error::Group);
                 }
                 if self.document.level != 0 {
                     return Err(Error::Group);
@@ -185,11 +191,13 @@ impl<'a> Engine<'a> {
         let mut sources = Buffer::new(&self.checkpoint_stores.sources);
         sources.extend(self.document.sources.iter().map(|source| match source {
             Source::Inline {
+                role,
                 tokens,
                 position,
                 len,
                 suppress,
             } => SavedSource::Inline {
+                role: *role,
                 tokens: *tokens,
                 position: *position,
                 len: *len,
@@ -200,6 +208,7 @@ impl<'a> Engine<'a> {
                 // both pointers belong to that same window, including one-past.
                 let remaining = unsafe { c.end.offset_from(c.next) } as u32;
                 SavedSource::Tokens {
+                    role: c.role,
                     position: c.end_position - remaining,
                     store: c.store,
                     owner: c._owner.clone(),
@@ -274,6 +283,7 @@ impl<'a> Engine<'a> {
         // These handles belong to the abandoned whole node-store root. Dropping
         // them is inert; never traverse their IDs through restored storage.
         self.document.box_frames.clear();
+        self.document.output_frame = None;
         // Sources are discarded before packets; no borrowed argument window is
         // read after this point. Clear every packet, including scanner failures
         // that never installed a body owner, and rebuild only allocator lists.
@@ -296,17 +306,20 @@ impl<'a> Engine<'a> {
             let source = match source {
                 SavedSource::FileBoundary => Source::FileBoundary,
                 SavedSource::Inline {
+                    role,
                     tokens,
                     position,
                     len,
                     suppress,
                 } => Source::Inline {
+                    role: *role,
                     tokens: *tokens,
                     position: *position,
                     len: *len,
                     suppress: *suppress,
                 },
                 SavedSource::Tokens {
+                    role,
                     position,
                     store,
                     owner,
@@ -329,6 +342,7 @@ impl<'a> Engine<'a> {
                         self.values.window(span, *position)
                     };
                     Source::Tokens(Cursor {
+                        role: *role,
                         next,
                         end,
                         end_position,
@@ -354,6 +368,7 @@ impl<'a> Engine<'a> {
             nodes,
             boxes,
             box_frames: _,
+            output_frame: _,
             fonts,
             hyphenation,
             text,

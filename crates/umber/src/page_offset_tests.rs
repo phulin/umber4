@@ -50,7 +50,7 @@ fn huge_page_checks_include_signed_offsets_before_mag_or_publication() {
                 ..BoxData::default()
             })
             .unwrap();
-        let result = engine.publish_page(node, 0);
+        let result = engine.publish_page(node);
         assert_eq!(
             result,
             if rejected {

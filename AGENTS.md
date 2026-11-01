@@ -19,6 +19,7 @@ proposal until reviewed with the user.
   and its native CLI.
 - `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.
 - `fixtures/mvp/`: same-source INITEX compatibility fixtures.
+- `fixtures/output/`: font-free INITEX output-routine and explicit shipout fixtures.
 - `scripts/`: native oracle setup and compatibility comparison.
 - `benchmarks/`: source generators, native profile builds, expansion and prose/layout
   CPU, checkpoint, and memory measurements, and retained measurement reports;

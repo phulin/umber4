@@ -90,6 +90,7 @@ impl Engine<'_> {
                 position,
                 len,
                 suppress,
+                ..
             } = source
             {
                 if *position == *len {
@@ -222,6 +223,7 @@ impl Engine<'_> {
             _ => self.values.window(span, span.start),
         };
         self.document.sources.push(Source::Tokens(Cursor {
+            role: SourceRole::Other,
             next,
             end,
             end_position: window_end_position,
@@ -284,26 +286,26 @@ impl Engine<'_> {
             _ => {}
         }
     }
-    pub(crate) fn retire_exhausted(&mut self) {
-        loop {
-            let done = match self.document.sources.last() {
-                Some(Source::Inline { position, len, .. }) => position == len,
-                Some(Source::Tokens(c)) => {
-                    c.next == c.end
-                        && c.end_position == c.span_end
-                        && self.span_for(c.argument, c.span_index + 1).is_none()
-                }
-                Some(Source::WriteBoundary { .. } | Source::FileBoundary) | None => false,
-            };
-            if !done {
-                break;
+    pub(crate) fn current_source_exhausted(&self) -> bool {
+        match self.document.sources.last() {
+            Some(Source::Inline { position, len, .. }) => position == len,
+            Some(Source::Tokens(c)) => {
+                c.next == c.end
+                    && c.end_position == c.span_end
+                    && self.span_for(c.argument, c.span_index + 1).is_none()
             }
+            _ => false,
+        }
+    }
+    pub(crate) fn retire_exhausted(&mut self) {
+        while self.current_source_exhausted() {
             self.pop_source();
         }
     }
     #[inline]
     pub(crate) fn push_inline(&mut self, tokens: [Token; 2], len: u8, suppress: bool) {
         self.document.sources.push(Source::Inline {
+            role: SourceRole::Inserted,
             tokens,
             position: 0,
             len,
@@ -312,7 +314,17 @@ impl Engine<'_> {
     }
     #[inline]
     pub(crate) fn back(&mut self, token: Token) {
-        self.push_inline([token, Token(0)], 1, false);
+        self.push_backed(token, false);
+    }
+    pub(crate) fn push_backed(&mut self, token: Token, suppress: bool) {
+        self.push_inline([token, Token(0)], 1, suppress);
+        if let Some(Source::Inline { role, .. }) = self.document.sources.last_mut() {
+            *role = SourceRole::BackedUp;
+        }
+    }
+    pub(crate) fn insert_relax(&mut self, original: Token) {
+        self.back(original);
+        self.push_inline([FROZEN_RELAX, Token(0)], 1, false);
     }
     pub(crate) fn insert_pair(&mut self, first: Token, second: Token) {
         self.push_inline([first, second], 2, false);

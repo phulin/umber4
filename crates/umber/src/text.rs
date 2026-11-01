@@ -267,11 +267,7 @@ impl Engine<'_> {
         self.back(self.document.par);
     }
     pub(crate) fn back_read(&mut self, read: Read) {
-        self.push_inline(
-            [read.token, Token(0)],
-            1,
-            read.meaning == Meaning::NOEXPAND_RELAX,
-        );
+        self.push_backed(read.token, read.meaning == Meaning::NOEXPAND_RELAX);
     }
     pub(crate) fn adjust_space_factor(&mut self, c: u8) {
         let n = self.document.scalars[Target::sfcode(c as usize)].value;

@@ -268,7 +268,7 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
                 ..BoxData::default()
             })
             .unwrap();
-        assert_eq!(e.publish_page(bad, 0), Err(Error::Font));
+        assert_eq!(e.publish_page(bad), Err(Error::Font));
         assert!(e.outcome().pages.is_empty());
     }
     let mut list = List::default();
@@ -290,7 +290,7 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
             ..BoxData::default()
         })
         .unwrap();
-    assert_eq!(e.publish_page(bad, 0), Err(Error::Unsupported));
+    assert_eq!(e.publish_page(bad), Err(Error::Unsupported));
     assert!(e.outcome().pages.is_empty());
     let rule = e
         .document
@@ -306,7 +306,7 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
     let good = e
         .vpackage(list, PackSpec::To(Scaled(10)), Scaled(0))
         .unwrap();
-    e.publish_page(good, 0).unwrap();
+    e.publish_page(good).unwrap();
     assert_eq!(
         e.outcome()
             .pages
@@ -377,7 +377,7 @@ fn vpackage_limits_final_depth_without_clipping_contents() {
         (b.width, b.height, b.depth),
         (Scaled(100), Scaled(20), Scaled(2))
     );
-    e.publish_page(boxed, 0).unwrap();
+    e.publish_page(boxed).unwrap();
     assert_eq!(
         e.outcome()
             .pages
@@ -439,7 +439,7 @@ fn first_accepted_page_freezes_mag_but_huge_rejection_does_not() {
             ..BoxData::default()
         })
         .unwrap();
-    assert_eq!(e.publish_page(huge, 0), Err(Error::Overflow));
+    assert_eq!(e.publish_page(huge), Err(Error::Overflow));
     assert!(e.outcome().pages.is_empty());
     assert_eq!(e.document.layout_values.prepared_mag, None);
 }
@@ -510,10 +510,10 @@ fn output_font_binding_crosses_nested_boxes_and_resets_for_each_page() {
             ..BoxData::default()
         })
         .unwrap();
-    e.publish_page(outer, 0).unwrap();
+    e.publish_page(outer).unwrap();
     // The last font on the first page is the first font on the next page.
     let next = boxed(&mut e, &[3, 3, 1, 4]);
-    e.publish_page(next, 0).unwrap();
+    e.publish_page(next).unwrap();
     let out = e.outcome();
     drop(e);
     let p = out.pages.get(0).unwrap();

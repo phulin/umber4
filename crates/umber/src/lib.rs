@@ -137,6 +137,7 @@ pub(crate) struct Document<'a> {
     pub nodes: nodes::NodeStore,
     pub boxes: boxes::Registers,
     pub box_frames: Vec<boxes::Frame>,
+    pub output_frame: Option<page::OutputFrame>,
     pub fonts: fonts::Fonts,
     pub hyphenation: hyphenation::Hyphenation,
     pub text: text::TextState,
@@ -170,6 +171,7 @@ impl<'a> Engine<'a> {
                 nodes: nodes::NodeStore::default(),
                 boxes: boxes::Registers::default(),
                 box_frames: Vec::new(),
+                output_frame: None,
                 fonts: fonts::Fonts::default(),
                 hyphenation: hyphenation::Hyphenation::default(),
                 text: text::TextState::default(),
@@ -345,6 +347,8 @@ mod paragraph_oracle_tests;
 #[cfg(test)]
 mod paragraph_tests;
 
+#[cfg(test)]
+mod output_routine_tests;
 #[cfg(test)]
 mod output_state_tests;
 #[cfg(test)]

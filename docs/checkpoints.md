@@ -45,7 +45,12 @@ construction exclude eligibility even between complete commands; internal
 vertical mode and its paragraphs cannot produce a handoff. Restore clears
 all suspended enclosing text owners before replacing the abandoned whole roots;
 ordinary group restoration instead releases displaced boxes through the live
-store. Future construction nests and output routines must extend these rules.
+store. The document output frame likewise excludes eligibility. Command budgets
+finish its semantic group and subsequent page work before returning a boundary;
+shipout may publish a prefix during that work without permitting a checkpoint.
+Restore clears abandoned output frames before replacing node roots. Dead cycles
+and scoped maximum dead cycles are retained. Input snapshots retain explicit
+source roles, including old routine input left after a backed-up closing brace.
 Immutable registered TFM resources share a sealed resource-set owner. Registration
 seals at the first nonzero advance, so restore cannot change observed metric bytes;
 retained output font chunks keep the resource set alive beyond session teardown.

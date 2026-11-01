@@ -40,7 +40,7 @@ impl Engine<'_> {
                 .sources
                 .push(Source::WriteBoundary { position: 0 });
             self.push_tokens(tokens, 0)?;
-            self.back(Token::character(1, b'{'));
+            self.push_inline([Token::character(1, b'{'), Token(0)], 1, false);
             let mut bytes = Vec::new();
             self.with_scanner(Scanner::Absorbing, |engine| {
                 engine.opening_brace()?;

@@ -76,6 +76,7 @@ impl Engine<'_> {
                 | cmd::COUNT_REF
                 | cmd::CATCODE
                 | cmd::ENDLINE
+                | cmd::DEAD_CYCLES
                 | cmd::INTEGER_PARAM
                 | cmd::CASE_CODE
                 | cmd::CHAR_GIVEN

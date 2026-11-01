@@ -89,7 +89,11 @@ fn record(b: &BoxData, parent: Option<u32>, x: i32, y: i32) -> PackedBox {
     }
 }
 impl Engine<'_> {
-    pub(crate) fn publish_page(&mut self, node: DetachedNode, penalty: i32) -> Result<()> {
+    pub(crate) fn publish_page(&mut self, node: DetachedNode) -> Result<()> {
+        self.document.page.dead_cycles = 0;
+        let penalty = self.document.scalars
+            [crate::scalars::Target::page(crate::scalars::PageParam::OutputPenalty)]
+        .value;
         let Kind::Box(b) = &self.document.nodes.get(node.id()).kind else {
             unreachable!()
         };

@@ -43,6 +43,7 @@ impl Registers {
 }
 #[derive(Clone, Copy)]
 pub(crate) enum Destination {
+    Shipout,
     Append(Scaled),
     Register { index: usize, global: bool },
 }
@@ -184,7 +185,11 @@ impl Engine<'_> {
         self.finish_box(frame.destination, Some(node))
     }
     fn finish_box(&mut self, destination: Destination, node: Option<DetachedNode>) -> Result<()> {
-        if let Destination::Register { index, global } = destination {
+        if let Destination::Shipout = destination {
+            if let Some(node) = node {
+                self.publish_page(node)?;
+            }
+        } else if let Destination::Register { index, global } = destination {
             let mut list = List::default();
             if let Some(node) = node {
                 self.document.nodes.append(&mut list, node);
@@ -218,6 +223,18 @@ impl Engine<'_> {
             }
         }
         Ok(())
+    }
+    pub(crate) fn install_output_box(&mut self, node: DetachedNode) {
+        debug_assert!(self.document.boxes.head(255).is_null());
+        self.document
+            .nodes
+            .append(&mut self.document.boxes.0[255].list, node);
+    }
+    pub(crate) fn take_output_box(&mut self) -> DetachedNode {
+        self.document
+            .nodes
+            .pop_front(&mut self.document.boxes.0[255].list)
+            .expect("prepared page")
     }
     pub(crate) fn restore_box(&mut self, index: usize, list: List, level: u16) {
         let discarded = if self.document.boxes.0[index].level == 0 {

@@ -65,13 +65,13 @@ impl Engine<'_> {
             if meaning.expandable() {
                 return Ok(false);
             }
-            // A nonspace terminator already has its original token identity at
-            // the cursor. Its next read resolves its meaning afresh, just as a
-            // backed token would. Inline sources retain the ordinary reader's
-            // one-read suppression handling.
-            if meaning.command == cmd::SPACE {
-                // SAFETY: the terminating token is inside this source window.
-                cursor.next = unsafe { cursor.next.add(1) };
+            // TeX reads and backs a nonspace terminator. Its source role is
+            // observable when the token closes an output group, so retaining
+            // it at the original cursor would change output semantics.
+            // SAFETY: the terminating token is inside this source window.
+            cursor.next = unsafe { cursor.next.add(1) };
+            if meaning.command != cmd::SPACE {
+                self.back(token);
             }
             return Ok(true);
         }
@@ -113,6 +113,7 @@ impl Engine<'_> {
             });
         }
         match read.meaning.command {
+            cmd::DEAD_CYCLES => Ok(self.document.page.dead_cycles),
             cmd::PAR_SHAPE => Ok(self
                 .document
                 .layout_values

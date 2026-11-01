@@ -24,9 +24,17 @@ impl Engine<'_> {
     }
     pub(crate) fn page_quantity(&self, read: Read) -> Result<Option<Quantity>> {
         Ok(match read.meaning.command {
-            cmd::PAGE_DIMEN => Some(Quantity::Dimension(
-                self.document.page.quantity(read.meaning.value as usize),
-            )),
+            cmd::PAGE_DIMEN => {
+                let index = read.meaning.value as usize;
+                Some(Quantity::Dimension(
+                    if self.document.output_frame.is_some() {
+                        // start_new_page retains raw totals for output_text reads.
+                        Scaled(self.document.page.state.totals[index])
+                    } else {
+                        self.document.page.quantity(index)
+                    },
+                ))
+            }
             cmd::PREV_DEPTH => {
                 if !self.document.text.mode.is_vertical() {
                     return Err(Error::Syntax);

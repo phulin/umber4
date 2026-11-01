@@ -189,7 +189,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines", b"fam", b"language", b"lefthyphenmin", b"righthyphenmin"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines", b"fam", b"language", b"lefthyphenmin", b"righthyphenmin", b"maxdeadcycles"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -237,7 +237,9 @@ pub(crate) mod cmd {
         PAGE_DIMEN = 118 => [b"pagegoal", b"pagetotal", b"pagestretch", b"pagefilstretch", b"pagefillstretch", b"pagefilllstretch", b"pageshrink", b"pagedepth"] assignment;
         PREV_DEPTH = 119 => [b"prevdepth"] assignment;
         LAST_ITEM = 121 => [b"lastpenalty", b"lastkern", b"lastskip"];
-        UNSUPPORTED_LAYOUT = 122 => [b"insert", b"mark", b"marks", b"shipout", b"vsplit", b"leaders", b"mathsurround"];
+        SHIPOUT = 152 => [b"shipout"];
+        DEAD_CYCLES = 153 => [b"deadcycles"] assignment;
+        UNSUPPORTED_LAYOUT = 122 => [b"insert", b"mark", b"marks", b"vsplit", b"leaders", b"mathsurround"];
         IFDIM = 99 => [b"ifdim"] conditional;
         MATH_CODE = 126 => [b"mathcode"] assignment;
         DEL_CODE = 127 => [b"delcode"] assignment;
@@ -517,7 +519,15 @@ impl Packet {
         self.owners.clear();
     }
 }
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum SourceRole {
+    Other,
+    Inserted,
+    BackedUp,
+    Output,
+}
 pub(crate) struct Cursor {
+    pub role: SourceRole,
     pub next: *const Token,
     pub end: *const Token,
     pub end_position: u32,
@@ -531,6 +541,7 @@ pub(crate) struct Cursor {
 pub(crate) enum Source {
     Tokens(Cursor),
     Inline {
+        role: SourceRole,
         tokens: [Token; 2],
         position: u8,
         len: u8,
@@ -542,6 +553,13 @@ pub(crate) enum Source {
     },
 }
 impl Source {
+    pub fn role(&self) -> SourceRole {
+        match self {
+            Self::Tokens(c) => c.role,
+            Self::Inline { role, .. } => *role,
+            _ => SourceRole::Other,
+        }
+    }
     #[inline(always)]
     pub fn cursor(&self) -> Option<&Cursor> {
         match self {

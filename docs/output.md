@@ -7,8 +7,8 @@ and immutable resource owners, not live TeX node IDs.
 
 ## Executable detached baseline
 
-The [page contract](pages.md) defines the current default output path, without
-DVI/PDF serialization. `Outcome.pages` is a cheap retained prefix; `Pages::iter`
+The [page contract](pages.md) defines the current default and explicit shipout
+paths, without DVI/PDF serialization. `Outcome.pages` is a cheap retained prefix; `Pages::iter`
 and `get` expose immutable `Page` records. `Pages::iter` builds a temporary
 directory of borrowed chunk references in an iterator-owned `Vec` for forward
 document traversal. Each page owns packed box records (including parent indices
@@ -49,8 +49,11 @@ every page.
 The traversal uses existing node lists and cumulative glue rounding, writes
 records and glyph bytes directly into typed pooled buffers, and releases the live page tree on
 success or failure. Only complete successful traversals append a page record.
-Huge boxes are consumed and return `Overflow`; incompatible magnification returns
-`Number`. The first accepted page prepares magnification, paired with the existing
+Shipout samples the current `\outputpenalty`, count registers, and offsets,
+including assignments made inside an output routine. It consumes any nonvoid
+horizontal or vertical box and resets dead cycles even on huge-box rejection.
+Void shipout has no effect. Huge boxes are consumed and return `Overflow`;
+incompatible magnification returns `Number`. The first accepted page prepares magnification, paired with the existing
 restored first-use state. No raw node or document-font identity crosses the result
 boundary. Both output and font header chunks have sixteen slots; held partial
 output chunks may pin a bounded invisible suffix, and held font chunks pin the
@@ -64,6 +67,16 @@ native/font environment used by the paragraph adapter:
 
 ```bash
 cargo test --lib upstream_page_breaks_boxes_glue_and_absolute_placements -- --ignored
+```
+
+The font-free fixtures in `fixtures/output/` cover direct and routine shipout,
+multiple publication, dead cycles, returned material, retained routine input,
+verbatim token-list copies, and fail-fast errors. The native adapter compares
+TeX-visible markers, success/failure, page counts, and DVI placements (including
+prefixes published before errors):
+
+```bash
+cargo test --lib upstream_output_routine_state_and_dvi_geometry -- --ignored
 ```
 
 ## 1. Shipout is execution

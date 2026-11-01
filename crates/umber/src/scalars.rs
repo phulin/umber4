@@ -27,6 +27,7 @@ impl Target {
     pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
     pub const NEWLINECHAR: Self = Self((PARAM_BASE + 32) as u16);
     pub const FAM: Self = Self((PARAM_BASE + 37) as u16);
+    pub const MAX_DEAD_CYCLES: Self = Self((PARAM_BASE + 41) as u16);
     pub const LANGUAGE: Self = Self((PARAM_BASE + 38) as u16);
     // Font IDs share assignment/save storage, but these targets deliberately
     // have no numeric scalar_target conversion.
@@ -88,6 +89,7 @@ impl Default for Scalars {
         });
         state[Target::ENDLINE].value = 13;
         state[Target::FAM].value = 0;
+        state[Target::MAX_DEAD_CYCLES].value = 25;
         for (index, value) in [0, 92, 0, 1, 1, 1970, 1000, 0, 0].into_iter().enumerate() {
             state[Target::parameter(index)].value = value;
         }

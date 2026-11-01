@@ -39,7 +39,7 @@ impl Engine<'_> {
             self.push_tokens(tokens.finish(), 0)
         } else if let Some(token) = output.first {
             self.check_source_limit()?;
-            self.back(token);
+            self.push_inline([token, Token(0)], 1, false);
             Ok(())
         } else {
             Ok(())
