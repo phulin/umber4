@@ -151,10 +151,6 @@ pub(crate) struct Delimiter {
     pub large_family: u8,
     pub large_char: u8,
 }
-#[cfg_attr(
-    not(test),
-    expect(dead_code, reason = "boundary construction awaits math frontend")
-)]
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Side {
     Left,

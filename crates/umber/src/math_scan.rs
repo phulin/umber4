@@ -11,6 +11,7 @@ impl Engine<'_> {
                 }
                 code
             }
+            cmd::DELIMITER => self.scan_delimiter_code()? >> 12,
             _ => {
                 let character = if read.meaning.command == cmd::CHAR {
                     self.scan_index()? as u8
@@ -44,7 +45,13 @@ impl Engine<'_> {
             let read = self.nonspace(true)?;
             match read.meaning.command {
                 cmd::RELAX => continue,
-                11 | 12 | cmd::CHAR_GIVEN | cmd::CHAR | cmd::MATH_GIVEN | cmd::MATH_CHAR => {
+                11
+                | 12
+                | cmd::CHAR_GIVEN
+                | cmd::CHAR
+                | cmd::MATH_GIVEN
+                | cmd::MATH_CHAR
+                | cmd::DELIMITER => {
                     let Some(code) = self.math_character_code(read)? else {
                         continue;
                     };

@@ -102,6 +102,29 @@ Scripts attach to the immediate eligible tail or a new empty Ord; duplicate
 scripts fail without overwriting an existing owner. Eight spacing classes,
 explicit styles, and operator limit switches are executable.
 
+`\delimiter` scans a nonnegative 27-bit code. Ordinary execution and immediate
+field scanning use its upper 15 bits as a math-character code, with the existing
+class/family rules. Delimiter operands for `\left` and `\right` instead skip
+expanded spaces/relax and accept letter/other characters through `\delcode`, or
+an explicit `\delimiter` code. Ordinary character definitions, `\char`, and math
+character commands are not delimiter operands. Math-active mathcodes do not
+affect a letter/other delimiter lookup. The low 24 bits retain small/large
+family/character fields without a `\fam` override. Missing/negative delimiter
+lookups back the offending token and fail; out-of-range explicit codes return
+`Number` without interactive recovery.
+
+A left/right frame owns its list from the initial Left boundary until a matching
+Right boundary closes its typed group. Completion transfers that list into an
+Inner subsidiary nucleus after restoring the left group's bindings. It does not
+convert the subsidiary list: assignments after `\right.`, including plain's
+`\n@space`, still affect conversion of the completed formula. Scripts attach to
+the resulting Inner atom, or to a new empty Ord immediately after an opening
+boundary. Braces, shifts, and `\endgroup` cannot close a left/right group. An
+extra `\right` in the formula's MathShift group scans its delimiter before failing;
+a mismatched intervening group fails before that operand is scanned. Boundary
+temporaries are released on scanning/group-entry failure, independently of live
+outer math and box owners.
+
 Assignments, definitions, and diagnostics retain their ordinary execution paths.
 Physical kern/glue/rule/penalty material retains ordinary units. `\/` contributes
 a normal zero kern in math. `\mkern` retains math units in a scalar arena node
@@ -113,9 +136,9 @@ math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
 owners. Active math frames exclude checkpoint handoff. Scanned choices,
-fractions, delimiter groups, radicals, decorations, accents, mu glue, displays,
+fractions, radicals, decorations, accents, mu glue, displays,
 and alignments remain unsupported; their pure conversion support is separate.
-Future fraction and delimiter frames will own incomplete fractions until their
+Future fraction frames will own incomplete fractions until their
 semantic groups close.
 
 Keep the distinction between a math character's stored family/code and the

@@ -7,6 +7,9 @@ pub(crate) enum FieldSlot {
     Sub,
     Sup,
 }
+#[cfg(test)]
+#[path = "math_delimiter_ownership_tests.rs"]
+mod delimiter_tests;
 #[derive(Clone, Copy)]
 pub(crate) struct FieldTarget {
     pub atom: MathId,
@@ -22,6 +25,32 @@ impl FieldSlot {
     }
 }
 impl MathStore {
+    pub fn set_boundary_delimiter(&mut self, id: MathId, value: Delimiter) {
+        let Kind::Boundary { delimiter, .. } = &mut self.node_mut(id).kind else {
+            unreachable!("boundary operand target")
+        };
+        *delimiter = value;
+    }
+    pub fn close_delimited(&mut self, mut list: MathList, right: MathList) -> MathList {
+        debug_assert!(matches!(
+            self.node(list.head).kind,
+            Kind::Boundary {
+                side: Side::Left,
+                ..
+            }
+        ));
+        debug_assert_eq!(right.head, right.tail);
+        debug_assert!(matches!(
+            self.node(right.head).kind,
+            Kind::Boundary {
+                side: Side::Right,
+                ..
+            }
+        ));
+        let tail = list.tail;
+        self.insert_after(&mut list, tail, right);
+        list
+    }
     pub fn atom_class(&self, id: MathId) -> Option<Class> {
         match &self.node(id).kind {
             Kind::Atom(a) => Some(a.class),

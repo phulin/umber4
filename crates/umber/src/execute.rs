@@ -10,6 +10,7 @@ pub(crate) enum GroupKind {
     Insert,
     MathShift,
     MathField,
+    MathLeft,
 }
 pub(crate) enum Save {
     Boundary(GroupKind),

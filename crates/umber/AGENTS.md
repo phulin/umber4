@@ -30,6 +30,12 @@ math-character meanings, checkpoints, and the explicit native state oracle;
 `math_frontend.rs` owns inline/field construction frames and mode transitions,
 `math_scan.rs` scans immediate fields/scripts, and `math_frontend_store.rs`
 supplies narrow stable-ID field transfers and restore abandonment.
+`math_delimiter_frontend.rs` scans delimiter operands and owns left/right group
+completion; `math_delimiter_frontend_tests.rs` checks failure/cursor/replay
+boundaries, and `math_delimiter_frontend_oracle_tests.rs` compares scanned
+formulas and unchanged plain size macros with native geometry and DVI.
+`math_delimiter_ownership_tests.rs` bounds the existing arena to check rejection
+at right-boundary and final Inner transfers without production allocation hooks.
 `math_frontend_tests.rs` covers mode/group/ownership/replay boundaries and
 `math_frontend_oracle_tests.rs` compares unchanged inline sources with native
 box geometry and DVI placements.

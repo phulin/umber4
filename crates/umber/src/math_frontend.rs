@@ -5,7 +5,10 @@ use crate::{
     boxes::Destination,
     execute::GroupKind,
     layout_values::DimenParam,
-    math::{Atom, Class, Field, FieldSlot, FieldTarget, Kind, Limits, MathId, MathList, Style},
+    math::{
+        Atom, Class, Delimiter, Field, FieldSlot, FieldTarget, Kind, Limits, MathId, MathList,
+        Side, Style,
+    },
     nodes::{self, DetachedNode},
     numeric::Scaled,
     scalars::Target,
@@ -16,6 +19,7 @@ use crate::{
 pub(crate) enum Context {
     Inline(TextState),
     Field(FieldTarget),
+    LeftRight,
 }
 pub(crate) struct Frame {
     pub list: MathList,
@@ -61,7 +65,13 @@ impl Engine<'_> {
             return Ok(false);
         }
         match command {
-            11 | 12 | cmd::CHAR_GIVEN | cmd::CHAR | cmd::MATH_GIVEN | cmd::MATH_CHAR => {
+            11
+            | 12
+            | cmd::CHAR_GIVEN
+            | cmd::CHAR
+            | cmd::MATH_GIVEN
+            | cmd::MATH_CHAR
+            | cmd::DELIMITER => {
                 if let Some(code) = self.math_character_code(read)? {
                     let class = if code >= 0x7000 {
                         Class::Ord
@@ -96,6 +106,7 @@ impl Engine<'_> {
                     Style::new(read.meaning.value as u8 * 2).unwrap(),
                 ))?;
             }
+            cmd::LEFT_RIGHT => self.math_left_right(read.meaning.value != 0)?,
             cmd::MATH_LIMITS => {
                 let tail = self
                     .document
@@ -241,6 +252,8 @@ fn class(code: i32) -> Class {
         Class::Inner,
     ][code as usize]
 }
+#[path = "math_delimiter_frontend.rs"]
+mod delimiters;
 #[path = "math_scan.rs"]
 mod scan;
 #[cfg(test)]

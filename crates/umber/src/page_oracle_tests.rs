@@ -97,10 +97,15 @@ impl Oracle {
         }
     }
     pub(crate) fn compare(&self, tfm: &[u8], settings: &str, body: &str) {
+        self.compare_fonts(&[(b"test", tfm)], settings, body);
+    }
+    pub(crate) fn compare_fonts(&self, fonts: &[(&[u8], &[u8])], settings: &str, body: &str) {
         let boot = r"\catcode123=1\catcode125=2\font\f=test\f\hsize=70pt\vsize=45pt\topskip=10pt\maxdepth=3pt\baselineskip=12pt\lineskip=1pt\parfillskip=0pt plus1fil ";
         let source = format!("{boot}{settings}{body}\\end");
         let mut e = Engine::new(source.as_bytes());
-        e.register_tfm(b"test", tfm).unwrap();
+        for &(name, bytes) in fonts {
+            e.register_tfm(name, bytes).unwrap();
+        }
         e.advance(usize::MAX).unwrap();
         let outcome = e.outcome();
         // The native-only routine observes outputpenalty and consumes box255 just
@@ -108,7 +113,14 @@ impl Oracle {
         let native = format!(
             r"\catcode123=1\catcode125=2\tracingoutput=1\showboxbreadth=10000\showboxdepth=10000\hbadness=10000\hfuzz=16383pt\output{{\message{{PAGEPENALTY:\the\outputpenalty:END}}\shipout\box255}}{source}"
         );
-        std::fs::write(self.dir.join("test.tfm"), tfm).unwrap();
+        for &(name, bytes) in fonts {
+            std::fs::write(
+                self.dir
+                    .join(format!("{}.tfm", String::from_utf8_lossy(name))),
+                bytes,
+            )
+            .unwrap();
+        }
         std::fs::write(self.dir.join("probe.tex"), native).unwrap();
         let _ = std::fs::remove_file(self.dir.join("probe.dvi"));
         let output = Command::new(&self.binary)
