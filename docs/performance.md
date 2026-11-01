@@ -86,6 +86,13 @@ paragraphs from six repository design documents, then repeats their sequence to
 The runner compares every page and glyph character/x/y with native DVI through an
 independent reader and raw-TFM width scaling before timing.
 
+The [Gentle layout generator](../benchmarks/corpus/gentle-layout.py) supplies a
+second workload with authentic local excerpts, grouped roman/italic/monospace
+font changes, macro arguments, ligatures, and rules. Its full local source and
+selected ranges are identified in [the provenance record](../benchmarks/corpus/gentle.json);
+additional prose excerpts are not distributed with measurement reports. Native
+checks compare ordered font identities, glyph placements, and rule geometry.
+
 The ordinary release CLI retains detached pages; native pdfTeX runs INITEX with
 e-TeX, writes DVI and a log, and suppresses underfull diagnostics through startup
 settings. The typesetting input is identical. One warmup and interleaved samples
@@ -94,13 +101,13 @@ resource caches. This comparison covers text composition with different output
 endpoints; it excludes package/format loading, hyphenation patterns, math, custom
 output routines, and PDF serialization.
 
-The retained dense-metric report measures revision `02c29ec` on 2026-11-01 with
-rustc 1.98.1, ordinary release, fat LTO, and one codegen unit on an AMD EPYC 7642.
-Median CPU times for book/narrow/dense were 59.290/59.069/52.366 ms, or
-1.227/1.183/1.259 times quiet native INITEX. These are short shared-machine process
-measurements of the named build, not performance guarantees for later revisions.
-The [report](../benchmarks/results/layout.md) retains distributions, input/build
-identities, instruction attribution, allocation/retention data, and limitations.
+The [latest cumulative measurement](../benchmarks/results/layout-current.json)
+records the current measured release, preserved original prose inputs, the mixed
+workload, and paired ordinary CLI/native samples. The [report](../benchmarks/results/layout.md)
+retains the result summary and earlier measurements. These short shared-machine
+runs describe their named builds and workloads, not performance guarantees.
+Separate Callgrind instruction attribution describes executed work rather than
+CPU-time shares.
 
 The layout examples also measure same-source checkpoint replay while retaining
 old output prefixes. Early/middle/late suffixes must equal uninterrupted execution
@@ -113,6 +120,13 @@ restore batches allocate no additional backing in the retained measurements;
 fixed suffix replay still allocates, and partial shared output chunks can retain
 invisible later records. Same-source replay does not cover source edits, resource
 rebinding, or a production scheduler.
+
+The fixed prose fixtures emit a final counter message, including
+`UMBER:600:END` for book. Late-suffix execution and `outcome` publication therefore
+include message-buffer growth and owned-message publication as well as output
+header and node backing. Restore alone is a separate allocation boundary. The
+latest measurement retains the audited request attribution; these fixtures are
+not message-free.
 
 The [benchmark guide](../benchmarks/README.md) supplies reproduction commands.
 The runner regenerates documentation-derived inputs, so paired revision comparisons

@@ -1,0 +1,740 @@
+{
+  "date": "2026-11-01T09:45:48.003826+00:00",
+  "engine_commit": "03148baec158a64d8b5f0aefee5d90756d21099a",
+  "baseline_commit": "930cc4d; production code159ebe5, preserved release SHA matches original layout-native report",
+  "build": "ordinary default-feature release; fat LTO; codegen-units=1; debug=1; no extra RUSTFLAGS",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "cpu": 3,
+  "warmups": 1,
+  "repeats": 9,
+  "order": "rotate original/current/pdftex for fixed cases; alternate current/pdftex for mixed; all sequential",
+  "binary_sha256": {
+    "original": "bde5e548c91b30ef10d2e5c94ad5d32dae8eb196ddc168d4e16c5e85fe7f9613",
+    "current": "3baca21e4b8bbc260c675e960367422f15dd864eb58c2663ccce8ad5bacbd494",
+    "pdftex": "bdf084260e5e3ca3b1453a8ec1465efa5c0b23180d3bba7992fdd3ee1aeee45b"
+  },
+  "native": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "endpoints": "Umber CLI retains detached artifacts through completion then releases them; native INITEX writes DVI and log. Native-only hbadness/vbadness=10000 suppress underfull logging; same typesetting input. All inputs print a final UMBER counter message.",
+  "input_policy": "Original three source hashes equal retained layout-native.json; inputs not regenerated. Mixed is existing local Gentle layout generator output; no source excerpts copied into report.",
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "source_bytes": 270608,
+      "font_sha256": {
+        "aer10": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64"
+      },
+      "samples": {
+        "original": [
+          {
+            "wall_seconds": 0.070609812,
+            "cpu_seconds": 0.070282
+          },
+          {
+            "wall_seconds": 0.069847155,
+            "cpu_seconds": 0.069608
+          },
+          {
+            "wall_seconds": 0.072436925,
+            "cpu_seconds": 0.072114
+          },
+          {
+            "wall_seconds": 0.069317565,
+            "cpu_seconds": 0.068962
+          },
+          {
+            "wall_seconds": 0.069474458,
+            "cpu_seconds": 0.06915299999999999
+          },
+          {
+            "wall_seconds": 0.068336935,
+            "cpu_seconds": 0.068092
+          },
+          {
+            "wall_seconds": 0.069940143,
+            "cpu_seconds": 0.06965999999999999
+          },
+          {
+            "wall_seconds": 0.069965718,
+            "cpu_seconds": 0.069759
+          },
+          {
+            "wall_seconds": 0.069755454,
+            "cpu_seconds": 0.06942799999999999
+          }
+        ],
+        "current": [
+          {
+            "wall_seconds": 0.047746936,
+            "cpu_seconds": 0.047541
+          },
+          {
+            "wall_seconds": 0.048430266,
+            "cpu_seconds": 0.048154
+          },
+          {
+            "wall_seconds": 0.049323062,
+            "cpu_seconds": 0.048931
+          },
+          {
+            "wall_seconds": 0.049174059,
+            "cpu_seconds": 0.048858
+          },
+          {
+            "wall_seconds": 0.04881247,
+            "cpu_seconds": 0.048509
+          },
+          {
+            "wall_seconds": 0.048125553,
+            "cpu_seconds": 0.047857
+          },
+          {
+            "wall_seconds": 0.048990239,
+            "cpu_seconds": 0.04869199999999999
+          },
+          {
+            "wall_seconds": 0.048701468,
+            "cpu_seconds": 0.048396999999999996
+          },
+          {
+            "wall_seconds": 0.047981122,
+            "cpu_seconds": 0.04772
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.047725837,
+            "cpu_seconds": 0.047421
+          },
+          {
+            "wall_seconds": 0.047576985,
+            "cpu_seconds": 0.047203999999999996
+          },
+          {
+            "wall_seconds": 0.048543402,
+            "cpu_seconds": 0.048109
+          },
+          {
+            "wall_seconds": 0.047459118,
+            "cpu_seconds": 0.047027
+          },
+          {
+            "wall_seconds": 0.046759791,
+            "cpu_seconds": 0.046366
+          },
+          {
+            "wall_seconds": 0.048268229,
+            "cpu_seconds": 0.047907
+          },
+          {
+            "wall_seconds": 0.047846345,
+            "cpu_seconds": 0.047437
+          },
+          {
+            "wall_seconds": 0.047387872,
+            "cpu_seconds": 0.047085
+          },
+          {
+            "wall_seconds": 0.048865809,
+            "cpu_seconds": 0.048436999999999994
+          }
+        ]
+      },
+      "medians": {
+        "original": {
+          "wall_seconds": 0.069847155,
+          "cpu_seconds": 0.069608
+        },
+        "current": {
+          "wall_seconds": 0.048701468,
+          "cpu_seconds": 0.048396999999999996
+        },
+        "pdftex": {
+          "wall_seconds": 0.047725837,
+          "cpu_seconds": 0.047421
+        }
+      },
+      "current_native_cpu_ratio": 1.0205815988696991,
+      "current_original_cpu_change": -0.3047207217561201,
+      "validation": {
+        "native": "Exact ordered glyph character/font name/font size/x/y and rule geometry equality with independent DVI reader/raw TFM widths",
+        "full_signature": "Current counts/messages/boxes/glue/penalties/placements/font bytes equal pre-metadata de91124 adapter; all four retained-root midpoint replays equal uninterrupted results",
+        "original_fixed_inputs": "Original930cc4d adapter matches paragraph/page/box counts, glyph characters/coordinates/widths in historical validations; current recheck directly compares glyph characters/x/y and paragraph/page counts"
+      },
+      "pages": 79,
+      "glyphs": 227323,
+      "rules": 0,
+      "fonts": [
+        "aer10"
+      ]
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "source_bytes": 270609,
+      "font_sha256": {
+        "lcmss8": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d"
+      },
+      "samples": {
+        "original": [
+          {
+            "wall_seconds": 0.070482449,
+            "cpu_seconds": 0.07014299999999998
+          },
+          {
+            "wall_seconds": 0.071158136,
+            "cpu_seconds": 0.07087099999999999
+          },
+          {
+            "wall_seconds": 0.070393985,
+            "cpu_seconds": 0.07003799999999999
+          },
+          {
+            "wall_seconds": 0.069994573,
+            "cpu_seconds": 0.06966499999999999
+          },
+          {
+            "wall_seconds": 0.07014245,
+            "cpu_seconds": 0.069878
+          },
+          {
+            "wall_seconds": 0.067921769,
+            "cpu_seconds": 0.06762399999999999
+          },
+          {
+            "wall_seconds": 0.071830188,
+            "cpu_seconds": 0.07156299999999999
+          },
+          {
+            "wall_seconds": 0.070012464,
+            "cpu_seconds": 0.06968999999999999
+          },
+          {
+            "wall_seconds": 0.069387162,
+            "cpu_seconds": 0.069087
+          }
+        ],
+        "current": [
+          {
+            "wall_seconds": 0.049424335,
+            "cpu_seconds": 0.049128
+          },
+          {
+            "wall_seconds": 0.051208446,
+            "cpu_seconds": 0.050857
+          },
+          {
+            "wall_seconds": 0.049661132,
+            "cpu_seconds": 0.04927599999999999
+          },
+          {
+            "wall_seconds": 0.048518204,
+            "cpu_seconds": 0.048258
+          },
+          {
+            "wall_seconds": 0.048582217,
+            "cpu_seconds": 0.048292
+          },
+          {
+            "wall_seconds": 0.04928329,
+            "cpu_seconds": 0.048926
+          },
+          {
+            "wall_seconds": 0.049722204,
+            "cpu_seconds": 0.049368
+          },
+          {
+            "wall_seconds": 0.051314277,
+            "cpu_seconds": 0.050981
+          },
+          {
+            "wall_seconds": 0.048195496,
+            "cpu_seconds": 0.047913
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.049462214,
+            "cpu_seconds": 0.049077
+          },
+          {
+            "wall_seconds": 0.049464367,
+            "cpu_seconds": 0.049099
+          },
+          {
+            "wall_seconds": 0.051062553,
+            "cpu_seconds": 0.050646
+          },
+          {
+            "wall_seconds": 0.050629938,
+            "cpu_seconds": 0.050290999999999995
+          },
+          {
+            "wall_seconds": 0.05144742,
+            "cpu_seconds": 0.051081999999999995
+          },
+          {
+            "wall_seconds": 0.052526795,
+            "cpu_seconds": 0.052125
+          },
+          {
+            "wall_seconds": 0.049389558,
+            "cpu_seconds": 0.049052
+          },
+          {
+            "wall_seconds": 0.04900691,
+            "cpu_seconds": 0.04869
+          },
+          {
+            "wall_seconds": 0.050374433,
+            "cpu_seconds": 0.049957999999999995
+          }
+        ]
+      },
+      "medians": {
+        "original": {
+          "wall_seconds": 0.07014245,
+          "cpu_seconds": 0.069878
+        },
+        "current": {
+          "wall_seconds": 0.049424335,
+          "cpu_seconds": 0.049128
+        },
+        "pdftex": {
+          "wall_seconds": 0.050374433,
+          "cpu_seconds": 0.049957999999999995
+        }
+      },
+      "current_native_cpu_ratio": 0.9833860442771929,
+      "current_original_cpu_change": -0.29694610607058014,
+      "validation": {
+        "native": "Exact ordered glyph character/font name/font size/x/y and rule geometry equality with independent DVI reader/raw TFM widths",
+        "full_signature": "Current counts/messages/boxes/glue/penalties/placements/font bytes equal pre-metadata de91124 adapter; all four retained-root midpoint replays equal uninterrupted results",
+        "original_fixed_inputs": "Original930cc4d adapter matches paragraph/page/box counts, glyph characters/coordinates/widths in historical validations; current recheck directly compares glyph characters/x/y and paragraph/page counts"
+      },
+      "pages": 295,
+      "glyphs": 227323,
+      "rules": 0,
+      "fonts": [
+        "lcmss8"
+      ]
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "source_bytes": 270609,
+      "font_sha256": {
+        "icmtt8": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24"
+      },
+      "samples": {
+        "original": [
+          {
+            "wall_seconds": 0.063120174,
+            "cpu_seconds": 0.06282399999999999
+          },
+          {
+            "wall_seconds": 0.062485113,
+            "cpu_seconds": 0.062269
+          },
+          {
+            "wall_seconds": 0.062185509,
+            "cpu_seconds": 0.06190999999999999
+          },
+          {
+            "wall_seconds": 0.064268524,
+            "cpu_seconds": 0.063898
+          },
+          {
+            "wall_seconds": 0.063626838,
+            "cpu_seconds": 0.063264
+          },
+          {
+            "wall_seconds": 0.063686027,
+            "cpu_seconds": 0.063308
+          },
+          {
+            "wall_seconds": 0.063932184,
+            "cpu_seconds": 0.06356
+          },
+          {
+            "wall_seconds": 0.063418233,
+            "cpu_seconds": 0.063135
+          },
+          {
+            "wall_seconds": 0.064097331,
+            "cpu_seconds": 0.063805
+          }
+        ],
+        "current": [
+          {
+            "wall_seconds": 0.042408058,
+            "cpu_seconds": 0.042161000000000004
+          },
+          {
+            "wall_seconds": 0.043962244,
+            "cpu_seconds": 0.043649999999999994
+          },
+          {
+            "wall_seconds": 0.042229712,
+            "cpu_seconds": 0.04197
+          },
+          {
+            "wall_seconds": 0.044178924,
+            "cpu_seconds": 0.04387
+          },
+          {
+            "wall_seconds": 0.045739466,
+            "cpu_seconds": 0.045371999999999996
+          },
+          {
+            "wall_seconds": 0.043970223,
+            "cpu_seconds": 0.043602
+          },
+          {
+            "wall_seconds": 0.04466376,
+            "cpu_seconds": 0.044238
+          },
+          {
+            "wall_seconds": 0.043128193,
+            "cpu_seconds": 0.042839
+          },
+          {
+            "wall_seconds": 0.043106305,
+            "cpu_seconds": 0.042834
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.041778173,
+            "cpu_seconds": 0.041464
+          },
+          {
+            "wall_seconds": 0.040919214,
+            "cpu_seconds": 0.040568
+          },
+          {
+            "wall_seconds": 0.041487481,
+            "cpu_seconds": 0.041146
+          },
+          {
+            "wall_seconds": 0.042179442,
+            "cpu_seconds": 0.041807000000000004
+          },
+          {
+            "wall_seconds": 0.041992017,
+            "cpu_seconds": 0.041567
+          },
+          {
+            "wall_seconds": 0.043069565,
+            "cpu_seconds": 0.042632
+          },
+          {
+            "wall_seconds": 0.042778207,
+            "cpu_seconds": 0.042297999999999995
+          },
+          {
+            "wall_seconds": 0.041509418,
+            "cpu_seconds": 0.041180999999999995
+          },
+          {
+            "wall_seconds": 0.041328628,
+            "cpu_seconds": 0.041026999999999994
+          }
+        ]
+      },
+      "medians": {
+        "original": {
+          "wall_seconds": 0.063626838,
+          "cpu_seconds": 0.063264
+        },
+        "current": {
+          "wall_seconds": 0.043962244,
+          "cpu_seconds": 0.043602
+        },
+        "pdftex": {
+          "wall_seconds": 0.041778173,
+          "cpu_seconds": 0.041464
+        }
+      },
+      "current_native_cpu_ratio": 1.0515628014663323,
+      "current_original_cpu_change": -0.3107928679817906,
+      "validation": {
+        "native": "Exact ordered glyph character/font name/font size/x/y and rule geometry equality with independent DVI reader/raw TFM widths",
+        "full_signature": "Current counts/messages/boxes/glue/penalties/placements/font bytes equal pre-metadata de91124 adapter; all four retained-root midpoint replays equal uninterrupted results",
+        "original_fixed_inputs": "Original930cc4d adapter matches paragraph/page/box counts, glyph characters/coordinates/widths in historical validations; current recheck directly compares glyph characters/x/y and paragraph/page counts"
+      },
+      "pages": 63,
+      "glyphs": 228277,
+      "rules": 0,
+      "fonts": [
+        "icmtt8"
+      ]
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "source_bytes": 286810,
+      "font_sha256": {
+        "aer10": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+        "aeti10": "243599dca0a4928095620eb211da7313bb697d2a8f94dc9400a2a08f063de09e",
+        "aett10": "a9d121fc0cdd2bb8da196b14d83dab942550822a74bdae00bbece241434c4c42"
+      },
+      "samples": {
+        "current": [
+          {
+            "wall_seconds": 0.048276837,
+            "cpu_seconds": 0.048012
+          },
+          {
+            "wall_seconds": 0.047786672,
+            "cpu_seconds": 0.047486
+          },
+          {
+            "wall_seconds": 0.047203642,
+            "cpu_seconds": 0.04697
+          },
+          {
+            "wall_seconds": 0.047845514,
+            "cpu_seconds": 0.047557999999999996
+          },
+          {
+            "wall_seconds": 0.049013247,
+            "cpu_seconds": 0.048657
+          },
+          {
+            "wall_seconds": 0.047394505,
+            "cpu_seconds": 0.047068
+          },
+          {
+            "wall_seconds": 0.046948155,
+            "cpu_seconds": 0.046737
+          },
+          {
+            "wall_seconds": 0.047724281,
+            "cpu_seconds": 0.047438
+          },
+          {
+            "wall_seconds": 0.046996248,
+            "cpu_seconds": 0.04678299999999999
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.042174061,
+            "cpu_seconds": 0.041913
+          },
+          {
+            "wall_seconds": 0.041191898,
+            "cpu_seconds": 0.040889999999999996
+          },
+          {
+            "wall_seconds": 0.040463433,
+            "cpu_seconds": 0.040192
+          },
+          {
+            "wall_seconds": 0.042840764,
+            "cpu_seconds": 0.042469
+          },
+          {
+            "wall_seconds": 0.04551819,
+            "cpu_seconds": 0.04511999999999999
+          },
+          {
+            "wall_seconds": 0.041037357,
+            "cpu_seconds": 0.040739
+          },
+          {
+            "wall_seconds": 0.040619234,
+            "cpu_seconds": 0.040334999999999996
+          },
+          {
+            "wall_seconds": 0.041600032,
+            "cpu_seconds": 0.041319
+          },
+          {
+            "wall_seconds": 0.039960771,
+            "cpu_seconds": 0.039719
+          }
+        ]
+      },
+      "medians": {
+        "current": {
+          "wall_seconds": 0.047724281,
+          "cpu_seconds": 0.047438
+        },
+        "pdftex": {
+          "wall_seconds": 0.041191898,
+          "cpu_seconds": 0.040889999999999996
+        }
+      },
+      "current_native_cpu_ratio": 1.1601369528001957,
+      "validation": {
+        "native": "Exact ordered glyph character/font name/font size/x/y and rule geometry equality with independent DVI reader/raw TFM widths",
+        "full_signature": "Current counts/messages/boxes/glue/penalties/placements/font bytes equal pre-metadata de91124 adapter; all four retained-root midpoint replays equal uninterrupted results",
+        "original_fixed_inputs": "Original930cc4d not timed on mixed"
+      },
+      "pages": 106,
+      "glyphs": 214500,
+      "rules": 300,
+      "fonts": [
+        "aer10",
+        "aeti10",
+        "aett10"
+      ]
+    }
+  ],
+  "profile": {
+    "tool": "Valgrind3.22.0 Callgrind, ordinary CLI, default instruction simulation; taskset -c3; separate from timing",
+    "interpretation": "Instruction shares, not CPU-time shares; inclusive paths overlap and must not be summed. LTO source-frame attribution names inlined functions by their caller context.",
+    "cases": {
+      "book": {
+        "instructions": 318254700,
+        "inclusive_paths": {
+          "character_construction": {
+            "instructions": 95026816,
+            "share": 0.2985873138715626
+          },
+          "paragraph_completion": {
+            "instructions": 164281329,
+            "share": 0.5161945102460388
+          },
+          "active_list_search": {
+            "instructions": 44368904,
+            "share": 0.13941319326941598
+          },
+          "page_work": {
+            "instructions": 59899964,
+            "share": 0.1882139179719891
+          },
+          "page_lowering": {
+            "instructions": 18890207,
+            "share": 0.05935562616985703
+          },
+          "packing_line_construction": {
+            "instructions": 15709807,
+            "share": 0.04936237233888455
+          },
+          "node_allocation": {
+            "instructions": 28449559,
+            "share": 0.0893924237411105
+          },
+          "node_read": {
+            "instructions": 25341864,
+            "share": 0.07962761901081115
+          },
+          "node_writable": {
+            "instructions": 23396542,
+            "share": 0.0735151499726477
+          },
+          "node_release": {
+            "instructions": 21296153,
+            "share": 0.06691543911213252
+          }
+        }
+      },
+      "mixed": {
+        "instructions": 322278688,
+        "inclusive_paths": {
+          "character_construction": {
+            "instructions": 92024290,
+            "share": 0.2855425860490037
+          },
+          "paragraph_completion": {
+            "instructions": 110316803,
+            "share": 0.3423025074497014
+          },
+          "active_list_search": {
+            "instructions": 26582154,
+            "share": 0.08248188598806756
+          },
+          "page_work": {
+            "instructions": 62361411,
+            "share": 0.1935015045115239
+          },
+          "page_lowering": {
+            "instructions": 19548605,
+            "share": 0.060657454954017934
+          },
+          "packing_line_construction": {
+            "instructions": 15952512,
+            "share": 0.04949912170425616
+          },
+          "node_allocation": {
+            "instructions": 29088969,
+            "share": 0.0902602936003016
+          },
+          "node_read": {
+            "instructions": 23812608,
+            "share": 0.0738882491665102
+          },
+          "node_writable": {
+            "instructions": 24066926,
+            "share": 0.07467737364004659
+          },
+          "node_release": {
+            "instructions": 21840076,
+            "share": 0.06776767069375683
+          }
+        }
+      }
+    },
+    "original_book_instructions": 485129345,
+    "original_book_scope": "Original930cc4d CLI on identical book input; retained original profile from first layout investigation",
+    "current_book_original_change": -0.3439796967961194
+  },
+  "audited_late_book_allocations": {
+    "scope": "Existing late-suffix execution/publication boundary audit, not rerun in this cumulative milestone. Fixed input emits UMBER:600:END; restore alone has zero allocation requests.",
+    "requests": 6,
+    "requested_bytes": 32205,
+    "owners": [
+      {
+        "owner": "detached output-header backing",
+        "bytes": 17712
+      },
+      {
+        "owner": "node chunk backing",
+        "bytes": 14360
+      },
+      {
+        "owner": "message first buffer",
+        "bytes": 8
+      },
+      {
+        "owner": "message buffer growth",
+        "bytes": 16
+      },
+      {
+        "owner": "owned published message bytes",
+        "bytes": 13
+      },
+      {
+        "owner": "owned message vector capacity",
+        "bytes": 96
+      }
+    ],
+    "node_pool_takes": 115,
+    "node_pool_reused": 114,
+    "bounded_empty_node_cache": 16,
+    "interpretation": "Current boundary behavior; no change to pool capacity, message ownership, or checkpoint policy requested or measured here."
+  },
+  "comparison_limits": [
+    "Short shared-host complete processes, warm input/resource caches; medians and all samples retained, no universal parity claim.",
+    "Mixed has no original930cc4d timing in this milestone.",
+    "Native and Umber output endpoints differ; no PDF backend, automatic hyphenation, math, package/format loading, or custom output routine.",
+    "Earlier expansion-only comparisons execute a different feature scope and cannot establish a layout regression.",
+    "No production edits or broad Cargo test rerun for measurement/report-only changes."
+  ],
+  "reproduction": [
+    "Build ordinary release CLI and library at03148ba with default features; preserve original930cc4d release binary (its SHA matches layout-native.json).",
+    "Reuse target/benchmark/layout/{book,narrow,dense}.tex with recorded original hashes; generate from930cc4d documentation only if reconstructing, never from changed current documentation.",
+    "Generate mixed source locally with benchmarks/corpus/gentle-layout.py using the full locally retained Gentle source/provenance; mixed input SHA is recorded without redistributing excerpts.",
+    "Pin CPU3; use benchmarks.layout.child sequentially with rotating original/current/quiet-native order, one warmup and nine samples. CLI syntax: umber INPUT --tfm NAME=TFM_PATH, repeated for each mixed font.",
+    "Native uses scripts.reference.reference and benchmarks.layout.quiet_native; set TFMFONTS to the frozen font directories.",
+    "Link existing full-output inspector to the current release library; compare full signatures with retained pre-metadata adapter and compare ordered glyph/font/rule placements with existing independent DVI reader and raw TFM widths. Run inspector replay mode on all4 inputs.",
+    "Profile current book/mixed separately: taskset -c3 valgrind --tool=callgrind --callgrind-out-file=FILE target/release/umber INPUT --tfm NAME=TFM_PATH [...]."
+  ],
+  "validation_summary": "All four exact native glyph/font/rule coordinate comparisons, complete pre-metadata/current signatures, and retained-root midpoint replay checks passed. Original fixed-source hashes match layout-native.json, and original glyph coordinates and paragraph/page counts were independently rechecked.",
+  "complete": true
+}

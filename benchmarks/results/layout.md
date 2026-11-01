@@ -1,5 +1,54 @@
 # Paragraph, page, and checkpoint measurements
 
+## Current cumulative milestone
+
+Measured on 2026-11-01 at `03148ba`, ordinary default-feature release with fat LTO,
+one codegen unit, and rustc 1.98.1 on the same AMD EPYC 7642 host. The
+[current raw result](layout-current.json) retains nine rotating samples after one
+warmup, all run sequentially on CPU 3. The original `930cc4d` executable matches
+the initial page-capable binary below. The three fixed prose source hashes are
+unchanged; inputs were not regenerated from revised documents. Mixed uses the
+existing local Gentle generator output with three AE fonts.
+
+| Case | Original / current / native CPU (ms) | Current vs original | Current/native |
+| ---- | ------------------------------------ | ------------------- | -------------- |
+| Book | 69.608 / 48.397 / 47.421 | -30.5% | 1.021 |
+| Narrow | 69.878 / 49.128 / 49.958 | -29.7% | 0.983 |
+| Dense | 63.264 / 43.602 / 41.464 | -31.1% | 1.052 |
+| Mixed | — / 47.438 / 40.890 | — | 1.160 |
+
+All four current outputs match independent native DVI glyph/font/coordinate and
+rule records exactly; mixed has 106 pages, 214,500 glyphs, and 300 rules. Complete
+output signatures match the pre-metadata adapter, and retained-root checkpoint
+replays equal uninterrupted execution. The fixed cases also directly match the
+preserved original adapter's glyph coordinates and paragraph/page counts.
+
+Separate current book/mixed Callgrind totals are 318.255/322.279 million
+instructions. Book is down 34.4% from the original 485.129 million. Inclusive
+character-construction paths account for 29.9%/28.6%, active-list search for
+13.9%/8.2%, and page work for 18.8%/19.4%. These paths overlap and are instruction
+shares, not CPU-time shares. Remaining costs span node operations, exact search,
+shaping, packing, and detached output; this attribution does not assign the entire
+remaining native gap to one phase.
+
+Native suppresses underfull diagnostics through startup settings only and writes
+DVI/log output; Umber retains detached artifacts through completion and releases
+them. Every fixture emits its final counter message. The existing late-book
+suffix audit finds six requests for 32,205 bytes: output-header backing 17,712,
+node backing 14,360, message growth 8+16, and owned message publication 13+96.
+Restore itself allocates zero; the node pool reuses backing on 114 of 115 takes within its
+bounded 16-chunk cache. These are audited boundary facts, not a new allocation run
+or a cache-sizing recommendation.
+
+This bounded cumulative pass places the original three text cases near quiet
+native CPU time and retains a 16.0% mixed-workload gap. Short shared-machine
+measurements do not establish broad TeX/LaTeX or backend parity. Earlier
+expansion-only timings cover a different feature scope and cannot establish a
+layout regression. Original measurements and focused change reports remain below
+and in the [benchmark guide](../README.md).
+
+## Initial page-capable baseline
+
 Measured on 2026-10-31 at engine revision `159ebe5f114ce6621c59909f2afe9f8fb1f90a00`,
 using ordinary `cargo build --release` with default features, fat LTO, one codegen
 unit, no extra Rust flags, and rustc 1.98.1. The native baseline is pdfTeX
