@@ -3,7 +3,6 @@ use crate::{
     Engine, Error, Result,
     boxes::Destination,
     nodes::{DetachedNode, GlueKind, LeaderData, List},
-    text::Mode,
     token::*,
 };
 impl Engine<'_> {
@@ -45,7 +44,7 @@ impl Engine<'_> {
             spec,
             subtype: alignment,
         })?;
-        if self.document.text.mode == Mode::Math {
+        if self.document.text.mode.is_math() {
             self.append_math(crate::math::Kind::Material(node))?;
         } else {
             let list = if self.document.text.mode.is_vertical() {

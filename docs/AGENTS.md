@@ -31,8 +31,8 @@ Keep implementation histories, before/after reports, and validation logs out of
 - `paragraphs.md` contracts executable TeX paragraph breaking, automatic
   hyphenation and packing, and develops future pdfTeX spacing extensions.
 - `math-alignments.md` contracts executable math-code initialization, inline
-  construction and typed atom conversion, and develops further math scanning,
-  display math, alignment templates,
+  and display construction and typed atom conversion, and develops further math scanning,
+  alignment templates,
   entry measurement, and result-list transfers.
 - `pages.md` contracts executable vertical contributions, page breaks, detached
   publication, output routines, unsplit insertions, adjustments, and retained unfinished pages,

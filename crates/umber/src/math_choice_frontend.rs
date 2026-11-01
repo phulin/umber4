@@ -8,11 +8,13 @@ impl Engine<'_> {
     }
     fn begin_math_choice_branch(&mut self, atom: MathId, branch: u8) -> Result<()> {
         self.open_group(GroupKind::MathChoice)?;
+        let enclosing_mode = std::mem::replace(&mut self.document.text.mode, Mode::Math);
         self.document.math_frames.push(Frame {
             list: MathList::default(),
             incomplete: None,
             context: Context::Choice { atom, branch },
             level: self.document.level,
+            enclosing_mode,
         });
         // WEB push_math precedes scan_left_brace: expansion observes the new
         // group, including aftergroup tokens from the preceding branch.
@@ -34,6 +36,7 @@ impl Engine<'_> {
             unreachable!("math choice group")
         };
         debug_assert_eq!(frame.level, self.document.level + 1);
+        self.document.text.mode = frame.enclosing_mode;
         let math = self.math.as_mut().unwrap();
         let list = math.finish_list(frame.list, frame.incomplete, None);
         math.finish_choice_branch(atom, branch, list);

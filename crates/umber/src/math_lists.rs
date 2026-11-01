@@ -67,6 +67,8 @@ impl Conversion<'_, '_, '_> {
                                     | nodes::Kind::Leader(_)
                                     | nodes::Kind::Rule { .. }
                                     | nodes::Kind::Penalty(_)
+                                    | nodes::Kind::Insertion(_)
+                                    | nodes::Kind::Adjustment(_)
                             ) {
                                 return Err(Error::Unsupported);
                             }

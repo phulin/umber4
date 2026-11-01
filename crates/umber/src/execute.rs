@@ -61,7 +61,7 @@ impl Engine<'_> {
         if self.math_command(read)? {
             return Ok(());
         }
-        if self.document.text.mode != crate::text::Mode::Math && self.text_command(read)? {
+        if !self.document.text.mode.is_math() && self.text_command(read)? {
             return Ok(());
         }
         let (read, prefix) = if matches!(

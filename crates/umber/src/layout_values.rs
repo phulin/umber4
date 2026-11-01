@@ -70,6 +70,9 @@ pub(crate) enum DimenParam {
     HOffset,
     VOffset,
     MathSurround,
+    PreDisplaySize,
+    DisplayWidth,
+    DisplayIndent,
 }
 #[allow(dead_code)]
 impl DimenParam {

@@ -250,12 +250,7 @@ fn quiescent_budget_defers_across_math_and_replay_preserves_published_output() {
 }
 
 #[test]
-fn display_rejection_precedes_frames_but_restricted_double_shift_is_empty_inline() {
-    let source = input(r"\noindent$$");
-    let mut e = engine(source.as_bytes());
-    assert_eq!(e.advance(usize::MAX), Err(Error::Unsupported));
-    assert!(e.document.math_frames.is_empty());
-    assert_eq!(e.document.level, 0);
+fn restricted_double_shift_is_empty_inline() {
     let source = input(r"\setbox0=\hbox{$$}\end");
     let mut e = engine(source.as_bytes());
     e.advance(usize::MAX).unwrap();
@@ -283,6 +278,8 @@ fn lastbox_rejects_math_in_every_box_context_without_taking_the_destination() {
 mod choices;
 #[path = "math_delimiter_frontend_tests.rs"]
 mod delimiters;
+#[path = "math_display_tests.rs"]
+mod displays;
 #[path = "math_forms_frontend_tests.rs"]
 mod forms;
 #[path = "math_fraction_frontend_tests.rs"]

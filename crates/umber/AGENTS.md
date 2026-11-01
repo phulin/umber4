@@ -52,6 +52,12 @@ Choice through typed frame destinations, deferring selection to conversion.
 branch effects, scope/scanning, nested plain macros, native selection and DVI,
 failure, and replay; `math_choice_ownership_tests.rs` checks bounded arena
 rejection and affine branch/fraction transfers.
+`math_display.rs` handles ordinary display entry, equation-number groups, and
+continuation; `math_display_layout.rs` fits and transfers display/number boxes.
+`math_display_tests.rs` and `math_display_oracle_tests.rs` check group, failure,
+replay, native display geometry, and DVI behavior.
+`math_display_ownership_tests.rs` checks number/formula/migration failures and
+arena/box-payload reuse across restore.
 `math_frontend_tests.rs` covers mode/group/ownership/replay boundaries and
 `math_frontend_oracle_tests.rs` compares unchanged inline sources with native
 box geometry and DVI placements.

@@ -31,8 +31,8 @@ recovery; a failed character-code assignment preserves its preceding value.
 
 Inline math entry, math-character execution, and the construction subset below
 are executable. Font-family bindings use ordinary scoped assignment state.
-Math-only commands outside math fail explicitly; missing-dollar recovery and
-display execution remain unsupported. The typed conversion core also remains
+Math-only commands outside math fail explicitly; missing-dollar recovery remains
+unsupported. The typed conversion core also remains
 usable independently of input execution.
 The compatibility reference is TeX's
 `def_code`, `shorthand_def`, and `scan_something_internal` in the
@@ -68,8 +68,7 @@ explicit limits policy, eight styles including cramped styles, choices, ordinary
 math ligatures/kerns, scripts, boxed/submath fields, and explicit ordinary
 kern/glue/rule/penalty material. It also converts fractions, radicals, overline,
 underline, vcenter, accents, and paired standard left/right delimiters. Middle
-delimiters, displays, and equation numbers remain
-unsupported. Their absence does not select an approximate rendering.
+delimiters remain unsupported. Their absence does not select an approximate rendering.
 
 Active math construction is excluded from quiescent checkpoints. The arena and
 traversal scratch therefore require no COW or snapshot roots. Converted ordinary
@@ -84,8 +83,8 @@ while void box transfers append no atom. Restoring a checkpoint abandons active
 math headers with their old ordinary-node root before installing restored roots.
 
 Entry uses one unexpanded lookahead token. An immediately following shift in
-unrestricted horizontal mode returns `Unsupported` for display math before
-installing a math frame; restricted `$$` closes an empty inline formula. Vertical
+unrestricted horizontal mode enters display math; restricted `$$` closes an empty
+inline formula. Vertical
 entry replays the shift after paragraph entry and its hooks. Inline entry opens
 its group, locally sets `\fam=-1`, and installs `\everymath`. Math and subsidiary
 mode are inner modes for conditionals, while a contained hbox has ordinary
@@ -188,8 +187,7 @@ by before/after math nodes; the enclosing space factor becomes 1000. Automatic
 math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
-owners. Active math frames exclude checkpoint handoff. Mu glue, displays, and
-alignments remain unsupported.
+owners. Active math frames exclude checkpoint handoff. Mu glue and alignments remain unsupported.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters
@@ -345,11 +343,41 @@ Inline math transfers the converted horizontal list and surrounding math boundar
 nodes into its paragraph. Its math atoms can then be reclaimed, while resulting
 nodes have the paragraph/list lifetime.
 
-Display math interacts with the preceding paragraph, display width/indent,
-equation numbers, short versus ordinary display skips, penalties, and the
-following paragraph's line-number context. Use the upstream finishing order and
-pack directly over the formula list. Alignment-in-display cases share the
-alignment finalizer rather than a second display renderer.
+Ordinary displays and `\eqno`/`\leqno` use typed math frames. Entry completes the
+preceding paragraph with `\displaywidowpenalty` without resetting paragraph
+parameters or running page work. It immediately measures the final line's natural
+visible extent plus two current text-font quads, including shift and native
+stretch/shrink sentinels. Empty entry uses `-max_dimen`. Display width and indent
+use the `\parshape` or hanging settings at `\prevgraf+2`. Entry installs the math
+group, local family/display parameters, and `\everydisplay` before external page
+work. Display mode is non-inner; subsidiary groups and equation numbers are
+inner math. The ordinary vertical root remains available to page construction
+while the typed display frame excludes checkpoints, including during output.
+
+Closing validates fonts before expanded second-dollar scanning. Equation numbers
+have their own local math group, family reset, and `\everymath`; they convert in
+text style and restore that group before formula font validation and display
+conversion. A present zero-width number remains distinct from an absent number.
+Formula conversion uses display style without line-break penalties, then adjusted
+natural packing extracts migrating material. Fitting uses operation-local glue
+totals and consuming repacking; centering, number squeeze/separate-line placement,
+short skips, penalties, baseline glue, and adjustment order follow native TeX.
+Layout reads live bindings before unsave. The existing packing diagnostic and
+automatic overfull-rule limitations remain; alignment and directional displays
+are not admitted.
+
+Resume restores the group, advances the parent's line count by three, and starts
+an unindented horizontal continuation with fresh language/minima and space factor
+1000. It does not run paragraph entry hooks, append paragraph skip, or reset
+paragraph parameters. One expanded optional space is consumed before external
+page work. Formula, number, and adjustment owners remain disjoint until their
+consuming list transfers; failure and restore never traverse them through a new
+node-store root.
+
+Math `\insert` and `\vadjust` use the existing typed internal vertical capture.
+Their completed ordinary nodes belong to math material until conversion transfers
+them to the horizontal list. Display packing migrates them after the formula and
+any separate equation number; unadjusted boxes retain them normally.
 
 The extended group and lookahead rules follow the
 [e-TeX change file](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/etexdir/etex.ch),

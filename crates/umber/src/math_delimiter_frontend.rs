@@ -68,11 +68,13 @@ impl Engine<'_> {
                     .release(boundary, &mut self.document.nodes);
                 return Err(error);
             }
+            let enclosing_mode = std::mem::replace(&mut self.document.text.mode, Mode::Math);
             self.document.math_frames.push(Frame {
                 list: boundary,
                 incomplete: None,
                 context: Context::LeftRight,
                 level: self.document.level,
+                enclosing_mode,
             });
             return Ok(());
         }
@@ -81,6 +83,7 @@ impl Engine<'_> {
             unreachable!("left/right group")
         };
         debug_assert_eq!(frame.level, self.document.level);
+        self.document.text.mode = frame.enclosing_mode;
         let list =
             self.math
                 .as_mut()

@@ -42,7 +42,7 @@ impl Engine<'_> {
                 Some(Quantity::Dimension(self.document.text.prev_depth))
             }
             cmd::LAST_ITEM => {
-                if self.document.text.mode == Mode::Math {
+                if self.document.text.mode.is_math() {
                     return Err(Error::Unsupported);
                 }
                 if self.document.text.mode == Mode::Write {

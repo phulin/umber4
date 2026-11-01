@@ -14,6 +14,9 @@ mod choice_tests;
 #[path = "math_delimiter_ownership_tests.rs"]
 mod delimiter_tests;
 #[cfg(test)]
+#[path = "math_display_ownership_tests.rs"]
+mod display_tests;
+#[cfg(test)]
 #[path = "math_forms_frontend_ownership_tests.rs"]
 mod form_tests;
 #[cfg(test)]

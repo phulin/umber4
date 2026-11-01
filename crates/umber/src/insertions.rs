@@ -29,7 +29,7 @@ impl Captured {
 impl Engine<'_> {
     pub(crate) fn begin_insertion(&mut self, adjustment: bool) -> Result<()> {
         let class = if adjustment {
-            if !self.document.text.mode.is_horizontal() {
+            if !self.document.text.mode.is_horizontal() && !self.document.text.mode.is_math() {
                 return Err(Error::Syntax);
             }
             255
@@ -81,6 +81,10 @@ impl Engine<'_> {
                 float_cost: captured.float_cost,
             })?
         };
+        if self.document.text.mode.is_math() {
+            self.append_math(crate::math::Kind::Material(node))?;
+            return Ok(());
+        }
         let list = if self.document.text.mode.is_vertical() {
             &mut self.document.text.vertical
         } else {

@@ -211,25 +211,27 @@ impl Engine<'_> {
             math,
             scratch,
         };
-        let result = c.validate_fonts().and_then(|()| c.run());
+        let result = c.engine.validate_math_fonts().and_then(|()| c.run());
         if result.is_err() {
             c.cleanup();
         }
         result
     }
 }
-impl Conversion<'_, '_, '_> {
-    fn validate_fonts(&self) -> Result<()> {
+impl Engine<'_> {
+    pub(crate) fn validate_math_fonts(&self) -> Result<()> {
         for size in 0..3 {
             for (family, count) in [(2, 22), (3, 13)] {
-                let id = self.engine.document.scalars[Target::family(size, family)].value as usize;
-                if self.engine.document.fonts.descriptors[id].count < count {
+                let id = self.document.scalars[Target::family(size, family)].value as usize;
+                if self.document.fonts.descriptors[id].count < count {
                     return Err(Error::Font);
                 }
             }
         }
         Ok(())
     }
+}
+impl Conversion<'_, '_, '_> {
     fn run(&mut self) -> Result<List> {
         while let Some(mut task) = self.scratch.tasks.pop() {
             // Test every ownership handoff without imposing a production limit.
@@ -423,7 +425,7 @@ impl Conversion<'_, '_, '_> {
         )
     }
 }
-fn half(value: i32) -> i32 {
+pub(crate) fn half(value: i32) -> i32 {
     value / 2 + i32::from(value % 2 > 0)
 }
 #[path = "math_atoms.rs"]

@@ -72,11 +72,14 @@ impl Engine<'_> {
                 }
                 cmd::BEGIN => {
                     self.open_group(GroupKind::MathField)?;
+                    let enclosing_mode =
+                        std::mem::replace(&mut self.document.text.mode, Mode::Math);
                     self.document.math_frames.push(Frame {
                         list: MathList::default(),
                         incomplete: None,
                         context: Context::Field(target),
                         level: self.document.level,
+                        enclosing_mode,
                     });
                     return Ok(());
                 }

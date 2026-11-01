@@ -64,7 +64,8 @@ arithmetic, and conversion paths. Register indices are 0–255. Dimension parame
 `\hsize`, `\vsize`, `\maxdepth`, `\parindent`, `\hangindent`,
 `\emergencystretch`, `\lineskiplimit`, `\hfuzz`, `\vfuzz`, `\overfullrule`,
 `\splitmaxdepth`, `\boxmaxdepth`, `\delimitershortfall`, `\nulldelimiterspace`,
-`\scriptspace`, `\hoffset`, `\voffset`, and `\mathsurround`.
+`\scriptspace`, `\hoffset`, `\voffset`, `\mathsurround`, `\predisplaysize`,
+`\displaywidth`, and `\displayindent`.
 Glue parameters are `\baselineskip`, `\lineskip`, `\parskip`, `\topskip`,
 `\leftskip`, `\rightskip`, `\parfillskip`, `\spaceskip`, `\xspaceskip`,
 `\abovedisplayskip`, `\abovedisplayshortskip`, `\belowdisplayskip`,
@@ -73,7 +74,7 @@ Their initial values are zero, as in INITEX; `\mag` starts at 1000. Loading
 macro-package conventions uses ordinary assignments rather than a preset format.
 
 Integer initialization state also includes `\hbadness`, `\vbadness`,
-`\binoppenalty`, `\relpenalty`, `\displaywidowpenalty`, `\predisplaypenalty`,
+`\binoppenalty`, `\relpenalty`, `\displaywidowpenalty`, `\predisplaypenalty`, `\postdisplaypenalty`,
 `\tracinglostchars`, `\uchyph`, `\newlinechar`, `\delimiterfactor`,
 `\showboxbreadth`, `\showboxdepth`, and `\errorcontextlines`. These start at
 zero and accept signed integers without per-parameter clamping. Their slots use

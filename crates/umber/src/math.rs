@@ -46,10 +46,6 @@ pub(crate) enum Limits {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) struct Style(u8);
 impl Style {
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "display initial style awaits the math frontend")
-    )]
     pub const DISPLAY: Self = Self(0);
     pub const TEXT: Self = Self(2);
     pub fn new(code: u8) -> Option<Self> {
@@ -417,7 +413,7 @@ impl MathStore {
 }
 #[path = "math_convert.rs"]
 mod converting;
-pub(crate) use converting::Scratch;
+pub(crate) use converting::{Scratch, half};
 #[cfg(test)]
 #[path = "math_oracle_tests.rs"]
 mod oracle_tests;

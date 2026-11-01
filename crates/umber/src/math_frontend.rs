@@ -20,13 +20,24 @@ pub(crate) enum Context {
     Inline(TextState),
     Field(FieldTarget),
     LeftRight,
-    Choice { atom: MathId, branch: u8 },
+    Choice {
+        atom: MathId,
+        branch: u8,
+    },
+    Display {
+        number: Option<DetachedNode>,
+        left: bool,
+    },
+    EquationNumber {
+        left: bool,
+    },
 }
 pub(crate) struct Frame {
     pub list: MathList,
     pub incomplete: Option<MathList>,
     pub context: Context,
     pub level: u16,
+    pub enclosing_mode: Mode,
 }
 impl Engine<'_> {
     pub(crate) fn append_math(&mut self, kind: Kind) -> Result<MathId> {
@@ -62,12 +73,12 @@ impl Engine<'_> {
                     self.new_graf(true)?;
                 }
                 Mode::Horizontal | Mode::RestrictedHorizontal => self.enter_inline_math()?,
-                Mode::Math => self.finish_inline_math()?,
+                Mode::Math | Mode::DisplayMath => self.finish_math_shift()?,
                 Mode::Write => return Err(Error::Syntax),
             }
             return Ok(true);
         }
-        if self.document.text.mode != Mode::Math {
+        if !self.document.text.mode.is_math() {
             return Ok(false);
         }
         match command {
@@ -117,6 +128,7 @@ impl Engine<'_> {
             cmd::MATH_FORM => self.math_form(read.meaning.value)?,
             cmd::VCENTER => self.make_vcenter()?,
             cmd::MATH_CHOICE => self.math_choice()?,
+            cmd::EQNO => self.begin_equation_number(read.meaning.value != 0)?,
             cmd::MATH_LIMITS => {
                 let tail = self
                     .document
@@ -143,6 +155,7 @@ impl Engine<'_> {
                 })?;
             }
             cmd::LEADERS => self.begin_leaders(read.meaning.value)?,
+            cmd::INSERT_ADJUST => self.begin_insertion(read.meaning.value != 0)?,
             cmd::MKERN => {
                 let width = self.scan_mu_dimen()?;
                 self.append_math(Kind::MuKern(width))?;
@@ -171,7 +184,7 @@ impl Engine<'_> {
             }
             cmd::BOX_SHIFT => self.shift_box(read.meaning.value)?,
             cmd::PAR | cmd::VSKIP | cmd::RULE | cmd::ACCENT => return Err(Error::Syntax),
-            cmd::UNBOX | cmd::INSERT_ADJUST | cmd::START_PAR => return Err(Error::Unsupported),
+            cmd::UNBOX | cmd::START_PAR => return Err(Error::Unsupported),
             _ => return Ok(false),
         }
         Ok(true)
@@ -181,9 +194,9 @@ impl Engine<'_> {
         // here would evaluate a following ifmmode in the enclosing text mode.
         let lookahead = self.next_token()?;
         if lookahead.meaning.command == 3 && self.document.text.mode == Mode::Horizontal {
-            return Err(Error::Unsupported);
+            return self.enter_display_math();
         }
-        self.back_read(lookahead);
+        self.back(lookahead.token);
         self.open_group(GroupKind::MathShift)?;
         let outer = std::mem::replace(
             &mut self.document.text,
@@ -193,11 +206,13 @@ impl Engine<'_> {
                 ..TextState::default()
             },
         );
+        let outer_mode = outer.mode;
         self.document.math_frames.push(Frame {
             list: MathList::default(),
             incomplete: None,
             context: Context::Inline(outer),
             level: self.document.level,
+            enclosing_mode: outer_mode,
         });
         self.update_integer(Target::FAM, false, |_| Ok(-1))?;
         if let Some(owner) = self.document.token_registers[260].owner.clone() {
@@ -217,15 +232,12 @@ impl Engine<'_> {
         self.document.text = outer;
         let width = self.document.layout_values.dimens[DimenParam::MathSurround.index()].value;
         let penalties = self.document.text.mode == Mode::Horizontal;
-        // No input execution occurs during conversion. Taking both reusable
-        // objects avoids borrowing self twice and allocates no replacement.
-        let mut math = self.math.take().expect("math store outside conversion");
-        let mut scratch = self.math_scratch.take().expect("conversion scratch");
-        let list = math.finish_list(frame.list, frame.incomplete, None);
-        let result = self.math_to_hlist(&mut math, list, Style::TEXT, penalties, &mut scratch);
-        self.math = Some(math);
-        self.math_scratch = Some(scratch);
-        let output = result?;
+        let list = self
+            .math
+            .as_mut()
+            .unwrap()
+            .finish_list(frame.list, frame.incomplete, None);
+        let output = self.convert_math(list, Style::TEXT, penalties)?;
         if let Err(error) = self.append_horizontal(nodes::Kind::MathBoundary {
             width,
             after: false,
@@ -240,12 +252,27 @@ impl Engine<'_> {
         self.document.text.space_factor = 1000;
         self.close_group(GroupKind::MathShift)
     }
+    pub(super) fn convert_math(
+        &mut self,
+        list: MathList,
+        style: Style,
+        penalties: bool,
+    ) -> Result<nodes::List> {
+        // Both reusable objects are restored on every Result path.
+        let mut math = self.math.take().expect("math store outside conversion");
+        let mut scratch = self.math_scratch.take().expect("conversion scratch");
+        let result = self.math_to_hlist(&mut math, list, style, penalties, &mut scratch);
+        self.math = Some(math);
+        self.math_scratch = Some(scratch);
+        result
+    }
     pub(crate) fn finish_math_field(&mut self) -> Result<()> {
         let frame = self.document.math_frames.pop().expect("subsidiary formula");
         let Context::Field(target) = frame.context else {
             unreachable!("math field owner")
         };
         debug_assert_eq!(frame.level, self.document.level + 1);
+        self.document.text.mode = frame.enclosing_mode;
         let math = self.math.as_mut().unwrap();
         let list = math.finish_list(frame.list, frame.incomplete, None);
         let tail = self.document.math_frames.last().unwrap().list.tail();
@@ -268,6 +295,8 @@ fn class(code: i32) -> Class {
 mod choices;
 #[path = "math_delimiter_frontend.rs"]
 mod delimiters;
+#[path = "math_display.rs"]
+mod display;
 #[path = "math_forms_frontend.rs"]
 mod forms;
 #[path = "math_fraction_frontend.rs"]

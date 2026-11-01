@@ -150,7 +150,9 @@ impl Oracle {
             .lines()
             .map(|l| l.trim_start_matches('.'))
             .filter(|l| l.starts_with("\\vbox(") || l.starts_with("\\hbox("))
-            .map(str::to_owned)
+            // e-TeX annotates display hboxes; the supported direction-zero
+            // subtype has no geometry beyond the ordinary packed box.
+            .map(|line| line.strip_suffix(", display").unwrap_or(line).to_owned())
             .collect();
         assert_eq!(expected, actual, "box structures: {source}\n{log}");
         let messages: Vec<_> = log

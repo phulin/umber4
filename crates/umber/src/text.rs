@@ -20,9 +20,13 @@ pub(crate) enum Mode {
     Horizontal,
     RestrictedHorizontal,
     Math,
+    DisplayMath,
     Write,
 }
 impl Mode {
+    pub fn is_math(self) -> bool {
+        matches!(self, Self::Math | Self::DisplayMath)
+    }
     pub fn is_horizontal(self) -> bool {
         matches!(self, Self::Horizontal | Self::RestrictedHorizontal)
     }
