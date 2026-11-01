@@ -164,14 +164,15 @@ impl<'a> Engine<'a> {
         for source in &self.document.sources {
             if let Some(id) = source.cursor().and_then(|c| c.owns_packet) {
                 ids.push(id);
-                packets.push(self.copy_packet(&self.packets[id as usize]));
             }
         }
-        let saved_id = |id| {
-            ids.iter()
-                .position(|&live| live == id)
-                .expect("body owns argument packet") as u32
-        };
+        // Packet IDs follow reusable per-arity slots, not source-stack order.
+        // Independent copies use sorted IDs as checkpoint-local coordinates.
+        ids.sort_unstable();
+        for &id in &ids {
+            packets.push(self.copy_packet(&self.packets[id as usize]));
+        }
+        let saved_id = |id| ids.binary_search(&id).expect("body owns argument packet") as u32;
         let mut sources = Buffer::new(&self.checkpoint_stores.sources);
         sources.extend(self.document.sources.iter().map(|source| match source {
             Source::Inline {

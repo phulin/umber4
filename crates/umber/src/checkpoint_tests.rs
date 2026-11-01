@@ -117,6 +117,102 @@ fn fragmented_arguments_and_one_read_suppression_replay() {
 }
 
 #[test]
+fn reused_unsorted_packet_ids_preserve_nested_sources_and_backing() {
+    let source = format!(
+        r"{BOOT}
+\def\warm#1{{#1}}\warm{{\relax}}
+\def\inner#1{{#1\relax#1}}
+\def\outer#1#2{{\inner{{#1#2}}\relax#1#2}}
+\outer{{\advance\count0by1\relax}}{{\message{{ARG}}}}
+\message{{DONE}}\end"
+    );
+    let expected = Engine::new(source.as_bytes()).run().unwrap();
+    assert_eq!(expected.counts[0], 3);
+    assert_eq!(
+        expected.messages,
+        [b"ARG".as_slice(), b"ARG", b"ARG", b"DONE"]
+    );
+    let mut engine = Engine::new(source.as_bytes());
+    loop {
+        let ids: Vec<_> = engine
+            .document
+            .sources
+            .iter()
+            .filter_map(|source| source.cursor().and_then(|cursor| cursor.owns_packet))
+            .collect();
+        let argument_pending = engine
+            .document
+            .sources
+            .last()
+            .and_then(Source::cursor)
+            .is_some_and(|cursor| cursor.argument.is_some());
+        if ids.windows(2).any(|pair| pair[0] > pair[1]) && argument_pending {
+            break;
+        }
+        assert_ne!(engine.advance(1).unwrap(), Progress::Complete);
+    }
+    let saved = engine.checkpoint().unwrap();
+    assert_eq!(saved.packets.len(), 2);
+    let prefix = engine.outcome();
+    for _ in 0..2 {
+        same(&finish(&mut engine), &expected);
+        engine.restore(&saved).unwrap();
+        same(&engine.outcome(), &prefix);
+        let arities: Vec<_> = engine
+            .document
+            .sources
+            .iter()
+            .filter_map(|source| {
+                source
+                    .cursor()
+                    .and_then(|cursor| cursor.owns_packet)
+                    .map(|id| engine.packets[id as usize].arguments.len())
+            })
+            .collect();
+        assert_eq!(arities, [2, 1]);
+        assert!(
+            engine
+                .document
+                .sources
+                .last()
+                .and_then(Source::cursor)
+                .is_some_and(|cursor| cursor.argument.is_some())
+        );
+    }
+    drop(engine);
+    let mut retained = 0;
+    for owner in saved.packets.iter().flat_map(|packet| packet.owners.iter()) {
+        assert!(owner.tokens.len > 0);
+        let _ = owner.tokens.get(owner.tokens.len - 1);
+        retained += 1;
+    }
+    assert!(retained > 0);
+}
+
+#[test]
+fn deeply_nested_pending_packets_replay() {
+    // The live-packets memory fixture keeps each recursive body pending.
+    let source = format!(
+        r"{BOOT}\def\nest#1{{\advance\count0by1\relax
+\ifnum\count0<64 \nest{{#1}}\fi
+\def\actual{{#1}}}}
+\nest{{PAYLOAD}}\message{{\actual/\the\count0}}\end"
+    );
+    let mut engine = Engine::new(source.as_bytes());
+    while engine.outcome().counts[0] < 64 {
+        assert_ne!(engine.advance(1).unwrap(), Progress::Complete);
+    }
+    let saved = engine.checkpoint().unwrap();
+    assert_eq!(saved.packets.len(), 64);
+    for _ in 0..2 {
+        let outcome = finish(&mut engine);
+        assert_eq!(outcome.counts[0], 64);
+        assert_eq!(outcome.messages, [b"PAYLOAD/64"]);
+        engine.restore(&saved).unwrap();
+    }
+}
+
+#[test]
 fn selected_case_else_and_nested_conditional_phases_replay() {
     let source = format!(
         r"{BOOT}
