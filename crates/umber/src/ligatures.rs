@@ -97,7 +97,10 @@ impl Engine<'_> {
                 }
                 State::Consume => {
                     let item = scratch.stack.pop().unwrap();
-                    if !item.pseudo && !metrics.exists(left as u8) {
+                    // Boundary substitution changes left, not the original's range gate.
+                    if !item.pseudo
+                        && (!r.in_character_range(item.character) || !metrics.exists(left as u8))
+                    {
                         if let Some(node) = item.original {
                             self.document.nodes.release_node(node, &mut scratch.release);
                         }

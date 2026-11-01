@@ -1,7 +1,7 @@
 //! Explicit native adapter; ordinary tests need neither files nor a TeX install.
 use crate::{
     Engine,
-    font_test_data::{basic, tfm},
+    font_test_data::{basic, tfm, tfm_range},
     nodes::{Kind, List},
     numeric::{Scaled, print_scaled},
     token::*,
@@ -151,7 +151,7 @@ impl Oracle {
         }
         let expected = shape(&e);
         let source = format!(
-            "\\catcode123=1 \\catcode125=2 \\font\\f=test \\f\\showboxbreadth=10000\\showboxdepth=10000\\setbox0=\\hbox{{{body}}}\\showbox0\\end\n"
+            "\\catcode123=1 \\catcode125=2 \\newlinechar=-1 \\font\\f=test \\f\\showboxbreadth=10000\\showboxdepth=10000\\setbox0=\\hbox{{{body}}}\\showbox0\\end\n"
         );
         let log = self.run(bytes, &source);
         let observed: Vec<String> = log
@@ -231,6 +231,21 @@ fn upstream_font_metrics_and_horizontal_nodes() {
     let bytes = tfm(&[[255, 200, 0, 1], [128, 200, 0, b'd']], &[(b'a', 1, 1)]);
     for body in ["a", r"a\char200a"] {
         oracle.compare_shape(&bytes, body);
+    }
+    for (first, character) in [(64, 32), (0, 200), (0, 0)] {
+        for op in [0, 1, 2, 3, 5, 6, 7, 11, 128] {
+            let bytes = tfm_range(
+                first,
+                127,
+                &[
+                    [255, character, 0, 1],
+                    [128, character, op, if op == 128 { 0 } else { b'c' }],
+                    [255, 0, 0, 1],
+                ],
+                &[],
+            );
+            oracle.compare_shape(&bytes, &format!("\\char{character}\\relax\\count0=7"));
+        }
     }
     let root = std::env::var_os("UMBER_TFM_DIR")
         .expect("set UMBER_TFM_DIR to the explicit corpus public/ directory");

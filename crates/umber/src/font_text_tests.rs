@@ -1,6 +1,6 @@
 use crate::{
     Engine, Error, Progress,
-    font_test_data::{basic, tfm},
+    font_test_data::{basic, tfm, tfm_range},
     nodes::Kind,
     numeric::Scaled,
     text::Mode,
@@ -263,6 +263,73 @@ fn false_boundary_missing_glyphs_and_nullfont_preserve_input() {
     build(&mut e);
     assert_eq!(glyphs(&e), vec![(b'b', false)]);
 }
+#[test]
+fn boundary_programs_precede_original_character_range_validation() {
+    for (first, character) in [(64, 32), (0, 200), (0, 0)] {
+        for op in [0, 1, 128] {
+            let bytes = tfm_range(
+                first,
+                127,
+                &[
+                    [255, character, 0, 1],
+                    [128, character, op, if op == 128 { 0 } else { b'c' }],
+                    [255, 0, 0, 1],
+                ],
+                &[],
+            );
+            let source =
+                format!("\\font\\f=test \\f\\noindent\\char{character}\\relax\\count0=7\\end");
+            let mut e = Engine::new(source.as_bytes());
+            e.register_tfm(b"test", &bytes).unwrap();
+            let saved = e.checkpoint().unwrap();
+            for _ in 0..2 {
+                build(&mut e);
+                let replacement = op == 1 || (op == 0 && character == 0);
+                assert_eq!(
+                    glyphs(&e),
+                    if replacement {
+                        vec![(b'c', true)]
+                    } else {
+                        vec![]
+                    },
+                    "first {first}, original {character}, opcode {op}"
+                );
+                assert_eq!(e.outcome().counts[0], 7);
+                let head = e.document.text.horizontal.head();
+                if replacement {
+                    let Kind::Ligature {
+                        components,
+                        left_boundary,
+                        ..
+                    } = &e.document.nodes.get(head).kind
+                    else {
+                        panic!("boundary ligature")
+                    };
+                    assert!(*left_boundary);
+                    assert_eq!(components.is_empty(), op == 1);
+                    if op == 0 {
+                        assert!(matches!(
+                            e.document.nodes.get(components.head()).kind,
+                            Kind::Character { character: 0, .. }
+                        ));
+                    }
+                } else if op == 128 {
+                    assert!(matches!(
+                        e.document.nodes.get(head).kind,
+                        Kind::Kern {
+                            width: Scaled(-65537),
+                            explicit: false
+                        }
+                    ));
+                } else {
+                    assert!(head.is_null());
+                }
+                e.restore(&saved).unwrap();
+            }
+        }
+    }
+}
+
 #[test]
 fn missing_only_character_runs_preserve_following_assignments() {
     let mut nullfont = Engine::new(br"\noindent abc\relax\count0=7\end");

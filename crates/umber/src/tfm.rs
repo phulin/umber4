@@ -57,6 +57,10 @@ pub(crate) struct Resource {
     params: usize,
 }
 impl Resource {
+    pub fn in_character_range(&self, character: u16) -> bool {
+        let end = self.bc + (self.metrics - self.chars_start);
+        (self.bc..end).contains(&usize::from(character))
+    }
     fn chars(&self) -> &[[u8; 4]] {
         self.bytes[self.chars_start * 4..self.metrics * 4]
             .as_chunks::<4>()

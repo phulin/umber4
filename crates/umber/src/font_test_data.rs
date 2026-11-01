@@ -1,7 +1,15 @@
 //! Small controlled TFM fixtures; metrics vary by character, with real TFM tables.
 pub(crate) fn tfm(program: &[[u8; 4]], tags: &[(u8, u8, u8)]) -> Vec<u8> {
+    tfm_range(0, 127, program, tags)
+}
+pub(crate) fn tfm_range(
+    first: u8,
+    last: u8,
+    program: &[[u8; 4]],
+    tags: &[(u8, u8, u8)],
+) -> Vec<u8> {
     let lh = 2;
-    let count = 128;
+    let count = usize::from(last) + 1 - usize::from(first);
     let nw = 4;
     let nh = 2;
     let nd = 2;
@@ -10,12 +18,25 @@ pub(crate) fn tfm(program: &[[u8; 4]], tags: &[(u8, u8, u8)]) -> Vec<u8> {
     let np = 7;
     let lf = 6 + lh + count + nw + nh + nd + ni + program.len() + nk + np;
     let mut b = Vec::new();
-    for n in [lf, lh, 0, 127, nw, nh, nd, ni, program.len(), nk, 0, np] {
+    for n in [
+        lf,
+        lh,
+        first as usize,
+        last as usize,
+        nw,
+        nh,
+        nd,
+        ni,
+        program.len(),
+        nk,
+        0,
+        np,
+    ] {
         b.extend_from_slice(&(n as u16).to_be_bytes());
     }
     b.extend_from_slice(&[0; 4]);
     b.extend_from_slice(&(10i32 << 20).to_be_bytes());
-    for c in 0..128 {
+    for c in first..=last {
         let (tag, rem) = tags
             .iter()
             .find(|x| x.0 == c)

@@ -91,6 +91,9 @@ parameters remain in document state; an unexpandable assignment ends the run bef
 execution.
 All TFM ligature operations retain original components and boundary-hit flags.
 Boundary programs, false boundary characters, and `\noboundary` follow upstream.
+Before consuming a real character, its original code must lie in the declared
+TFM range and its possibly substituted glyph must exist. Left-boundary programs
+run first, so their earlier ligature or kern effects survive a rejected original.
 TFM kerns remain distinct from explicit kerns. An explicit hyphen-character
 component adds an empty discretionary with zero replacement count in unrestricted
 horizontal mode. Pattern hyphenation is absent.
@@ -136,7 +139,7 @@ cargo test --lib upstream_font_metrics_and_horizontal_nodes -- --ignored
 ```
 
 The adapter writes only into a temporary directory and removes its files. It
-compares 380 marked metric/parameter messages over five sizes and 20 horizontal
+compares 380 marked metric/parameter messages over five sizes and 47 horizontal
 node lists against pdfTeX 1.40.25 (TeX Live 2023/Debian), using INITEX with e-TeX.
 The e-TeX character-metric primitives expose indexed height/depth/italic fields
 even when the width index marks a character absent; emitted glyphs still require

@@ -23,6 +23,33 @@ fn values(store: &NodeStore, list: &List) -> Vec<i32> {
     out
 }
 #[test]
+fn boundary_range_rejection_releases_original_and_preserved_effects() {
+    for op in [0, 1, 128] {
+        let bytes = crate::font_test_data::tfm(
+            &[
+                [255, 200, 0, 1],
+                [128, 200, op, if op == 128 { 0 } else { b'c' }],
+                [255, 0, 0, 1],
+            ],
+            &[],
+        );
+        let mut e = crate::Engine::new(br"\font\f=test \f\relax");
+        e.register_tfm(b"test", &bytes).unwrap();
+        e.advance(2).unwrap();
+        e.document.text.mode = crate::text::Mode::Horizontal;
+        e.character_run(200).unwrap();
+        let list = std::mem::take(&mut e.document.text.horizontal);
+        e.document
+            .nodes
+            .release(list, &mut ReleaseScratch::default());
+        assert!(
+            e.document.nodes.pages.iter().all(Option::is_none),
+            "opcode {op}"
+        );
+    }
+}
+
+#[test]
 fn transfer_split_pop_and_nested_release_reuse_backing() {
     let mut store = NodeStore::default();
     let mut scratch = ReleaseScratch::default();
