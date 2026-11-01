@@ -66,6 +66,14 @@ impl Resource {
             .as_chunks::<4>()
             .0
     }
+    pub fn larger_character(&self, character: u8) -> Option<u8> {
+        let info = CharInfo::decode(
+            *self
+                .chars()
+                .get((character as usize).checked_sub(self.bc)?)?,
+        );
+        (info.tag == 2).then_some(info.remainder)
+    }
     pub fn program(&self) -> &[[u8; 4]] {
         self.bytes[self.program_start * 4..self.kerns * 4]
             .as_chunks::<4>()

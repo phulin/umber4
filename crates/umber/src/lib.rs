@@ -25,6 +25,7 @@ mod line_construct;
 mod line_search;
 mod lists;
 mod macros;
+mod math;
 mod messages;
 mod names;
 #[allow(dead_code)] // Node consumers are the following font/paragraph/page slices.

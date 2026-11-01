@@ -333,7 +333,12 @@ impl Engine<'_> {
 }
 
 impl Resource {
-    fn lig_instruction(&self, left: u16, right: u16, start: Option<usize>) -> Option<[u8; 4]> {
+    pub(crate) fn lig_instruction(
+        &self,
+        left: u16,
+        right: u16,
+        start: Option<usize>,
+    ) -> Option<[u8; 4]> {
         if right == 256 {
             return None;
         }

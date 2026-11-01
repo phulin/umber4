@@ -26,6 +26,12 @@ replay, error, and lifetime coverage in `scanner_tests.rs`;
 `scalars.rs` stores integer tables and their group levels;
 `math_code_tests.rs` checks math-code initialization, scoped assignments,
 math-character meanings, checkpoints, and the explicit native state oracle;
+`math.rs` owns affine temporary math lists and a reusable typed arena;
+`math_convert.rs` owns iterative conversion passes and ownership frames,
+`math_clean.rs` owns clean-box work, and `math_atoms.rs` owns ordinary math
+ligatures, scripts, and operators. `math_tests.rs` checks ownership, reuse,
+failures, and deep traversal; `math_oracle_tests.rs` and
+`math_real_oracle_tests.rs` compare typed ASTs against native box geometry/DVI;
 `math_glue_tests.rs` checks math-glue quantity boundaries, native arithmetic and
 formatting, scoped bindings, and checkpoint replay;
 `parameter_tests.rs` covers initialization parameters and newline rendering across

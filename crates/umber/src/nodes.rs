@@ -352,6 +352,18 @@ pub(crate) struct ReleaseScratch {
     pending: Vec<NodeId>,
 }
 impl NodeStore {
+    #[cfg(test)]
+    pub(crate) fn box_slot_count(&self) -> usize {
+        self.boxes.len()
+    }
+    #[cfg(test)]
+    pub(crate) fn live_count(&self) -> usize {
+        self.pages
+            .iter()
+            .flatten()
+            .map(|page| usize::from(page.data.as_ref().unwrap().live))
+            .sum()
+    }
     pub fn copy_list(&mut self, source: NodeId, scratch: &mut CopyScratch) -> Result<List> {
         copying::copy_list(self, source, scratch, (u32::MAX as usize) / CELLS)
     }

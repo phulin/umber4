@@ -29,31 +29,53 @@ math-character meaning independently of ordinary `\chardef` characters.
 Out-of-range assignments return `Number` instead of upstream's interactive
 recovery; a failed character-code assignment preserves its preceding value.
 
-Math-mode entry, math-character execution, family selectors, and math list
-construction remain unsupported. Executing a math-character meaning returns
-`Unsupported` without creating a text glyph. The construction and conversion
-sections below remain proposals. The compatibility reference is TeX's
+Math-mode entry, math-character execution, and scanned math list construction
+remain unsupported. Font-family bindings are executable initialization state.
+Executing a math-character meaning returns `Unsupported` without creating a text
+glyph. The typed atom/conversion core below is executable independently of the
+frontend; semantic math construction and display execution remain proposals.
+The compatibility reference is TeX's
 `def_code`, `shorthand_def`, and `scan_something_internal` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 
 Math-glue registers, parameters, and typed `mu` scanning/formatting are executable
 initialization state, as defined in [layout-foundation.md](layout-foundation.md).
-Their values retain math units until a future math-layout consumer converts them.
+Their finite values retain math units until conversion uses the current symbol
+font quad.
 
 ## 1. Math construction
 
-Math execution builds a list of TeX atoms, commonly called noads, directly in
-node storage. A noad has its class and typed nucleus, subscript, and superscript
-fields: math character, sublist, box, or empty. Fractions, radicals, accents,
-delimiters, choices, style changes, and explicit material have their own compact
-records. Common noads should not carry the largest extension payload inline.
-Allocate temporary noads and choice records in their own short-lived chunk class
-within the document node-ID store. Surviving characters, boxes, and ordinary nodes
-use their destination class. Once atoms are released, fully free temporary chunks
-can leave the root before a checkpoint instead of leaving holes among results.
+The typed core uses one reusable `MathStore` arena backed by the existing typed
+metadata buffer pool. Numeric `MathId` references address cells in that arena;
+noncopyable `MathList` owners carry head and tail. Atom fields own a character,
+an ordinary detached box, a subsidiary math list, or no value. An empty subsidiary
+list is distinct from an absent field. Choices own four math lists. One enum
+stores atoms, styles, choices, explicit ordinary material, and converted results;
+there are no per-atom allocations, reference counts, packed tags, or cold stores.
+Freed cells form an arena-local free list and are reused across formulas.
 
-The math semantic nest owns the current list, incomplete fraction state, and
-context needed until its delimiters close. Field-building groups own script or
+`Engine::math_to_hlist` consumes a math list, initial style, and penalty policy,
+using caller-retained conversion scratch. Its only semantic mutations are in the
+supplied math arena and the engine's ordinary node store. Fonts, bindings, scanner,
+modes, and page state are not changed. The result is an affine ordinary `List`.
+Raw IDs never own anything and must not survive release or cross arena/store
+versions. Ordinary box fields must belong to the engine's matching node store.
+Dropping numeric owners does not traverse children; callers convert or explicitly
+release them through their stores.
+
+The current core supports all eight spacing classes, operators with normal or
+explicit limits policy, eight styles including cramped styles, choices, ordinary
+math ligatures/kerns, scripts, boxed/submath fields, and explicit ordinary
+kern/glue/rule/penalty material. Fractions, radicals, accents, over/under/vcenter,
+delimiters, math scanning, mode entry, displays, and equation numbers remain
+unsupported. Their absence does not select an approximate rendering.
+
+Active math construction is excluded from quiescent checkpoints. The arena and
+traversal scratch therefore require no COW or snapshot roots. Converted ordinary
+nodes use the existing versioned node store and its checkpoint ownership.
+
+The proposed math semantic nest will own the current list, incomplete fraction
+state, and context needed until its delimiters close. Field-building groups own script or
 subformula lists until transferring them to the selected field. `\mathcode`,
 `\delcode`, `\fam`, and current meanings affect construction at the points TeX
 specifies; math-active characters return through normal expansion.
@@ -75,30 +97,63 @@ speculative engine branches or delayed programs.
 
 ## 2. Conversion to horizontal material
 
-Use an ordinary `mlist_to_hlist` function with the required recursive calls for
-subformulas. Current style, cramped state, font size, and intermediate dimensions
-are locals. Scratch arrays or marked arenas hold temporary traversal work.
-Resulting boxes, kerns, glue, and characters are initialized in destination node
-storage and their lists are linked directly.
+Conversion uses an iterative work stack instead of Rust recursion. Frames own
+subsidiary lists and partial ordinary outputs until transferring them exactly once
+to their parent. Clean-box work, scripts, operators, and nested math lists use the
+same stack. Success and failure leave scratch empty; failure releases the disjoint
+forest of pending math lists, ordinary boxes, and partial outputs. There is no
+additional nesting bound beyond storage address capacity. Reusable release work
+also traverses children iteratively.
+
+The converter checks that all three family-2 fonts have 22 parameters and all
+three family-3 fonts have 13 parameters before consuming layout work. Undefined
+used families fail with `Font`; absent glyphs are discarded as in text layout.
+Interactive recovery and lost-character diagnostics remain outside this contract.
+Integer operations preserve TeX's order, truncation, half rounding, and finite
+mu conversion; infinite glue components are not scaled by the mu unit.
 
 Preserve TeX's interleaved first pass: binary-atom cancellation happens at the
 specified points before ordinary-atom processing, including retrospective
 cancellation, while atoms are constructed and measured. The second pass inserts
 class-dependent spacing and permitted penalties.
-Style changes alter the appropriate later work. Operators and limits, fractions,
-scripts, accents, radicals, and delimiter sizes use TFM parameters and integer
-rules. Reuse an existing box or list where ownership permits it; conversion need
+Style changes alter the appropriate later work. Operators, limits, and scripts
+use TFM parameters and integer rules. Fractions, accents, radicals, and delimiter
+sizing will use the same immutable font resources when implemented. Reuse an existing box or list where ownership permits it; conversion need
 not first flatten the math list into an unrelated render tree.
 
-Delimiter search uses the specified family/size order, larger-character chains,
-and extensible recipes. Construct repeated pieces directly into the final box.
+Future delimiter search will use the specified family/size order,
+larger-character chains, and extensible recipes. Construct repeated pieces directly into the final box.
 Keep italic corrections, skew behavior, script clearance, and rule thickness
 separate from text space-factor rules. The exact calculations are compatibility
 code, not interchangeable typographic approximations.
 
-TeX's `mlist_to_hlist`, `make_fraction`, `make_scripts`, and `var_delimiter`
-provide the reference behavior.
+TeX's `mlist_to_hlist`, `make_ord`, `clean_box`, `make_op`, `make_scripts`,
+`rebox`, and `math_glue` provide the reference behavior.
 See the [TeX math implementation](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+
+### Typed-core validation
+
+Ordinary tests use controlled in-memory TFM resources and typed ASTs. They cover
+arena and ordinary box-slot reuse, absent versus empty fields, font failures,
+capacity rejection, spacing overflow, deeply nested conversion/release, and every
+suspended ownership handoff. A retained unrelated ordinary box/store version
+survives conversion failures. These tests require no host font files.
+
+The ignored native adapters construct ASTs and independent TeX source expressions.
+They compare natural box dimensions, shifts, glue settings, and DVI glyph positions
+through the existing ordinary packing/publication adapter. Cases include the full
+spacing-class matrix, all math ligature operations, choice/style propagation,
+eight styles, signed parameters, scripts, operators/limits, missing glyphs, boxed
+fields, and real CM fonts. Native-only overline wrappers expose cramped root styles;
+comparisons select their inner box and relative formula glyph positions. This does
+not implement overline conversion in Umber.
+
+Set `UMBER_PDFTEX` to an explicit pdfTeX executable and, for CM cases,
+`UMBER_TFM_DIR` to the TeX distribution's `fonts/tfm/public` directory, then run
+`cargo test --lib math::oracle_tests -- --ignored`. The oracle is pdfTeX 1.40.25
+(TeX Live 2023/Debian), invoked as INITEX with e-TeX. Adapter files are isolated in
+`umber-math-core-*` temporary directories and removed afterward. Portable tests,
+Miri, and Wasm builds do not invoke this host adapter.
 
 ## 3. Inline and display math
 
