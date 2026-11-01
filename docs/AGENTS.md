@@ -34,8 +34,8 @@ Keep implementation histories, before/after reports, and validation logs out of
   math atoms/conversion, display math, alignment templates, entry measurement, and
   result-list transfers.
 - `pages.md` contracts executable vertical contributions, page breaks, detached
-  publication, output routines, and retained unfinished pages, and develops
-  insertions and marks.
+  publication, output routines, unsplit insertions, adjustments, and retained unfinished pages,
+  and develops insertion splitting and marks.
 - `output.md` records detached page publication and develops ordered backend
   shipout, document state,
   DVI/PDF resources, and direct serialization.

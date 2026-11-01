@@ -7,6 +7,7 @@ pub(crate) enum GroupKind {
     Vbox,
     Vtop,
     Output,
+    Insert,
 }
 pub(crate) enum Save {
     Boundary(GroupKind),
@@ -74,7 +75,12 @@ impl Engine<'_> {
             cmd::SHIPOUT if !global => self.scan_box(crate::boxes::Destination::Shipout),
             cmd::DEAD_CYCLES => {
                 self.scan_equals()?;
-                self.document.page.dead_cycles = self.scan_int()?;
+                let value = self.scan_int()?;
+                if read.meaning.value == 0 {
+                    self.document.page.dead_cycles = value;
+                } else {
+                    self.document.page.insert_penalties = value;
+                }
                 Ok(())
             }
             cmd::SET_BOX => self.set_box(assignment_global),
@@ -404,8 +410,10 @@ impl Engine<'_> {
                         self.document.level -= 1;
                         return self.finish_output_group();
                     }
-                    if matches!(saved, GroupKind::Hbox | GroupKind::Vbox | GroupKind::Vtop)
-                        && kind == GroupKind::Simple
+                    if matches!(
+                        saved,
+                        GroupKind::Hbox | GroupKind::Vbox | GroupKind::Vtop | GroupKind::Insert
+                    ) && kind == GroupKind::Simple
                     {
                         self.document.level -= 1;
                         return self.finish_box_group(max_depth.expect("box finishing context"));

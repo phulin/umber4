@@ -37,7 +37,10 @@ applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
 `nodes.rs` owns versioned chunked node storage and consuming list/node transfers;
 `node_boxes.rs` owns its dense reusable COW box payload slots,
-with branch/reclamation tests in `nodes_tests.rs`; `node_copy.rs` owns iterative
+with branch/reclamation tests in `nodes_tests.rs`;
+`node_insertions.rs` owns compact COW insertion payload slots and
+`node_insertion_tests.rs` covers their copy, failure, and reclamation behavior;
+`node_transfer.rs` owns consuming header/list transfers; `node_copy.rs` owns iterative
 semantic list copies with ownership/failure tests in `node_copy_tests.rs`; page construction uses
 the same nodes;
 `tfm.rs` owns validated immutable metric resources and exact scaling, `fonts.rs`
@@ -46,6 +49,8 @@ immutable metric readers,
 `boxes.rs` owns horizontal/internal vertical construction frames, affine box registers,
 scoped transfers, and box geometry/status primitives; `boxes_tests.rs` checks
 native ordering, ownership, replay, failure cleanup, and executable packing;
+`insertions.rs` captures insertion/adjustment lists through those construction frames;
+`insertion_tests.rs` checks native page/packing behavior, failure boundaries, and replay;
 `box_transfer.rs` owns unboxing, last-box extraction, and axis-specific shifts;
 `vertical_box_tests.rs` covers their native fixtures, internal paragraphs, and replay;
 `text.rs` owns external/restricted modes and horizontal/vertical lists, `paragraph.rs` owns
@@ -60,7 +65,9 @@ lines, and `packing.rs` packs horizontal/vertical lists and appends baseline glu
 `packing_tests.rs` checks packing specifications against fixed geometry and native boxes;
 `output_state_tests.rs` covers scoped output-token storage;
 `output_routine_tests.rs` checks direct shipout, output groups, native fixtures,
-returned material, counters, and checkpoint replay; `page.rs` owns incremental
+returned material, counters, and checkpoint replay;
+`page_insertions.rs` accounts unsplit insertion classes and transfers selected child lists;
+`page.rs` owns incremental
 page state, default/custom output, and its suspended frame; `vertical.rs` executes
 vertical contributions and page quantities, `page_output.rs` lowers owned nodes
 with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/

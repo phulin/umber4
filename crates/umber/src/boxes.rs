@@ -10,6 +10,8 @@ use crate::{
     text::{Mode, TextState},
     token::*,
 };
+#[path = "insertions.rs"]
+mod insertions;
 #[path = "box_transfer.rs"]
 mod transfer;
 
@@ -46,6 +48,7 @@ pub(crate) enum Destination {
     Shipout,
     Append(Scaled),
     Register { index: usize, global: bool },
+    Insertion(u8),
 }
 pub(crate) struct Frame {
     outer: TextState,
@@ -53,6 +56,8 @@ pub(crate) struct Frame {
     destination: Destination,
     kind: GroupKind,
     level: u16,
+    captured: Option<insertions::Captured>,
+    adjusted: bool,
 }
 
 impl Engine<'_> {
@@ -105,12 +110,17 @@ impl Engine<'_> {
                     ..TextState::default()
                 },
             );
+            let outer_mode = outer.mode;
             self.document.box_frames.push(Frame {
                 outer,
                 spec,
                 destination,
                 kind,
                 level: self.document.level,
+                captured: None,
+                adjusted: kind == GroupKind::Hbox
+                    && matches!(destination, Destination::Append(_))
+                    && outer_mode.is_vertical(),
             });
             // SETBOX's afterassignment token is backed above this hook by the
             // ordinary assignment epilogue, before construction resumes.
@@ -143,8 +153,13 @@ impl Engine<'_> {
         if kind != GroupKind::Simple || frame.level != self.document.level {
             return Ok(None);
         }
-        if frame.kind != GroupKind::Hbox {
+        let construction = frame.kind;
+        if construction != GroupKind::Hbox {
             self.end_graf()?;
+        }
+        if construction == GroupKind::Insert {
+            let captured = insertions::Captured::read(self);
+            self.document.box_frames.last_mut().unwrap().captured = Some(captured);
         }
         Ok(Some(
             self.document.layout_values.dimens[DimenParam::BoxMaxDepth.index()].value,
@@ -152,17 +167,38 @@ impl Engine<'_> {
     }
     pub(crate) fn finish_box_group(&mut self, max_depth: Scaled) -> Result<()> {
         let frame = self.document.box_frames.pop().expect("box construction");
+        let mut adjustments = List::default();
         let result = if frame.kind == GroupKind::Hbox {
             let contents = std::mem::take(&mut self.document.text.horizontal);
-            self.hpack(contents, frame.spec)
+            if frame.adjusted {
+                self.hpack_adjusted(contents, frame.spec, &mut adjustments)
+            } else {
+                self.hpack(contents, frame.spec)
+            }
         } else {
             let contents = std::mem::take(&mut self.document.text.vertical);
+            let max_depth = if frame.kind == GroupKind::Insert {
+                Scaled::MAX
+            } else {
+                max_depth
+            };
             self.vpackage(contents, frame.spec, max_depth)
         };
         // Both success and failure restore the enclosing owner. Allocation
         // rejection has already released the transferred box contents.
         self.document.text = frame.outer;
-        let node = result?;
+        let node = match result {
+            Ok(node) => node,
+            Err(error) => {
+                self.document
+                    .nodes
+                    .release(adjustments, &mut self.page_release);
+                return Err(error);
+            }
+        };
+        if let Destination::Insertion(class) = frame.destination {
+            return self.finish_insertion(class, node, frame.captured.expect("insertion capture"));
+        }
         if frame.kind == GroupKind::Vtop {
             let Kind::Box(id) = &self.document.nodes.get(node.id()).kind else {
                 unreachable!("packed box")
@@ -182,7 +218,24 @@ impl Engine<'_> {
             data.height = height;
             data.depth = Scaled(total.wrapping_sub(height.0));
         }
-        self.finish_box(frame.destination, Some(node))
+        if frame.adjusted {
+            let Destination::Append(shift) = frame.destination else {
+                unreachable!()
+            };
+            self.document.nodes.box_mut(node.id()).shift = shift;
+            // Establish ownership even when allocating baseline glue fails.
+            let result = self.append_to_vlist(node);
+            self.document
+                .nodes
+                .splice(&mut self.document.text.vertical, adjustments);
+            result?;
+            if self.document.text.mode == Mode::Vertical {
+                self.build_page()?;
+            }
+            Ok(())
+        } else {
+            self.finish_box(frame.destination, Some(node))
+        }
     }
     fn finish_box(&mut self, destination: Destination, node: Option<DetachedNode>) -> Result<()> {
         if let Destination::Shipout = destination {

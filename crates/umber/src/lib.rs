@@ -358,3 +358,6 @@ mod page_tests;
 mod page_dvi_tests;
 #[cfg(test)]
 mod page_oracle_tests;
+
+#[cfg(test)]
+mod insertion_tests;

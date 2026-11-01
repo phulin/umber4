@@ -27,6 +27,8 @@ impl Target {
     pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
     pub const NEWLINECHAR: Self = Self((PARAM_BASE + 32) as u16);
     pub const FAM: Self = Self((PARAM_BASE + 37) as u16);
+    pub const FLOATING_PENALTY: Self = Self((PARAM_BASE + 42) as u16);
+    pub const HOLDING_INSERTS: Self = Self((PARAM_BASE + 43) as u16);
     pub const MAX_DEAD_CYCLES: Self = Self((PARAM_BASE + 41) as u16);
     pub const LANGUAGE: Self = Self((PARAM_BASE + 38) as u16);
     // Font IDs share assignment/save storage, but these targets deliberately

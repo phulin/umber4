@@ -11,6 +11,10 @@ use std::{cell::RefCell, rc::Rc};
 mod box_slots;
 #[path = "node_copy.rs"]
 mod copying;
+#[path = "node_insertions.rs"]
+mod insertion_slots;
+#[path = "node_transfer.rs"]
+mod transfer;
 pub(crate) use copying::CopyScratch;
 
 const CELLS: usize = 256;
@@ -91,6 +95,17 @@ impl BoxData {
 /// An affine owner of one payload slot in the matching node-store version.
 #[derive(Debug)]
 pub(crate) struct BoxId(u32);
+#[derive(Debug)]
+pub(crate) struct InsertionId(u32);
+#[derive(Debug, Default)]
+pub(crate) struct InsertionData {
+    pub list: List,
+    pub class: u8,
+    pub height: Scaled,
+    pub split_top: Glue,
+    pub max_depth: Scaled,
+    pub float_cost: i32,
+}
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) enum GlueKind {
@@ -136,6 +151,8 @@ pub(crate) enum Kind {
         depth: Scaled,
     },
     Box(BoxId),
+    Insertion(InsertionId),
+    Adjustment(List),
     Discretionary {
         pre: List,
         post: List,
@@ -228,6 +245,8 @@ impl Node {
                 depth: *depth,
             },
             Kind::Box(b) => Kind::Box(BoxId(b.0)),
+            Kind::Insertion(id) => Kind::Insertion(InsertionId(id.0)),
+            Kind::Adjustment(list) => Kind::Adjustment(list.snapshot()),
             Kind::Discretionary {
                 pre,
                 post,
@@ -315,6 +334,7 @@ pub(crate) struct NodeStore {
     pool: Rc<Pool>,
     allocation: Option<usize>,
     boxes: box_slots::Boxes,
+    insertions: insertion_slots::Insertions,
 }
 impl Default for NodeStore {
     fn default() -> Self {
@@ -323,6 +343,7 @@ impl Default for NodeStore {
             pool: Rc::default(),
             allocation: None,
             boxes: box_slots::Boxes::default(),
+            insertions: insertion_slots::Insertions::default(),
         }
     }
 }
@@ -471,47 +492,6 @@ impl NodeStore {
         chunk.live += 1;
         DetachedNode(NodeId((page * CELLS + usize::from(offset) + 1) as u32))
     }
-    pub fn append(&mut self, list: &mut List, node: DetachedNode) {
-        debug_assert!(self.get(node.0).next.is_null(), "append detached node");
-        self.splice(list, node.into_list());
-    }
-    pub fn splice(&mut self, destination: &mut List, source: List) {
-        if source.is_empty() {
-            return;
-        }
-        if destination.is_empty() {
-            destination.head = source.head;
-        } else {
-            self.get_mut(destination.tail).next = source.head;
-        }
-        destination.tail = source.tail;
-    }
-    pub fn pop_front(&mut self, list: &mut List) -> Option<DetachedNode> {
-        if list.is_empty() {
-            return None;
-        }
-        let id = list.head;
-        list.head = self.get(id).next;
-        self.get_mut(id).next = NodeId::NULL;
-        if list.head.is_null() {
-            list.tail = NodeId::NULL;
-        }
-        Some(DetachedNode(id))
-    }
-    /// Split after a node belonging to this chain; null splits before the head.
-    pub fn split_after(&mut self, list: &mut List, node: NodeId) -> List {
-        if node.is_null() {
-            return std::mem::take(list);
-        }
-        let head = self.get(node).next;
-        if head.is_null() {
-            return List::default();
-        }
-        self.get_mut(node).next = NodeId::NULL;
-        let suffix = List::from_parts(head, list.tail);
-        list.tail = node;
-        suffix
-    }
     fn free(&mut self, id: NodeId) -> Node {
         let (page, offset) = Self::address(id);
         let chunk = self.writable(page);
@@ -544,6 +524,11 @@ impl NodeStore {
                 let data = self.boxes.take(id);
                 self.release(data.list, scratch);
             }
+            Kind::Insertion(id) => {
+                let data = self.insertions.take(id);
+                self.release(data.list, scratch);
+            }
+            Kind::Adjustment(list) => self.release(list, scratch),
             Kind::Ligature { components, .. } => self.release(components, scratch),
             Kind::Discretionary { pre, post, .. } => {
                 self.release(pre, scratch);
@@ -563,6 +548,11 @@ impl NodeStore {
                         let data = self.boxes.take(id);
                         scratch.pending.push(data.list.head);
                     }
+                    Kind::Insertion(id) => {
+                        let data = self.insertions.take(id);
+                        scratch.pending.push(data.list.head);
+                    }
+                    Kind::Adjustment(list) => scratch.pending.push(list.head),
                     Kind::Ligature { components, .. } => scratch.pending.push(components.head),
                     Kind::Discretionary { pre, post, .. } => {
                         scratch.pending.push(pre.head);
@@ -579,3 +569,7 @@ impl NodeStore {
 #[cfg(test)]
 #[path = "nodes_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "node_insertion_tests.rs"]
+mod insertion_tests;

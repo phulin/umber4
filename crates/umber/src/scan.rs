@@ -113,7 +113,11 @@ impl Engine<'_> {
             });
         }
         match read.meaning.command {
-            cmd::DEAD_CYCLES => Ok(self.document.page.dead_cycles),
+            cmd::DEAD_CYCLES => Ok(if read.meaning.value == 0 {
+                self.document.page.dead_cycles
+            } else {
+                self.document.page.insert_penalties
+            }),
             cmd::PAR_SHAPE => Ok(self
                 .document
                 .layout_values

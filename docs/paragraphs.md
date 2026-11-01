@@ -23,7 +23,9 @@ a successful pretolerance pass can still complete normally.
 Paragraph completion consumes the horizontal list, transforms its final glue
 into the terminal penalty, and appends paragraph-fill glue. Selected breaks
 transfer existing nodes into line boxes with left/right skips, indentation,
-baseline/line glue, and interline penalties. Hanging indentation and `\parshape`
+baseline/line glue, and interline penalties. During the same packing traversal,
+insertion nodes migrate after their line, and adjustment nodes transfer their
+children there before interline penalties, as specified in [pages.md](pages.md). Hanging indentation and `\parshape`
 select line widths. Paragraph settings reset through ordinary local assignment
 semantics. The resulting vertical list is the [page builder](pages.md) contribution
 root; paragraph completion runs synchronous page work before returning.

@@ -30,7 +30,14 @@ pub(crate) struct MetricReader<'a> {
     catalog: &'a Catalog,
     last: Option<(u32, &'a ScaledFont)>,
 }
-impl MetricReader<'_> {
+impl<'a> MetricReader<'a> {
+    pub(crate) fn new(fonts: &'a Fonts, catalog: &'a Catalog) -> Self {
+        Self {
+            fonts,
+            catalog,
+            last: None,
+        }
+    }
     pub(crate) fn get(&mut self, font: u32, character: u8) -> Option<Metrics> {
         let metrics = match self.last {
             Some((id, metrics)) if id == font => metrics,
@@ -67,11 +74,7 @@ impl Default for Fonts {
 }
 impl Engine<'_> {
     pub(crate) fn metric_reader(&self) -> MetricReader<'_> {
-        MetricReader {
-            fonts: &self.document.fonts,
-            catalog: &self.font_catalog,
-            last: None,
-        }
+        MetricReader::new(&self.document.fonts, &self.font_catalog)
     }
     /// Register an immutable metric resource before the first nonzero advance.
     /// Names are exact bytes, with an optional terminal `.tfm`; no file is opened.

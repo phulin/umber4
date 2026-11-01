@@ -78,6 +78,8 @@ pub(crate) fn find_breaks(
                         before,
                         Kind::Character { .. }
                             | Kind::Ligature { .. }
+                            | Kind::Insertion(_)
+                            | Kind::Adjustment(_)
                             | Kind::Box(_)
                             | Kind::Rule { .. }
                             | Kind::Discretionary { .. }
@@ -131,6 +133,7 @@ pub(crate) fn find_breaks(
                     p = next;
                     continue;
                 }
+                Kind::Insertion(_) | Kind::Adjustment(_) => {}
                 Kind::Free => unreachable!(),
             }
             previous = p;

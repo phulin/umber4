@@ -84,6 +84,9 @@ impl Engine<'_> {
     }
     pub(crate) fn vertical_command(&mut self, read: Read) -> Result<bool> {
         match read.meaning.command {
+            cmd::INSERT_ADJUST => {
+                self.begin_insertion(read.meaning.value != 0)?;
+            }
             cmd::UNSUPPORTED_LAYOUT => return Err(Error::Unsupported),
             cmd::VSKIP => {
                 if self.document.text.mode == Mode::RestrictedHorizontal {

@@ -2,7 +2,7 @@
 use crate::{
     Engine, Result,
     layout_values::{DimenParam, GlueParam},
-    nodes::{BoxData, DetachedNode, GlueKind, GlueSet, GlueSign, Kind, List},
+    nodes::{BoxData, DetachedNode, GlueKind, GlueSet, GlueSign, Kind, List, NodeId},
     numeric::{GlueOrder, Scaled},
 };
 
@@ -64,15 +64,35 @@ pub(crate) fn glue_setting(
 }
 impl Engine<'_> {
     pub(crate) fn hpack(&mut self, list: List, spec: PackSpec) -> Result<DetachedNode> {
+        self.hpack_inner(list, spec, None)
+    }
+    /// Only paragraph lines and newly constructed direct vertical hboxes extract
+    /// migrating material; ordinary retained hboxes keep these zero-size owners.
+    pub(crate) fn hpack_adjusted(
+        &mut self,
+        list: List,
+        spec: PackSpec,
+        adjustments: &mut List,
+    ) -> Result<DetachedNode> {
+        self.hpack_inner(list, spec, Some(adjustments))
+    }
+    fn hpack_inner(
+        &mut self,
+        mut list: List,
+        spec: PackSpec,
+        mut adjustments: Option<&mut List>,
+    ) -> Result<DetachedNode> {
         let mut natural = 0i32;
         let mut height = 0;
         let mut depth = 0;
         let mut stretch = [0i32; 4];
         let mut shrink = [0i32; 4];
-        let mut metrics = self.metric_reader();
+        let mut metrics = crate::fonts::MetricReader::new(&self.document.fonts, &self.font_catalog);
+        let mut previous = NodeId::NULL;
         let mut p = list.head();
         while !p.is_null() {
             let n = self.document.nodes.get(p);
+            let next = n.next;
             match &n.kind {
                 Kind::Character { font, character }
                 | Kind::Ligature {
@@ -108,9 +128,29 @@ impl Engine<'_> {
                     let o = spec.shrink_order as usize;
                     shrink[o] = shrink[o].wrapping_add(spec.shrink.0);
                 }
+                Kind::Insertion(_) | Kind::Adjustment(_) if adjustments.is_some() => {
+                    let destination = adjustments.as_deref_mut().unwrap();
+                    let node = self
+                        .document
+                        .nodes
+                        .remove_after(&mut list, previous)
+                        .unwrap();
+                    if let Kind::Adjustment(children) = self.document.nodes.kind_mut(p) {
+                        let children = std::mem::take(children);
+                        self.document.nodes.splice(destination, children);
+                        self.document
+                            .nodes
+                            .release_node(node, &mut self.page_release);
+                    } else {
+                        self.document.nodes.append(destination, node);
+                    }
+                    p = next;
+                    continue;
+                }
                 _ => {}
             }
-            p = n.next;
+            previous = p;
+            p = next;
         }
         let width = spec.target(natural);
         let glue_set = glue_setting(

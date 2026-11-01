@@ -100,7 +100,7 @@ than copying a shared tail merely to append. Free-slot state belongs to the same
 version as the nodes. Released empty chunks enter a bounded session reuse pool.
 
 Nodes contain links and compact tagged values, with inline glue and font IDs,
-and no per-node heap allocation or reference count. Box, ligature-component,
+and no per-node heap allocation or reference count. Box, insertion, adjustment, ligature-component,
 and discretionary child lists are owned edges. A non-`Copy` `List` carries head
 and tail for building and ownership transfers. Appending/splicing consumes an
 existing list; constructing a box consumes its contents. Allocation and removal
@@ -115,7 +115,7 @@ ligature/discretionary payloads carry owned non-`Copy` child lists; only the
 private COW copier duplicates them into another version. Raw node IDs are
 internal references, never independent owners. Copying a root for a checkpoint
 is distinct from copying a mutable TeX list. Semantic list copying allocates
-fresh nodes and box payload slots, while immutable font metrics remain shared.
+fresh nodes and box/insertion payload slots, while immutable font metrics remain shared.
 
 Box headers live in a dense reusable `Table` with 64-entry COW pages inside the
 node store. A box node owns an opaque non-`Copy`, non-`Clone` slot handle; only
@@ -133,6 +133,14 @@ and links the slot into that version's free list, then traverses its owned
 children. Retained versions preserve their own header and child-node roots.
 Dropping a whole node-store version discards both directories together; dropping
 numeric child handles does not recursively traverse nodes.
+
+Insertion payloads follow the same typed COW slot ownership and reuse contract in
+a separate table. Their compact handles preserve ordinary 24-byte node cells;
+inline adjustment nodes own a child-list handle directly. Insertion metadata
+contains the class, measured height plus depth, and captured split parameters.
+Releasing either node traverses its owned children through the same iterative
+work stack. Consuming extraction can remove a cell after a known predecessor,
+without rebuilding or copying the surrounding list.
 
 Nested release walks owned child lists using reusable session scratch, avoiding
 recursion and allocations per node. Scratch must be empty on return and is not

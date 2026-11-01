@@ -15,8 +15,8 @@ roots. Checkpoints retain these roots together with their node-store version.
 An unfinished page or trailing contribution kern is eligible state, including
 inside ordinary assignment groups and partially consumed macro calls.
 
-The first box or rule freezes `\vsize` and `\maxdepth` and inserts adjusted
-`\topskip` without changing its stretch or shrink. Leading glue, penalties, and
+The first insertion, box, or rule freezes `\vsize` and `\maxdepth`; the first
+box or rule inserts adjusted `\topskip` without changing its stretch or shrink. Leading glue, penalties, and
 kerns are discarded. Legal glue, kern-before-glue, and penalty breaks are tested
 before the candidate enters totals. Equal costs select the latest break. An
 awful cost or forced penalty fires the best break, returning its node and later
@@ -40,7 +40,7 @@ behavior; it is not natural-height shipping.
 The vertical command slice includes `\vskip`, `\vfil`, `\vfill`, `\vss`,
 `\vfilneg`, `\hrule`, horizontal `\vrule`, `\prevdepth`,
 and writable page dimensions. Rules preserve running dimensions until traversal.
-Insertions, marks, leaders, math, and output backends remain unsupported.
+Marks, leaders, math, and output backends remain unsupported.
 Explicit horizontal/vertical/void box shipout uses the same detached lowerer.
 Packing diagnostics and interactive recovery remain outside this fail-fast
 interpreter contract.
@@ -121,6 +121,40 @@ Ownership checks retain old results while restoring incomplete pages and pending
 macros/groups, grow font caches after publication, reuse document font IDs on a
 new branch, and exercise both teardown orders. This stage makes no performance
 claim and adds no backend.
+
+## Executable insertions and adjustments
+
+`\insert` captures an owned internal vertical list. Construction resets paragraph
+parameters, starts with ignored previous depth, and runs no `\everyvbox` hook.
+Closing ends its paragraph, captures `\splittopskip`, `\splitmaxdepth`, and
+`\floatingpenalty` before restoring assignments, then measures with unconstrained maximum depth. The enclosing mode, space factor, and previous depth survive.
+`\insert255` requires unsupported recovery. `\vadjust` captures the same child
+list in horizontal mode; vertical use fails with `Syntax`.
+
+Insertion nodes use affine handles into dense reusable COW payload slots;
+adjustments own their compact list directly. Ordinary nodes remain 24 bytes.
+Snapshots pair these owners with matching store roots; semantic copies recursively
+copy children through the iterative copy machinery. Paragraph line packing and
+new hboxes directly appended in vertical mode extract insertions and adjustments.
+Adjustment children follow the line before its interline penalty, without changing
+previous depth. Stored and explicitly shipped hboxes retain these zero-size nodes;
+backend traversal ignores their children.
+
+The page distinguishes empty, insertions-only, and ordinary box contents. The
+first insertion freezes page specifications; top discardable material is still
+discarded until a box or rule arrives. Pooled sorted class records retain current
+and best accepted insertion pointers, accumulated size, and class skip corrections.
+Page costs and arithmetic follow TeX, including divide-before-multiply scaling.
+At the selected break, accepted children transfer into naturally repacked class
+boxes without changing those registers' assignment levels. `\holdinginserts`
+retains insertion nodes in box 255 when positive; `\insertpenalties` is direct
+writable page state, reset by page output and output-group completion.
+
+This executable slice supports unsplit insertions. The exact page-fit or class-limit
+condition requiring TeX's internal `vert_break` returns `Unsupported`; it neither
+approximates a split nor drops the insertion. Thus it does not yet produce genuine
+held-over insertion lists. Public `\vsplit`, split pruning, marks, and discard
+extensions remain proposed below.
 
 ## 1. Vertical contribution and current page
 

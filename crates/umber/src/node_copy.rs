@@ -1,10 +1,12 @@
 //! Semantic copies own new cells; COW snapshots are a separate operation.
-use super::{BoxData, DetachedNode, Kind, List, NodeId, NodeStore, ReleaseScratch};
+use super::{BoxData, DetachedNode, InsertionData, Kind, List, NodeId, NodeStore, ReleaseScratch};
 use crate::Result;
 
 #[derive(Clone, Copy)]
 enum Child {
     Box,
+    Insertion,
+    Adjustment,
     Components,
     Pre,
     Post,
@@ -153,6 +155,23 @@ impl NodeStore {
                 };
                 self.alloc_box_with_limit(copy, limit)?
             }
+            Kind::Insertion(id) => {
+                let data = self.insertion_data(id);
+                children[0] = (data.list.head(), Child::Insertion);
+                let copy = InsertionData {
+                    list: List::default(),
+                    class: data.class,
+                    height: data.height,
+                    split_top: data.split_top,
+                    max_depth: data.max_depth,
+                    float_cost: data.float_cost,
+                };
+                self.alloc_insertion_with_limit(copy, limit)?
+            }
+            Kind::Adjustment(list) => {
+                children[0] = (list.head(), Child::Adjustment);
+                self.alloc_with_limit(Kind::Adjustment(List::default()), limit)?
+            }
             Kind::Discretionary {
                 pre,
                 post,
@@ -170,6 +189,13 @@ impl NodeStore {
     fn attach_copy(&mut self, parent: NodeId, child: Child, list: List) {
         let target = match child {
             Child::Box => &mut self.box_mut(parent).list,
+            Child::Insertion => &mut self.insertion_mut(parent).list,
+            Child::Adjustment => {
+                let Kind::Adjustment(list) = self.kind_mut(parent) else {
+                    unreachable!("copied adjustment")
+                };
+                list
+            }
             Child::Components => {
                 let Kind::Ligature { components, .. } = self.kind_mut(parent) else {
                     unreachable!("copied ligature")

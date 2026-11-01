@@ -11,10 +11,20 @@ use crate::{
     text::{Mode, TextState},
     token::*,
 };
+#[path = "page_insertions.rs"]
+mod insertions;
+
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) enum Contents {
+    #[default]
+    Empty,
+    InsertsOnly,
+    BoxThere,
+}
 const AWFUL: i32 = 0x3fff_ffff;
 #[derive(Clone, Copy)]
 pub(crate) struct Measurements {
-    pub started: bool,
+    pub contents: Contents,
     pub totals: [i32; 8],
     pub max_depth: i32,
     pub best_break: NodeId,
@@ -28,7 +38,7 @@ pub(crate) struct Measurements {
 impl Default for Measurements {
     fn default() -> Self {
         Self {
-            started: false,
+            contents: Contents::Empty,
             totals: [0; 8],
             max_depth: 0,
             best_break: NodeId::NULL,
@@ -45,12 +55,25 @@ pub(crate) struct OutputFrame {
     pub outer: TextState,
     pub level: u16,
 }
-#[derive(Default)]
 pub(crate) struct PageState {
     pub current: List,
     pub state: Measurements,
     pub output: Pages,
     pub dead_cycles: i32,
+    pub insert_penalties: i32,
+    classes: crate::value_metadata::Buffer<insertions::Class>,
+}
+impl Default for PageState {
+    fn default() -> Self {
+        Self {
+            current: List::default(),
+            state: Measurements::default(),
+            output: Pages::default(),
+            dead_cycles: 0,
+            insert_penalties: 0,
+            classes: crate::value_metadata::Buffer::new(&std::rc::Rc::default()),
+        }
+    }
 }
 impl PageState {
     pub fn snapshot(&self) -> Self {
@@ -59,10 +82,12 @@ impl PageState {
             state: self.state,
             output: self.output.clone(),
             dead_cycles: self.dead_cycles,
+            insert_penalties: self.insert_penalties,
+            classes: self.classes.clone(),
         }
     }
     pub fn quantity(&self, index: usize) -> Scaled {
-        if self.state.started {
+        if self.state.contents != Contents::Empty {
             Scaled(self.state.totals[index])
         } else if index == 0 {
             Scaled::MAX
@@ -91,7 +116,7 @@ impl Engine<'_> {
                 Kind::Box(b) => {
                     let b = self.document.nodes.box_data(b);
                     let (height, depth) = (b.height.0, b.depth.0);
-                    if !state.started {
+                    if state.contents != Contents::BoxThere {
                         self.start_page(height)?;
                         continue;
                     }
@@ -102,7 +127,7 @@ impl Engine<'_> {
                 }
                 Kind::Rule { height, depth, .. } => {
                     let (height, depth) = (height.0, depth.0);
-                    if !state.started {
+                    if state.contents != Contents::BoxThere {
                         self.start_page(height)?;
                         continue;
                     }
@@ -112,7 +137,7 @@ impl Engine<'_> {
                     state.totals[7] = depth;
                 }
                 Kind::Glue { .. } => {
-                    if !state.started {
+                    if state.contents != Contents::BoxThere {
                         self.discard_contribution();
                         continue;
                     }
@@ -122,14 +147,14 @@ impl Engine<'_> {
                                 .nodes
                                 .get(self.document.page.current.tail())
                                 .kind,
-                            Kind::Box(_) | Kind::Rule { .. }
+                            Kind::Box(_) | Kind::Rule { .. } | Kind::Insertion(_)
                         )
                     {
                         penalty = Some(0);
                     }
                 }
                 Kind::Kern { .. } => {
-                    if !state.started {
+                    if state.contents != Contents::BoxThere {
                         self.discard_contribution();
                         continue;
                     }
@@ -141,12 +166,13 @@ impl Engine<'_> {
                     }
                 }
                 Kind::Penalty(pi) => {
-                    if !state.started {
+                    if state.contents != Contents::BoxThere {
                         self.discard_contribution();
                         continue;
                     }
                     penalty = Some(*pi);
                 }
+                Kind::Insertion(_) => self.consider_insertion(p)?,
                 _ => return Err(Error::Unsupported),
             }
             if let Some(pi) = penalty.filter(|&pi| pi < 10000)
@@ -196,15 +222,11 @@ impl Engine<'_> {
     }
     fn start_page(&mut self, first_height: i32) -> Result<()> {
         let s = &mut self.document.page.state;
-        s.started = true;
-        s.totals = [0; 8];
-        s.totals[0] = self.document.layout_values.dimens[DimenParam::VSize.index()]
-            .value
-            .0;
-        s.max_depth = self.document.layout_values.dimens[DimenParam::MaxDepth.index()]
-            .value
-            .0;
-        s.least_cost = AWFUL;
+        if s.contents == Contents::Empty {
+            self.freeze_page(Contents::BoxThere);
+        }
+        let s = &mut self.document.page.state;
+        s.contents = Contents::BoxThere;
         let mut spec = self.document.layout_values.glues[GlueParam::Top.index()].value;
         spec.width = Scaled(spec.width.0.saturating_sub(first_height).max(0));
         let glue = self.document.nodes.alloc(Kind::Glue {
@@ -219,6 +241,18 @@ impl Engine<'_> {
         );
         self.document.text.vertical = prefix;
         Ok(())
+    }
+    fn freeze_page(&mut self, contents: Contents) {
+        let s = &mut self.document.page.state;
+        s.contents = contents;
+        s.totals = [0; 8];
+        s.totals[0] = self.document.layout_values.dimens[DimenParam::VSize.index()]
+            .value
+            .0;
+        s.max_depth = self.document.layout_values.dimens[DimenParam::MaxDepth.index()]
+            .value
+            .0;
+        s.least_cost = AWFUL;
     }
     fn discard_contribution(&mut self) {
         let node = self
@@ -255,14 +289,23 @@ impl Engine<'_> {
             pi
         } else if b < 10000 {
             b.wrapping_add(pi)
+                .wrapping_add(self.document.page.insert_penalties)
         } else {
             100000
+        };
+        let cost = if self.document.page.insert_penalties >= 10000 {
+            AWFUL
+        } else {
+            cost
         };
         if cost <= s.least_cost {
             s.best_break = p;
             s.best_previous = self.document.page.current.tail();
             s.best_size = s.totals[0];
             s.least_cost = cost;
+            for class in &mut *self.document.page.classes {
+                class.best = class.last;
+            }
         }
         cost == AWFUL || pi <= -10000
     }
@@ -281,6 +324,8 @@ impl Engine<'_> {
         if !self.document.boxes.head(255).is_null() {
             return Err(Error::Unsupported);
         }
+        self.document.page.insert_penalties = 0;
+        self.prepare_insertions()?;
         if candidate != s.best_break {
             let rest = self
                 .document
@@ -292,11 +337,12 @@ impl Engine<'_> {
                 .splice(&mut rest, std::mem::take(&mut self.document.text.vertical));
             self.document.text.vertical = rest;
         }
+        self.commit_insertions()?;
         let list = std::mem::take(&mut self.document.page.current);
         let page = self.vpackage(list, PackSpec::To(Scaled(s.best_size)), Scaled(s.max_depth))?;
         // Start-new-page resets caches/depth, but raw previous totals are retained.
         let state = &mut self.document.page.state;
-        state.started = false;
+        state.contents = Contents::Empty;
         state.max_depth = 0;
         state.totals[7] = 0;
         state.last_glue = None;
@@ -304,6 +350,7 @@ impl Engine<'_> {
         state.last_kern = 0;
         state.best_break = NodeId::NULL;
         state.best_previous = NodeId::NULL;
+        self.document.page.classes.clear();
         self.install_output_box(page);
         if let Some(owner) = self.document.token_registers[OUTPUT_ROUTINE].owner.clone() {
             if self.document.page.dead_cycles
@@ -364,6 +411,7 @@ impl Engine<'_> {
         Ok(true)
     }
     pub(crate) fn finish_output_group(&mut self) -> Result<()> {
+        self.document.page.insert_penalties = 0;
         if !self.document.boxes.head(255).is_null() {
             return Err(Error::Unsupported);
         }

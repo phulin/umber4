@@ -102,9 +102,23 @@ impl Engine<'_> {
                 contents
             };
             let shape = parameters.line(line_number);
-            let b = self.hpack(contents, PackSpec::To(shape.width))?;
+            let mut adjustments = List::default();
+            let b = match self.hpack_adjusted(contents, PackSpec::To(shape.width), &mut adjustments)
+            {
+                Ok(b) => b,
+                Err(error) => {
+                    self.document
+                        .nodes
+                        .release(adjustments, &mut scratch.release);
+                    return Err(error);
+                }
+            };
             self.document.nodes.box_mut(b.id()).shift = shape.indent;
-            self.append_to_vlist(b)?;
+            let result = self.append_to_vlist(b);
+            self.document
+                .nodes
+                .splice(&mut self.document.text.vertical, adjustments);
+            result?;
             if line_number + 1 != best_line {
                 let mut penalty = parameters.integer(P::InterlinePenalty);
                 if line_number == first_line {
