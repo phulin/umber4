@@ -131,8 +131,8 @@ The fixed prose fixtures emit a final counter message, including
 `UMBER:600:END` for book. Late-suffix execution and `outcome` publication therefore
 include message-buffer growth and owned-message publication as well as output
 header and node backing. Restore alone is a separate allocation boundary. The
-latest measurement retains the audited request attribution; these fixtures are
-not message-free.
+fixtures are not message-free; allocation diagnostics must account for execution
+and owned-message publication separately.
 
 The [benchmark guide](../benchmarks/README.md) supplies reproduction commands.
 The runner regenerates documentation-derived inputs, so paired revision comparisons

@@ -2,76 +2,58 @@
 
 ## Current cumulative milestone
 
-Measured on 2026-11-01 at `03148ba`, ordinary default-feature release with fat LTO,
-one codegen unit, and rustc 1.98.1 on the same AMD EPYC 7642 host. The
-[current raw result](layout-current.json) retains nine rotating samples after one
-warmup, all run sequentially on CPU 3. The original `930cc4d` executable matches
-the initial page-capable binary below. The three fixed prose source hashes are
-unchanged; inputs were not regenerated from revised documents. Mixed uses the
-existing local Gentle generator output with three AE fonts.
+Measured on 2026-11-01 at `cfb65cf`, ordinary default-feature release with fat LTO,
+one codegen unit, and rustc 1.98.1 on AMD EPYC 7642. An up-to-date release build
+and clean checkout were verified before timing. The [current raw result](layout-current.json)
+retains seven rotating samples after one warmup, all run sequentially on CPU 3.
+The preserved original `930cc4d` executable matches the initial page-capable
+binary below. The three fixed prose files and existing local Gentle mixed file
+were reused with their saved font mappings and hashes; no corpus was regenerated.
 
 | Case | Original / current / native CPU (ms) | Current vs original | Current/native |
 | ---- | ------------------------------------ | ------------------- | -------------- |
-| Book | 69.608 / 48.397 / 47.421 | -30.5% | 1.021 |
-| Narrow | 69.878 / 49.128 / 49.958 | -29.7% | 0.983 |
-| Dense | 63.264 / 43.602 / 41.464 | -31.1% | 1.052 |
-| Mixed | — / 47.438 / 40.890 | — | 1.160 |
+| Book | 68.742 / 48.028 / 47.536 | -30.1% | 1.010 |
+| Narrow | 68.104 / 48.701 / 47.980 | -28.5% | 1.015 |
+| Dense | 62.302 / 42.414 / 41.506 | -31.9% | 1.022 |
+| Mixed | — / 46.651 / 40.368 | — | 1.156 |
 
-All four current outputs match independent native DVI glyph/font/coordinate and
-rule records exactly; mixed has 106 pages, 214,500 glyphs, and 300 rules. Complete
-output signatures match the pre-metadata adapter, and retained-root checkpoint
-replays equal uninterrupted execution. The fixed cases also directly match the
-preserved original adapter's glyph coordinates and paragraph/page counts.
+The same samples retain separate process CPU components and minor faults:
 
-Separate current book/mixed Callgrind totals are 318.255/322.279 million
-instructions. Book is down 34.4% from the original 485.129 million. Inclusive
-character-construction paths account for 29.9%/28.6%, active-list search for
-13.9%/8.2%, and page work for 18.8%/19.4%. These paths overlap and are instruction
-shares, not CPU-time shares. Remaining costs span node operations, exact search,
-shaping, packing, and detached output; this attribution does not assign the entire
-remaining native gap to one phase.
+| Case | User CPU Umber/native (ms) | System CPU Umber/native (ms) | Minor faults Umber/native |
+| ---- | -------------------------- | ---------------------------- | ------------------------- |
+| Book | 43.987 / 42.650 | 4.032 / 4.960 | 1,579 / 668 |
+| Narrow | 39.659 / 42.748 | 8.929 / 4.972 | 1,904 / 660 |
+| Dense | 36.719 / 38.065 | 5.911 / 4.023 | 1,610 / 668 |
+| Mixed | 41.808 / 35.450 | 5.016 / 4.932 | 1,533 / 645 |
 
-Native suppresses underfull diagnostics through startup settings only and writes
-DVI/log output; Umber retains detached artifacts through completion and releases
-them. Every fixture emits its final counter message. The existing late-book
-suffix audit finds six requests for 32,205 bytes: output-header backing 17,712,
-node backing 14,360, message growth 8+16, and owned message publication 13+96.
-Restore itself allocates zero; the node pool reuses backing on 114 of 115 takes within its
-bounded 16-chunk cache. These are audited boundary facts, not a new allocation run
-or a cache-sizing recommendation.
+Each field is independently median-reduced; user/system medians need not sum to
+median total CPU. Arithmetic means over the same mixed samples give a 7.642 ms
+mean excess: 6.373 ms user plus 1.268 ms system CPU, rounded independently.
+That mean is sensitive to the 54.108 ms current-CPU sample; current/native CPU
+ranges were 46.095–54.108/39.255–41.269 ms. The median mixed gap remains 15.6%.
+User/system ordering varies across the fixed cases. More minor faults do not
+identify a particular allocation, buffer, or kernel operation as the cause.
 
-This bounded cumulative pass places the original three text cases near quiet
-native CPU time and retains a 16.0% mixed-workload gap. Short shared-machine
-measurements do not establish broad TeX/LaTeX or backend parity. Earlier
-expansion-only timings cover a different feature scope and cannot establish a
-layout regression. Original measurements and focused change reports remain below
-and in the [benchmark guide](../README.md).
+Native uses INITEX with e-TeX and startup-only underfull-diagnostic suppression,
+writing DVI and a log. Umber retains detached artifacts through completion and
+then releases them. Both consume identical typesetting input and print their
+final counter message. These complete-process records include startup, CLI/input,
+output, and teardown; they do not isolate interpreter or backing costs.
 
-### Process CPU split diagnostic
+Latest implementation tests, native/output comparisons, and checkpoint replays
+passed before this refresh. The bounded measurement rechecked input/resource and
+binary identities, successful exits, and every process's final counter. It did
+not repeat the correctness suite, instruction profiles, RSS, or allocation runs.
+Saved workload counts include 106 mixed pages, 214,500 glyphs, and 300 rules.
 
-A separate seven-pair run uses the same unchanged current/native binaries,
-resources, and four inputs on CPU 3, alternating order after one warmup. The
-existing process helper now retains user CPU, system CPU, and minor faults from
-the same `wait4` record as total CPU. The [current raw result](layout-current.json)
-keeps these samples in a separate diagnostic section, including every range.
-No original-engine or instruction-profile run was repeated, and RSS was not measured.
-
-| Case | User CPU Umber/native (ms) | System CPU Umber/native (ms) | Total CPU Umber/native (ms) | Minor faults Umber/native |
-| ---- | -------------------------- | ---------------------------- | --------------------------- | ------------------------- |
-| Book | 41.392 / 42.131 | 5.078 / 4.017 | 46.992 / 46.690 | 1,606 / 668 |
-| Narrow | 39.322 / 43.128 | 9.049 / 4.011 | 47.493 / 48.046 | 1,917 / 660 |
-| Dense | 36.932 / 38.246 | 6.002 / 3.960 | 42.921 / 41.425 | 1,626 / 669 |
-| Mixed | 40.273 / 36.768 | 6.045 / 3.975 | 46.592 / 40.860 | 1,554 / 645 |
-
-These are independently computed medians: user and system medians need not sum
-to median total CPU. Using additive arithmetic means over the same samples,
-Umber has lower user CPU and higher system CPU in all three original prose cases.
-For mixed text, the 5.632 ms mean total excess comprises 4.365 ms user and
-1.267 ms system CPU. System CPU and minor faults are higher in all four cases,
-but the data do not identify a particular allocator, buffer, or kernel operation
-as the cause. System-time ranges are wide: mixed Umber/native spans
-2.962–7.952/2.973–6.019 ms. These full-process records include startup, CLI/input,
-output, and teardown; they do not isolate engine execution or backing costs.
+This cumulative comparison does not isolate a CPU gain from raw-font table views.
+The original prose cases remain near quiet native CPU time, while mixed retains
+higher process-level user CPU and an overall gap. Short shared-host measurements
+do not establish broad TeX/LaTeX or backend parity or justify a particular further
+optimization. Earlier expansion-only results cover a different feature scope and
+cannot establish a layout regression. Focused reports and reproduction commands
+are linked from the [benchmark guide](../README.md); Git retains previous current
+measurement snapshots.
 
 ## Initial page-capable baseline
 

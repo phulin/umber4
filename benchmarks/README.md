@@ -11,9 +11,9 @@ are described in [performance.md](../docs/performance.md#implemented-layout-meas
 [raw samples](results/layout-native.json) for endpoint differences and limitations.
 The [current cumulative result](results/layout-current.json) compares the measured
 release with the preserved original and quiet native on fixed inputs, and with
-quiet native on the mixed workload; it includes current instruction attribution.
-Its separate process-usage diagnostic retains current/native user and system CPU
-and minor faults, with variability and full-process attribution limits.
+quiet native on the mixed workload. Its same-process samples retain total, user,
+and system CPU plus minor faults, with variability and full-process attribution
+limits. Separate focused reports retain instruction attribution.
 The [borrowed-node width comparison](results/layout-loaded-node-width.json)
 retains paired ordinary release samples on the same inputs, full inspection/native
 placement checks, checkpoint replay validation, and the isolated prototype evidence.
