@@ -67,7 +67,7 @@ The current core supports all eight spacing classes, operators with normal or
 explicit limits policy, eight styles including cramped styles, choices, ordinary
 math ligatures/kerns, scripts, boxed/submath fields, and explicit ordinary
 kern/glue/rule/penalty material. It also converts fractions, radicals, overline,
-underline, vcenter, and paired standard left/right delimiters. Accents, middle
+underline, vcenter, accents, and paired standard left/right delimiters. Middle
 delimiters, math scanning, mode entry, displays, and equation numbers remain
 unsupported. Their absence does not select an approximate rendering.
 
@@ -124,7 +124,7 @@ permits; conversion does not flatten them into a separate render tree.
 
 TeX's `mlist_to_hlist`, `make_ord`, `clean_box`, `make_op`, `make_scripts`,
 `make_fraction`, `make_radical`, `make_over`, `make_under`, `make_vcenter`,
-`var_delimiter`, `rebox`, and `math_glue` provide the reference behavior.
+`var_delimiter`, `make_math_accent`, `rebox`, and `math_glue` provide the reference behavior.
 See the [TeX math implementation](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 
 ### Fractions, decorations, and delimiters
@@ -176,6 +176,35 @@ cramped nuclei; underline uses the current style and resets packed height/depth.
 Radicals use their selected delimiter height as overbar thickness. Vcenter
 redistributes the existing vertical box height/depth around the math axis.
 
+### Math accents
+
+An accent owns a family/character specification and the same affine `Fields` as
+other scriptable forms. Accent lookup happens before nucleus lookup. An absent
+accent glyph leaves ordinary nucleus/script conversion intact; an undefined used
+family fails with `Font`. Lookup of a character nucleus may discard a missing
+nucleus glyph independently of the accent. No font or scanner state is changed.
+
+Skew comes only from a kern instruction matching the nucleus font's skew character.
+Ligature instructions, boundary programs, font slant, and the accent font's skew
+character do not supply skew. Larger accents follow that font's larger-character
+chain while glyphs exist and their metric width fits the original clean nucleus;
+selection does not use delimiter-family search or extensible recipes.
+
+The first clean nucleus uses cramped style. A character nucleus with present
+scripts transfers its nucleus and both scripts into subsidiary Ord work in the
+original style, then cleans that result. The outer script fields become empty.
+The original nucleus width still determines accent placement; the rebuilt nucleus
+width determines the final result width. Existing iterative atom/clean-box work
+performs this transfer without a synthetic arena node or another allocation
+framework. Noncharacter nuclei retain scripts on the outside.
+
+The accent box is horizontally shifted by skew plus half the width difference,
+then contributes zero width. Clearance uses the accent font's x-height and is
+adjusted after a scripted character nucleus is rebuilt. Vertical packing preserves
+the cleaned nucleus width and repairs insufficient final height with a leading
+kern. All intermediate boxes and partial lists have affine owners through success,
+lookup failure, allocation rejection, and suspended-work cleanup.
+
 ### Typed-core validation
 
 Ordinary tests use controlled in-memory TFM resources and typed ASTs. They cover
@@ -189,7 +218,10 @@ They compare natural box dimensions, shifts, glue settings, and DVI glyph positi
 through the existing ordinary packing/publication adapter. Cases include the full
 spacing-class matrix, all math ligature operations, choice/style propagation,
 eight styles, signed parameters, scripts, operators/limits, missing glyphs, boxed
-fields, fractions, radicals, decorations, growing delimiters, and real CM fonts.
+fields, fractions, radicals, decorations, growing delimiters, accents, and real CM
+fonts. Accent cases cover skew versus ligatures, font separation, width-chain
+termination, empty scripts, missing glyphs, original-style script transfer, and
+height repair.
 Native-only overline wrappers expose cramped root styles; comparisons select their
 inner box and relative formula glyph/rule positions, excluding the wrapper rule.
 Controlled recipe cases cover optional and zero repeat pieces, nonpositive repeat
@@ -199,7 +231,7 @@ Set `UMBER_PDFTEX` to an explicit pdfTeX executable and, for CM cases,
 `UMBER_TFM_DIR` to the TeX distribution's `fonts/tfm/public` directory, then run
 `cargo test --lib math::oracle_tests -- --ignored`. The oracle is pdfTeX 1.40.25
 (TeX Live 2023/Debian), invoked as INITEX with e-TeX. Adapter files are isolated in
-`umber-math-forms-*` temporary directories and removed afterward. Portable tests,
+`umber-math-accents-*` temporary directories and removed afterward. Portable tests,
 Miri, and Wasm builds do not invoke this host adapter.
 
 ## 3. Inline and display math

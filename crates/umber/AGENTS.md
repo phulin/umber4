@@ -31,10 +31,13 @@ math-character meanings, checkpoints, and the explicit native state oracle;
 `math_clean.rs`/`math_boxing.rs` own clean/shared box work; `math_atoms.rs` owns
 ordinary ligatures/nuclei and `math_scripts.rs` scripts/operator limits;
 `math_fraction.rs`, `math_forms.rs`, and `math_delimiters.rs` own fractions,
-decorations/radicals/vcenter, and paired/extensible delimiters.
+decorations/radicals/vcenter, and paired/extensible delimiters; `math_accents.rs`
+owns accent work and character-script transfer.
 `math_tests.rs`/`math_forms_tests.rs` check ownership, reuse, failures, checkpoints,
 and deep traversal; `math_oracle_tests.rs`, `math_real_oracle_tests.rs`, and
 `math_forms_oracle_tests.rs` compare typed ASTs with native geometry and DVI;
+`math_accent_tests.rs` checks accent ownership/reuse/failure boundaries, and
+`math_accent_oracle_tests.rs` compares controlled and CM accent geometry;
 `math_glue_tests.rs` checks math-glue quantity boundaries, native arithmetic and
 formatting, scoped bindings, and checkpoint replay;
 `parameter_tests.rs` covers initialization parameters and newline rendering across

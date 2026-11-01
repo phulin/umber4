@@ -165,6 +165,11 @@ impl Atom {
         }
     }
 }
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct MathChar {
+    pub family: u8,
+    pub character: u8,
+}
 #[derive(Clone, Copy, Debug, Default)]
 pub(crate) struct Delimiter {
     pub small_family: u8,
@@ -219,6 +224,10 @@ pub(crate) enum Kind {
         fields: Fields,
         delimiter: Delimiter,
     },
+    Accent {
+        accent: MathChar,
+        fields: Fields,
+    },
     Boundary {
         side: Side,
         delimiter: Delimiter,
@@ -240,7 +249,8 @@ impl Kind {
             | Self::Over(_)
             | Self::Under(_)
             | Self::VCenter(_)
-            | Self::Radical { .. } => Some(Class::Ord),
+            | Self::Radical { .. }
+            | Self::Accent { .. } => Some(Class::Ord),
             Self::Boundary {
                 side: Side::Left, ..
             } => Some(Class::Open),
@@ -397,7 +407,8 @@ impl MathStore {
             Kind::Over(fields)
             | Kind::Under(fields)
             | Kind::VCenter(fields)
-            | Kind::Radical { fields, .. } => self.release_fields(fields, nodes),
+            | Kind::Radical { fields, .. }
+            | Kind::Accent { fields, .. } => self.release_fields(fields, nodes),
             Kind::Fraction(f) => {
                 self.pending.push(f.numerator.head);
                 self.pending.push(f.denominator.head);
@@ -444,3 +455,7 @@ mod tests;
 #[cfg(test)]
 #[path = "math_forms_tests.rs"]
 mod forms_tests;
+
+#[cfg(test)]
+#[path = "math_accent_tests.rs"]
+mod accent_tests;

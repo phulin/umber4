@@ -73,6 +73,7 @@ enum Task {
     Clean(CleanWork),
     Form(forms::FormWork),
     Fraction(fraction::FractionWork),
+    Accent(accents::AccentWork),
 }
 #[derive(Clone, Copy)]
 enum Pass {
@@ -252,6 +253,7 @@ impl Conversion<'_, '_, '_> {
                 Task::Clean(w) => self.clean_step(w),
                 Task::Form(w) => self.form_step(w),
                 Task::Fraction(w) => self.fraction_step(w),
+                Task::Accent(w) => self.accent_step(w),
             };
             match step {
                 Ok(Action::Again) => self.scratch.tasks.push(task),
@@ -297,6 +299,7 @@ impl Conversion<'_, '_, '_> {
         match task {
             Task::Form(w) => self.release_form(w),
             Task::Fraction(w) => self.release_fraction(w),
+            Task::Accent(w) => self.release_accent(w),
             Task::List(w) => {
                 self.math.release(w.list, &mut self.engine.document.nodes);
                 self.release_value(Value::List(w.output));
@@ -449,3 +452,6 @@ mod delimiters;
 mod forms;
 #[path = "math_fraction.rs"]
 mod fraction;
+
+#[path = "math_accents.rs"]
+mod accents;

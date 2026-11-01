@@ -89,6 +89,16 @@ impl Conversion<'_, '_, '_> {
                             w.previous_class = Some(Class::Open);
                             w.cursor = self.math.node(q).next;
                         }
+                        Kind::Accent { .. } => {
+                            let Kind::Accent { accent, fields } = std::mem::replace(
+                                &mut self.math.node_mut(q).kind,
+                                Kind::Working(Class::Ord),
+                            ) else {
+                                unreachable!()
+                            };
+                            w.pass = Pass::Atom;
+                            return Ok(Action::Child(accents::task(accent, fields, w.style)));
+                        }
                         Kind::Fraction(_)
                         | Kind::Over(_)
                         | Kind::Under(_)
