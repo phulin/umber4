@@ -77,6 +77,11 @@ releases the abandoned suffix without replaying its records to an external sink.
 
 The prepared input line is copied with its lexical position/state, including any
 committed superscript translations. Source bytes remain borrowed and unchanged.
+Nested immutable input retains the active and suspended file cursors, their
+resolved byte names, prepared lines, and source-stack boundary markers. The
+global pending `\endinput` flag is copied too. Restoring selects those cursors
+without resolving names or loading host files again; resolver contents remain
+unchanged for the session, as specified in [input.md](input.md).
 Diagnostic history shares immutable append blocks; appending after a checkpoint
 starts a new block rather than copying old payload bytes. Log and snapshot
 descriptors use pooled backing; new diagnostic byte vectors retain the existing

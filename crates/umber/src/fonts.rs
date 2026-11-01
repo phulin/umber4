@@ -254,16 +254,22 @@ impl Engine<'_> {
         self.scan_equals()?;
         self.font_name.clear();
         let mut read = self.nonspace(true)?;
-        loop {
-            if read.token.is_cs() || !matches!(read.meaning.command, 11 | 12) {
-                if read.meaning.command != cmd::SPACE {
-                    self.back(read.token);
+        let saved_name_in_progress = std::mem::replace(&mut self.name_in_progress, true);
+        let scan_name: Result<()> = (|| {
+            loop {
+                if read.token.is_cs() || !matches!(read.meaning.command, 11 | 12) {
+                    if read.meaning.command != cmd::SPACE {
+                        self.back(read.token);
+                    }
+                    break;
                 }
-                break;
+                self.font_name.push(read.token.byte());
+                read = self.next_expanded()?;
             }
-            self.font_name.push(read.token.byte());
-            read = self.next_expanded()?;
-        }
+            Ok(())
+        })();
+        self.name_in_progress = saved_name_in_progress;
+        scan_name?;
         if self.font_name.is_empty() {
             return Err(Error::Syntax);
         }
@@ -272,21 +278,26 @@ impl Engine<'_> {
             .find(&self.font_name)
             .ok_or(Error::Resource)?;
         let design = self.font_catalog.resources[resource].design;
-        let size = if self.scan_keyword(b"at")? {
-            let s = self.scan_dimen()?;
-            if s.0 <= 0 || s.0 >= 134_217_728 {
-                return Err(Error::Number);
-            }
-            s
-        } else if self.scan_keyword(b"scaled")? {
-            let n = self.scan_int()?;
-            if !(1..=32768).contains(&n) {
-                return Err(Error::Number);
-            }
-            Scaled(ratio(design.0, n, 1000)?)
-        } else {
-            design
-        };
+        let saved_name_in_progress = std::mem::replace(&mut self.name_in_progress, true);
+        let size: Result<Scaled> = (|| {
+            Ok(if self.scan_keyword(b"at")? {
+                let s = self.scan_dimen()?;
+                if s.0 <= 0 || s.0 >= 134_217_728 {
+                    return Err(Error::Number);
+                }
+                s
+            } else if self.scan_keyword(b"scaled")? {
+                let n = self.scan_int()?;
+                if !(1..=32768).contains(&n) {
+                    return Err(Error::Number);
+                }
+                Scaled(ratio(design.0, n, 1000)?)
+            } else {
+                design
+            })
+        })();
+        self.name_in_progress = saved_name_in_progress;
+        let size = size?;
         let mut found = None;
         for i in 1..self.document.fonts.len {
             let scaled = self.document.fonts.descriptors[i].scaled.unwrap();

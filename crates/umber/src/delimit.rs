@@ -115,14 +115,14 @@ impl Engine<'_> {
         let mut group_end = None;
         loop {
             if (!DELIMITED || matched == 0 || depth > 0)
-                && (self.document.sources.is_empty() || !DELIMITED || RETAIN)
+                && (self.at_file_input() || !DELIMITED || RETAIN)
             {
                 let except = if DELIMITED && depth == 0 {
                     first
                 } else {
                     Token(u32::MAX)
                 };
-                if self.document.sources.is_empty() {
+                if self.at_file_input() {
                     seen += self.capture_file_characters::<RETAIN, DELIMITED>(
                         packet, argument, builder, except,
                     )?;

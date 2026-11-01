@@ -1,7 +1,4 @@
-use crate::{Engine, Error, Result, names::Names, token::*, values::Builder};
-
-// Installed token sources, including generated text, share one nesting limit.
-const MAX_SOURCES: usize = 10000;
+use crate::{Error, Result, names::Names, token::*, values::Builder};
 
 // Lookup-only reads expose only a Meaning. A missing file name uses the first
 // impossible name ID: Names::insert rejects IDs >= CS in release builds too.
@@ -12,6 +9,7 @@ const MISSING_NAME: Token = Token(2 * CS);
 #[derive(Clone)]
 pub(crate) struct FileInput<'a> {
     bytes: &'a [u8],
+    pub name: &'a [u8],
     offset: usize,
     pub line: crate::value_metadata::Buffer<u8>,
     position: usize,
@@ -19,18 +17,29 @@ pub(crate) struct FileInput<'a> {
     loaded: bool,
 }
 impl<'a> FileInput<'a> {
+    #[cfg(feature = "lexing-prototype")]
     pub fn new(bytes: &'a [u8]) -> Self {
+        Self::new_in(
+            crate::InputFile { name: b"", bytes },
+            &std::rc::Rc::default(),
+        )
+    }
+    pub fn new_in(
+        file: crate::InputFile<'a>,
+        store: &std::rc::Rc<crate::value_metadata::Store<u8>>,
+    ) -> Self {
         Self {
-            bytes,
+            bytes: file.bytes,
+            name: file.name,
             offset: 0,
-            line: crate::value_metadata::Buffer::new(&std::rc::Rc::default()),
+            line: crate::value_metadata::Buffer::new(store),
             position: 0,
             state: 0,
             loaded: false,
         }
     }
     #[cfg_attr(not(feature = "native-profile"), inline(never))]
-    fn load(&mut self, endline: i32) -> Result<()> {
+    pub(crate) fn load(&mut self, endline: i32) -> Result<()> {
         if self.loaded && self.offset == self.bytes.len() {
             return Err(Error::Eof);
         }
@@ -59,6 +68,9 @@ impl<'a> FileInput<'a> {
         self.position = 0;
         self.state = 0;
         Ok(())
+    }
+    pub(crate) fn line_ended(&self) -> bool {
+        self.position == self.line.len()
     }
     #[inline(always)]
     fn classified(&mut self, cats: &[Integer; 256]) -> (u8, u8) {
@@ -174,6 +186,7 @@ impl<'a> FileInput<'a> {
         self.state = state;
         result
     }
+    #[cfg(feature = "lexing-prototype")]
     pub fn read(
         &mut self,
         cats: &[Integer; 256],
@@ -181,17 +194,21 @@ impl<'a> FileInput<'a> {
         names: &mut Names,
         par: Token,
     ) -> Result<Token> {
-        self.read_with::<true>(cats, endline, names, par)
+        self.read_with::<true>(cats, endline, names, par, false)
     }
-    fn read_with<const INTERN: bool>(
+    pub(super) fn read_with<const INTERN: bool>(
         &mut self,
         cats: &[Integer; 256],
         endline: i32,
         names: &mut Names,
         par: Token,
+        force_eof: bool,
     ) -> Result<Token> {
         loop {
             if self.position == self.line.len() {
+                if force_eof {
+                    return Err(Error::Eof);
+                }
                 self.load(endline)?;
                 continue;
             }
@@ -282,299 +299,5 @@ impl<'a> FileInput<'a> {
                 }
             }
         }
-    }
-}
-
-impl Engine<'_> {
-    #[inline(always)]
-    pub(crate) fn check_source_limit(&self) -> Result<()> {
-        if self.document.sources.len() > MAX_SOURCES {
-            return Err(Error::Capacity);
-        }
-        Ok(())
-    }
-    #[inline]
-    pub(crate) fn next_raw(&mut self) -> Result<Raw> {
-        let raw = self.next_raw_with::<true>()?;
-        self.check_raw_outer(raw)?;
-        Ok(raw)
-    }
-    #[inline(always)]
-    pub(crate) fn next_token(&mut self) -> Result<Read> {
-        let raw = self.next_raw_with::<true>()?;
-        Ok(Read {
-            token: raw.token,
-            meaning: self.raw_meaning(raw)?,
-        })
-    }
-    // Consumers of non-inserting file lookup receive only the effective
-    // meaning, so a missing spelling cannot escape as a token identity.
-    pub(crate) fn next_lookup_meaning(&mut self) -> Result<Meaning> {
-        let raw = self.next_raw_with::<false>()?;
-        self.raw_meaning(raw)
-    }
-    // Debug scanner recursion keeps a reader call boundary instead of
-    // duplicating its unoptimized temporaries in every expansion frame.
-    #[cfg_attr(not(debug_assertions), inline(always))]
-    fn next_raw_with<const INTERN: bool>(&mut self) -> Result<Raw> {
-        loop {
-            let Some(source) = self.document.sources.last_mut() else {
-                let cats = self.document.scalars.catcodes();
-                let endline = self.document.scalars[crate::scalars::Target::ENDLINE].value;
-                let token = if INTERN {
-                    self.document
-                        .file
-                        .read(cats, endline, &mut self.names, self.document.par)?
-                } else {
-                    self.document.file.read_with::<false>(
-                        cats,
-                        endline,
-                        &mut self.names,
-                        self.document.par,
-                    )?
-                };
-                if INTERN && self.names.len() > self.document.bindings.len() {
-                    self.grow_bindings(self.names.len());
-                }
-                return Ok(Raw {
-                    token,
-                    origin: None,
-                    suppress: false,
-                });
-            };
-            if let Source::WriteBoundary { position } = source {
-                let token = match *position {
-                    0 => Token::character(2, b'}'),
-                    1 => FROZEN_END_WRITE,
-                    _ => return Err(Error::Syntax),
-                };
-                *position += 1;
-                return Ok(Raw {
-                    token,
-                    origin: None,
-                    suppress: false,
-                });
-            }
-            if let Source::Inline {
-                tokens,
-                position,
-                len,
-                suppress,
-            } = source
-            {
-                if *position == *len {
-                    self.pop_source();
-                    continue;
-                }
-                let token = tokens[*position as usize];
-                *position += 1;
-                let suppressed = *suppress;
-                *suppress = false;
-                return Ok(Raw {
-                    token,
-                    origin: None,
-                    suppress: suppressed,
-                });
-            }
-            let window = source.cursor_mut().unwrap();
-            if window.next == window.end {
-                self.advance_source()?;
-                continue;
-            }
-            // SAFETY: standalone sources retain their immutable value, and
-            // argument windows borrow the packet below them.
-            // Capture retains backing before the next read can retire a source.
-            let token = unsafe { window.next.read() };
-            window.next = unsafe { window.next.add(1) };
-            if token.is_parameter() {
-                let packet = window.owns_packet.ok_or(Error::Syntax)?;
-                let argument = token.byte() - 1;
-                if let Some(raw) = self.single_argument(packet, argument) {
-                    return Ok(raw);
-                }
-                self.push_argument(packet, argument)?;
-                continue;
-            }
-            // SAFETY: pointers belong to the same retained initialized window.
-            // Resolved readers discard these coordinates; capture uses them.
-            let position =
-                window.end_position - unsafe { window.end.offset_from(window.next) } as u32 - 1;
-            return Ok(Raw {
-                token,
-                origin: Some(Span {
-                    store: window.store,
-                    start: position,
-                    end: position + 1,
-                }),
-                suppress: false,
-            });
-        }
-    }
-    #[inline(always)]
-    pub(crate) fn single_argument(&self, packet: u32, argument: u8) -> Option<Raw> {
-        let sequence = &self.packets[packet as usize].arguments[argument as usize];
-        let span = sequence.first;
-        if span.end - span.start != 1 || !sequence.rest.is_empty() {
-            return None;
-        }
-        if let Some(token) = span.single_token() {
-            return Some(Raw {
-                token,
-                origin: None,
-                suppress: false,
-            });
-        }
-        let token = self.values.token(span.store, span.start);
-        // Argument tokens contain no internal parameter markers: their scanner
-        // already substituted them. The body keeps this backing alive until the
-        // next read; a child capture retains it before that read can retire it.
-        Some(Raw {
-            token,
-            origin: Some(span),
-            suppress: false,
-        })
-    }
-    fn span_for(&self, argument: Option<(u32, u8)>, index: usize) -> Option<Span> {
-        let (packet, arg) = argument?;
-        self.packets[packet as usize].arguments[arg as usize].span(index)
-    }
-    pub(crate) fn push_argument(&mut self, packet: u32, argument: u8) -> Result<()> {
-        let sequence = Some((packet, argument));
-        let Some(span) = self.span_for(sequence, 0) else {
-            return Ok(());
-        };
-        // Singleton arguments are returned by single_argument before this call.
-        // The body below this cursor owns the complete argument packet.
-        self.push_span(sequence, span, None, None)
-    }
-    #[inline]
-    pub(crate) fn push_body(
-        &mut self,
-        owner: crate::values::Owner,
-        packet: Option<u32>,
-    ) -> Result<()> {
-        let body = owner.definition().body;
-        let span = Span {
-            store: owner.id,
-            start: body.start,
-            end: body.end,
-        };
-        if span.empty() {
-            if let Some(packet) = packet {
-                self.release_packet(packet);
-            }
-            return Ok(());
-        }
-        self.push_span(None, span, packet, Some(owner))
-    }
-    pub(crate) fn push_tokens(&mut self, owner: crate::values::Owner, start: u32) -> Result<()> {
-        let span = Span {
-            store: owner.id,
-            start,
-            end: owner.tokens.len,
-        };
-        if span.empty() {
-            return Ok(());
-        }
-        self.push_span(None, span, None, Some(owner))
-    }
-    #[inline(always)]
-    fn push_span(
-        &mut self,
-        argument: Option<(u32, u8)>,
-        span: Span,
-        owns_packet: Option<u32>,
-        owner: Option<crate::values::Owner>,
-    ) -> Result<()> {
-        self.check_source_limit()?;
-        let (next, end, window_end_position) = match &owner {
-            Some(value) => value.tokens.window(span.start, span.end),
-            _ => self.values.window(span, span.start),
-        };
-        self.document.sources.push(Source::Tokens(Cursor {
-            next,
-            end,
-            end_position: window_end_position,
-            store: span.store,
-            _owner: owner,
-            argument,
-            span_index: 0,
-            span_end: span.end,
-            owns_packet,
-        }));
-        Ok(())
-    }
-    pub(crate) fn advance_source(&mut self) -> Result<()> {
-        let Some(Source::Tokens(cursor)) = self.document.sources.last() else {
-            return Err(Error::Syntax);
-        };
-        let (mut span, mut index, mut position) = (
-            Span {
-                store: cursor.store,
-                start: cursor.end_position,
-                end: cursor.span_end,
-            },
-            cursor.span_index,
-            cursor.end_position,
-        );
-        if position == span.end {
-            index += 1;
-            let Some(next) = self.span_for(cursor.argument, index) else {
-                self.pop_source();
-                return Ok(());
-            };
-            span = next;
-            position = span.start;
-        }
-        let (next, end, end_position) = self.values.window(span, position);
-        if let Some(Source::Tokens(cursor)) = self.document.sources.last_mut() {
-            cursor.next = next;
-            cursor.end = end;
-            cursor.end_position = end_position;
-            cursor.store = span.store;
-            cursor.span_end = span.end;
-            cursor.span_index = index;
-        }
-        Ok(())
-    }
-    pub(crate) fn pop_source(&mut self) {
-        if let Some(Source::Tokens(cursor)) = self.document.sources.pop()
-            && let Some(packet) = cursor.owns_packet
-        {
-            self.release_packet(packet);
-        }
-    }
-    pub(crate) fn retire_exhausted(&mut self) {
-        loop {
-            let done = match self.document.sources.last() {
-                Some(Source::Inline { position, len, .. }) => position == len,
-                Some(Source::Tokens(c)) => {
-                    c.next == c.end
-                        && c.end_position == c.span_end
-                        && self.span_for(c.argument, c.span_index + 1).is_none()
-                }
-                Some(Source::WriteBoundary { .. }) | None => false,
-            };
-            if !done {
-                break;
-            }
-            self.pop_source();
-        }
-    }
-    #[inline]
-    pub(crate) fn push_inline(&mut self, tokens: [Token; 2], len: u8, suppress: bool) {
-        self.document.sources.push(Source::Inline {
-            tokens,
-            position: 0,
-            len,
-            suppress,
-        });
-    }
-    #[inline]
-    pub(crate) fn back(&mut self, token: Token) {
-        self.push_inline([token, Token(0)], 1, false);
-    }
-    pub(crate) fn insert_pair(&mut self, first: Token, second: Token) {
-        self.push_inline([first, second], 2, false);
     }
 }

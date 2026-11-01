@@ -155,7 +155,7 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn literal_digit(&mut self) -> Option<i32> {
-        if self.document.sources.is_empty() {
+        if self.at_file_input() {
             return self
                 .document
                 .file

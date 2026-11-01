@@ -129,7 +129,7 @@ impl Engine<'_> {
                     }
                 }
                 State::Look => {
-                    let literal = if self.document.sources.is_empty() {
+                    let literal = if self.at_file_input() {
                         self.document
                             .file
                             .read_character(self.document.scalars.catcodes())

@@ -22,6 +22,7 @@ pub enum Progress {
 
 #[derive(Clone)]
 enum SavedSource {
+    FileBoundary,
     Inline {
         tokens: [Token; 2],
         position: u8,
@@ -47,6 +48,8 @@ pub struct Checkpoint<'a> {
     packets: Buffer<Packet>,
     bindings: Bindings,
     file: FileInput<'a>,
+    suspended_files: Buffer<FileInput<'a>>,
+    force_eof: bool,
     scalars: Scalars,
     token_registers: Table<TokenValue>,
     layout_values: crate::layout_values::LayoutValues,
@@ -205,6 +208,7 @@ impl<'a> Engine<'a> {
                     owns_packet: c.owns_packet.map(saved_id),
                 }
             }
+            Source::FileBoundary => SavedSource::FileBoundary,
             Source::WriteBoundary { .. } => unreachable!("write rescan at checkpoint"),
         }));
         let d = &self.document;
@@ -218,6 +222,8 @@ impl<'a> Engine<'a> {
             packets,
             bindings: d.bindings.clone(),
             file: d.file.clone(),
+            suspended_files: d.suspended_files.clone(),
+            force_eof: d.force_eof,
             scalars: d.scalars.clone(),
             token_registers: d.token_registers.clone(),
             layout_values: d.layout_values.clone(),
@@ -286,6 +292,7 @@ impl<'a> Engine<'a> {
         }
         for source in checkpoint.sources.iter() {
             let source = match source {
+                SavedSource::FileBoundary => Source::FileBoundary,
                 SavedSource::Inline {
                     tokens,
                     position,
@@ -337,6 +344,8 @@ impl<'a> Engine<'a> {
         let Document {
             bindings,
             file,
+            suspended_files,
+            force_eof,
             scalars,
             token_registers,
             layout_values,
@@ -357,6 +366,8 @@ impl<'a> Engine<'a> {
         } = &mut self.document;
         bindings.clone_from(&checkpoint.bindings);
         file.clone_from(&checkpoint.file);
+        suspended_files.clone_from(&checkpoint.suspended_files);
+        *force_eof = checkpoint.force_eof;
         scalars.clone_from(&checkpoint.scalars);
         token_registers.clone_from(&checkpoint.token_registers);
         layout_values.clone_from(&checkpoint.layout_values);

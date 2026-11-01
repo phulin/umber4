@@ -10,6 +10,8 @@ mod expand;
 mod expression;
 mod fonts;
 mod input;
+mod input_files;
+mod input_tokens;
 mod layout_assign;
 mod layout_values;
 #[cfg(feature = "lexing-prototype")]
@@ -44,6 +46,7 @@ mod values;
 mod vertical;
 mod write;
 pub use checkpoint::{Checkpoint, Progress};
+pub use input_files::{InputFile, InputResolver};
 pub use messages::{Diagnostic, DiagnosticDestination};
 use names::Names;
 pub use output::{GlueSetting, OutputItem, PackedBox, Page, Pages, Placement, Placements};
@@ -103,6 +106,9 @@ pub struct Engine<'a> {
     pub(crate) name_spills: Vec<value_metadata::Buffer<u8>>,
     pub(crate) expansion_depth: u16,
     pub(crate) scanner: scanner::Scanner,
+    input_resolver: Option<&'a dyn InputResolver>,
+    file_lines: std::rc::Rc<value_metadata::Store<u8>>,
+    name_in_progress: bool,
     pub(crate) font_catalog: tfm::Catalog,
     font_name: Vec<u8>,
     ligatures: ligatures::Scratch,
@@ -121,6 +127,8 @@ pub(crate) struct Document<'a> {
     pub sources: Vec<Source>,
     pub bindings: tables::Bindings,
     pub file: input::FileInput<'a>,
+    pub suspended_files: value_metadata::Buffer<input::FileInput<'a>>,
+    pub force_eof: bool,
     pub scalars: Scalars,
     pub token_registers: tables::Table<TokenValue>,
     pub layout_values: layout_values::LayoutValues,
@@ -140,9 +148,18 @@ pub(crate) struct Document<'a> {
 }
 impl<'a> Engine<'a> {
     pub fn new(source: &'a [u8]) -> Self {
+        let file_lines = std::rc::Rc::default();
         let mut engine = Self {
             document: Document {
-                file: input::FileInput::new(source),
+                file: input::FileInput::new_in(
+                    InputFile {
+                        name: b"",
+                        bytes: source,
+                    },
+                    &file_lines,
+                ),
+                suspended_files: value_metadata::Buffer::new(&std::rc::Rc::default()),
+                force_eof: false,
                 bindings: tables::Bindings::new(NAMED_BASE as usize),
                 scalars: Scalars::default(),
                 token_registers: tables::Table::new(256),
@@ -170,6 +187,9 @@ impl<'a> Engine<'a> {
             name_spills: Vec::new(),
             expansion_depth: 0,
             scanner: scanner::Scanner::Normal,
+            input_resolver: None,
+            file_lines,
+            name_in_progress: false,
             font_catalog: tfm::Catalog::default(),
             font_name: Vec::new(),
             ligatures: ligatures::Scratch::default(),

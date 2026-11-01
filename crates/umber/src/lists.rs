@@ -289,7 +289,7 @@ impl<'a> Engine<'a> {
     // while the boxed input chunk itself stays at its original address.
     #[inline]
     fn emit_characters(&mut self, emit: &mut impl Emit<'a>) -> Result<()> {
-        if self.document.sources.is_empty() {
+        if self.at_file_input() {
             if let Some(tokens) = emit.builder() {
                 let cats = self.document.scalars.catcodes();
                 return self

@@ -20,6 +20,7 @@ impl Engine<'_> {
     fn expand_inner(&mut self, read: Read) -> Result<()> {
         match read.meaning.command {
             cmd::UNDEFINED => Err(Error::Undefined),
+            cmd::INPUT => self.input_command(read),
             cmd::NUMBER => {
                 let value = self.scan_int()?;
                 self.insert_number(value)

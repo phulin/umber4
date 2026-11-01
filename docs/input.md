@@ -6,6 +6,39 @@ lines lazily and retains the current line and lexical cursor; it does not buffer
 unconsumed tokens (section 3). Stored token lists already have frozen category
 codes and use the shared sequence cursor instead.
 
+## Executable immutable input
+
+`Engine::with_inputs` accepts the main filename, borrowed main bytes, and an
+immutable borrowed `InputResolver`. Its synchronous `resolve` receives the exact
+scanned byte name and the active file's resolved name, returning an `InputFile`
+with stable borrowed name/bytes or `Resource`. The host owns search policy and
+default extensions; the core does not require UTF-8, open paths, or prompt.
+`Engine::new` remains the unnamed single-source adapter. The resolver and all
+source bytes remain unchanged and borrowed for the engine/checkpoint lifetime.
+
+`\input` expands filename tokens, accepting ordinary, quoted, and balanced
+braced names. Filename scanning discards initial spaces/relaxes, preserves byte
+names and noncharacter terminators, and guards recursive unbraced filename
+scanning. A child suspends the parent cursor and pending token input below a
+file-boundary marker. Its first line is prepared when opening, including for an
+empty child. All prepared lines use one session typed byte store.
+Filename quoting, braced expansion, and leading-relax handling follow the
+[web2c input changes](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.ch).
+
+`\endinput` sets a global pending force-EOF flag. The next line request closes
+the then-active file; opening a child first still prepares and reads its first
+line. Closure clears the flag and restores parent input before scanner validity
+is checked. Non-normal scanner EOF returns `Eof`; normal EOF resumes the parent.
+Ordinary groups and conditionals may span files. Exhausting the unnamed/main
+source without `\end` remains an explicit `Eof` failure without terminal input.
+
+Snapshots copy active/suspended cursors, exact prepared lines and lexical state,
+file markers, and pending force-EOF. Temporary write cleanup restores suspended
+files when discarding markers, without treating cleanup as semantic EOF or
+publishing a partial write. Literal and lookup readers use the active file
+directly when its marker is on top. This slice excludes `\everyeof`, pseudo-files,
+read/write streams, mutable/aliased files, source edits, and resource-request replay.
+
 ## 1. Immutable bytes, mutable cursor
 
 An input source over stable external bytes retains an immutable resource view

@@ -162,7 +162,7 @@ impl Engine<'_> {
     }
     #[inline]
     fn skip_characters(&mut self) {
-        if self.document.sources.is_empty() {
+        if self.at_file_input() {
             while self
                 .document
                 .file

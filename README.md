@@ -39,6 +39,10 @@ python3 benchmarks/expansion.py
 cargo build --release --lib --target wasm32-unknown-unknown
 ```
 
+The CLI can preload immutable nested inputs with `--input NAME=PATH`; the portable
+engine receives borrowed byte resources through its host resolver. `\input` and
+`\endinput` preserve nested cursors and unchanged-input checkpoint replay.
+
 The oracle and benchmark runners use native `pdftex -ini -etex`, without a
 format or fonts. The CLI accepts explicit metric mappings as
 `umber FILE.tex --tfm NAME=PATH`; TeX input never opens a font path itself. Install pdfTeX or pass `--pdftex /path/to/pdftex`.

@@ -245,6 +245,7 @@ pub(crate) mod cmd {
         MATH_GIVEN = 129 => [];
         EXTENSION = 130 => [b"openout", b"write", b"closeout", b"special", b"immediate"];
         END_WRITE = 131 => [] expandable;
+        INPUT = 146 => [b"input", b"endinput"] expandable;
         MUSKIP = 132 => [b"muskip"] assignment;
         MUSKIP_REF = 133 => [] assignment;
         MUSKIP_DEF = 134 => [b"muskipdef"] assignment;
@@ -531,6 +532,7 @@ pub(crate) enum Source {
         len: u8,
         suppress: bool,
     },
+    FileBoundary,
     WriteBoundary {
         position: u8,
     },
@@ -540,14 +542,14 @@ impl Source {
     pub fn cursor(&self) -> Option<&Cursor> {
         match self {
             Self::Tokens(cursor) => Some(cursor),
-            Self::Inline { .. } | Self::WriteBoundary { .. } => None,
+            Self::Inline { .. } | Self::WriteBoundary { .. } | Self::FileBoundary => None,
         }
     }
     #[inline(always)]
     pub fn cursor_mut(&mut self) -> Option<&mut Cursor> {
         match self {
             Self::Tokens(cursor) => Some(cursor),
-            Self::Inline { .. } | Self::WriteBoundary { .. } => None,
+            Self::Inline { .. } | Self::WriteBoundary { .. } | Self::FileBoundary => None,
         }
     }
 }

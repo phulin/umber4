@@ -15,7 +15,9 @@ source descriptors; `names.rs` owns name lookup and immutable spelling bytes;
 `value_metadata_tests.rs`; `value_packets_tests.rs` checks packet and long-name
 scratch ownership, reuse, and failure cleanup;
 `values_tests.rs` and `memory_tests.rs` check reclamation and semantic ownership;
-`input.rs` supplies lazy character input and token cursors;
+`input.rs` supplies lazy character input; `input_tokens.rs` owns ordered token
+and file-boundary cursors; `input_files.rs` supplies borrowed host resolution and
+filename scanning, with native, cleanup, and replay tests in `input_files_tests.rs`;
 `define.rs` builds macro definitions; `macros.rs` builds invocation packets and
 captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;
