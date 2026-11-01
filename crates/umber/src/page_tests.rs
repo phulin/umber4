@@ -344,7 +344,7 @@ fn unsupported_page_features_and_infinite_shrink_fail_explicitly() {
     for source in [
         br"\insert255{}\end".as_slice(),
         br"\mark{}\end",
-        br"\catcode36=3$x$\end",
+        br"\catcode36=3\relax$$\end",
         br"\vsize=100pt\hrule width1pt\vskip0pt minus1fil\par\end",
     ] {
         let mut e = Engine::new(source);

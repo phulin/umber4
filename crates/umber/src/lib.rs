@@ -28,6 +28,7 @@ mod line_search;
 mod lists;
 mod macros;
 mod math;
+mod math_frontend;
 mod messages;
 mod names;
 #[allow(dead_code)] // Node consumers are the following font/paragraph/page slices.
@@ -118,6 +119,8 @@ pub struct Engine<'a> {
     font_name: Vec<u8>,
     ligatures: ligatures::Scratch,
     paragraph: paragraph::Scratch,
+    math: Option<math::MathStore>,
+    math_scratch: Option<math::Scratch>,
     page_lowering: Option<page_output::Scratch>,
     page_release: nodes::ReleaseScratch,
     box_copy: nodes::CopyScratch,
@@ -140,6 +143,7 @@ pub(crate) struct Document<'a> {
     pub nodes: nodes::NodeStore,
     pub boxes: boxes::Registers,
     pub box_frames: Vec<boxes::Frame>,
+    pub math_frames: Vec<math_frontend::Frame>,
     pub output_frame: Option<page::OutputFrame>,
     pub fonts: fonts::Fonts,
     pub hyphenation: hyphenation::Hyphenation,
@@ -174,6 +178,7 @@ impl<'a> Engine<'a> {
                 nodes: nodes::NodeStore::default(),
                 boxes: boxes::Registers::default(),
                 box_frames: Vec::new(),
+                math_frames: Vec::new(),
                 output_frame: None,
                 fonts: fonts::Fonts::default(),
                 hyphenation: hyphenation::Hyphenation::default(),
@@ -203,6 +208,8 @@ impl<'a> Engine<'a> {
             font_name: Vec::new(),
             ligatures: ligatures::Scratch::default(),
             paragraph: paragraph::Scratch::default(),
+            math: Some(math::MathStore::default()),
+            math_scratch: Some(math::Scratch::default()),
             page_lowering: Some(page_output::Scratch::default()),
             page_release: nodes::ReleaseScratch::default(),
             box_copy: nodes::CopyScratch::default(),

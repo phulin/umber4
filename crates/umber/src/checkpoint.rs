@@ -90,6 +90,7 @@ impl<'a> Engine<'a> {
             && self.scanner == crate::scanner::Scanner::Normal
             && self.document.text.mode == crate::text::Mode::Vertical
             && self.document.box_frames.is_empty()
+            && self.document.math_frames.is_empty()
             && self.document.output_frame.is_none()
     }
 
@@ -283,6 +284,11 @@ impl<'a> Engine<'a> {
         // These handles belong to the abandoned whole node-store root. Dropping
         // them is inert; never traverse their IDs through restored storage.
         self.document.box_frames.clear();
+        self.document.math_frames.clear();
+        self.math
+            .as_mut()
+            .expect("math store outside conversion")
+            .abandon();
         self.document.output_frame = None;
         // Sources are discarded before packets; no borrowed argument window is
         // read after this point. Clear every packet, including scanner failures
@@ -368,6 +374,7 @@ impl<'a> Engine<'a> {
             nodes,
             boxes,
             box_frames: _,
+            math_frames: _,
             output_frame: _,
             fonts,
             hyphenation,

@@ -35,6 +35,12 @@ keep their detached pages and exact font resources. Paragraph shape COW pages an
 with the other layout values; active/delta/passive search scratch resets before
 returning to the outer driver. Replay can resume pending macro arguments and
 ordinary open groups after a paragraph.
+Separate inline/field math frames own active lists and suspended enclosing text.
+They exclude handoff even when an inner box is temporarily in vertical mode.
+The reusable math arena and conversion scratch have no checkpoint roots; restore
+discards their inert headers with the abandoned ordinary-node version before
+installing restored roots. Nested formula conversion releases only its consumed
+list and leaves suspended outer math IDs live.
 Hyphenation tables retain separate lazy pattern and exception owners plus the
 document freeze flag. Capturing these roots does not walk trie nodes, operations,
 or dictionary entries; later updates copy only the affected root's COW directories

@@ -4,7 +4,7 @@ use super::*;
 impl Engine<'_> {
     pub(crate) fn shift_box(&mut self, operation: i32) -> Result<()> {
         let allowed = if operation < 2 {
-            self.document.text.mode.is_horizontal()
+            self.document.text.mode.is_horizontal() || self.document.text.mode == Mode::Math
         } else {
             self.document.text.mode.is_vertical()
         };
@@ -17,7 +17,12 @@ impl Engine<'_> {
         } else {
             amount
         };
-        self.scan_box(Destination::Append(shift))
+        let destination = if self.document.text.mode == Mode::Math {
+            Destination::MathAppend(shift)
+        } else {
+            Destination::Append(shift)
+        };
+        self.scan_box(destination)
     }
     pub(crate) fn unbox(&mut self, operation: i32) -> Result<()> {
         let vertical = operation >= 2;
@@ -62,6 +67,9 @@ impl Engine<'_> {
         Ok(())
     }
     pub(super) fn take_last_box(&mut self) -> Result<Option<DetachedNode>> {
+        if self.document.text.mode == Mode::Math {
+            return Err(Error::Syntax);
+        }
         let text = &self.document.text;
         let list = if text.mode.is_horizontal() {
             &text.horizontal

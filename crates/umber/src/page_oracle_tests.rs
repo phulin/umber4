@@ -39,7 +39,7 @@ fn displayed(b: &PackedBox, boxes: &[PackedBox]) -> String {
     }
     s
 }
-struct Oracle {
+pub(crate) struct Oracle {
     dir: PathBuf,
     binary: PathBuf,
 }
@@ -76,8 +76,13 @@ impl Drop for Oracle {
     }
 }
 impl Oracle {
-    fn new() -> Self {
-        let dir = std::env::temp_dir().join(format!("umber-page-oracle-{}", std::process::id()));
+    pub(crate) fn new() -> Self {
+        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let sequence = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!(
+            "umber-page-oracle-{}-{sequence}",
+            std::process::id()
+        ));
         std::fs::create_dir_all(&dir).unwrap();
         std::fs::write(
             dir.join("texmf.cnf"),
@@ -91,7 +96,7 @@ impl Oracle {
                 .into(),
         }
     }
-    fn compare(&self, tfm: &[u8], settings: &str, body: &str) {
+    pub(crate) fn compare(&self, tfm: &[u8], settings: &str, body: &str) {
         let boot = r"\catcode123=1\catcode125=2\font\f=test\f\hsize=70pt\vsize=45pt\topskip=10pt\maxdepth=3pt\baselineskip=12pt\lineskip=1pt\parfillskip=0pt plus1fil ";
         let source = format!("{boot}{settings}{body}\\end");
         let mut e = Engine::new(source.as_bytes());

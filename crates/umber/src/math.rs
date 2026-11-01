@@ -20,14 +20,10 @@ impl MathList {
     pub fn is_empty(&self) -> bool {
         self.head == MathId::NULL
     }
+    pub fn tail(&self) -> Option<MathId> {
+        (!self.is_empty()).then_some(self.tail)
+    }
 }
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "spacing classes are constructed by the future math frontend"
-    )
-)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub(crate) enum Class {
@@ -40,10 +36,6 @@ pub(crate) enum Class {
     Punct,
     Inner,
 }
-#[cfg_attr(
-    not(test),
-    expect(dead_code, reason = "explicit limits policies await the math frontend")
-)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) enum Limits {
     #[default]
@@ -59,18 +51,7 @@ impl Style {
         expect(dead_code, reason = "display initial style awaits the math frontend")
     )]
     pub const DISPLAY: Self = Self(0);
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "text initial style awaits the math frontend")
-    )]
     pub const TEXT: Self = Self(2);
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "explicit style selection awaits the math frontend"
-        )
-    )]
     pub fn new(code: u8) -> Option<Self> {
         (code < 8).then_some(Self(code))
     }
@@ -109,13 +90,6 @@ impl Style {
         self.0 % 2 == 1
     }
 }
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "boxed and subsidiary fields are supplied by the math frontend"
-    )
-)]
 #[derive(Debug, Default)]
 pub(crate) enum Field {
     #[default]
@@ -234,6 +208,7 @@ pub(crate) enum Kind {
     },
     Style(Style),
     Choice([MathList; 4]),
+    MuKern(crate::numeric::Scaled),
     Material(DetachedNode),
     Working(Class),
     Converted {
@@ -241,6 +216,9 @@ pub(crate) enum Kind {
         output: List,
     },
 }
+#[path = "math_frontend_store.rs"]
+mod frontend_store;
+pub(crate) use frontend_store::{FieldSlot, FieldTarget};
 impl Kind {
     fn class(&self) -> Option<Class> {
         match self {

@@ -1,5 +1,5 @@
 use crate::{Engine, Error, Result, scalars::Target, token::*};
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum GroupKind {
     Simple,
     SemiSimple,
@@ -8,6 +8,8 @@ pub(crate) enum GroupKind {
     Vtop,
     Output,
     Insert,
+    MathShift,
+    MathField,
 }
 pub(crate) enum Save {
     Boundary(GroupKind),
@@ -46,7 +48,10 @@ impl Engine<'_> {
         if read.meaning.command == cmd::RELAX {
             return Ok(());
         }
-        if self.text_command(read)? {
+        if self.math_command(read)? {
+            return Ok(());
+        }
+        if self.document.text.mode != crate::text::Mode::Math && self.text_command(read)? {
             return Ok(());
         }
         let (read, prefix) = if matches!(
@@ -397,8 +402,29 @@ impl Engine<'_> {
         self.document.save.push(Save::Boundary(kind));
         Ok(())
     }
-    fn close_group(&mut self, kind: GroupKind) -> Result<()> {
-        if self.document.level == 0 {
+    pub(crate) fn current_group(&self) -> Option<GroupKind> {
+        self.document.save.iter().rev().find_map(|save| {
+            if let Save::Boundary(kind) = save {
+                Some(*kind)
+            } else {
+                None
+            }
+        })
+    }
+    pub(crate) fn close_group(&mut self, kind: GroupKind) -> Result<()> {
+        let saved = self.current_group().ok_or(Error::Group)?;
+        if saved != kind
+            && !(kind == GroupKind::Simple
+                && matches!(
+                    saved,
+                    GroupKind::Hbox
+                        | GroupKind::Vbox
+                        | GroupKind::Vtop
+                        | GroupKind::Insert
+                        | GroupKind::Output
+                        | GroupKind::MathField
+                ))
+        {
             return Err(Error::Group);
         }
         let output = self.prepare_output_end(kind)?;
@@ -406,6 +432,10 @@ impl Engine<'_> {
         loop {
             match self.document.save.pop().ok_or(Error::Group)? {
                 Save::Boundary(saved) => {
+                    if saved == GroupKind::MathField && kind == GroupKind::Simple {
+                        self.document.level -= 1;
+                        return self.finish_math_field();
+                    }
                     if saved == GroupKind::Output && output {
                         self.document.level -= 1;
                         return self.finish_output_group();

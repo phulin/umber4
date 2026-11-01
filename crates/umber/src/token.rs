@@ -229,7 +229,7 @@ pub(crate) mod cmd {
         CONTROL_SPACE = 110 => [b" "];
         HSKIP = 111 => [b"hskip", b"hfil", b"hfill", b"hss", b"hfilneg"];
         KERN = 112 => [b"kern"];
-        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox"] assignment;
+        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox", b"everymath"] assignment;
         PAR_SHAPE = 114 => [b"parshape"] assignment;
         PENALTY = 115 => [b"penalty"];
         VSKIP = 116 => [b"vskip", b"vfil", b"vfill", b"vss", b"vfilneg"];
@@ -267,6 +267,12 @@ pub(crate) mod cmd {
         IFVMODE = 144 => [b"ifvmode"] conditional;
         IFINNER = 145 => [b"ifinner"] conditional;
         HYPHENATION = 147 => [b"hyphenation", b"patterns"] assignment;
+        MATH_CHAR = 156 => [b"mathchar"];
+        MATH_CLASS = 157 => [b"mathord", b"mathop", b"mathbin", b"mathrel", b"mathopen", b"mathclose", b"mathpunct", b"mathinner"];
+        MATH_STYLE = 158 => [b"displaystyle", b"textstyle", b"scriptstyle", b"scriptscriptstyle"];
+        MATH_LIMITS = 159 => [b"displaylimits", b"limits", b"nolimits"];
+        MKERN = 160 => [b"mkern"];
+        UNSUPPORTED_MATH = 161 => [b"mathchoice", b"over", b"atop", b"above", b"overwithdelims", b"atopwithdelims", b"abovewithdelims", b"left", b"right", b"middle", b"delimiter", b"radical", b"mathaccent", b"overline", b"underline", b"vcenter", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];
     }
 }
 

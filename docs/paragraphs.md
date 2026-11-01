@@ -27,8 +27,9 @@ before glue is itself a breakpoint; its width is excluded from the line ending
 there. Math boundaries are discarded with leading glue, penalties, and explicit
 kerns after a break, with the same widths subtracted during search. Packing and
 detached output preserve surviving boundary widths without emitting glyphs.
-The scoped dimension `\mathsurround` is executable state, initialized to zero;
-math scanning and formula entry remain unsupported.
+The scoped dimension `\mathsurround` starts at zero. The
+[inline math frontend](math-alignments.md) constructs these boundaries around
+its converted formulas using the live formula bindings before group restoration.
 
 Paragraph completion consumes the horizontal list, transforms its final glue
 into the terminal penalty, and appends paragraph-fill glue. Selected breaks
@@ -65,7 +66,7 @@ their upstream behavior. These rules follow `hpack` and `vpackage` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 Native comparisons inspect node dimensions and displayed glue settings; the
 page adapter additionally checks cumulative absolute output placements. Diagnostic text, overfull
-rules, general discretionary syntax, math construction,
+rules, general discretionary syntax, display math,
 last-line fitting, and pdfTeX spacing extensions remain outside this baseline.
 Unsupported infinite paragraph shrink fails explicitly rather than applying
 TeX's interactive recovery.

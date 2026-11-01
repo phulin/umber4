@@ -48,6 +48,10 @@ impl Engine<'_> {
         let (read, negative) = self.scan_signs()?;
         Ok(self.dimension_from::<false>(read, negative, false)?.0)
     }
+    pub(crate) fn scan_mu_dimen(&mut self) -> Result<Scaled> {
+        let (read, negative) = self.scan_signs()?;
+        Ok(self.dimension_from::<true>(read, negative, false)?.0)
+    }
     fn dimension_from<const MU: bool>(
         &mut self,
         read: Read,

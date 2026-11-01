@@ -91,7 +91,10 @@ storage. `\shipout` supplies a consuming destination to the same box scanner,
 including constructed boxes and void register operands. Output groups use the
 ordinary assignment/save stack with a separate document-owned enclosing text
 frame; their closing order and fail-fast errors are contracted in
-[pages.md](pages.md). Math destinations remain outside this execution slice.
+[pages.md](pages.md). A typed math destination appends a nonvoid box as an Ord
+nucleus after restoring its enclosing math mode; void operands append nothing.
+Math construction uses separate owned frames and stable field targets, as
+contracted in [math-alignments.md](math-alignments.md).
 Packing retains the dimension/glue baseline in [paragraphs.md](paragraphs.md): exposed `\badness`, packing diagnostics, and
 overfull-rule insertion are not implemented. The corresponding initialized
 parameters remain state-only. These rules follow `begin_box`, `box_end`,

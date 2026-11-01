@@ -47,6 +47,7 @@ impl Registers {
 pub(crate) enum Destination {
     Shipout,
     Append(Scaled),
+    MathAppend(Scaled),
     Register { index: usize, global: bool },
     Insertion(u8),
 }
@@ -238,6 +239,13 @@ impl Engine<'_> {
         }
     }
     fn finish_box(&mut self, destination: Destination, node: Option<DetachedNode>) -> Result<()> {
+        if let Destination::MathAppend(shift) = destination {
+            if let Some(node) = node {
+                self.document.nodes.box_mut(node.id()).shift = shift;
+                self.append_math_box(node)?;
+            }
+            return Ok(());
+        }
         if let Destination::Shipout = destination {
             if let Some(node) = node {
                 self.publish_page(node)?;

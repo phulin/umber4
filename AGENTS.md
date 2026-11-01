@@ -16,7 +16,8 @@ proposal until reviewed with the user.
   contracts and performance methodology.
 - `crates/umber/`: portable expansion/register interpreter, TFM text, paragraph/page
   construction, unsplit insertions/adjustments, detached page results, typed layout
-  storage, in-memory checkpoints, a typed math atom/conversion core, and its native CLI.
+  storage, in-memory checkpoints, inline math construction, a typed math
+  atom/conversion core, and its native CLI.
 - `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.
 - `fixtures/mvp/`: same-source INITEX compatibility fixtures.
 - `fixtures/output/`: font-free INITEX output-routine and explicit shipout fixtures.

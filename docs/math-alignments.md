@@ -29,11 +29,11 @@ math-character meaning independently of ordinary `\chardef` characters.
 Out-of-range assignments return `Number` instead of upstream's interactive
 recovery; a failed character-code assignment preserves its preceding value.
 
-Math-mode entry, math-character execution, and scanned math list construction
-remain unsupported. Font-family bindings are executable initialization state.
-Executing a math-character meaning returns `Unsupported` without creating a text
-glyph. The typed atom/conversion core below is executable independently of the
-frontend; semantic math construction and display execution remain proposals.
+Inline math entry, math-character execution, and the construction subset below
+are executable. Font-family bindings use ordinary scoped assignment state.
+Math-only commands outside math fail explicitly; missing-dollar recovery and
+display execution remain unsupported. The typed conversion core also remains
+usable independently of input execution.
 The compatibility reference is TeX's
 `def_code`, `shorthand_def`, and `scan_something_internal` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
@@ -68,18 +68,55 @@ explicit limits policy, eight styles including cramped styles, choices, ordinary
 math ligatures/kerns, scripts, boxed/submath fields, and explicit ordinary
 kern/glue/rule/penalty material. It also converts fractions, radicals, overline,
 underline, vcenter, accents, and paired standard left/right delimiters. Middle
-delimiters, math scanning, mode entry, displays, and equation numbers remain
+delimiters, displays, and equation numbers remain
 unsupported. Their absence does not select an approximate rendering.
 
 Active math construction is excluded from quiescent checkpoints. The arena and
 traversal scratch therefore require no COW or snapshot roots. Converted ordinary
 nodes use the existing versioned node store and its checkpoint ownership.
 
-The proposed math semantic nest will own the current list, incomplete fraction
-state, and context needed until its delimiters close. Field-building groups own script or
-subformula lists until transferring them to the selected field. `\mathcode`,
-`\delcode`, `\fam`, and current meanings affect construction at the points TeX
-specifies; math-active characters return through normal expansion.
+The inline frontend has separate typed math frames, with one reusable arena and
+conversion scratch. Each frame owns its list and either the suspended enclosing
+text state or a stable atom-ID/field destination. Ordinary box frames suspend
+math mode while preserving the outer math owners; nested math uses the same
+arena without rewinding any live IDs. Completed nonvoid boxes become Ord nuclei,
+while void box transfers append no atom. Restoring a checkpoint abandons active
+math headers with their old ordinary-node root before installing restored roots.
+
+Entry uses one unexpanded lookahead token. An immediately following shift in
+unrestricted horizontal mode returns `Unsupported` for display math before
+installing a math frame; restricted `$$` closes an empty inline formula. Vertical
+entry replays the shift after paragraph entry and its hooks. Inline entry opens
+its group, locally sets `\fam=-1`, and installs `\everymath`. Math and subsidiary
+mode are inner modes for conditionals, while a contained hbox has ordinary
+restricted horizontal mode.
+
+Characters, `\char`, math-character meanings, and `\mathchar` capture their family
+and character at scanning time. Class-seven codes become Ord, with a current
+family override only when `\fam` is 0 through 15. Math-active characters return
+through ordinary expansion. Field scanners skip spaces/relax and accept a single
+math character or a braced subsidiary list. A singleton scriptless Ord unwraps
+to its nucleus; empty subsidiary lists remain distinct from absent fields.
+Raw braces build these fields, while `\begingroup` only scopes assignments.
+Scripts attach to the immediate eligible tail or a new empty Ord; duplicate
+scripts fail without overwriting an existing owner. Eight spacing classes,
+explicit styles, and operator limit switches are executable.
+
+Assignments, definitions, and diagnostics retain their ordinary execution paths.
+Physical kern/glue/rule/penalty material retains ordinary units. `\/` contributes
+a normal zero kern in math. `\mkern` retains math units in a scalar arena node
+until the conversion pass uses the active symbol-family quad and native signed
+truncation. Conversion and both `\mathsurround` widths use the live formula
+bindings before its group is restored. The resulting ordinary list is enclosed
+by before/after math nodes; the enclosing space factor becomes 1000. Automatic
+math penalties are enabled only for an enclosing unrestricted paragraph.
+
+Closers validate the current semantic group before restoring bindings or moving
+owners. Active math frames exclude checkpoint handoff. Scanned choices,
+fractions, delimiter groups, radicals, decorations, accents, mu glue, displays,
+and alignments remain unsupported; their pure conversion support is separate.
+Future fraction and delimiter frames will own incomplete fractions until their
+semantic groups close.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters
@@ -91,7 +128,7 @@ the accumulated list. It restores bindings at that boundary and resets conversio
 style and binary context as upstream specifies. The math owner retains the latest
 delimiter handle needed by incomplete fractions.
 
-`\mathchoice` executes construction of all four alternatives, including their
+Future `\mathchoice` execution constructs all four alternatives, including their
 assignments and other effects. Later conversion selects the alternative for the
 current style. Build the four lists in their owned destination; they are not four
 speculative engine branches or delayed programs.

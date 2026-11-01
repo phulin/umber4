@@ -141,10 +141,6 @@ pub(crate) enum Kind {
         width: Scaled,
         explicit: bool,
     },
-    #[cfg_attr(
-        not(test),
-        expect(dead_code, reason = "math entry awaits its frontend")
-    )]
     MathBoundary {
         width: Scaled,
         after: bool,

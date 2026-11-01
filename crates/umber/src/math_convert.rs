@@ -37,7 +37,7 @@ impl Scratch {
     pub(super) fn clear_interrupt(&mut self) {
         self.fail_after = None;
     }
-    pub(super) fn is_empty(&self) -> bool {
+    pub(crate) fn is_empty(&self) -> bool {
         self.tasks.is_empty() && self.result.is_none()
     }
 }
@@ -193,13 +193,6 @@ struct Conversion<'e, 'a, 'm> {
     scratch: &'m mut Scratch,
 }
 impl Engine<'_> {
-    #[cfg_attr(
-        not(test),
-        expect(
-            dead_code,
-            reason = "typed conversion entry point awaits math frontend integration"
-        )
-    )]
     pub(crate) fn math_to_hlist(
         &mut self,
         math: &mut MathStore,
@@ -399,22 +392,15 @@ impl Conversion<'_, '_, '_> {
             _ => unreachable!("binary context cancellation"),
         };
         let spec = self.engine.document.layout_values.mu_glues[REGISTERS + index].value;
-        let mu = self.symbol(style, 6) / 18;
-        let scale = |v: Scaled| {
-            Scaled::checked(
-                i64::from(mu.div_euclid(65536)) * i64::from(v.0)
-                    + i64::from(v.0) * i64::from(mu.rem_euclid(65536)) / 65536,
-            )
-        };
         let spec = Glue {
-            width: scale(spec.width)?,
+            width: self.mu_dimension(style, spec.width)?,
             stretch: if spec.stretch_order == GlueOrder::Normal {
-                scale(spec.stretch)?
+                self.mu_dimension(style, spec.stretch)?
             } else {
                 spec.stretch
             },
             shrink: if spec.shrink_order == GlueOrder::Normal {
-                scale(spec.shrink)?
+                self.mu_dimension(style, spec.shrink)?
             } else {
                 spec.shrink
             },
@@ -426,6 +412,13 @@ impl Conversion<'_, '_, '_> {
                 spec,
                 subtype: GlueKind::Normal,
             },
+        )
+    }
+    fn mu_dimension(&self, style: Style, value: Scaled) -> Result<Scaled> {
+        let mu = self.symbol(style, 6) / 18;
+        Scaled::checked(
+            i64::from(mu.div_euclid(65536)) * i64::from(value.0)
+                + i64::from(value.0) * i64::from(mu.rem_euclid(65536)) / 65536,
         )
     }
 }

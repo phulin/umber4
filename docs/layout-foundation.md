@@ -182,7 +182,7 @@ mutable allocation or COW. These transfers follow `copy_node_list` in the
 The initial node kinds cover characters, ligatures and their boundary flags,
 explicit/TFM kerns, math boundaries, glue, penalties, rules, horizontal/vertical
 boxes, and discretionaries. Text execution constructs ordinary text material;
-math-boundary construction remains internal until math scanning is available. Paragraph and page
+inline math execution contributes converted material and math boundaries. Paragraph and page
 packing supply compatible glue calculations. Box headers carry dimensions,
 shift, and glue sign/order/ratio. Font metrics resolve through immutable font IDs
 rather than per-character owners. Paragraph/page algorithms traverse and splice these

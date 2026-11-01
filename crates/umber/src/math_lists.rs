@@ -35,6 +35,15 @@ impl Conversion<'_, '_, '_> {
                             w.style = *style;
                             w.cursor = self.math.node(q).next;
                         }
+                        Kind::MuKern(value) => {
+                            let width = self.mu_dimension(w.style, *value)?;
+                            let node = self.engine.document.nodes.alloc(nodes::Kind::Kern {
+                                width,
+                                explicit: true,
+                            })?;
+                            self.math.node_mut(q).kind = Kind::Material(node);
+                            w.cursor = self.math.node(q).next;
+                        }
                         Kind::Choice(_) => {
                             let Kind::Choice(mut choices) = std::mem::replace(
                                 &mut self.math.node_mut(q).kind,

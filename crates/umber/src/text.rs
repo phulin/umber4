@@ -16,6 +16,7 @@ pub(crate) enum Mode {
     InternalVertical,
     Horizontal,
     RestrictedHorizontal,
+    Math,
     Write,
 }
 impl Mode {
@@ -26,7 +27,10 @@ impl Mode {
         matches!(self, Self::Vertical | Self::InternalVertical)
     }
     pub fn is_inner(self) -> bool {
-        matches!(self, Self::RestrictedHorizontal | Self::InternalVertical)
+        matches!(
+            self,
+            Self::RestrictedHorizontal | Self::InternalVertical | Self::Math
+        )
     }
 }
 pub(crate) struct TextState {
@@ -323,6 +327,9 @@ impl Engine<'_> {
         }
     }
     fn append_space(&mut self, normal: bool) -> Result<()> {
+        self.append_horizontal(self.space_node(normal)?)
+    }
+    pub(crate) fn space_node(&self, normal: bool) -> Result<Kind> {
         let font = self.document.fonts.current.value as usize;
         let sf = self.document.text.space_factor;
         let spaces = self.document.layout_values.glues[GlueParam::Space.index()].value;
@@ -355,6 +362,6 @@ impl Engine<'_> {
                 g.shrink = Scaled(ratio(g.shrink.0, 1000, sf)?);
             }
         }
-        self.append_horizontal(Kind::Glue { spec: g, subtype })
+        Ok(Kind::Glue { spec: g, subtype })
     }
 }

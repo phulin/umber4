@@ -27,6 +27,12 @@ replay, error, and lifetime coverage in `scanner_tests.rs`;
 `math_code_tests.rs` checks math-code initialization, scoped assignments,
 math-character meanings, checkpoints, and the explicit native state oracle;
 `math.rs` owns affine temporary math lists and a reusable typed arena;
+`math_frontend.rs` owns inline/field construction frames and mode transitions,
+`math_scan.rs` scans immediate fields/scripts, and `math_frontend_store.rs`
+supplies narrow stable-ID field transfers and restore abandonment.
+`math_frontend_tests.rs` covers mode/group/ownership/replay boundaries and
+`math_frontend_oracle_tests.rs` compares unchanged inline sources with native
+box geometry and DVI placements.
 `math_convert.rs` owns iterative conversion work and `math_lists.rs` its two passes;
 `math_clean.rs`/`math_boxing.rs` own clean/shared box work; `math_atoms.rs` owns
 ordinary ligatures/nuclei and `math_scripts.rs` scripts/operator limits;

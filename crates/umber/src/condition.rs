@@ -30,7 +30,7 @@ impl Engine<'_> {
             cmd::IFHMODE => self.document.text.mode.is_horizontal(),
             cmd::IFVMODE => self.document.text.mode.is_vertical(),
             cmd::IFINNER => self.document.text.mode.is_inner(),
-            cmd::IFMMODE => false,
+            cmd::IFMMODE => self.document.text.mode == crate::text::Mode::Math,
             cmd::IFTRUE => true,
             cmd::IFFALSE => false,
             cmd::IFCASE => choice == 0,

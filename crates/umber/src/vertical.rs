@@ -42,6 +42,9 @@ impl Engine<'_> {
                 Some(Quantity::Dimension(self.document.text.prev_depth))
             }
             cmd::LAST_ITEM => {
+                if self.document.text.mode == Mode::Math {
+                    return Err(Error::Unsupported);
+                }
                 if self.document.text.mode == Mode::Write {
                     return Ok(Some(match read.meaning.value {
                         0 => Quantity::Integer(0),
@@ -119,27 +122,8 @@ impl Engine<'_> {
                     self.new_graf(true)?;
                     return Ok(true);
                 }
-                let (mut width, mut height, mut depth) = if horizontal {
-                    (Scaled(26214), Scaled(RUNNING), Scaled(RUNNING))
-                } else {
-                    (Scaled(RUNNING), Scaled(26214), Scaled::ZERO)
-                };
-                loop {
-                    if self.scan_keyword(b"width")? {
-                        width = self.scan_dimen()?;
-                    } else if self.scan_keyword(b"height")? {
-                        height = self.scan_dimen()?;
-                    } else if self.scan_keyword(b"depth")? {
-                        depth = self.scan_dimen()?;
-                    } else {
-                        break;
-                    }
-                }
-                let node = self.document.nodes.alloc(Kind::Rule {
-                    width,
-                    height,
-                    depth,
-                })?;
+                let rule = self.scan_rule(horizontal)?;
+                let node = self.document.nodes.alloc(rule)?;
                 if horizontal {
                     self.document
                         .nodes
@@ -155,6 +139,28 @@ impl Engine<'_> {
             _ => return Ok(false),
         }
         Ok(true)
+    }
+    pub(crate) fn scan_rule(&mut self, horizontal: bool) -> Result<Kind> {
+        let (mut width, mut height, mut depth) = if horizontal {
+            (Scaled(26214), Scaled(RUNNING), Scaled(RUNNING))
+        } else {
+            (Scaled(RUNNING), Scaled(26214), Scaled::ZERO)
+        };
+        loop {
+            if self.scan_keyword(b"width")? {
+                width = self.scan_dimen()?;
+            } else if self.scan_keyword(b"height")? {
+                height = self.scan_dimen()?;
+            } else if self.scan_keyword(b"depth")? {
+                depth = self.scan_dimen()?;
+            } else {
+                return Ok(Kind::Rule {
+                    width,
+                    height,
+                    depth,
+                });
+            }
+        }
     }
     pub(crate) fn scan_skip(&mut self, operation: i32) -> Result<Glue> {
         Ok(match operation {
