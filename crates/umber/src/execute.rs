@@ -6,6 +6,7 @@ pub(crate) enum GroupKind {
     Hbox,
     Vbox,
     Vtop,
+    VCenter,
     Output,
     Insert,
     MathShift,
@@ -433,6 +434,7 @@ impl Engine<'_> {
                     GroupKind::Hbox
                         | GroupKind::Vbox
                         | GroupKind::Vtop
+                        | GroupKind::VCenter
                         | GroupKind::Insert
                         | GroupKind::Output
                         | GroupKind::MathField
@@ -455,7 +457,11 @@ impl Engine<'_> {
                     }
                     if matches!(
                         saved,
-                        GroupKind::Hbox | GroupKind::Vbox | GroupKind::Vtop | GroupKind::Insert
+                        GroupKind::Hbox
+                            | GroupKind::Vbox
+                            | GroupKind::Vtop
+                            | GroupKind::VCenter
+                            | GroupKind::Insert
                     ) && kind == GroupKind::Simple
                     {
                         self.document.level -= 1;

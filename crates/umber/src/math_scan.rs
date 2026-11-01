@@ -4,13 +4,7 @@ impl Engine<'_> {
     pub(super) fn math_character_code(&mut self, read: Read) -> Result<Option<i32>> {
         let code = match read.meaning.command {
             cmd::MATH_GIVEN => read.meaning.value,
-            cmd::MATH_CHAR => {
-                let code = self.scan_int()?;
-                if !(0..=0x7fff).contains(&code) {
-                    return Err(Error::Number);
-                }
-                code
-            }
+            cmd::MATH_CHAR => self.scan_math_char_code()?,
             cmd::DELIMITER => self.scan_delimiter_code()? >> 12,
             _ => {
                 let character = if read.meaning.command == cmd::CHAR {
@@ -29,13 +23,27 @@ impl Engine<'_> {
         Ok(Some(code))
     }
     pub(super) fn math_character_field(&self, code: i32) -> Field {
+        let c = self.math_character(code);
+        Field::Character {
+            family: c.family,
+            character: c.character,
+        }
+    }
+    pub(super) fn scan_math_char_code(&mut self) -> Result<i32> {
+        let code = self.scan_int()?;
+        if !(0..=0x7fff).contains(&code) {
+            return Err(Error::Number);
+        }
+        Ok(code)
+    }
+    pub(super) fn math_character(&self, code: i32) -> MathChar {
         let fam = self.document.scalars[Target::FAM].value;
         let family = if code >= 0x7000 && (0..16).contains(&fam) {
             fam as u8
         } else {
             ((code >> 8) & 15) as u8
         };
-        Field::Character {
+        MathChar {
             family,
             character: code as u8,
         }
@@ -79,7 +87,7 @@ impl Engine<'_> {
     pub(super) fn math_script(&mut self, superscript: bool) -> Result<()> {
         let tail = self.document.math_frames.last().unwrap().list.tail();
         let atom = match tail {
-            Some(id) if self.math.as_ref().unwrap().atom_class(id).is_some() => id,
+            Some(id) if self.math.as_ref().unwrap().scripts_allowed(id) => id,
             _ => self.append_math(Kind::Atom(Atom::new(Class::Ord, Field::Empty)))?,
         };
         let target = FieldTarget {

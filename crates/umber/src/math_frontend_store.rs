@@ -11,6 +11,9 @@ pub(crate) enum FieldSlot {
 #[path = "math_delimiter_ownership_tests.rs"]
 mod delimiter_tests;
 #[cfg(test)]
+#[path = "math_forms_frontend_ownership_tests.rs"]
+mod form_tests;
+#[cfg(test)]
 #[path = "math_fraction_ownership_tests.rs"]
 mod fraction_tests;
 #[derive(Clone, Copy)]
@@ -131,17 +134,43 @@ impl MathStore {
         }
         output
     }
-    pub fn atom_class(&self, id: MathId) -> Option<Class> {
-        match &self.node(id).kind {
-            Kind::Atom(a) => Some(a.class),
+    pub fn scripts_allowed(&self, id: MathId) -> bool {
+        matches!(
+            self.node(id).kind,
+            Kind::Atom(_)
+                | Kind::Over(_)
+                | Kind::Under(_)
+                | Kind::Radical { .. }
+                | Kind::Accent { .. }
+                | Kind::VCenter(_)
+        )
+    }
+    fn fields_mut(&mut self, id: MathId) -> Option<&mut Fields> {
+        match &mut self.node_mut(id).kind {
+            Kind::Atom(a) => Some(&mut a.fields),
+            Kind::Over(fields)
+            | Kind::Under(fields)
+            | Kind::Radical { fields, .. }
+            | Kind::Accent { fields, .. }
+            | Kind::VCenter(fields) => Some(fields),
             _ => None,
         }
     }
+    pub fn set_radical_delimiter(&mut self, id: MathId, value: Delimiter) {
+        let Kind::Radical { delimiter, .. } = &mut self.node_mut(id).kind else {
+            unreachable!("radical operand target")
+        };
+        *delimiter = value;
+    }
+    pub fn set_math_accent(&mut self, id: MathId, value: MathChar) {
+        let Kind::Accent { accent, .. } = &mut self.node_mut(id).kind else {
+            unreachable!("accent selector target")
+        };
+        *accent = value;
+    }
     pub fn field_empty(&mut self, target: FieldTarget) -> bool {
-        match &mut self.node_mut(target.atom).kind {
-            Kind::Atom(a) => target.slot.field(&mut a.fields).is_empty(),
-            _ => false,
-        }
+        self.fields_mut(target.atom)
+            .is_some_and(|fields| target.slot.field(fields).is_empty())
     }
     pub fn fill_field(
         &mut self,
@@ -149,8 +178,8 @@ impl MathStore {
         field: Field,
         nodes: &mut NodeStore,
     ) -> Result<()> {
-        if let Kind::Atom(a) = &mut self.node_mut(target.atom).kind {
-            let destination = target.slot.field(&mut a.fields);
+        if let Some(fields) = self.fields_mut(target.atom) {
+            let destination = target.slot.field(fields);
             if destination.is_empty() {
                 *destination = field;
                 return Ok(());
@@ -168,6 +197,36 @@ impl MathStore {
             }
             _ => Err(Error::Syntax),
         }
+    }
+    pub fn finish_field(
+        &mut self,
+        target: FieldTarget,
+        mut list: MathList,
+        tail: Option<MathId>,
+        nodes: &mut NodeStore,
+    ) -> Result<()> {
+        if !list.is_empty()
+            && list.head == list.tail
+            && matches!(self.node(list.head).kind, Kind::Accent { .. })
+            && matches!(target.slot, FieldSlot::Nucleus)
+            && tail == Some(target.atom)
+            && matches!(&self.node(target.atom).kind,Kind::Atom(a) if a.class==Class::Ord)
+        {
+            let replacement = self.take_front(&mut list).unwrap();
+            let Kind::Atom(old) =
+                std::mem::replace(&mut self.node_mut(target.atom).kind, replacement)
+            else {
+                unreachable!()
+            };
+            debug_assert!(
+                old.fields.nucleus.is_empty()
+                    && old.fields.sub.is_empty()
+                    && old.fields.sup.is_empty()
+            );
+            return Ok(());
+        }
+        let field = self.field_from_list(list);
+        self.fill_field(target, field, nodes)
     }
     pub fn field_from_list(&mut self, mut list: MathList) -> Field {
         if !list.is_empty()

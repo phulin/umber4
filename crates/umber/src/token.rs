@@ -278,7 +278,9 @@ pub(crate) mod cmd {
         DELIMITER = 165 => [b"delimiter"];
         LEFT_RIGHT = 166 => [b"left", b"right"];
         MATH_FRACTION = 167 => [b"above", b"over", b"atop", b"abovewithdelims", b"overwithdelims", b"atopwithdelims"];
-        UNSUPPORTED_MATH = 161 => [b"mathchoice", b"middle", b"radical", b"mathaccent", b"overline", b"underline", b"vcenter", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];
+        MATH_FORM = 168 => [b"overline", b"underline", b"radical", b"mathaccent"];
+        VCENTER = 169 => [b"vcenter"];
+        UNSUPPORTED_MATH = 161 => [b"mathchoice", b"middle", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];
     }
 }
 

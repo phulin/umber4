@@ -145,6 +145,27 @@ parameter resolution until enclosing conversion, including assignments following
 `\right`. An incomplete fraction has no direct script fields; scripts in the
 denominator or on a completed surrounding field retain ordinary atom semantics.
 
+Radical, overline, underline, and mathaccent commands append a rooted typed form
+before scanning its selector and nucleus. Radicals use a raw nonnegative 27-bit
+delimiter code; mathaccent uses a 15-bit selector with the class-seven family
+override. They reuse the ordinary immediate field scanner. Script targets include
+these forms and vcenter; limits switches remain restricted to actual Op atoms.
+Fraction and boundary nodes do not expose script fields. A field group containing
+only an Accent replaces an enclosing tail Ord when its destination is that Ord's
+nucleus, preserving the Accent's scripts and owned fields while keeping the parent
+ID and links stable. Other field groups retain the existing singleton-Ord fold or
+subsidiary-list semantics. Text `\accent` in math fails explicitly.
+
+`\vcenter` reuses internal vertical box construction with its own group and typed
+math destination. It accepts natural, `to`, and `spread` sizes, resets paragraph
+parameters locally, starts with ignored previous depth, and installs `\everyvbox`.
+Closing ends any paragraph, restores the group, packs the owned vertical list,
+then appends a VCenter with a boxed nucleus to the restored math list. Its depth
+cap is TeX's `max_dimen`, exactly `2^30-1` scaled points (`Scaled::MAX`), as specified
+by `vpack`; `\boxmaxdepth` does not constrain it. VCenter conversion subsequently
+uses the live math axis. Nested box/math ownership and allocation cleanup use the
+existing box frame and store mechanisms; no active construction is checkpointed.
+
 Assignments, definitions, and diagnostics retain their ordinary execution paths.
 Physical kern/glue/rule/penalty material retains ordinary units. `\/` contributes
 a normal zero kern in math. `\mkern` retains math units in a scalar arena node
@@ -156,8 +177,7 @@ math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
 owners. Active math frames exclude checkpoint handoff. Scanned choices,
-radicals, decorations, accents, mu glue, displays,
-and alignments remain unsupported; their pure conversion support is separate.
+mu glue, displays, and alignments remain unsupported.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters

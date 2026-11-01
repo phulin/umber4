@@ -6,8 +6,8 @@ use crate::{
     execute::GroupKind,
     layout_values::DimenParam,
     math::{
-        Atom, Class, Delimiter, Field, FieldSlot, FieldTarget, Kind, Limits, MathId, MathList,
-        RuleThickness, Side, Style,
+        Atom, Class, Delimiter, Field, FieldSlot, FieldTarget, Fields, Kind, Limits, MathChar,
+        MathId, MathList, RuleThickness, Side, Style,
     },
     nodes::{self, DetachedNode},
     numeric::Scaled,
@@ -41,6 +41,10 @@ impl Engine<'_> {
     }
     pub(crate) fn append_math_box(&mut self, node: DetachedNode) -> Result<()> {
         self.append_math(Kind::Atom(Atom::new(Class::Ord, Field::Box(node))))?;
+        Ok(())
+    }
+    pub(crate) fn append_math_vcenter(&mut self, node: DetachedNode) -> Result<()> {
+        self.append_math(Kind::VCenter(Fields::new(Field::Box(node))))?;
         Ok(())
     }
     fn math_material(&mut self, kind: nodes::Kind) -> Result<()> {
@@ -109,6 +113,8 @@ impl Engine<'_> {
             }
             cmd::LEFT_RIGHT => self.math_left_right(read.meaning.value != 0)?,
             cmd::MATH_FRACTION => self.math_fraction(read.meaning.value)?,
+            cmd::MATH_FORM => self.math_form(read.meaning.value)?,
+            cmd::VCENTER => self.make_vcenter()?,
             cmd::MATH_LIMITS => {
                 let tail = self
                     .document
@@ -240,8 +246,8 @@ impl Engine<'_> {
         debug_assert_eq!(frame.level, self.document.level + 1);
         let math = self.math.as_mut().unwrap();
         let list = math.finish_list(frame.list, frame.incomplete, None);
-        let field = math.field_from_list(list);
-        math.fill_field(target, field, &mut self.document.nodes)
+        let tail = self.document.math_frames.last().unwrap().list.tail();
+        math.finish_field(target, list, tail, &mut self.document.nodes)
     }
 }
 fn class(code: i32) -> Class {
@@ -258,6 +264,8 @@ fn class(code: i32) -> Class {
 }
 #[path = "math_delimiter_frontend.rs"]
 mod delimiters;
+#[path = "math_forms_frontend.rs"]
+mod forms;
 #[path = "math_fraction_frontend.rs"]
 mod fractions;
 #[path = "math_scan.rs"]

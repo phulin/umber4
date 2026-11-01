@@ -25,12 +25,7 @@ impl Engine<'_> {
             self.back_read(read);
             return Err(Error::Syntax);
         }
-        Ok(Delimiter {
-            small_family: ((code >> 20) & 15) as u8,
-            small_char: ((code >> 12) & 255) as u8,
-            large_family: ((code >> 8) & 15) as u8,
-            large_char: (code & 255) as u8,
-        })
+        Ok(Delimiter::from_code(code))
     }
     pub(super) fn math_left_right(&mut self, right: bool) -> Result<()> {
         if right && self.current_group() != Some(GroupKind::MathLeft) {

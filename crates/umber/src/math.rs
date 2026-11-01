@@ -151,6 +151,16 @@ pub(crate) struct Delimiter {
     pub large_family: u8,
     pub large_char: u8,
 }
+impl Delimiter {
+    pub fn from_code(code: i32) -> Self {
+        Self {
+            small_family: ((code >> 20) & 15) as u8,
+            small_char: ((code >> 12) & 255) as u8,
+            large_family: ((code >> 8) & 15) as u8,
+            large_char: (code & 255) as u8,
+        }
+    }
+}
 #[derive(Clone, Copy, Debug)]
 pub(crate) enum Side {
     Left,

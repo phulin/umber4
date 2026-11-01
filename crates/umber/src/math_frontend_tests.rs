@@ -281,6 +281,8 @@ fn lastbox_rejects_math_in_every_box_context_without_taking_the_destination() {
 
 #[path = "math_delimiter_frontend_tests.rs"]
 mod delimiters;
+#[path = "math_forms_frontend_tests.rs"]
+mod forms;
 #[path = "math_fraction_frontend_tests.rs"]
 mod fractions;
 #[path = "math_frontend_oracle_tests.rs"]

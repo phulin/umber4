@@ -41,6 +41,11 @@ operands; `math_fraction_frontend_tests.rs` and
 `math_fraction_frontend_oracle_tests.rs` cover failure/closure/replay and native
 source geometry/DVI. `math_fraction_ownership_tests.rs` checks bounded rejection
 and the consuming numerator/denominator/boundary splice.
+`math_forms_frontend.rs` roots radical/decoration/accent fields;
+`math_forms_frontend_tests.rs` and `math_forms_frontend_oracle_tests.rs` check
+scanning, accent folding, vcenter construction, replay, and native geometry/DVI.
+`math_forms_frontend_ownership_tests.rs` checks bounded noad rejection, stable-ID
+accent field transfer, and the native vcenter depth cap.
 `math_frontend_tests.rs` covers mode/group/ownership/replay boundaries and
 `math_frontend_oracle_tests.rs` compares unchanged inline sources with native
 box geometry and DVI placements.

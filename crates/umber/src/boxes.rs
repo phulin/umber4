@@ -48,6 +48,7 @@ pub(crate) enum Destination {
     Shipout,
     Append(Scaled),
     MathAppend(Scaled),
+    MathVCenter,
     Register { index: usize, global: bool },
     Insertion(u8),
     Leader(crate::nodes::GlueKind),
@@ -89,55 +90,12 @@ impl Engine<'_> {
     }
     pub(crate) fn make_box(&mut self, operation: i32, destination: Destination) -> Result<()> {
         if (2..=4).contains(&operation) {
-            let spec = if self.scan_keyword(b"to")? {
-                PackSpec::To(self.scan_dimen()?)
-            } else if self.scan_keyword(b"spread")? {
-                PackSpec::Spread(self.scan_dimen()?)
-            } else {
-                PackSpec::Natural
-            };
             let kind = match operation {
                 2 => GroupKind::Hbox,
                 3 => GroupKind::Vbox,
                 _ => GroupKind::Vtop,
             };
-            self.open_group(kind)?;
-            self.opening_brace()?;
-            if kind != GroupKind::Hbox {
-                self.normal_paragraph()?;
-            }
-            let mode = if kind == GroupKind::Hbox {
-                Mode::RestrictedHorizontal
-            } else {
-                Mode::InternalVertical
-            };
-            let outer = std::mem::replace(
-                &mut self.document.text,
-                TextState {
-                    mode,
-                    vertical_mode: mode,
-                    ..TextState::default()
-                },
-            );
-            let outer_mode = outer.mode;
-            self.document.box_frames.push(Frame {
-                outer,
-                spec,
-                destination,
-                kind,
-                level: self.document.level,
-                captured: None,
-                adjusted: kind == GroupKind::Hbox
-                    && matches!(destination, Destination::Append(_))
-                    && outer_mode.is_vertical(),
-            });
-            // SETBOX's afterassignment token is backed above this hook by the
-            // ordinary assignment epilogue, before construction resumes.
-            let hook = if kind == GroupKind::Hbox { 257 } else { 259 };
-            if let Some(owner) = self.document.token_registers[hook].owner.clone() {
-                self.push_tokens(owner, 0)?;
-            }
-            return Ok(());
+            return self.begin_box_group(kind, destination);
         }
         if operation == 5 {
             let node = self.take_last_box()?;
@@ -155,6 +113,55 @@ impl Engine<'_> {
         debug_assert!(list.is_empty());
         self.finish_box(destination, node)
     }
+    pub(crate) fn make_vcenter(&mut self) -> Result<()> {
+        self.begin_box_group(GroupKind::VCenter, Destination::MathVCenter)
+    }
+    fn begin_box_group(&mut self, kind: GroupKind, destination: Destination) -> Result<()> {
+        let spec = if self.scan_keyword(b"to")? {
+            PackSpec::To(self.scan_dimen()?)
+        } else if self.scan_keyword(b"spread")? {
+            PackSpec::Spread(self.scan_dimen()?)
+        } else {
+            PackSpec::Natural
+        };
+        self.open_group(kind)?;
+        self.opening_brace()?;
+        if kind != GroupKind::Hbox {
+            self.normal_paragraph()?;
+        }
+        let mode = if kind == GroupKind::Hbox {
+            Mode::RestrictedHorizontal
+        } else {
+            Mode::InternalVertical
+        };
+        let outer = std::mem::replace(
+            &mut self.document.text,
+            TextState {
+                mode,
+                vertical_mode: mode,
+                ..TextState::default()
+            },
+        );
+        let outer_mode = outer.mode;
+        self.document.box_frames.push(Frame {
+            outer,
+            spec,
+            destination,
+            kind,
+            level: self.document.level,
+            captured: None,
+            adjusted: kind == GroupKind::Hbox
+                && matches!(destination, Destination::Append(_))
+                && outer_mode.is_vertical(),
+        });
+        // SETBOX's afterassignment token is backed above this hook by the
+        // ordinary assignment epilogue, before construction resumes.
+        let hook = if kind == GroupKind::Hbox { 257 } else { 259 };
+        if let Some(owner) = self.document.token_registers[hook].owner.clone() {
+            self.push_tokens(owner, 0)?;
+        }
+        Ok(())
+    }
     pub(crate) fn prepare_box_end(&mut self, kind: GroupKind) -> Result<Option<Scaled>> {
         let Some(frame) = self.document.box_frames.last() else {
             return Ok(None);
@@ -170,9 +177,13 @@ impl Engine<'_> {
             let captured = insertions::Captured::read(self);
             self.document.box_frames.last_mut().unwrap().captured = Some(captured);
         }
-        Ok(Some(
-            self.document.layout_values.dimens[DimenParam::BoxMaxDepth.index()].value,
-        ))
+        let max_depth = if construction == GroupKind::VCenter {
+            // WEB vpack uses max_dimen = 2^30-1, not box_max_depth.
+            Scaled::MAX
+        } else {
+            self.document.layout_values.dimens[DimenParam::BoxMaxDepth.index()].value
+        };
+        Ok(Some(max_depth))
     }
     pub(crate) fn finish_box_group(&mut self, max_depth: Scaled) -> Result<()> {
         let frame = self.document.box_frames.pop().expect("box construction");
@@ -247,6 +258,12 @@ impl Engine<'_> {
         }
     }
     fn finish_box(&mut self, destination: Destination, node: Option<DetachedNode>) -> Result<()> {
+        if let Destination::MathVCenter = destination {
+            if let Some(node) = node {
+                self.append_math_vcenter(node)?;
+            }
+            return Ok(());
+        }
         if let Destination::Leader(alignment) = destination {
             return if let Some(node) = node {
                 self.finish_leader(alignment, node)
