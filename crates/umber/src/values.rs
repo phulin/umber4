@@ -163,6 +163,19 @@ impl Tokens {
         // SAFETY: published positions are initialized.
         unsafe { self.read(position) }
     }
+    /// Visit published words in order without searching for each piece again.
+    pub fn iter(&self) -> impl Iterator<Item = Token> + '_ {
+        self.first.iter().chain(self.rest.iter()).flat_map(|piece| {
+            let length = piece.capacity.min(self.len - piece.start) as usize;
+            // SAFETY: each piece retains its stable page. Only the published
+            // prefix is initialized; unused reservation capacity is excluded.
+            // Borrowing self retains these immutable words through the slice's
+            // lifetime; neighboring reservations occupy disjoint cells.
+            unsafe { std::slice::from_raw_parts(piece.base, length) }
+                .iter()
+                .copied()
+        })
+    }
     // SAFETY: position must be initialized. Its page is retained by self.
     #[inline]
     unsafe fn read(&self, position: u32) -> Token {

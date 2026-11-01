@@ -32,6 +32,29 @@ fn builder_reads_and_publication_cover_only_initialized_words() {
 }
 
 #[test]
+fn iteration_covers_empty_single_and_multiple_pieces() {
+    for count in [0, 1, 65, WORDS + 17] {
+        let mut values = Values::default();
+        let mut builder = values.builder(Class::Transient).unwrap();
+        for index in 0..count {
+            builder.push(Token::other(index as u8)).unwrap();
+        }
+        let owner = builder.finish();
+        if count > WORDS {
+            assert!(!owner.tokens.rest.is_empty());
+            assert_eq!(owner.tokens.last().unwrap().capacity, 17);
+        }
+        drop(values);
+        assert!(
+            owner
+                .tokens
+                .iter()
+                .eq((0..count).map(|i| Token::other(i as u8)))
+        );
+    }
+}
+
+#[test]
 fn builder_id_is_stable_and_unpublished_until_finish() {
     let mut values = Values::default();
     let mut builder = values.builder(Class::Transient).unwrap();
@@ -116,6 +139,7 @@ fn owners_and_unpublished_builders_survive_registry_drop() {
     assert_eq!(completed.tokens.get(0), Token::other(b'B'));
     drop(alias);
     assert_eq!(completed.tokens.get(0), Token::other(b'B'));
+    assert!(completed.tokens.iter().eq([Token::other(b'B')]));
 }
 
 #[test]
@@ -123,6 +147,8 @@ fn published_windows_survive_interleaved_builders_and_reuse() {
     let mut values = Values::default();
     let held = value(&mut values, 127, b'A');
     let (first, end, _) = held.tokens.window(0, 127);
+    let mut tokens = held.tokens.iter();
+    assert_eq!(tokens.next(), Some(Token::other(b'A')));
     let mut a = values.builder(Class::Transient).unwrap();
     let mut b = values.builder(Class::Transient).unwrap();
     for index in 0..8200 {
@@ -140,6 +166,7 @@ fn published_windows_survive_interleaved_builders_and_reuse() {
     for _ in 0..32 {
         drop(value(&mut values, 9000, b'Z'));
     }
+    assert!(tokens.eq(std::iter::repeat_n(Token::other(b'A'), 126)));
     // SAFETY: held owns this immutable window through all neighboring writes
     // and recycling of pages whose values have been released.
     unsafe {
@@ -197,6 +224,9 @@ fn publication_returns_only_the_unused_bump_tail() {
     let mut second = values.builder(Class::Transient).unwrap();
     second.push(Token::other(b'B')).unwrap();
     let first = first.finish();
+    assert!(first.tokens.first.as_ref().unwrap().capacity > first.tokens.len);
+    let mut first_tokens = first.tokens.iter();
+    assert_eq!(first_tokens.next(), Some(Token::other(b'A')));
     assert_eq!(
         values.pool.active[Class::Transient as usize]
             .borrow()
@@ -229,6 +259,7 @@ fn publication_returns_only_the_unused_bump_tail() {
     assert_eq!(first.tokens.get(0), Token::other(b'A'));
     assert_eq!(second.tokens.get(0), Token::other(b'B'));
     assert_eq!(next.tokens.get(0), Token::other(b'C'));
+    assert_eq!(first_tokens.next(), None);
 }
 
 #[test]

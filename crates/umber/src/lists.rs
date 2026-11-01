@@ -148,8 +148,8 @@ impl<'a> Engine<'a> {
                         cmd::THE => match self.the_value()? {
                             Internal::Tokens(owner) => {
                                 if let Some(owner) = owner {
-                                    for position in 0..owner.tokens.len {
-                                        emit.token(self, owner.tokens.get(position))?;
+                                    for token in owner.tokens.iter() {
+                                        emit.token(self, token)?;
                                     }
                                 }
                             }
