@@ -141,6 +141,52 @@ append path; more elaborate byte indexing can follow an actual measured need.
 
 ## 4. Diagnostics and run environment
 
+### Implemented immediate diagnostic writes
+
+`\immediate` reads exactly one expanded token. An ensuing `\write` is executed
+immediately; any other supported non-extension token is backed by identity for
+the ordinary driver. It does not skip spaces or `\relax`, and the lookahead's
+one-read suppression has already been consumed. Deferred `\write`, stream
+open/close operations, and pdfTeX shell stream 18 return `Error::Unsupported`.
+There are no file-stream or shell side effects in this slice.
+
+Immediate writes first scan an unexpanded balanced list, under the ordinary
+absorbing scanner rules. They then expand that retained list at the write's
+execution point. The second scan has a private closing brace and outer
+`endwrite` token, and a source boundary prevents every read, including normal
+scanner exceptions, from consuming the caller's input. A malformed closing
+sequence fails with `Error::Syntax`; forbidden outer/runaway reads keep their
+ordinary scanner error. Expansion uses TeX's mode-zero environment: surrounding
+horizontal/vertical lists are untouched, `\prevdepth` and `\spacefactor` are
+invalid, and last-item quantities are zero. Mode and scanner context restore on
+success and failure. Expansion's legitimate conditional/name effects remain
+document state. The temporary input sources and token owners end before handoff.
+
+Negative streams select log-only output. Streams 0 through 15 are unopened in
+this slice, and select terminal-and-log output, as do nonnegative streams above
+15 other than unsupported stream 18. Each successful write appends one owned
+diagnostic record after expansion and validation have finished. Rendering uses
+the same supported token spelling and printable-byte rules as message output.
+Rendering follows the default `\newlinechar=-1` behavior; the parameter itself
+is outside the current primitive slice.
+
+`Outcome::diagnostics` is one chronological `Vec<Diagnostic>` containing
+`Message` payloads and `Write` payloads with an explicit diagnostic destination.
+It replaces the untagged `messages` field; there is no parallel log copy.
+Engine/checkpoint roots share the same immutable append blocks, now containing
+typed diagnostic records. Restoring replaces the accepted prefix, and published
+outcomes own their bytes independently. The CLI preserves its message rendering,
+prints terminal-and-log writes as lines, and leaves log-only records available
+through `Outcome` without implicitly creating a log file. Exact terminal/log
+selectors and retained file-stream publication beyond this boundary remain
+adapter and later I/O work.
+
+These scanning and immediate-prefix rules follow `new_write_whatsit`,
+`write_out`, and `do_extension` in the [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web),
+with stream 18 reserved by the [pdfTeX extension](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/pdftexdir/pdftex.web).
+
+### Broader diagnostic environment
+
 Diagnostics append to a document-owned result stream with an input-source
 location and printable TeX context. Formatting happens on error or tracing paths,
 not on every token. Retained input sequences and line owners provide context

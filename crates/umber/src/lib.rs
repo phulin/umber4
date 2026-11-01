@@ -41,7 +41,9 @@ mod token;
 mod value_metadata;
 mod values;
 mod vertical;
+mod write;
 pub use checkpoint::{Checkpoint, Progress};
+pub use messages::{Diagnostic, DiagnosticDestination};
 use names::Names;
 pub use output::{GlueSetting, OutputItem, PackedBox, Page, Pages, Placement, Placements};
 use scalars::{Scalars, Target};
@@ -74,8 +76,20 @@ impl std::error::Error for Error {}
 pub(crate) type Result<T> = std::result::Result<T, Error>;
 pub struct Outcome {
     pub counts: [i32; 256],
-    pub messages: Vec<Vec<u8>>,
+    pub diagnostics: Vec<Diagnostic>,
     pub pages: Pages,
+}
+#[cfg(test)]
+impl Outcome {
+    pub(crate) fn message_bytes(&self) -> Vec<Vec<u8>> {
+        self.diagnostics
+            .iter()
+            .filter_map(|diagnostic| match diagnostic {
+                Diagnostic::Message(bytes) => Some(bytes.clone()),
+                Diagnostic::Write { .. } => None,
+            })
+            .collect()
+    }
 }
 /// A source-bound session. Names, token stores and reusable scratch survive restore.
 pub struct Engine<'a> {
@@ -116,7 +130,7 @@ pub(crate) struct Document<'a> {
     pub save: Vec<execute::Save>,
     pub level: u16,
     pub conditions: Vec<condition::Condition>,
-    pub messages: messages::Messages,
+    pub diagnostics: messages::Diagnostics,
     pub par: Token,
     pub complete: bool,
 }
@@ -138,7 +152,7 @@ impl<'a> Engine<'a> {
                 save: Vec::new(),
                 level: 0,
                 conditions: Vec::new(),
-                messages: messages::Messages::default(),
+                diagnostics: messages::Diagnostics::default(),
                 par: Token(0),
                 complete: false,
             },
@@ -162,6 +176,13 @@ impl<'a> Engine<'a> {
             quiescent: true,
         };
         engine.document.bindings[0] = Binding::new(Meaning::RELAX, 0);
+        engine.document.bindings[FROZEN_END_WRITE.id()] = Binding::new(
+            Meaning {
+                command: cmd::END_WRITE,
+                value: 0,
+            },
+            0,
+        );
         for &(command, names) in cmd::PRIMITIVES {
             for (value, name) in names.iter().enumerate() {
                 let id = engine
@@ -192,7 +213,7 @@ impl<'a> Engine<'a> {
         self.run_input()?;
         Ok(Outcome {
             counts: self.document.scalars.counts().map(|i| i.value),
-            messages: self.document.messages.into_vec(),
+            diagnostics: self.document.diagnostics.into_vec(),
             pages: self.document.page.output,
         })
     }

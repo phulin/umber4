@@ -5,7 +5,7 @@ document state;
 `checkpoint.rs` owns the non-consuming outer driver and explicit snapshot roots,
 with replay and ownership tests in `checkpoint_tests.rs`;
 `tables.rs` supplies pooled COW table pages with ownership tests in
-`tables_tests.rs`; `messages.rs` retains immutable message prefixes with tests
+`tables_tests.rs`; `messages.rs` retains immutable chronological diagnostic prefixes with tests
 in `messages_tests.rs`;
 `token.rs` owns compact tokens, the command inventory, definition metadata, and
 source descriptors; `names.rs` owns name lookup and immutable spelling bytes;
@@ -56,6 +56,8 @@ builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
 `tfm_tests.rs` use controlled metrics from `font_test_data.rs`;
 `ligature_entry_tests.rs` checks prepared program entries, while the explicitly
 invoked native adapter in `font_oracle_tests.rs` compares real and controlled TFMs;
+`write.rs` executes bounded immediate diagnostic writes, with native, checkpoint,
+and lifetime coverage in `write_tests.rs`;
 `lists.rs` scans raw/expanded lists into their destinations; `convert.rs` builds
 conversion and case-change output; `expand.rs` dispatches expansion;
 `condition.rs` handles conditional selection/skipping; `execute.rs` handles

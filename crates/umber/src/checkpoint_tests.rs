@@ -8,7 +8,7 @@ fn finish(engine: &mut Engine<'_>) -> Outcome {
 }
 fn same(a: &Outcome, b: &Outcome) {
     assert_eq!(a.counts, b.counts);
-    assert_eq!(a.messages, b.messages);
+    assert_eq!(a.diagnostics, b.diagnostics);
 }
 
 /// Every successful command boundary, including those inside a live invocation,
@@ -66,7 +66,7 @@ fn assignments_groups_conditionals_and_deferred_tokens_replay() {
     assert_eq!(outcome.counts[1], 10);
     assert_eq!(outcome.counts[2], 3);
     assert_eq!(
-        outcome.messages,
+        outcome.message_bytes(),
         [b"LAST/LAST/4".as_slice(), b"GLOBAL/GLOBAL/3", b"10/\\relax"]
     );
 }
@@ -85,7 +85,7 @@ fn active_forwarded_arguments_and_replaced_definitions_replay() {
     let outcome = Engine::new(source.as_bytes()).run().unwrap();
     assert_eq!(outcome.counts[..2], [3, 9]);
     assert_eq!(
-        outcome.messages,
+        outcome.message_bytes(),
         [b"ARG".as_slice(), b"INNER", b"ARG", b"ARG", b"TOKS", b"3/9"]
     );
 }
@@ -103,7 +103,10 @@ fn fragmented_arguments_and_one_read_suppression_replay() {
     );
     replay_boundaries(source.as_bytes());
     assert_eq!(
-        Engine::new(source.as_bytes()).run().unwrap().messages,
+        Engine::new(source.as_bytes())
+            .run()
+            .unwrap()
+            .message_bytes(),
         [
             b"LEFT".as_slice(),
             b"MID",
@@ -129,7 +132,7 @@ fn reused_unsorted_packet_ids_preserve_nested_sources_and_backing() {
     let expected = Engine::new(source.as_bytes()).run().unwrap();
     assert_eq!(expected.counts[0], 3);
     assert_eq!(
-        expected.messages,
+        expected.message_bytes(),
         [b"ARG".as_slice(), b"ARG", b"ARG", b"DONE"]
     );
     let mut engine = Engine::new(source.as_bytes());
@@ -207,7 +210,7 @@ fn deeply_nested_pending_packets_replay() {
     for _ in 0..2 {
         let outcome = finish(&mut engine);
         assert_eq!(outcome.counts[0], 64);
-        assert_eq!(outcome.messages, [b"PAYLOAD/64"]);
+        assert_eq!(outcome.message_bytes(), [b"PAYLOAD/64"]);
         engine.restore(&saved).unwrap();
     }
 }
@@ -226,7 +229,10 @@ fn selected_case_else_and_nested_conditional_phases_replay() {
     );
     replay_boundaries(source.as_bytes());
     assert_eq!(
-        Engine::new(source.as_bytes()).run().unwrap().messages,
+        Engine::new(source.as_bytes())
+            .run()
+            .unwrap()
+            .message_bytes(),
         [b"ELSE".as_slice(), b"ONE", b"CASE-ELSE"]
     );
 }
@@ -339,7 +345,7 @@ fn multi_window_argument_snapshots_survive_both_drop_orders() {
             &Engine::new(source.as_bytes()).run().unwrap(),
         );
         engine.restore(&retained).unwrap();
-        assert_eq!(finish(&mut engine).messages, [b"DONE"]);
+        assert_eq!(finish(&mut engine).message_bytes(), [b"DONE"]);
         if checkpoint_first {
             drop(retained);
             drop(engine);
@@ -363,7 +369,7 @@ fn retained_older_and_younger_roots_release_abandoned_branches() {
     );
     let mut engine = Engine::new(source.as_bytes());
     let old = engine.checkpoint().unwrap();
-    while engine.outcome().messages.is_empty() {
+    while engine.outcome().message_bytes().is_empty() {
         engine.advance(1).unwrap();
     }
     let young = engine.checkpoint().unwrap();

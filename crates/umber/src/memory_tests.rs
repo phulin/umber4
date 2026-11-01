@@ -20,7 +20,7 @@ fn active_definitions_and_forwarded_ranges_survive_replacement() {
     );
     let outcome = Engine::new(source.as_bytes()).run().unwrap();
     assert_eq!(
-        outcome.messages,
+        outcome.message_bytes(),
         [b"OLD".as_slice(), b"NEW", b"OK", b"YES", b"OLD/OLD/LOCAL"]
     );
 }
@@ -54,7 +54,7 @@ fn upstream_reclamation_transitions() {
         .run()
         .unwrap();
     assert_eq!(
-        result.messages,
+        result.message_bytes(),
         [
             b"UMBER:OLD/NEW:END".as_slice(),
             b"UMBER:OLD/GLOBAL:END",

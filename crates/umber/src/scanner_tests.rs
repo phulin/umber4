@@ -17,7 +17,7 @@ fn outer_prefixes_and_normal_context_exceptions_match_native() {
         .filter(|line| !line.is_empty())
         .map(<[u8]>::to_vec)
         .collect();
-    assert_eq!(outcome.messages, expected);
+    assert_eq!(outcome.message_bytes(), expected);
     assert_eq!(outcome.counts[..5], [2, 1, 2, 2, 2]);
 }
 
@@ -30,11 +30,11 @@ fn outer_flags_aliases_and_pending_sources_replay_at_each_boundary() {
         let saved = engine.checkpoint().unwrap();
         let prefix = engine.outcome();
         let finished = complete(&mut engine);
-        assert_eq!(finished.messages, expected.messages);
+        assert_eq!(finished.diagnostics, expected.diagnostics);
         assert_eq!(finished.counts, expected.counts);
         engine.restore(&saved).unwrap();
         assert_eq!(engine.scanner, Scanner::Normal);
-        assert_eq!(engine.outcome().messages, prefix.messages);
+        assert_eq!(engine.outcome().diagnostics, prefix.diagnostics);
         if engine.advance(1).unwrap() == crate::Progress::Complete {
             break;
         }

@@ -24,7 +24,9 @@ impl Engine<'_> {
     }
     #[inline]
     pub(crate) fn check_outer(&self, meaning: Meaning) -> Result<()> {
-        if self.scanner != Scanner::Normal && meaning.is_outer_macro() {
+        if self.scanner != Scanner::Normal
+            && (meaning.is_outer_macro() || meaning.command == cmd::END_WRITE)
+        {
             Err(Error::Outer)
         } else {
             Ok(())

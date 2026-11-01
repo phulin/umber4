@@ -8,7 +8,7 @@ fn complete(engine: &mut Engine<'_>) {
 
 fn equal(a: &Outcome, b: &Outcome) {
     assert_eq!(a.counts, b.counts);
-    assert_eq!(a.messages, b.messages);
+    assert_eq!(a.diagnostics, b.diagnostics);
     assert_eq!(a.pages.len(), b.pages.len());
     for i in 0..a.pages.len() {
         let a = a.pages.get(i).unwrap();

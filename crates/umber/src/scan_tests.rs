@@ -12,7 +12,10 @@ fn expanded_names_preserve_identity_at_buffer_boundaries() {
 \end"
         );
         assert_eq!(
-            Engine::new(source.as_bytes()).run().unwrap().messages,
+            Engine::new(source.as_bytes())
+                .run()
+                .unwrap()
+                .message_bytes(),
             [b"UMBER:OK/Y/N:END".as_slice()],
             "name length {length}"
         );
@@ -32,7 +35,7 @@ fn character_runs_refill_builders_from_files_and_windows() {
 \message{{\a}}\message{{\b}}\message{{\c}}\end"
     );
     let outcome = Engine::new(source.as_bytes()).run().unwrap();
-    assert_eq!(outcome.messages, [text.as_bytes(); 3]);
+    assert_eq!(outcome.message_bytes(), [text.as_bytes(); 3]);
 }
 
 #[test]
@@ -51,7 +54,7 @@ fn window_runs_stop_around_the_bulk_copy_threshold() {
         let outcome = Engine::new(source.as_bytes()).run().unwrap();
         let expanded = format!("{run}!{run}{{{run}}}{run}#1{run}");
         assert_eq!(
-            outcome.messages,
+            outcome.message_bytes(),
             [format!("macro:#1->{expanded}{expanded}").into_bytes()]
         );
     }
@@ -67,7 +70,7 @@ fn file_character_runs_follow_space_states() {
 \\def\\a{body}\\toks0={body}\\message{{\\a}}\\message{{\\the\\toks0}}\\message{body}\\end"
     );
     let outcome = Engine::new(source.as_bytes()).run().unwrap();
-    assert_eq!(outcome.messages, [b" x y z w"; 3]);
+    assert_eq!(outcome.message_bytes(), [b" x y z w"; 3]);
 }
 
 #[test]
@@ -182,7 +185,7 @@ fn macro_integer_arguments_cross_windows() {
         );
         let outcome = Engine::new(source.as_bytes()).run().unwrap();
         assert_eq!(
-            outcome.messages,
+            outcome.message_bytes(),
             vec![b"78X/7X/7X/78X/-7X/7X/7X/78X".to_vec()],
             "padding {padding}"
         );

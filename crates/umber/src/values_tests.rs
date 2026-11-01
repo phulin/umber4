@@ -393,7 +393,7 @@ fn engine_destinations_choose_classes_without_changing_escaped_tokens() {
     let mut engine = crate::Engine::new(source);
     engine.run_input().unwrap();
     assert_eq!(
-        engine.document.messages.copy(),
+        engine.outcome().message_bytes(),
         [b"YES".as_slice(), b"\\name"]
     );
     for owner in engine.document.bindings.owners().chain(

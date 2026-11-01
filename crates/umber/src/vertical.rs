@@ -34,6 +34,13 @@ impl Engine<'_> {
                 Some(Quantity::Dimension(self.document.text.prev_depth))
             }
             cmd::LAST_ITEM => {
+                if self.document.text.mode == Mode::Write {
+                    return Ok(Some(match read.meaning.value {
+                        0 => Quantity::Integer(0),
+                        1 => Quantity::Dimension(Scaled::ZERO),
+                        _ => Quantity::Glue(crate::numeric::Glue::default()),
+                    }));
+                }
                 let list = if self.document.text.mode == Mode::Horizontal {
                     &self.document.text.horizontal
                 } else {

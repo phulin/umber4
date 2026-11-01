@@ -1,4 +1,4 @@
-use crate::token::{CS, NAMED_BASE, NULL_CS, SINGLE_BASE};
+use crate::token::{CS, END_WRITE_ID, NAMED_BASE, NULL_CS, SINGLE_BASE};
 use crate::{Error, Result};
 use std::cell::UnsafeCell;
 use std::mem::MaybeUninit;
@@ -44,6 +44,7 @@ impl Names {
         match id {
             0 => b"relax",
             NULL => b"",
+            id if id == END_WRITE_ID as usize => b"endwrite",
             SINGLE..NAMED => &BYTE_NAMES[(id - SINGLE) & 255],
             // SAFETY: every named entry is published after its complete range
             // is initialized. bytes owns that stable chunk for Names' lifetime;

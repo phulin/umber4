@@ -4,8 +4,11 @@ fn main() {
     match result {
         Ok(outcome) => {
             let mut output = std::io::stdout().lock();
-            for message in outcome.messages {
-                output.write_all(&message).unwrap();
+            for diagnostic in outcome.diagnostics {
+                if diagnostic.destination() == umber::DiagnosticDestination::LogOnly {
+                    continue;
+                }
+                output.write_all(diagnostic.bytes()).unwrap();
                 output.write_all(b"\n").unwrap();
             }
         }

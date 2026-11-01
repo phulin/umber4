@@ -1,18 +1,46 @@
-//! Checkpoints share message bytes in immutable, reusable append blocks.
+//! Checkpoints share chronological diagnostic records in immutable append blocks.
 use crate::value_metadata::{Buffer, Store};
 use std::{cell::RefCell, rc::Rc};
 
 const BLOCK_MESSAGES: usize = 16;
 const CACHED: usize = 16;
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum DiagnosticDestination {
+    LogOnly,
+    TerminalAndLog,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Diagnostic {
+    Message(Vec<u8>),
+    Write {
+        destination: DiagnosticDestination,
+        bytes: Vec<u8>,
+    },
+}
+impl Diagnostic {
+    pub fn bytes(&self) -> &[u8] {
+        match self {
+            Self::Message(bytes) | Self::Write { bytes, .. } => bytes,
+        }
+    }
+    pub fn destination(&self) -> DiagnosticDestination {
+        match self {
+            Self::Message(_) => DiagnosticDestination::TerminalAndLog,
+            Self::Write { destination, .. } => *destination,
+        }
+    }
+}
+
 #[derive(Default)]
 struct Pool {
-    messages: Rc<Store<Vec<u8>>>,
-    free: RefCell<Vec<Rc<Buffer<Vec<u8>>>>>,
+    messages: Rc<Store<Diagnostic>>,
+    free: RefCell<Vec<Rc<Buffer<Diagnostic>>>>,
 }
 #[derive(Clone)]
 struct Block {
-    data: Option<Rc<Buffer<Vec<u8>>>>,
+    data: Option<Rc<Buffer<Diagnostic>>>,
     pool: Rc<Pool>,
 }
 impl Drop for Block {
@@ -29,11 +57,11 @@ impl Drop for Block {
 }
 
 #[derive(Clone)]
-pub(crate) struct Messages {
+pub(crate) struct Diagnostics {
     blocks: Buffer<Block>,
     pool: Rc<Pool>,
 }
-impl Default for Messages {
+impl Default for Diagnostics {
     fn default() -> Self {
         Self {
             blocks: Buffer::new(&Rc::default()),
@@ -41,8 +69,8 @@ impl Default for Messages {
         }
     }
 }
-impl Messages {
-    pub fn push(&mut self, message: Vec<u8>) {
+impl Diagnostics {
+    pub fn push(&mut self, message: Diagnostic) {
         if let Some(block) = self.blocks.last_mut()
             && let Some(messages) = Rc::get_mut(block.data.as_mut().unwrap())
             && messages.len() < BLOCK_MESSAGES
@@ -61,13 +89,13 @@ impl Messages {
             pool: self.pool.clone(),
         });
     }
-    pub fn copy(&self) -> Vec<Vec<u8>> {
+    pub fn copy(&self) -> Vec<Diagnostic> {
         self.blocks
             .iter()
             .flat_map(|b| b.data.as_ref().unwrap().iter().cloned())
             .collect()
     }
-    pub fn into_vec(mut self) -> Vec<Vec<u8>> {
+    pub fn into_vec(mut self) -> Vec<Diagnostic> {
         let mut result = Vec::new();
         while let Some(mut block) = self.blocks.pop() {
             if let Some(messages) = Rc::get_mut(block.data.as_mut().unwrap()) {

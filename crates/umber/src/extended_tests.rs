@@ -138,7 +138,7 @@ fn extended_upstream_fixtures() {
     for &(source, expected) in fixtures {
         let result = Engine::new(source).run().unwrap();
         let expected: Vec<_> = expected.lines().map(|line| line.as_bytes()).collect();
-        assert_eq!(result.messages, expected);
+        assert_eq!(result.message_bytes(), expected);
     }
 }
 
@@ -178,7 +178,10 @@ fn macro_equality_crosses_shifted_chunk_boundaries() {
             expected.push(b"N");
         }
         source.push_str(r"\end");
-        let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+        let actual = Engine::new(source.as_bytes())
+            .run()
+            .unwrap()
+            .message_bytes();
         assert_eq!(actual, expected, "body length {length}");
     }
 }
@@ -221,7 +224,7 @@ fn register_sources_survive_overwrite_and_arena_growth() {
     );
     let result = Engine::new(source.as_bytes()).run().unwrap();
     assert_eq!(
-        result.messages,
+        result.message_bytes(),
         [old.as_bytes(), new.as_bytes(), old.as_bytes()]
     );
 }
@@ -235,7 +238,7 @@ fn calendar_is_host_initialized_and_assignable() {
     );
     engine.set_calendar(754, 7, 10, 2026);
     assert_eq!(
-        engine.run().unwrap().messages,
+        engine.run().unwrap().message_bytes(),
         [b"754/7/10/2026".as_slice(), b"7"]
     );
 }
@@ -278,7 +281,7 @@ fn nested_number_limits_match_in_scanners_and_expanded_lists() {
             if depth > 256 {
                 assert_eq!(result.err(), Some(Error::Capacity), "depth {depth}");
             } else {
-                assert_eq!(result.unwrap().messages, [b"7"], "depth {depth}");
+                assert_eq!(result.unwrap().message_bytes(), [b"7"], "depth {depth}");
             }
         }
     }
@@ -323,7 +326,7 @@ fn generated_buffers_survive_nested_reads_and_reuse() {
     );
     let result = Engine::new(source.as_bytes()).run().unwrap();
     assert_eq!(
-        result.messages,
+        result.message_bytes(),
         [
             format!("macro:->{text}"),
             format!(r"\word ## {{{text}}}"),
@@ -352,7 +355,10 @@ fn stored_list_windows_preserve_nested_and_parameter_boundaries() {
 \edef\actual{{\unexpanded\expandafter{{\stored}}}}
 \message{{\actual}}\end"
     );
-    let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+    let actual = Engine::new(source.as_bytes())
+        .run()
+        .unwrap()
+        .message_bytes();
     for (index, (actual, expected)) in actual
         .iter()
         .zip([format!(r"[{text}/{text}]\keep ##"), raw.clone(), raw])
@@ -384,7 +390,10 @@ fn retained_argument_windows_survive_generated_buffer_growth() {
         source.push_str(&format!(r"\inspect{{{input}}}"));
     }
     source.push_str(r"\end");
-    let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+    let actual = Engine::new(source.as_bytes())
+        .run()
+        .unwrap()
+        .message_bytes();
     let expected: Vec<_> = inputs
         .iter()
         .flat_map(|input| [input.clone(), input.to_ascii_lowercase(), input.clone()])
@@ -406,7 +415,10 @@ fn stored_parameter_substitution_crosses_window_edges() {
 \def\pass#1{{{prefix}#1X#1{suffix}}}
 \edef\actual{{\pass{{{{Y}}}}}}\message{{\actual}}\end"
         );
-        let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+        let actual = Engine::new(source.as_bytes())
+            .run()
+            .unwrap()
+            .message_bytes();
         let expected = format!("{prefix}{{Y}}X{{Y}}{suffix}");
         assert_eq!(actual.len(), 1);
         assert_eq!(actual[0].len(), expected.len(), "prefix length {length}");
@@ -430,7 +442,10 @@ fn delimited_windows_cross_chunks_and_argument_sources() {
 \def\across#1#2{{\grab#1#2}}\across{{{text}aa}}{{aba}}
 \def\stored{{\grab{{{text}}}aaba}}\stored\end"
         );
-        let actual = Engine::new(source.as_bytes()).run().unwrap().messages;
+        let actual = Engine::new(source.as_bytes())
+            .run()
+            .unwrap()
+            .message_bytes();
         let overlapping = format!("{text}a/{text}a").into_bytes();
         let grouped = format!("{text}/{text}").into_bytes();
         assert_eq!(actual.len(), 4);
@@ -546,7 +561,7 @@ fn grouped_character_runs_preserve_following_tokens() {
             let expected = format!("{payload}B/ID/{payload}/IE/{payload}F/IG");
             let outcome = Engine::new(source.as_bytes()).run().unwrap();
             assert_eq!(
-                outcome.messages,
+                outcome.message_bytes(),
                 [expected.as_bytes()],
                 "{padding}/{length}"
             );
@@ -574,7 +589,7 @@ PAR\finish:END}}\end",
             );
             let result = Engine::new(source.as_bytes()).run().unwrap();
             assert_eq!(
-                result.messages,
+                result.message_bytes(),
                 [
                     b"UMBER:STORED:END".to_vec(),
                     b"UMBER:FILE:END".to_vec(),

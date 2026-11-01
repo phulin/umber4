@@ -342,6 +342,19 @@ impl Engine<'_> {
                     suppress: false,
                 });
             };
+            if let Source::WriteBoundary { position } = source {
+                let token = match *position {
+                    0 => Token::character(2, b'}'),
+                    1 => FROZEN_END_WRITE,
+                    _ => return Err(Error::Syntax),
+                };
+                *position += 1;
+                return Ok(Raw {
+                    token,
+                    origin: None,
+                    suppress: false,
+                });
+            }
             if let Source::Inline {
                 tokens,
                 position,
@@ -540,7 +553,7 @@ impl Engine<'_> {
                         && c.end_position == c.span_end
                         && self.span_for(c.argument, c.span_index + 1).is_none()
                 }
-                None => false,
+                Some(Source::WriteBoundary { .. }) | None => false,
             };
             if !done {
                 break;

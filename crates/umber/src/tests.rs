@@ -10,7 +10,7 @@ fn register_meanings_cover_every_index_and_token_identity() {
     let expected: Vec<_> = (0..=255)
         .map(|index| format!("UMBER:\\count{index}/\\toks{index}/Y:END").into_bytes())
         .collect();
-    assert_eq!(outcome.messages, expected);
+    assert_eq!(outcome.message_bytes(), expected);
 }
 
 const BOOT: &str = "\\catcode123=1 \\catcode125=2 \\catcode35=6 \\catcode94=7\\relax\n";
@@ -22,7 +22,7 @@ fn run(program: &str) -> crate::Outcome {
 }
 fn message(program: &str, expected: &[u8]) {
     let result = run(program);
-    assert_eq!(result.messages, vec![expected.to_vec()], "{program}");
+    assert_eq!(result.message_bytes(), vec![expected.to_vec()], "{program}");
 }
 #[test]
 fn meaning_and_body_lifetimes() {
@@ -206,7 +206,7 @@ fn active_definition_cursors_survive_chunk_and_header_growth() {
     );
     let result = run(&program);
     assert_eq!(
-        result.messages,
+        result.message_bytes(),
         vec![b"9".to_vec(), replacement.into_bytes()]
     );
     let huge = format!(r"\def\a{{{}\count0=7\relax}}\a", r"\relax".repeat(10000));
@@ -245,7 +245,7 @@ fn grouped_argument_windows() {
         br"UMBER:A\L B\R C:END",
         b"UMBER:A[B]C:END",
     ];
-    assert_eq!(result.messages, expected);
+    assert_eq!(result.message_bytes(), expected);
 }
 
 #[test]
@@ -273,7 +273,7 @@ fn shared_upstream_interactions() {
         .lines()
         .map(|line| line.as_bytes().to_vec())
         .collect();
-    assert_eq!(result.messages, expected);
+    assert_eq!(result.message_bytes(), expected);
 }
 
 #[test]
@@ -297,7 +297,7 @@ fn inline_argument_values_and_promotion() {
         b"UMBER:A:END",
         b"UMBER:+:END",
     ];
-    assert_eq!(result.messages, expected);
+    assert_eq!(result.message_bytes(), expected);
 }
 
 #[test]
@@ -319,7 +319,7 @@ fn stored_integer_windows_and_terminators() {
         b"UMBER:12T:END",
         b"UMBER:159:END",
     ];
-    assert_eq!(result.messages, expected);
+    assert_eq!(result.message_bytes(), expected);
 
     let zeros = "0".repeat(8197);
     let source = format!(r"\def\digits{{{zeros}17}}\count0=\digits\relax");
@@ -351,7 +351,7 @@ fn discarded_arguments_still_follow_scanning_rules() {
         b"UMBER:E:END",
         b"UMBER:X:END",
     ];
-    assert_eq!(result.messages, expected);
+    assert_eq!(result.message_bytes(), expected);
 }
 
 #[test]
@@ -421,7 +421,7 @@ fn real_hash_fragment_collisions_keep_distinct_meanings() {
     .run()
     .unwrap();
     assert_eq!(
-        result.messages,
+        result.message_bytes(),
         [
             b"UMBER:LEFT/RIGHT/LEFT/RIGHT:END".as_slice(),
             b"UMBER:LEFT/RIGHT:END".as_slice(),

@@ -164,12 +164,13 @@ once. Repeating a warmed fixed workload reuses these stores, including nested
 argument packets and long-name scratch. First long-name spill reserves the inline prefix plus its overflow byte together,
 so it starts in the 128-byte size class and reuses that capacity on later calls.
 
-Each `\message` constructs an independently owned byte vector. Internal message
-history retains those vectors in shared immutable blocks of at most sixteen
-messages; appending to a shared tail starts a new block. Checkpoints share the
-blocks without copying message bytes. The public result remains `Vec<Vec<u8>>`:
-`outcome()` copies the retained messages into independent vectors, while consuming
-publication transfers uniquely owned vectors and copies shared ones. These
+Each `\message` and completed immediate diagnostic write constructs one owned
+byte vector. Internal diagnostic history retains those vectors and their
+message/write routing tags in shared immutable blocks of at most sixteen
+records; appending to a shared tail starts a new block. Checkpoints share the
+blocks without copying payload bytes. The public result is `Vec<Diagnostic>`:
+`outcome()` copies retained records into independently owned payloads, while
+consuming publication transfers uniquely owned records and copies shared ones. These
 execution and publication allocations remain part of the contract. Backend byte
 stores remain proposals. The optional whole-file lexer prototype is separate from
 the engine and keeps its own benchmark buffers.

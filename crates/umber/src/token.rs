@@ -2,14 +2,16 @@ pub(crate) const CS: u32 = 1 << 24;
 pub(crate) const PARAM: u32 = 1 << 23;
 pub(crate) const SINGLE: u32 = u32::MAX - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
+pub(crate) const FROZEN_END_WRITE: Token = Token(CS | END_WRITE_ID);
 pub(crate) const CHUNK_BITS: u32 = 12;
 // Control-sequence IDs follow TeX's layout: the frozen relax, the empty name,
-// one single-character name and one active character per byte, then interned
-// multi-byte names.
+// one single-character name and one active character per byte, the private
+// endwrite stopper, then interned multi-byte names.
 pub(crate) const NULL_CS: u32 = 1;
 pub(crate) const SINGLE_BASE: u32 = 2;
 pub(crate) const ACTIVE_BASE: u32 = SINGLE_BASE + 256;
-pub(crate) const NAMED_BASE: u32 = ACTIVE_BASE + 256;
+pub(crate) const END_WRITE_ID: u32 = ACTIVE_BASE + 256;
+pub(crate) const NAMED_BASE: u32 = END_WRITE_ID + 1;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -227,6 +229,8 @@ pub(crate) mod cmd {
         DEL_CODE = 127 => [b"delcode"] assignment;
         MATH_CHAR_DEF = 128 => [b"mathchardef"] assignment;
         MATH_GIVEN = 129 => [];
+        EXTENSION = 130 => [b"openout", b"write", b"closeout", b"special", b"immediate"];
+        END_WRITE = 131 => [] expandable;
     }
 }
 
@@ -498,20 +502,23 @@ pub(crate) enum Source {
         len: u8,
         suppress: bool,
     },
+    WriteBoundary {
+        position: u8,
+    },
 }
 impl Source {
     #[inline(always)]
     pub fn cursor(&self) -> Option<&Cursor> {
         match self {
             Self::Tokens(cursor) => Some(cursor),
-            Self::Inline { .. } => None,
+            Self::Inline { .. } | Self::WriteBoundary { .. } => None,
         }
     }
     #[inline(always)]
     pub fn cursor_mut(&mut self) -> Option<&mut Cursor> {
         match self {
             Self::Tokens(cursor) => Some(cursor),
-            Self::Inline { .. } => None,
+            Self::Inline { .. } | Self::WriteBoundary { .. } => None,
         }
     }
 }

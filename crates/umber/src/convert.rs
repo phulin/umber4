@@ -128,6 +128,10 @@ impl Engine<'_> {
         emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
         let meaning = read.meaning;
+        if meaning.command == cmd::END_WRITE {
+            self.escaped_text(b"outer", emit)?;
+            return self.emit_text(b" macro:->", emit);
+        }
         if meaning.is_macro() {
             let id = meaning.value as usize;
             let owner = self.values.get(id as u32);

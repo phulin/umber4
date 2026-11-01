@@ -13,6 +13,7 @@ pub(crate) enum Mode {
     #[default]
     Vertical,
     Horizontal,
+    Write,
 }
 pub(crate) struct TextState {
     pub mode: Mode,

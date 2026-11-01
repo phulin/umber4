@@ -11,7 +11,7 @@ fn same_source_numeric_fixture_has_independently_checked_values() {
         .run()
         .unwrap();
     assert_eq!(
-        result.messages,
+        result.message_bytes(),
         [
             "UMBER:80909/1.23457pt/0.0pt/0.5pt/8/16:END",
             "UMBER:4736286/786432/1864679/186467/65781/70124/841489:END",

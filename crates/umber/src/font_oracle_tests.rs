@@ -185,7 +185,7 @@ impl Oracle {
         source.push_str("\\end\n");
         let mut e = Engine::new(source.as_bytes());
         e.register_tfm(b"test", bytes).unwrap();
-        let expected = e.run().unwrap().messages;
+        let expected = e.run().unwrap().message_bytes();
         let log = self.run(bytes, &source);
         let observed: Vec<Vec<u8>> = log
             .split("UMBER:")

@@ -15,8 +15,8 @@ complete outer commands and returns `Progress::Boundary` or `Progress::Complete`
 driver boundary (including startup and completion). An error leaves the attempt ineligible until a retained root is
 restored. `restore` rejects checkpoints from another session before changing live
 state. Source bytes remain borrowed for the engine/checkpoint lifetime; the
-checkpoint does not borrow the engine. `outcome` publishes a replacement message
-prefix, register values, and an immutable page prefix. Message/count buffers may
+checkpoint does not borrow the engine. `outcome` publishes a replacement diagnostic
+prefix, register values, and an immutable page prefix. Diagnostic/count buffers may
 be mutated independently; page/font records are shared immutable owners, and all
 results can outlive the engine. `run` remains the
 consuming convenience adapter. A command budget is a coarse handoff request, not a bound on
@@ -65,11 +65,16 @@ reconstructs raw token windows from retained owners. Definitions and argument
 token words are shared without flattening or per-token reference counting.
 Snapshots retain their backing stores and can safely outlive the engine.
 
+Diagnostic roots retain one chronological prefix of message and immediate-write
+records, including each write's terminal/log destination. Write rescanning and
+its private input boundary finish before a checkpoint can be taken; restoring
+releases the abandoned suffix without replaying its records to an external sink.
+
 The prepared input line is copied with its lexical position/state, including any
 committed superscript translations. Source bytes remain borrowed and unchanged.
-Message history shares immutable append blocks; appending after a checkpoint
-starts a new block rather than copying old message bytes. Log and snapshot
-descriptors use pooled backing; new message byte vectors retain the existing
+Diagnostic history shares immutable append blocks; appending after a checkpoint
+starts a new block rather than copying old payload bytes. Log and snapshot
+descriptors use pooled backing; new diagnostic byte vectors retain the existing
 durable-output allocation behavior, so repeated message production is not
 allocation-free. Explicit host publication copies shared bytes as necessary.
 Repeated restore

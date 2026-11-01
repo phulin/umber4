@@ -66,7 +66,7 @@ fn discarded_top_material_updates_caches_and_kern_waits_for_successor() {
     let mut e=Engine::new(br"\catcode123=1\catcode125=2\vskip3pt plus2fil\par\message{\the\lastskip}\kern7pt\par\message{\the\lastkern}\penalty9\message{\the\lastpenalty}\end");
     complete(&mut e);
     assert_eq!(
-        e.outcome().messages,
+        e.outcome().message_bytes(),
         vec![
             b"3.0pt plus 2.0fil".to_vec(),
             b"7.0pt".to_vec(),
@@ -100,7 +100,7 @@ fn frozen_geometry_prevdepth_and_forced_penalty_survive_page_reset() {
     let out = e.outcome();
     let b = out.pages.get(0).unwrap().boxes()[0];
     assert_eq!((b.height, b.depth), (30 * 65536, 2 * 65536));
-    assert_eq!(out.messages, vec![b"-12345/10000/7.0pt".to_vec()]);
+    assert_eq!(out.message_bytes(), vec![b"-12345/10000/7.0pt".to_vec()]);
     assert_eq!(out.pages.get(0).unwrap().output_penalty, -12345);
 }
 #[test]
@@ -327,7 +327,7 @@ fn page_quantities_are_ungrouped_but_masked_while_empty() {
     let mut e=Engine::new(br"\catcode123=1\catcode125=2{\pagegoal=4pt}\message{\the\pagegoal/\the\pagetotal}\vsize=20pt\hrule height2pt width1pt\par{\pagegoal=7pt}\message{\the\pagegoal}\penalty-10000\message{\the\pagegoal/\the\pagetotal}\end");
     complete(&mut e);
     assert_eq!(
-        e.outcome().messages,
+        e.outcome().message_bytes(),
         vec![
             b"16383.99998pt/0.0pt".to_vec(),
             b"7.0pt".to_vec(),
@@ -402,7 +402,7 @@ fn new_internal_quantities_share_integer_dimension_and_glue_scanning() {
     assert_eq!(e.outcome().counts[0], 20 * 65536);
     assert_eq!(e.outcome().counts[1], 7 * 65536);
     assert_eq!(
-        e.outcome().messages,
+        e.outcome().message_bytes(),
         vec![
             b"-12345/1073741823/2.0pt".to_vec(),
             b"3.0pt plus 2.0fil".to_vec()

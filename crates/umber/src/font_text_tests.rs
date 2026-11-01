@@ -84,7 +84,7 @@ fn loaded_fonts_grouping_mutation_and_restore() {
 #[test]
 fn font_dimensions_units_and_global_parameter_effects() {
     let o=engine(br"\font\f=test \f \dimen0=1em \dimen1=1ex {\fontdimen2\f=7pt\hyphenchar\f=64}\message{\the\dimen0;\the\dimen1;\the\fontdimen2\f;\the\hyphenchar\f;\the\fontcharwd\f97}\end").run().unwrap();
-    assert_eq!(o.messages[0], b"10.0pt;4.49998pt;7.0pt;64;7.5pt");
+    assert_eq!(o.message_bytes()[0], b"10.0pt;4.49998pt;7.0pt;64;7.5pt");
     let mut e = engine(br"\font\f=test \font\g=test at 12pt \fontdimen8\f=1pt\end");
     assert_eq!(e.advance(99), Err(Error::Number));
 }
@@ -373,7 +373,7 @@ fn same_source_initex_font_defaults() {
         .run()
         .unwrap();
     assert_eq!(
-        o.messages,
+        o.message_bytes(),
         [
             b"UMBER:0.0pt/0.0pt/45/-1:END".as_slice(),
             b"UMBER:0.0pt/0.0pt/0/0/999/1000:END",

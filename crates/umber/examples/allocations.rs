@@ -58,8 +58,10 @@ fn main() {
     let result = umber::Engine::new(&bytes).run();
     ACTIVE.store(false, Relaxed);
     let outcome = result.expect("execute source");
-    for message in outcome.messages {
-        println!("{}", String::from_utf8_lossy(&message));
+    for diagnostic in outcome.diagnostics {
+        if diagnostic.destination() == umber::DiagnosticDestination::TerminalAndLog {
+            println!("{}", String::from_utf8_lossy(diagnostic.bytes()));
+        }
     }
     println!(
         "allocations={} requested_bytes={} peak_bytes={}",

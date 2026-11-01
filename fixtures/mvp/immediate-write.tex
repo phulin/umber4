@@ -1,0 +1,23 @@
+\catcode123=1 \catcode125=2 \catcode35=6 \catcode64=11\relax
+\message{UMBER:M:START:END}
+\countdef\m@ne=22 \m@ne=-1\relax\def\wlog{\immediate\write\m@ne}
+\def\value{OLD}\wlog{UMBER:W:LOG-\value:END}
+\let\direct=\write\def\emit{\direct}\let\now=\immediate
+\now\emit16{UMBER:W:TERMINAL:END}
+\protected\def\kept{EXPANDED}\immediate\write0{UMBER:W:ZERO-\kept:END}
+\def\discard#1{OK}\immediate\write15{UMBER:W:FIFTEEN-\discard\undefined:END}
+\immediate\write17{UMBER:W:SEVENTEEN:END}
+\immediate\write19{UMBER:W:NINETEEN:END}
+\immediate\write-999{UMBER:W:NEGATIVE:END}
+\immediate\noexpand\write16{UMBER:W:UNEXPANDABLE:END}
+\immediate\immediate\write16{UMBER:W:REPEATED:END}
+\def\probe{\message{UMBER:M:CONSUMED-SUPPRESSION:END}}
+\immediate\noexpand\probe
+\immediate\relax\message{UMBER:M:RELAX:END}
+\toks0={\later}\outer\def\later{BAD}
+\immediate\write16{UMBER:W:DIRECT-\the\toks0:END}
+\penalty7\message{UMBER:M:LAST-\the\lastpenalty:END}
+\immediate\write16{UMBER:W:LAST-\the\lastpenalty/\the\lastkern/\the\lastskip:END}
+\message{UMBER:M:RESTORED-\the\lastpenalty:END}
+\immediate\write16{UMBER:W:TRUE-\iftrue OK:END}\fi
+\message{UMBER:M:FINISHED:END}\end

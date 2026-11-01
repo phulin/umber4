@@ -79,7 +79,7 @@ fn math_code_limits_meanings_aliases_and_group_levels() {
         let source = format!("{GROUPS}{body}\\end");
         let out = Engine::new(source.as_bytes()).run().unwrap();
         assert_eq!(
-            out.messages,
+            out.message_bytes(),
             expected.iter().map(|s| s.as_bytes()).collect::<Vec<_>>()
         );
     }
@@ -229,7 +229,10 @@ fn upstream_math_codes_defaults_limits_and_scoped_meanings() {
     }
     for body in std::iter::once(defaults).chain(valid_state_cases()) {
         let source = format!("{GROUPS}{body}\\end");
-        let expected = Engine::new(source.as_bytes()).run().unwrap().messages;
+        let expected = Engine::new(source.as_bytes())
+            .run()
+            .unwrap()
+            .message_bytes();
         let (status, log) = oracle.run(&body);
         assert!(status.success(), "{log}");
         let actual: Vec<_> = log

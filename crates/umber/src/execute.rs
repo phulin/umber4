@@ -224,6 +224,7 @@ impl Engine<'_> {
                 Ok(())
             }
             cmd::CHANGE_CASE if !global => self.change_case(read.meaning.value as usize),
+            cmd::EXTENSION if !global => self.extension(read.meaning.value),
             cmd::MESSAGE if !global => {
                 self.with_scanner(crate::scanner::Scanner::Absorbing, |engine| {
                     engine.opening_brace()?;
@@ -232,7 +233,10 @@ impl Engine<'_> {
                         engine.print_token(token, &mut bytes);
                         Ok(())
                     })?;
-                    engine.document.messages.push(bytes);
+                    engine
+                        .document
+                        .diagnostics
+                        .push(crate::Diagnostic::Message(bytes));
                     Ok(())
                 })
             }
@@ -377,7 +381,7 @@ impl Engine<'_> {
             }
         }
     }
-    fn print_token(&mut self, token: Token, output: &mut Vec<u8>) {
+    pub(crate) fn print_token(&mut self, token: Token, output: &mut Vec<u8>) {
         self.token_text(token, true, |_, byte| {
             Self::print_byte(byte, output);
             Ok(())

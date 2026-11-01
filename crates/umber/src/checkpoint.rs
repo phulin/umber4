@@ -4,7 +4,7 @@ use crate::{
     condition::Condition,
     execute::Save,
     input::FileInput,
-    messages::Messages,
+    messages::Diagnostics,
     scalars::Scalars,
     tables::{Bindings, Table},
     token::*,
@@ -58,7 +58,7 @@ pub struct Checkpoint<'a> {
     save: Buffer<Save>,
     level: u16,
     conditions: Buffer<Condition>,
-    messages: Messages,
+    diagnostics: Diagnostics,
     par: Token,
     complete: bool,
 }
@@ -133,11 +133,11 @@ impl<'a> Engine<'a> {
         Ok(Progress::Boundary)
     }
 
-    /// Publish register values and the current replacement message prefix.
+    /// Publish register values and the current replacement diagnostic prefix.
     pub fn outcome(&self) -> Outcome {
         Outcome {
             counts: self.document.scalars.counts().map(|i| i.value),
-            messages: self.document.messages.copy(),
+            diagnostics: self.document.diagnostics.copy(),
             pages: self.document.page.output.clone(),
         }
     }
@@ -203,6 +203,7 @@ impl<'a> Engine<'a> {
                     owns_packet: c.owns_packet.map(saved_id),
                 }
             }
+            Source::WriteBoundary { .. } => unreachable!("write rescan at checkpoint"),
         }));
         let d = &self.document;
         let mut save = Buffer::new(&self.checkpoint_stores.saves);
@@ -226,7 +227,7 @@ impl<'a> Engine<'a> {
             save,
             level: d.level,
             conditions,
-            messages: d.messages.clone(),
+            diagnostics: d.diagnostics.clone(),
             par: d.par,
             complete: d.complete,
         })
@@ -341,7 +342,7 @@ impl<'a> Engine<'a> {
             save,
             level,
             conditions,
-            messages,
+            diagnostics,
             par,
             complete,
             sources: _,
@@ -361,7 +362,7 @@ impl<'a> Engine<'a> {
         *level = checkpoint.level;
         conditions.clear();
         conditions.extend_from_slice(&checkpoint.conditions);
-        messages.clone_from(&checkpoint.messages);
+        diagnostics.clone_from(&checkpoint.diagnostics);
         *par = checkpoint.par;
         *complete = checkpoint.complete;
         self.quiescent = true;

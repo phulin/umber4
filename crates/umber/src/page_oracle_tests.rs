@@ -114,7 +114,7 @@ impl Oracle {
             .map(|s| s.split(":END").next().unwrap().to_owned())
             .collect();
         let expected_messages: Vec<_> = outcome
-            .messages
+            .message_bytes()
             .iter()
             .filter_map(|b| {
                 std::str::from_utf8(b)
