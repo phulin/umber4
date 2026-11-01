@@ -9,6 +9,7 @@ pub(crate) enum Quantity {
     Integer(i32),
     Dimension(Scaled),
     Glue(Glue),
+    MuGlue(Glue),
 }
 impl Engine<'_> {
     /// Read quad/x-height from the restored current descriptor; never ask a host.
@@ -26,6 +27,14 @@ impl Engine<'_> {
             let target = self.glue_target(read)?;
             Ok(Some(Quantity::Glue(
                 self.document.layout_values.glues[target].value,
+            )))
+        } else if matches!(
+            read.meaning.command,
+            cmd::MUSKIP | cmd::MUSKIP_REF | cmd::MU_GLUE_PARAM
+        ) {
+            let target = self.mu_glue_target(read)?;
+            Ok(Some(Quantity::MuGlue(
+                self.document.layout_values.mu_glues[target].value,
             )))
         } else {
             Ok(None)
@@ -89,9 +98,14 @@ pub(crate) fn quantity_text(value: Quantity, out: &mut [u8; 128]) -> usize {
                 emit(b);
             }
         }
-        Quantity::Glue(g) => {
+        Quantity::Glue(g) | Quantity::MuGlue(g) => {
+            let unit = if matches!(value, Quantity::MuGlue(_)) {
+                b"mu"
+            } else {
+                b"pt"
+            };
             print_scaled(g.width, &mut emit);
-            for &b in b"pt" {
+            for &b in unit {
                 emit(b);
             }
             for (amount, order, prefix) in [
@@ -103,7 +117,12 @@ pub(crate) fn quantity_text(value: Quantity, out: &mut [u8; 128]) -> usize {
                         emit(b);
                     }
                     print_scaled(amount, &mut emit);
-                    for &b in order.suffix() {
+                    let suffix = if order == crate::numeric::GlueOrder::Normal {
+                        unit.as_slice()
+                    } else {
+                        order.suffix()
+                    };
+                    for &b in suffix {
                         emit(b);
                     }
                 }

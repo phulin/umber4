@@ -218,13 +218,14 @@ impl Engine<'_> {
         }
         if matches!(
             meaning.command,
-            cmd::COUNT_REF | cmd::TOKS_REF | cmd::DIMEN_REF | cmd::SKIP_REF
+            cmd::COUNT_REF | cmd::TOKS_REF | cmd::DIMEN_REF | cmd::SKIP_REF | cmd::MUSKIP_REF
         ) {
             self.escaped_text(
                 match meaning.command {
                     cmd::COUNT_REF => b"count".as_slice(),
                     cmd::TOKS_REF => b"toks".as_slice(),
                     cmd::DIMEN_REF => b"dimen".as_slice(),
+                    cmd::MUSKIP_REF => b"muskip".as_slice(),
                     _ => b"skip".as_slice(),
                 },
                 emit,

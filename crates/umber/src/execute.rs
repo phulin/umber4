@@ -6,6 +6,7 @@ pub(crate) enum Save {
     Integer(Target, Integer),
     Dimension(usize, crate::layout_values::DimenSlot),
     Glue(usize, crate::layout_values::GlueSlot),
+    MuGlue(usize, crate::layout_values::GlueSlot),
     Tokens(usize, TokenValue),
     After(Token),
     Font(Integer),
@@ -88,7 +89,8 @@ impl Engine<'_> {
             | cmd::MATH_CHAR_DEF
             | cmd::TOKS_DEF
             | cmd::DIMEN_DEF
-            | cmd::SKIP_DEF => {
+            | cmd::SKIP_DEF
+            | cmd::MUSKIP_DEF => {
                 let id = self.scan_cs()?;
                 self.assign_meaning(id, Meaning::RELAX, assignment_global);
                 self.scan_equals()?;
@@ -106,6 +108,7 @@ impl Engine<'_> {
                     cmd::TOKS_DEF => cmd::TOKS_REF,
                     cmd::DIMEN_DEF => cmd::DIMEN_REF,
                     cmd::SKIP_DEF => cmd::SKIP_REF,
+                    cmd::MUSKIP_DEF => cmd::MUSKIP_REF,
                     cmd::MATH_CHAR_DEF => cmd::MATH_GIVEN,
                     _ => cmd::CHAR_GIVEN,
                 };
@@ -140,7 +143,10 @@ impl Engine<'_> {
             | cmd::DIMEN_PARAM
             | cmd::SKIP
             | cmd::SKIP_REF
-            | cmd::GLUE_PARAM => self.layout_assignment(read, assignment_global),
+            | cmd::GLUE_PARAM
+            | cmd::MUSKIP
+            | cmd::MUSKIP_REF
+            | cmd::MU_GLUE_PARAM => self.layout_assignment(read, assignment_global),
             cmd::FONT | cmd::SELECT_FONT | cmd::FONT_DIMEN | cmd::FONT_INT | cmd::SPACE_FACTOR => {
                 self.font_assignment(read, assignment_global)
             }
@@ -184,6 +190,9 @@ impl Engine<'_> {
                         | cmd::SKIP
                         | cmd::SKIP_REF
                         | cmd::GLUE_PARAM
+                        | cmd::MUSKIP
+                        | cmd::MUSKIP_REF
+                        | cmd::MU_GLUE_PARAM
                 ) {
                     self.layout_arithmetic(register, operation, assignment_global)
                 } else {
@@ -368,6 +377,12 @@ impl Engine<'_> {
                 }
                 Save::Glue(index, old) => {
                     let slot = &mut self.document.layout_values.glues[index];
+                    if slot.level != 0 {
+                        *slot = old;
+                    }
+                }
+                Save::MuGlue(index, old) => {
+                    let slot = &mut self.document.layout_values.mu_glues[index];
                     if slot.level != 0 {
                         *slot = old;
                     }

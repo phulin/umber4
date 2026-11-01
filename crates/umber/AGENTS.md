@@ -24,6 +24,8 @@ replay, error, and lifetime coverage in `scanner_tests.rs`;
 `scalars.rs` stores integer tables and their group levels;
 `math_code_tests.rs` checks math-code initialization, scoped assignments,
 math-character meanings, checkpoints, and the explicit native state oracle;
+`math_glue_tests.rs` checks math-glue quantity boundaries, native arithmetic and
+formatting, scoped bindings, and checkpoint replay;
 `parameter_tests.rs` covers initialization parameters and newline rendering across
 messages, writes, groups, snapshots, and native comparisons;
 `numeric.rs` supplies scaled arithmetic/glue and `numeric_tests.rs` checks it;

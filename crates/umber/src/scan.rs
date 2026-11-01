@@ -102,6 +102,7 @@ impl Engine<'_> {
                 crate::quantities::Quantity::Integer(v) => v,
                 crate::quantities::Quantity::Dimension(v) => v.0,
                 crate::quantities::Quantity::Glue(v) => v.width.0,
+                crate::quantities::Quantity::MuGlue(_) => return Err(Error::Number),
             });
         }
         match read.meaning.command {
@@ -229,6 +230,7 @@ impl Engine<'_> {
                 crate::quantities::Quantity::Integer(v) => v,
                 crate::quantities::Quantity::Dimension(v) => v.0,
                 crate::quantities::Quantity::Glue(v) => v.width.0,
+                crate::quantities::Quantity::MuGlue(_) => return Err(Error::Number),
             }
         } else {
             let radix = if read.token == Token::other(b'\'') {

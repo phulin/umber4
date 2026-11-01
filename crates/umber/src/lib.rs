@@ -285,6 +285,8 @@ mod dimension_tests;
 #[cfg(test)]
 mod math_code_tests;
 #[cfg(test)]
+mod math_glue_tests;
+#[cfg(test)]
 mod parameter_tests;
 
 #[cfg(test)]

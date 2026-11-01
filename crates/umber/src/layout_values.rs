@@ -20,6 +20,7 @@ pub(crate) const REGISTERS: usize = 256;
 pub(crate) struct LayoutValues {
     pub dimens: Table<DimenSlot>,
     pub glues: Table<GlueSlot>,
+    pub mu_glues: Table<GlueSlot>,
     pub prepared_mag: Option<i32>,
     pub shape: ShapeSlot,
 }
@@ -38,6 +39,7 @@ impl Default for LayoutValues {
         Self {
             dimens: Table::new(REGISTERS),
             glues: Table::new(REGISTERS),
+            mu_glues: Table::new(REGISTERS),
             prepared_mag: None,
             shape: ShapeSlot::default(),
         }

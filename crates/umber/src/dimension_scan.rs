@@ -25,6 +25,14 @@ impl Engine<'_> {
             _ => Err(Error::Number),
         }
     }
+    pub(crate) fn mu_glue_target(&mut self, read: Read) -> Result<usize> {
+        match read.meaning.command {
+            cmd::MUSKIP => self.scan_index(),
+            cmd::MUSKIP_REF => Ok(read.meaning.value as usize),
+            cmd::MU_GLUE_PARAM => Ok(REGISTERS + read.meaning.value as usize),
+            _ => Err(Error::Number),
+        }
+    }
     pub(crate) fn scan_signs(&mut self) -> Result<(Read, bool)> {
         let mut negative = false;
         loop {
@@ -38,9 +46,9 @@ impl Engine<'_> {
     }
     pub(crate) fn scan_dimen(&mut self) -> Result<Scaled> {
         let (read, negative) = self.scan_signs()?;
-        Ok(self.dimension_from(read, negative, false)?.0)
+        Ok(self.dimension_from::<false>(read, negative, false)?.0)
     }
-    fn dimension_from(
+    fn dimension_from<const MU: bool>(
         &mut self,
         read: Read,
         negative: bool,
@@ -48,15 +56,19 @@ impl Engine<'_> {
     ) -> Result<(Scaled, GlueOrder)> {
         if let Some(value) = self.quantity(read)? {
             return match value {
+                Quantity::Dimension(_) | Quantity::Glue(_) if MU => Err(Error::Number),
+                Quantity::MuGlue(_) if !MU => Err(Error::Number),
                 Quantity::Dimension(v) => Ok((
                     self.signed_dimension(i64::from(v.0), negative)?,
                     GlueOrder::Normal,
                 )),
-                Quantity::Glue(g) => Ok((
+                Quantity::Glue(g) | Quantity::MuGlue(g) => Ok((
                     self.signed_dimension(i64::from(g.width.0), negative)?,
                     GlueOrder::Normal,
                 )),
-                Quantity::Integer(v) => self.dimension_units(i64::from(v), 0, negative, infinite),
+                Quantity::Integer(v) => {
+                    self.dimension_units::<MU>(i64::from(v), 0, negative, infinite)
+                }
             };
         }
         let mut integer = 0i64;
@@ -77,7 +89,7 @@ impl Engine<'_> {
         } else if !matches!(read.token, t if t == Token::other(b'.') || t == Token::other(b',')) {
             self.back(read.token);
             integer = i64::from(self.scan_int()?);
-            return self.dimension_units(integer, 0, negative, infinite);
+            return self.dimension_units::<MU>(integer, 0, negative, infinite);
         }
         if next.token == Token::other(b'.') || next.token == Token::other(b',') {
             let mut digits = [0; 17];
@@ -97,12 +109,12 @@ impl Engine<'_> {
         if next.meaning.command != cmd::SPACE {
             self.back(next.token);
         }
-        self.dimension_units(integer, fraction, negative, infinite)
+        self.dimension_units::<MU>(integer, fraction, negative, infinite)
     }
     fn signed_dimension(&self, value: i64, negative: bool) -> Result<Scaled> {
         Scaled::checked(if negative { -value } else { value })
     }
-    fn dimension_units(
+    fn dimension_units<const MU: bool>(
         &mut self,
         mut integer: i64,
         mut fraction: i32,
@@ -127,6 +139,11 @@ impl Engine<'_> {
             let read = self.nonspace(true)?;
             if let Some(value) = self.quantity(read)? {
                 let unit = match value {
+                    Quantity::MuGlue(g) if MU => g.width.0,
+                    Quantity::Integer(_) | Quantity::Dimension(_) | Quantity::Glue(_) if MU => {
+                        return Err(Error::Number);
+                    }
+                    Quantity::MuGlue(_) => return Err(Error::Number),
                     Quantity::Integer(v) => v,
                     Quantity::Dimension(v) => v.0,
                     Quantity::Glue(g) => g.width.0,
@@ -136,46 +153,52 @@ impl Engine<'_> {
                 return Ok((self.signed_dimension(value, negative)?, order));
             }
             self.back(read.token);
-            let font_unit = if self.scan_keyword(b"em")? {
-                Some(self.font_unit(false))
-            } else if self.scan_keyword(b"ex")? {
-                Some(self.font_unit(true))
-            } else {
-                None
-            };
-            if let Some(unit) = font_unit {
-                self.dimension_space()?;
-                let value =
-                    integer * i64::from(unit.0) + i64::from(unit.0) * i64::from(fraction) / 65536;
-                return Ok((self.signed_dimension(value, negative)?, order));
-            }
-            if self.scan_keyword(b"true")? {
-                let mag = self.prepare_magnification()?;
-                Self::convert_unit(&mut integer, &mut fraction, 1000, i64::from(mag));
-            }
-            if !self.scan_keyword(b"pt")? {
-                let mut ratio = None;
-                for (name, num, den) in [
-                    (b"in", 7227, 100),
-                    (b"pc", 12, 1),
-                    (b"cm", 7227, 254),
-                    (b"mm", 7227, 2540),
-                    (b"bp", 7227, 7200),
-                    (b"dd", 1238, 1157),
-                    (b"cc", 14856, 1157),
-                ] {
-                    if self.scan_keyword(name)? {
-                        ratio = Some((num, den));
-                        break;
-                    }
-                }
-                if let Some((num, den)) = ratio {
-                    Self::convert_unit(&mut integer, &mut fraction, num, den);
-                } else if self.scan_keyword(b"sp")? {
-                    self.dimension_space()?;
-                    return Ok((self.signed_dimension(integer, negative)?, order));
-                } else {
+            if MU {
+                if !self.scan_keyword(b"mu")? {
                     return Err(Error::Number);
+                }
+            } else {
+                let font_unit = if self.scan_keyword(b"em")? {
+                    Some(self.font_unit(false))
+                } else if self.scan_keyword(b"ex")? {
+                    Some(self.font_unit(true))
+                } else {
+                    None
+                };
+                if let Some(unit) = font_unit {
+                    self.dimension_space()?;
+                    let value = integer * i64::from(unit.0)
+                        + i64::from(unit.0) * i64::from(fraction) / 65536;
+                    return Ok((self.signed_dimension(value, negative)?, order));
+                }
+                if self.scan_keyword(b"true")? {
+                    let mag = self.prepare_magnification()?;
+                    Self::convert_unit(&mut integer, &mut fraction, 1000, i64::from(mag));
+                }
+                if !self.scan_keyword(b"pt")? {
+                    let mut ratio = None;
+                    for (name, num, den) in [
+                        (b"in", 7227, 100),
+                        (b"pc", 12, 1),
+                        (b"cm", 7227, 254),
+                        (b"mm", 7227, 2540),
+                        (b"bp", 7227, 7200),
+                        (b"dd", 1238, 1157),
+                        (b"cc", 14856, 1157),
+                    ] {
+                        if self.scan_keyword(name)? {
+                            ratio = Some((num, den));
+                            break;
+                        }
+                    }
+                    if let Some((num, den)) = ratio {
+                        Self::convert_unit(&mut integer, &mut fraction, num, den);
+                    } else if self.scan_keyword(b"sp")? {
+                        self.dimension_space()?;
+                        return Ok((self.signed_dimension(integer, negative)?, order));
+                    } else {
+                        return Err(Error::Number);
+                    }
                 }
             }
         }
@@ -219,9 +242,21 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn scan_glue(&mut self) -> Result<Glue> {
+        self.scan_glue_kind::<false>()
+    }
+    pub(crate) fn scan_mu_glue(&mut self) -> Result<Glue> {
+        self.scan_glue_kind::<true>()
+    }
+    pub(crate) fn scan_glue_kind<const MU: bool>(&mut self) -> Result<Glue> {
         let (read, negative) = self.scan_signs()?;
         let width = match self.quantity(read)? {
-            Some(Quantity::Glue(g)) => return Ok(if negative { g.negate() } else { g }),
+            Some(Quantity::Glue(_)) | Some(Quantity::Dimension(_)) if MU => {
+                return Err(Error::Number);
+            }
+            Some(Quantity::MuGlue(_)) if !MU => return Err(Error::Number),
+            Some(Quantity::Glue(g)) | Some(Quantity::MuGlue(g)) => {
+                return Ok(if negative { g.negate() } else { g });
+            }
             // Unlike scan_dimen, scan_glue does not range-check a direct
             // internal dimension; register addition may have exceeded max_dimen.
             Some(Quantity::Dimension(v)) => {
@@ -231,8 +266,11 @@ impl Engine<'_> {
                     v
                 }
             }
-            Some(Quantity::Integer(v)) => self.dimension_units(i64::from(v), 0, negative, false)?.0,
-            None => self.dimension_from(read, negative, false)?.0,
+            Some(Quantity::Integer(v)) => {
+                self.dimension_units::<MU>(i64::from(v), 0, negative, false)?
+                    .0
+            }
+            None => self.dimension_from::<MU>(read, negative, false)?.0,
         };
         let mut glue = Glue {
             width,
@@ -240,11 +278,11 @@ impl Engine<'_> {
         };
         if self.scan_keyword(b"plus")? {
             let (read, negative) = self.scan_signs()?;
-            (glue.stretch, glue.stretch_order) = self.dimension_from(read, negative, true)?;
+            (glue.stretch, glue.stretch_order) = self.dimension_from::<MU>(read, negative, true)?;
         }
         if self.scan_keyword(b"minus")? {
             let (read, negative) = self.scan_signs()?;
-            (glue.shrink, glue.shrink_order) = self.dimension_from(read, negative, true)?;
+            (glue.shrink, glue.shrink_order) = self.dimension_from::<MU>(read, negative, true)?;
         }
         Ok(glue.canonical())
     }

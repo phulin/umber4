@@ -25,13 +25,29 @@ filll orders. Only the zero components upstream normalizes change order; a
 component that cancels to zero can retain an infinite order. A wholly zero glue
 value is canonical. Infinite orders are compared before combining amounts. Addition, multiplication, and division preserve upstream's
 component overflow limits and truncation, including signed glue components.
-Math glue and dimension/glue expression primitives remain unsupported.
+Math glue uses the same inline component representation with a distinct quantity
+kind and COW binding table: 256 `\muskip` registers, `\muskipdef` aliases, and
+`\thinmuskip`, `\medmuskip`, and `\thickmuskip`, initially zero. Its finite
+components use scaled `mu` units; scanning does not consult a font or convert
+them to points. Only stretch and shrink accept `fil`, `fill`, and `filll`.
+Dimension/glue expression primitives remain unsupported.
+
+A direct math-glue operand copies the whole specification, including all three
+component signs, and does not consume a following `plus` or `minus`. Used as an
+internal math dimension or as a unit after a coefficient, it supplies only its
+width. An internal integer can supply a coefficient before `mu`; an internal
+unit must itself be math glue. Ordinary dimensions/glue and math glue cannot be
+mixed, including zero values or integer coercion through `\number`. These
+incompatible-unit cases fail rather than applying TeX's interactive recovery.
+`\the` prints finite math-glue components with `mu` and infinite components with
+their infinity order. Assignment, arithmetic, grouping, and checkpoints preserve
+the kind; mathematical conversion into physical dimensions remains separate.
 
 Dimension and glue registers and parameters use distinct typed COW tables with
 assignment levels. Saved values live in typed group-save records. Local, global,
 identical-assignment, alias, and after-assignment behavior uses the existing
-assignment rules; checkpoint capture/restore includes both typed roots. Integer
-table regions derive from explicit counts rather than hardcoded offsets.
+assignment rules; checkpoint capture/restore includes all three typed roots.
+Integer table regions derive from explicit counts rather than hardcoded offsets.
 `\mag` and its first-use frozen value belong to restored document state.
 Font-relative units read the current font's quad and x-height through a narrow
 getter. The initial null font supplies zero for both, as in INITEX.
@@ -43,8 +59,8 @@ categories. The command inventory explicitly classifies expandable commands;
 numeric command codes no longer reserve every code above 63 for expansion.
 
 The supported numeric primitives are `\dimen`, `\dimendef`, `\skip`,
-`\skipdef`, `\ifdim`, `\mag`, and their existing assignment/arithmetic and
-conversion paths. Register indices are 0–255. New dimension parameters are
+`\skipdef`, `\muskip`, `\muskipdef`, `\ifdim`, `\mag`, and their assignment,
+arithmetic, and conversion paths. Register indices are 0–255. Dimension parameters are
 `\hsize`, `\vsize`, `\maxdepth`, `\parindent`, `\hangindent`,
 `\emergencystretch`, `\lineskiplimit`, `\hfuzz`, `\vfuzz`, `\overfullrule`,
 `\splitmaxdepth`, `\boxmaxdepth`, `\delimitershortfall`, `\nulldelimiterspace`,

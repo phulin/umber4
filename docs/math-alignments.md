@@ -36,6 +36,10 @@ sections below remain proposals. The compatibility reference is TeX's
 `def_code`, `shorthand_def`, and `scan_something_internal` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
 
+Math-glue registers, parameters, and typed `mu` scanning/formatting are executable
+initialization state, as defined in [layout-foundation.md](layout-foundation.md).
+Their values retain math units until a future math-layout consumer converts them.
+
 ## 1. Math construction
 
 Math execution builds a list of TeX atoms, commonly called noads, directly in
