@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 #[test]
 #[ignore = "native typed-math oracle: set UMBER_PDFTEX explicitly"]
 fn upstream_math_cramped_styles_signed_parameters_boxes_and_missing_glyphs() {
@@ -60,7 +61,7 @@ fn upstream_math_cramped_styles_signed_parameters_boxes_and_missing_glyphs() {
                     .nodes
                     .alloc(nodes::Kind::Kern {
                         width: Scaled(7 * 65536),
-                        explicit: true,
+                        kind: KernKind::Explicit,
                     })
                     .unwrap();
                 e.document.nodes.append(&mut contents, n);

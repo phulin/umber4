@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 use crate::{nodes::ReleaseScratch, numeric::Glue};
 
 #[derive(Clone, Copy)]
@@ -410,7 +411,7 @@ fn pack(case: &Case) -> Geometry {
             }),
             Item::Kern(w) => e.document.nodes.alloc(Kind::Kern {
                 width: Scaled(w),
-                explicit: true,
+                kind: KernKind::Explicit,
             }),
             Item::Glue(spec) => e.document.nodes.alloc(Kind::Glue {
                 spec,

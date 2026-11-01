@@ -1,4 +1,5 @@
 //! TeX's cut-prefix reconstruction over bounded original character codes.
+use crate::nodes::KernKind;
 use crate::{
     Result,
     nodes::{DetachedNode, Kind, List, NodeId, NodeStore, ReleaseScratch},
@@ -213,7 +214,7 @@ impl Reconstituter<'_> {
                 if let Some(width) = kern.filter(|w| w.0 != 0) {
                     let node = self.alloc(Kind::Kern {
                         width,
-                        explicit: false,
+                        kind: KernKind::Normal,
                     })?;
                     self.nodes.append(output, node);
                 }

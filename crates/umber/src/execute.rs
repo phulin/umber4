@@ -45,6 +45,13 @@ impl Save {
 
 impl Engine<'_> {
     pub(crate) fn execute(&mut self, read: Read) -> Result<()> {
+        self.execute_with_set_box_permission(read, true)
+    }
+    pub(crate) fn execute_with_set_box_permission(
+        &mut self,
+        read: Read,
+        set_box_allowed: bool,
+    ) -> Result<()> {
         if read.meaning.command == cmd::RELAX {
             return Ok(());
         }
@@ -87,6 +94,11 @@ impl Engine<'_> {
                     self.document.page.insert_penalties = value;
                 }
                 Ok(())
+            }
+            cmd::SET_BOX if !set_box_allowed => {
+                self.scan_index()?;
+                self.scan_equals()?;
+                Err(Error::Syntax)
             }
             cmd::SET_BOX => self.set_box(assignment_global),
             cmd::BOX_DIMEN => self.assign_box_dimension(read.meaning.value),

@@ -273,6 +273,7 @@ pub(crate) mod cmd {
         MATH_LIMITS = 159 => [b"displaylimits", b"limits", b"nolimits"];
         MKERN = 160 => [b"mkern"];
         IGNORE_SPACES = 162 => [b"ignorespaces"];
+        ACCENT = 164 => [b"accent"];
         UNSUPPORTED_MATH = 161 => [b"mathchoice", b"over", b"atop", b"above", b"overwithdelims", b"atopwithdelims", b"abovewithdelims", b"left", b"right", b"middle", b"delimiter", b"radical", b"mathaccent", b"overline", b"underline", b"vcenter", b"mskip", b"nonscript", b"eqno", b"leqno", b"halign", b"valign"];
     }
 }

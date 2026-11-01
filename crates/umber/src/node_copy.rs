@@ -122,10 +122,10 @@ impl NodeStore {
                 },
                 limit,
             )?,
-            Kind::Kern { width, explicit } => self.alloc_with_limit(
+            Kind::Kern { width, kind } => self.alloc_with_limit(
                 Kind::Kern {
                     width: *width,
-                    explicit: *explicit,
+                    kind: *kind,
                 },
                 limit,
             )?,

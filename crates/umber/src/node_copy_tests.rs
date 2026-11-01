@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 use crate::{
     nodes::{CELLS, GlueKind, GlueSet, GlueSign},
     numeric::{Glue, GlueOrder, Scaled},
@@ -34,7 +35,7 @@ fn fixture(store: &mut NodeStore) -> List {
         &mut components,
         Kind::Kern {
             width: Scaled(-7),
-            explicit: false,
+            kind: KernKind::Normal,
         },
     );
     append(
@@ -92,7 +93,7 @@ fn fixture(store: &mut NodeStore) -> List {
         &mut root,
         Kind::Kern {
             width: Scaled(i32::MIN),
-            explicit: true,
+            kind: KernKind::Explicit,
         },
     );
     append(

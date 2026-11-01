@@ -1,4 +1,5 @@
 //! Owned external/internal text lists and paragraph handoff.
+use crate::nodes::KernKind;
 use crate::{
     Engine, Error, Result,
     language::Language,
@@ -9,6 +10,8 @@ use crate::{
     tfm::ratio,
     token::*,
 };
+#[path = "text_accent.rs"]
+mod accent;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub(crate) enum Mode {
     #[default]
@@ -179,6 +182,7 @@ impl Engine<'_> {
                     | cmd::CONTROL_SPACE
                     | cmd::NO_BOUNDARY
                     | cmd::HSKIP
+                    | cmd::ACCENT
             )
         {
             self.back_read(read);
@@ -186,6 +190,7 @@ impl Engine<'_> {
             return Ok(true);
         }
         match cmd {
+            cmd::ACCENT => self.make_text_accent()?,
             cmd::ITALIC_CORRECTION => self.append_italic_correction()?,
             11 | 12 | cmd::CHAR_GIVEN | cmd::CHAR => {
                 if self.document.text.mode.is_vertical() {
@@ -264,7 +269,7 @@ impl Engine<'_> {
                 let width = self.scan_dimen()?;
                 let node = self.document.nodes.alloc(Kind::Kern {
                     width,
-                    explicit: true,
+                    kind: KernKind::Explicit,
                 })?;
                 if self.document.text.mode.is_horizontal() {
                     self.document
@@ -305,7 +310,7 @@ impl Engine<'_> {
             .italic;
         self.append_horizontal(Kind::Kern {
             width,
-            explicit: true,
+            kind: KernKind::Explicit,
         })
     }
     pub(crate) fn back_read(&mut self, read: Read) {

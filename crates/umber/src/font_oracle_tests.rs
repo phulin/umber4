@@ -1,4 +1,5 @@
 //! Explicit native adapter; ordinary tests need neither files nor a TeX install.
+use crate::nodes::KernKind;
 use crate::{
     Engine,
     font_test_data::{basic, tfm, tfm_range},
@@ -56,10 +57,15 @@ fn shape(e: &Engine<'_>) -> Vec<String> {
                 components(e, list),
                 if *right_boundary { "|" } else { "" }
             )),
-            Kind::Kern { width, explicit } => lines.push(format!(
-                ".\\kern{}{}",
-                if *explicit { " " } else { "" },
-                scaled(*width)
+            Kind::Kern { width, kind } => lines.push(format!(
+                ".\\kern{}{}{}",
+                if *kind != KernKind::Normal { " " } else { "" },
+                scaled(*width),
+                if *kind == KernKind::Accent {
+                    " (for accent)"
+                } else {
+                    ""
+                },
             )),
             Kind::Glue { spec, subtype } => {
                 let label = match subtype {

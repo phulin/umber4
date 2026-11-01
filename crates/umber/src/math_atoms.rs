@@ -1,5 +1,6 @@
 //! Ordinary ligatures, nucleus continuations, scripts, and displayed limits.
 use super::*;
+use crate::nodes::KernKind;
 impl Conversion<'_, '_, '_> {
     pub(super) fn make_ord(&mut self, q: MathId, style: Style, list: &mut MathList) -> Result<()> {
         loop {
@@ -56,7 +57,7 @@ impl Conversion<'_, '_, '_> {
                     .kern(256 * (op as usize - 128) + rem as usize);
                 let node = self.engine.document.nodes.alloc(nodes::Kind::Kern {
                     width,
-                    explicit: false,
+                    kind: KernKind::Normal,
                 })?;
                 let mut inserted = MathList::default();
                 self.math.append(

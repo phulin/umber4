@@ -1,4 +1,5 @@
 //! Visited-glue word eligibility and synchronized discretionary reconstruction.
+use crate::nodes::KernKind;
 use crate::{
     Result,
     fonts::Fonts,
@@ -118,7 +119,8 @@ fn candidate(
             }
             Kind::Ligature { .. }
             | Kind::Kern {
-                explicit: false, ..
+                kind: KernKind::Normal,
+                ..
             } => None,
             Kind::Language(new) => {
                 *language = *new;
@@ -214,7 +216,8 @@ fn candidate(
                 word.boundary = if *right_boundary { font_boundary } else { 256 };
             }
             Kind::Kern {
-                explicit: false, ..
+                kind: KernKind::Normal,
+                ..
             } => {
                 word.last = s;
                 word.boundary = font_boundary;
@@ -237,14 +240,18 @@ fn candidate(
             Kind::Character { .. }
             | Kind::Ligature { .. }
             | Kind::Kern {
-                explicit: false, ..
+                kind: KernKind::Normal,
+                ..
             } => {}
             Kind::Language(_)
             | Kind::Glue { .. }
             | Kind::Penalty(_)
             | Kind::Insertion(_)
             | Kind::Adjustment(_)
-            | Kind::Kern { explicit: true, .. } => return Some(word),
+            | Kind::Kern {
+                kind: KernKind::Explicit | KernKind::Accent,
+                ..
+            } => return Some(word),
             _ => return None,
         }
         s = node.next;

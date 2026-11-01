@@ -3,6 +3,7 @@ use super::{
     tests::{BOOT, add, character, metrics},
     *,
 };
+use crate::nodes::KernKind;
 use crate::{
     Engine, PackedBox, Placement, nodes,
     numeric::{Scaled, print_scaled},
@@ -380,7 +381,7 @@ fn upstream_math_atoms_styles_ligatures_scripts_operators_and_choices() {
                 .nodes
                 .alloc(nodes::Kind::Kern {
                     width: Scaled(7 * 65536),
-                    explicit: true,
+                    kind: KernKind::Explicit,
                 })
                 .unwrap();
             e.document.nodes.append(&mut content, kern);

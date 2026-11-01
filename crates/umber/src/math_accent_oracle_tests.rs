@@ -3,6 +3,7 @@ use super::super::{
     forms_tests::{chars, kind, metric},
 };
 use super::*;
+use crate::nodes::KernKind;
 fn body(accent_family: u8, accent_char: u8, nucleus: &str, scripts: u8) -> String {
     format!(
         r"\mathaccent{} {nucleus}{}{}\mathchar102 ",
@@ -129,7 +130,7 @@ fn upstream_math_accents_width_chains_skew_scripts_and_missing_glyphs() {
                     .nodes
                     .alloc(nodes::Kind::Kern {
                         width: Scaled(7 * 65536),
-                        explicit: true,
+                        kind: KernKind::Explicit,
                     })
                     .unwrap();
                 e.document.nodes.append(&mut list, n);

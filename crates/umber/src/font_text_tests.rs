@@ -1,3 +1,4 @@
+use crate::nodes::KernKind;
 use crate::{
     Engine, Error, Progress,
     font_test_data::{basic, tfm, tfm_range},
@@ -80,7 +81,7 @@ fn italic_correction_uses_tail_glyph_font_and_retains_zero_explicit_kerns() {
         let node = e.document.nodes.get(p);
         if let Kind::Kern {
             width,
-            explicit: true,
+            kind: KernKind::Explicit,
         } = node.kind
         {
             kerns.push(width.0);
@@ -98,12 +99,12 @@ fn italic_correction_ignores_empty_and_noncharacter_tails_and_rejects_vertical()
     let mut kerns = Vec::new();
     while !p.is_null() {
         let node = e.document.nodes.get(p);
-        if let Kind::Kern { width, explicit } = node.kind {
-            kerns.push((width.0, explicit));
+        if let Kind::Kern { width, kind } = node.kind {
+            kerns.push((width.0, kind));
         }
         p = node.next;
     }
-    assert_eq!(kerns, [(2 * 65536, true)]);
+    assert_eq!(kerns, [(2 * 65536, KernKind::Explicit)]);
     for source in [
         br"\/\end".as_slice(),
         br"\catcode123=1\catcode125=2\setbox0=\vbox{\/}\end",
@@ -178,8 +179,8 @@ fn ligatures_kerns_expansion_char_and_hyphen_components() {
     while !p.is_null() {
         let n = e.document.nodes.get(p);
         match &n.kind {
-            Kind::Kern { width, explicit } => {
-                assert!(!explicit);
+            Kind::Kern { width, kind } => {
+                assert_eq!(*kind, KernKind::Normal);
                 assert_eq!(width.0, -65537);
                 kerns += 1;
             }
@@ -372,7 +373,7 @@ fn boundary_programs_precede_original_character_range_validation() {
                         e.document.nodes.get(head).kind,
                         Kind::Kern {
                             width: Scaled(-65537),
-                            explicit: false
+                            kind: KernKind::Normal
                         }
                     ));
                 } else {

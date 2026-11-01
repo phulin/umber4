@@ -73,8 +73,11 @@ native ordering, ownership, replay, failure cleanup, and executable packing;
 `insertion_tests.rs` checks native page/packing behavior, failure boundaries, and replay;
 `box_transfer.rs` owns unboxing, last-box extraction, and axis-specific shifts;
 `vertical_box_tests.rs` covers their native fixtures, internal paragraphs, and replay;
-`text.rs` owns external/restricted modes and horizontal/vertical lists, `paragraph.rs` owns
-paragraph parameters, pooled shape roots, and reusable search storage,
+`text.rs` owns external/restricted modes and horizontal/vertical lists;
+`text_accent.rs` constructs ordinary text accents with intervening assignments
+and protective kerns, with scanner/ownership/replay tests in `text_accent_tests.rs`
+and native lists/DVI comparisons in `text_accent_oracle_tests.rs`.
+`paragraph.rs` owns paragraph parameters, pooled shape roots, and reusable search storage,
 `hyphenation.rs` owns shared pattern/exception roots and bounded lookup;
 `hyphenation_scan.rs` reads expanded pattern/exception assignments, with native,
 lookup, ownership, and replay coverage in `hyphenation_tests.rs` and

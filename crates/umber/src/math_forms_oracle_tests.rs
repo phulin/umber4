@@ -1,5 +1,6 @@
 use super::super::forms_tests::{chars, delimiter, kind, metric, recipe_font, surround};
 use super::*;
+use crate::nodes::KernKind;
 fn del_source(d: Delimiter) -> String {
     format!(
         "\\delimiter\"{:X} ",
@@ -100,7 +101,7 @@ fn upstream_math_fractions_decorations_radicals_and_delimiters() {
                     .nodes
                     .alloc(nodes::Kind::Kern {
                         width: Scaled(7 * 65536),
-                        explicit: true,
+                        kind: KernKind::Explicit,
                     })
                     .unwrap();
                 e.document.nodes.append(&mut content, n);

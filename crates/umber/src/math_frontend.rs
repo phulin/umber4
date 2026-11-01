@@ -1,4 +1,5 @@
 //! Inline semantic owners remain distinct from ordinary box construction.
+use crate::nodes::KernKind;
 use crate::{
     Engine, Error, Result,
     boxes::Destination,
@@ -117,7 +118,7 @@ impl Engine<'_> {
                 let width = self.scan_dimen()?;
                 self.math_material(nodes::Kind::Kern {
                     width,
-                    explicit: true,
+                    kind: KernKind::Explicit,
                 })?;
             }
             cmd::MKERN => {
@@ -126,7 +127,7 @@ impl Engine<'_> {
             }
             cmd::ITALIC_CORRECTION => self.math_material(nodes::Kind::Kern {
                 width: Scaled::ZERO,
-                explicit: false,
+                kind: KernKind::Normal,
             })?,
             cmd::HSKIP => {
                 let spec = self.scan_skip(read.meaning.value)?;
@@ -147,7 +148,7 @@ impl Engine<'_> {
                 self.make_box(read.meaning.value, Destination::MathAppend(Scaled::ZERO))?;
             }
             cmd::BOX_SHIFT => self.shift_box(read.meaning.value)?,
-            cmd::PAR | cmd::VSKIP | cmd::RULE => return Err(Error::Syntax),
+            cmd::PAR | cmd::VSKIP | cmd::RULE | cmd::ACCENT => return Err(Error::Syntax),
             cmd::UNBOX | cmd::INSERT_ADJUST | cmd::START_PAR => return Err(Error::Unsupported),
             _ => return Ok(false),
         }

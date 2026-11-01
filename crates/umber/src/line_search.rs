@@ -1,4 +1,5 @@
 //! TeX try_break over recycled index-linked active and delta records.
+use crate::nodes::KernKind;
 use crate::{
     Engine, Result,
     nodes::{Kind, NodeId},
@@ -77,7 +78,7 @@ impl Search<'_, '_> {
                 Kind::Penalty(_) => {}
                 Kind::Kern {
                     width: w,
-                    explicit: true,
+                    kind: KernKind::Explicit,
                 }
                 | Kind::MathBoundary { width: w, .. } => width[0] = width[0].wrapping_sub(w.0),
                 _ => break,

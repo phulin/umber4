@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 use crate::{Engine, Error, Progress, font_test_data, token::cmd};
 
 fn source(settings: &str, body: &str) -> String {
@@ -101,7 +102,7 @@ fn automatic_kern_discretionary_replaces_nodes_and_preserves_original_version() 
                     .get(e.document.nodes.get(node.next).next)
                     .kind,
                 Kind::Kern {
-                    explicit: false,
+                    kind: KernKind::Normal,
                     ..
                 }
             ));

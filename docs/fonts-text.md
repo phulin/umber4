@@ -134,8 +134,39 @@ including a zero correction; an empty or other tail appends nothing. Selecting a
 different current font does not change the preceding glyph's correction. Missing
 input glyphs leave the previous tail in place, and explicit-hyphen discretionaries
 can prevent a correction in unrestricted mode. Space factor is unchanged.
-Vertical use is illegal. The separate math frontend must implement TeX's normal
-zero kern for `\/` in math; ordinary horizontal correction does not shape math.
+Vertical use is illegal. The math frontend emits a normal zero kern for `\/`;
+ordinary horizontal correction does not shape math.
+
+Text `\accent` starts a paragraph in either vertical mode, with `\everypar`
+executed before its operand is scanned. In horizontal modes it scans an 8-bit
+accent code and captures the selected glyph, its width, the font's x-height and
+slant. A missing accent leaves the following input and space factor alone.
+Otherwise expanded spaces and relax commands are skipped and assignments may
+intervene before the base character. Font and font-parameter changes are effective
+there; the accent's captured metrics remain fixed. `\setbox` is forbidden in this
+assignment context after its index and optional equals have been scanned.
+The first non-assignment supplies a letter, other character, character definition
+or `\char` operand; another command is returned to input. A missing or absent base
+leaves the accent unshifted. A present accent resets the space factor to 1000.
+
+These glyphs bypass the input ligature cursor, space-factor codes and language
+fixup. With both glyphs present, the accent is centered using their widths and
+slants and shifted vertically by accent x-height minus base height. Unequal
+heights use a natural singleton hbox, without italic width or `\everyhbox`.
+Two protective accent kerns make the total advance equal the base width. Their
+placement uses binary64 arithmetic in TeX's operation order, with signed nearest
+rounding away from zero and saturation at positive/negative maximum integer.
+The second kern uses native wrapping word subtraction. Accent kerns are
+distinct from normal TFM/math kerns and explicit `\kern`/horizontal `\/` kerns;
+they survive line-leading pruning and cannot be skipped during word collection.
+Text accents do not use the separate math-accent conversion path. Their use in
+math is an explicit error in the noninteractive execution profile.
+
+The two kern widths are `delta` and `-a-delta`, where
+`delta = round((w-a)/2 + h*t - x*s)`: `a`, `x`, and `s` are the captured accent
+width, x-height and slant; `w`, `h`, and `t` are the base width, height and slant
+after assignments. Slants are font parameter 1 divided by 65536. When `h != x`,
+the accent's singleton hbox has shift `x-h`.
 
 Spaces freeze inline glue at execution, using current font parameters, spaceskip,
 xspaceskip, and exact space-factor arithmetic. Control space uses the normal

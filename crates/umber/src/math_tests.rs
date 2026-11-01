@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 use crate::{
     Engine,
     nodes::{self, BoxData},
@@ -238,7 +239,7 @@ fn math_binary_cancellation_crosses_choice_and_material_and_penalty_is_immediate
                 .nodes
                 .alloc(nodes::Kind::Kern {
                     width: Scaled(1),
-                    explicit: true,
+                    kind: KernKind::Explicit,
                 })
                 .unwrap();
             m.append(&mut l, Kind::Material(n), &mut e.document.nodes)

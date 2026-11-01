@@ -1,4 +1,5 @@
 //! TeX's ligature cursor: original components live in node lists, not glyph heaps.
+use crate::nodes::KernKind;
 use crate::{
     Engine, Result,
     nodes::{DetachedNode, Kind, List, ReleaseScratch},
@@ -211,7 +212,7 @@ impl Engine<'_> {
                         let width = metrics.kern(256 * (op as usize - 128) + rem as usize);
                         self.append_horizontal(Kind::Kern {
                             width,
-                            explicit: false,
+                            kind: KernKind::Normal,
                         })?;
                         state = State::Move;
                         continue;

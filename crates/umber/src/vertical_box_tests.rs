@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 
 const SOURCE: &[u8] = include_bytes!("../../../fixtures/mvp/vertical-boxes.tex");
 const EXPECTED: &str = include_str!("../../../fixtures/mvp/vertical-boxes.expected");
@@ -144,7 +145,7 @@ fn lastbox_skips_discretionary_replacements_and_detaches_only_a_genuine_tail() {
         Kind::discretionary(List::default(), List::default(), 2),
         Kind::Kern {
             width: Scaled(1),
-            explicit: true,
+            kind: KernKind::Explicit,
         },
     ] {
         let node = engine.document.nodes.alloc(kind).unwrap();

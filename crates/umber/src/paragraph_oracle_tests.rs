@@ -1,4 +1,5 @@
 //! Explicit native test adapter: compare packed vertical lists, never engine I/O.
+use crate::nodes::KernKind;
 use crate::{
     Engine,
     font_test_data::basic,
@@ -10,6 +11,8 @@ use std::{path::PathBuf, process::Command};
 mod hyphenation_render;
 #[path = "math_boundary_oracle_tests.rs"]
 mod math_boundary;
+#[path = "text_accent_oracle_tests.rs"]
+mod text_accent;
 fn scaled(v: Scaled) -> String {
     let mut b = Vec::new();
     print_scaled(v, |c| b.push(c));
@@ -116,10 +119,15 @@ fn list_at(e: &Engine<'_>, contents: &List, prefix: &str, out: &mut Vec<String>)
                 }
                 s
             }
-            Kind::Kern { width, explicit } => format!(
-                "\\kern{}{}",
-                if *explicit { " " } else { "" },
-                scaled(*width)
+            Kind::Kern { width, kind } => format!(
+                "\\kern{}{}{}",
+                if *kind != KernKind::Normal { " " } else { "" },
+                scaled(*width),
+                if *kind == KernKind::Accent {
+                    " (for accent)"
+                } else {
+                    ""
+                },
             ),
             Kind::MathBoundary { width, after } => {
                 let mut s = format!("\\math{}", if *after { "off" } else { "on" });

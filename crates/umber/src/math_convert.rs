@@ -1,5 +1,6 @@
 //! Iterative TeX mlist first/second passes and clean-box continuation work.
 use super::*;
+use crate::nodes::KernKind;
 use crate::{
     Engine,
     fonts::Font,
@@ -368,7 +369,7 @@ impl Conversion<'_, '_, '_> {
             list,
             nodes::Kind::Kern {
                 width: Scaled(width),
-                explicit: false,
+                kind: KernKind::Normal,
             },
         )
     }

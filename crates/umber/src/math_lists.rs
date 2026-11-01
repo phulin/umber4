@@ -1,5 +1,6 @@
 //! Interleaved TeX first pass and spacing/penalty second pass.
 use super::*;
+use crate::nodes::KernKind;
 impl Conversion<'_, '_, '_> {
     pub(super) fn list_step(&mut self, w: &mut ListWork) -> Result<Action> {
         match w.pass {
@@ -39,7 +40,7 @@ impl Conversion<'_, '_, '_> {
                             let width = self.mu_dimension(w.style, *value)?;
                             let node = self.engine.document.nodes.alloc(nodes::Kind::Kern {
                                 width,
-                                explicit: true,
+                                kind: KernKind::Explicit,
                             })?;
                             self.math.node_mut(q).kind = Kind::Material(node);
                             w.cursor = self.math.node(q).next;

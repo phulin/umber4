@@ -1,4 +1,5 @@
 use super::*;
+use crate::nodes::KernKind;
 use crate::{
     Engine, Progress,
     font_test_data::basic,
@@ -121,7 +122,7 @@ fn nested_empty_boxes_glue_kerns_and_unpainted_rules_end_runs_exactly() {
         &mut list,
         Kind::Kern {
             width: Scaled(-7),
-            explicit: false,
+            kind: KernKind::Normal,
         },
     );
     append_box(

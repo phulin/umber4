@@ -121,6 +121,12 @@ pub(crate) enum GlueKind {
     SpaceSkip,
     XSpaceSkip,
 }
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum KernKind {
+    Normal,
+    Explicit,
+    Accent,
+}
 #[derive(Debug, Default)]
 pub(crate) enum Kind {
     Language(crate::language::Language),
@@ -139,7 +145,7 @@ pub(crate) enum Kind {
     },
     Kern {
         width: Scaled,
-        explicit: bool,
+        kind: KernKind,
     },
     MathBoundary {
         width: Scaled,
@@ -232,9 +238,9 @@ impl Node {
                 left_boundary: *left_boundary,
                 right_boundary: *right_boundary,
             },
-            Kind::Kern { width, explicit } => Kind::Kern {
+            Kind::Kern { width, kind } => Kind::Kern {
                 width: *width,
-                explicit: *explicit,
+                kind: *kind,
             },
             Kind::MathBoundary { width, after } => Kind::MathBoundary {
                 width: *width,

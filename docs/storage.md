@@ -376,6 +376,13 @@ forest; success replaces the original range with infallible consuming splices.
 Each discretionary owns its two alternatives, while its replacement nodes belong
 only to the enclosing list. No reconstruction owner survives paragraph handoff.
 
+Normal, explicit and accent kern kinds are scalar node fields with the same
+ownership. Text-accent construction keeps its detached glyphs and partial kern/
+glyph/box sequence in disjoint local list owners while intervening assignments
+execute. A completed sequence transfers directly to the horizontal list; a failed
+scan or allocation releases all temporary owners. A shifted singleton accent box
+owns its existing glyph node rather than copying it.
+
 A box register owns the list it names. `\box` takes the box, and `\unhbox` or
 `\unvbox` takes its contents. Their copying variants create new mutable node
 records because the two resulting lists can subsequently change independently.

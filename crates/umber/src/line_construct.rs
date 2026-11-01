@@ -1,4 +1,5 @@
 //! Commit selected breaks by transferring ranges of the original paragraph.
+use crate::nodes::KernKind;
 use crate::{
     Engine, Result,
     nodes::{GlueKind, Kind, List, NodeId},
@@ -159,7 +160,10 @@ impl Engine<'_> {
                 self.document.nodes.get(p).kind,
                 Kind::Glue { .. }
                     | Kind::Penalty(_)
-                    | Kind::Kern { explicit: true, .. }
+                    | Kind::Kern {
+                        kind: KernKind::Explicit,
+                        ..
+                    }
                     | Kind::MathBoundary { .. }
             ) {
                 break;

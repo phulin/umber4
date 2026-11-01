@@ -1,4 +1,5 @@
 //! Paragraph passes and legal-break traversal over the original nodes.
+use crate::nodes::KernKind;
 use crate::{
     Engine, Error, Result,
     line_search::Search,
@@ -89,7 +90,7 @@ pub(crate) fn find_breaks(
                                 | Kind::Rule { .. }
                                 | Kind::Discretionary { .. }
                                 | Kind::Kern {
-                                    explicit: false,
+                                    kind: KernKind::Normal | KernKind::Accent,
                                     ..
                                 }
                         )
@@ -114,8 +115,8 @@ pub(crate) fn find_breaks(
                         next = engine.document.nodes.get(p).next;
                     }
                 }
-                Kind::Kern { width, explicit } => {
-                    if *explicit
+                Kind::Kern { width, kind } => {
+                    if *kind == KernKind::Explicit
                         && auto_breaking
                         && !node.next.is_null()
                         && matches!(engine.document.nodes.get(node.next).kind, Kind::Glue { .. })

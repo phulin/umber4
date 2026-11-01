@@ -308,6 +308,11 @@ inspects a candidate only after visiting glue, using live lowercase codes,
 uppercase-word permission and the font's hyphen character. Initial punctuation,
 normal kerns, font changes, complete ligature components, terminating node types
 and the 63-letter candidate prefix follow TeX's pre-hyphenation traversal.
+Kerns have normal, explicit and accent kinds. Only normal kerns are skipped
+during word collection; either other kind terminates a candidate. Only explicit
+kerns are discarded at a line start or become before-glue kern breakpoints.
+Accent kerns survive pruning and, like normal kerns, permit a following glue
+breakpoint.
 Existing discretionaries and math/box boundaries constrain eligibility. An
 emergency pass reuses inserted nodes, but can inspect later words that an earlier
 pass did not reach. A future e-TeX saved-code map belongs with the pattern root;
