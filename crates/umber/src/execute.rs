@@ -4,6 +4,8 @@ pub(crate) enum GroupKind {
     Simple,
     SemiSimple,
     Hbox,
+    Vbox,
+    Vtop,
 }
 pub(crate) enum Save {
     Boundary(GroupKind),
@@ -386,12 +388,15 @@ impl Engine<'_> {
         if self.document.level == 0 {
             return Err(Error::Group);
         }
+        let max_depth = self.prepare_box_end(kind)?;
         loop {
             match self.document.save.pop().ok_or(Error::Group)? {
                 Save::Boundary(saved) => {
-                    if saved == GroupKind::Hbox && kind == GroupKind::Simple {
+                    if matches!(saved, GroupKind::Hbox | GroupKind::Vbox | GroupKind::Vtop)
+                        && kind == GroupKind::Simple
+                    {
                         self.document.level -= 1;
-                        return self.finish_hbox();
+                        return self.finish_box_group(max_depth.expect("box finishing context"));
                     }
                     if saved != kind {
                         return Err(Error::Group);

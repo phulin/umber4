@@ -87,13 +87,44 @@ Checkpoint capture includes register and save owners only through explicit
 snapshot operations paired with the node-store root. Open construction frames
 exclude checkpoint eligibility. Restore clears their inert handles while
 replacing the abandoned whole roots; it never releases old IDs through restored
-storage. Vertical boxes, unboxing, math destinations, and output construction
-remain outside this execution slice. Packing retains the dimension/glue baseline
+storage. Math destinations and output construction remain outside this execution
+slice. Packing retains the dimension/glue baseline
 in [paragraphs.md](paragraphs.md): exposed `\badness`, packing diagnostics, and
 overfull-rule insertion are not implemented. The corresponding initialized
 parameters remain state-only. These rules follow `begin_box`, `box_end`,
 `package`, `alter_box_dimen`, and `prefixed_command` in the
 [TeX source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web).
+
+### Vertical boxes and owned transfers
+
+`\vbox` and `\vtop` use the same construction frames and packing specifications.
+Their internal vertical mode begins with ignored previous depth and normal
+paragraph parameters, then runs `\everyvbox`. Paragraphs inside this mode are
+ordinary horizontal mode: `\ifinner` is false during their text and true again
+after they end. The first paragraph of an empty internal vertical list omits
+paragraph skip. Internal lists never enter the external page builder. A closing
+vertical-box brace finishes its paragraph before restoring assignments, captures
+the effective `\boxmaxdepth`, then restores the group and packs. `\vtop` finally
+uses the first node's height if it is a box or rule, otherwise zero, preserving
+total height plus depth; its resulting depth can exceed the earlier depth cap.
+
+Unboxing validates type before taking its register owner. Consuming operations
+move the child list once and reclaim only the old header; copying operations
+copy only the children. Header dimensions and glue settings do not affect the
+spliced contents. Neither operation changes space factor or previous depth.
+Void and empty operands still obey mode transitions: horizontal unboxing in
+vertical mode backs its command before starting a paragraph and `\everypar`;
+vertical unboxing in ordinary horizontal mode backs its command behind the
+current `\par` token. Both reread that command's meaning and scan operands only
+after intervening hooks. Vertical unboxing in restricted horizontal mode fails.
+
+`\lastbox` takes only a genuine trailing box outside discretionary replacement
+ranges, clears its shift, and preserves list auxiliary state. Empty or nonbox
+tails give void; an empty external contribution list is an error. `\raise` and
+`\lower` accept horizontal mode, while `\moveleft` and `\moveright` accept
+vertical mode. They capture their signed displacement before constructing the
+box; an invalid axis fails before scanning operands. All these transfers retain
+the existing affine register, child-list, snapshot, and failure-cleanup rules.
 
 The outer loop asks `next_expanded` for the next command and its current meaning,
 then dispatches using the current mode. A primitive scans its operands, performs

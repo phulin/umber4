@@ -189,6 +189,9 @@ fn upstream_page_breaks_boxes_glue_and_absolute_placements() {
         r"\noindent abc def ghi\vskip7pt\noindent abc def ghi ",
         r"\vsize=20pt\hrule width10pt height2pt\vskip0pt plus3pt\hrule width10pt height2pt\vskip0pt plus3pt\hrule width10pt height2pt\vskip0pt plus3pt\penalty-10000 ",
         r"\vsize=4pt\hrule width10pt height2pt\vskip0pt minus3pt\hrule width10pt height2pt\vskip0pt minus3pt\hrule width10pt height2pt\vskip0pt minus3pt\penalty-10000 ",
+        r"\setbox0=\hbox{ab\kern2pt\hfil}\noindent A\raise2pt\copy0\lower1pt\hbox{c}\unhbox0 D\par ",
+        r"\moveright3pt\vtop{\hbox{abc}\kern2pt\hbox{de}}\vskip2pt\moveleft2pt\vbox spread3pt{\hbox{fg}\vfil}\penalty-10000 ",
+        r"\setbox0=\vbox{\hbox{ab}\hbox{cd}\global\setbox1=\lastbox}\unvbox0\moveright2pt\box1\penalty-10000 ",
     ] {
         oracle.compare(&tfm, "", body);
     }

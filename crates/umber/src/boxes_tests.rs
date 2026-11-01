@@ -224,7 +224,6 @@ fn invalid_box_operands_preserve_destination_and_failure_consumption() {
         (r"\setbox0=\hbox{\endgroup}", Error::Group),
         (r"\setbox0=\hbox{\begingroup}", Error::Group),
         (r"\setbox0=\hbox{\end}", Error::Group),
-        (r"\setbox0=\vbox{}", Error::Unsupported),
         (r"\setbox0=\hbox to-1sp{", Error::Eof),
     ] {
         let source = format!("{BOOT}\\setbox0=\\hbox{{\\kern1pt}}\\count0=1\\relax{body}");

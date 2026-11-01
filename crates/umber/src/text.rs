@@ -1,4 +1,4 @@
-//! Owned text lists, restricted horizontal mode, and paragraph handoff.
+//! Owned external/internal text lists and paragraph handoff.
 use crate::{
     Engine, Result,
     layout_values::{DimenParam, GlueParam},
@@ -12,6 +12,7 @@ use crate::{
 pub(crate) enum Mode {
     #[default]
     Vertical,
+    InternalVertical,
     Horizontal,
     RestrictedHorizontal,
     Write,
@@ -20,9 +21,16 @@ impl Mode {
     pub fn is_horizontal(self) -> bool {
         matches!(self, Self::Horizontal | Self::RestrictedHorizontal)
     }
+    pub fn is_vertical(self) -> bool {
+        matches!(self, Self::Vertical | Self::InternalVertical)
+    }
+    pub fn is_inner(self) -> bool {
+        matches!(self, Self::RestrictedHorizontal | Self::InternalVertical)
+    }
 }
 pub(crate) struct TextState {
     pub mode: Mode,
+    pub vertical_mode: Mode,
     pub horizontal: List,
     pub vertical: List,
     pub space_factor: i32,
@@ -34,6 +42,7 @@ impl Default for TextState {
     fn default() -> Self {
         Self {
             mode: Mode::Vertical,
+            vertical_mode: Mode::Vertical,
             horizontal: List::default(),
             vertical: List::default(),
             space_factor: 1000,
@@ -47,6 +56,7 @@ impl TextState {
     pub fn snapshot(&self) -> Self {
         Self {
             mode: self.mode,
+            vertical_mode: self.vertical_mode,
             horizontal: self.horizontal.snapshot(),
             vertical: self.vertical.snapshot(),
             space_factor: self.space_factor,
@@ -66,14 +76,17 @@ impl Engine<'_> {
     }
     pub(crate) fn new_graf(&mut self, indented: bool) -> Result<()> {
         self.document.text.prev_graf = 0;
-        let spec = self.document.layout_values.glues[GlueParam::Paragraph.index()].value;
-        let node = self.document.nodes.alloc(Kind::Glue {
-            spec,
-            subtype: GlueKind::ParSkip,
-        })?;
-        self.document
-            .nodes
-            .append(&mut self.document.text.vertical, node);
+        self.document.text.vertical_mode = self.document.text.mode;
+        if self.document.text.mode == Mode::Vertical || !self.document.text.vertical.is_empty() {
+            let spec = self.document.layout_values.glues[GlueParam::Paragraph.index()].value;
+            let node = self.document.nodes.alloc(Kind::Glue {
+                spec,
+                subtype: GlueKind::ParSkip,
+            })?;
+            self.document
+                .nodes
+                .append(&mut self.document.text.vertical, node);
+        }
         self.document.text.mode = Mode::Horizontal;
         self.document.text.space_factor = 1000;
         if indented {
@@ -82,7 +95,10 @@ impl Engine<'_> {
         if let Some(owner) = self.document.token_registers[256].owner.clone() {
             self.push_tokens(owner, 0)?;
         }
-        self.build_page()
+        if self.document.text.vertical_mode == Mode::Vertical {
+            self.build_page()?;
+        }
+        Ok(())
     }
     fn indent(&mut self) -> Result<()> {
         let b = BoxData {
@@ -101,23 +117,43 @@ impl Engine<'_> {
             if !self.document.text.horizontal.is_empty() {
                 self.break_paragraph()?;
             }
-            self.document.text.mode = Mode::Vertical;
+            self.document.text.mode = self.document.text.vertical_mode;
             self.normal_paragraph()?;
-            self.build_page()?;
+            if self.document.text.mode == Mode::Vertical {
+                self.build_page()?;
+            }
         }
         Ok(())
     }
     /// Returns true when this complete command belongs to horizontal execution.
     pub(crate) fn text_command(&mut self, read: Read) -> Result<bool> {
         if read.meaning.command == cmd::MAKE_BOX {
-            self.make_box(read.meaning.value, crate::boxes::Destination::Append)?;
+            self.make_box(
+                read.meaning.value,
+                crate::boxes::Destination::Append(Scaled::ZERO),
+            )?;
+            return Ok(true);
+        }
+        if read.meaning.command == cmd::BOX_SHIFT {
+            self.shift_box(read.meaning.value)?;
+            return Ok(true);
+        }
+        if read.meaning.command == cmd::UNBOX {
+            if read.meaning.value < 2 && self.document.text.mode.is_vertical() {
+                self.back_read(read);
+                self.new_graf(true)?;
+            } else if read.meaning.value >= 2 && self.document.text.mode == Mode::Horizontal {
+                self.head_for_vertical(read);
+            } else {
+                self.unbox(read.meaning.value)?;
+            }
             return Ok(true);
         }
         if self.vertical_command(read)? {
             return Ok(true);
         }
         let cmd = read.meaning.command;
-        if self.document.text.mode == Mode::Vertical
+        if self.document.text.mode.is_vertical()
             && matches!(
                 cmd,
                 11 | 12
@@ -134,7 +170,7 @@ impl Engine<'_> {
         }
         match cmd {
             11 | 12 | cmd::CHAR_GIVEN | cmd::CHAR => {
-                if self.document.text.mode == Mode::Vertical {
+                if self.document.text.mode.is_vertical() {
                     self.new_graf(true)?;
                 }
                 let c = if cmd == cmd::CHAR {
@@ -150,28 +186,30 @@ impl Engine<'_> {
                 }
             }
             cmd::CONTROL_SPACE => {
-                if self.document.text.mode == Mode::Vertical {
+                if self.document.text.mode.is_vertical() {
                     self.new_graf(true)?;
                 }
                 self.append_space(true)?;
             }
             cmd::PAR => {
-                if self.document.text.mode == Mode::Vertical {
+                if self.document.text.mode.is_vertical() {
                     self.normal_paragraph()?;
-                    self.build_page()?;
+                    if self.document.text.mode == Mode::Vertical {
+                        self.build_page()?;
+                    }
                 } else {
                     self.end_graf()?;
                 }
             }
             cmd::START_PAR => {
-                if self.document.text.mode == Mode::Vertical {
+                if self.document.text.mode.is_vertical() {
                     self.new_graf(read.meaning.value != 0)?;
                 } else if read.meaning.value != 0 {
                     self.indent()?;
                 }
             }
             cmd::NO_BOUNDARY => {
-                if self.document.text.mode == Mode::Vertical {
+                if self.document.text.mode.is_vertical() {
                     self.new_graf(true)?;
                 }
                 // TeX consumes one expanded lookahead; cancellation applies only
@@ -182,7 +220,7 @@ impl Engine<'_> {
                 self.back_read(next);
             }
             cmd::HSKIP => {
-                if self.document.text.mode == Mode::Vertical {
+                if self.document.text.mode.is_vertical() {
                     self.new_graf(true)?;
                 }
                 let spec = self.scan_skip(read.meaning.value)?;

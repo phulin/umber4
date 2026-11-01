@@ -28,8 +28,9 @@ impl Engine<'_> {
         let yes = match command {
             cmd::IFVOID | cmd::IFHBOX | cmd::IFVBOX => self.box_condition(command)?,
             cmd::IFHMODE => self.document.text.mode.is_horizontal(),
-            cmd::IFVMODE => self.document.text.mode == crate::text::Mode::Vertical,
-            cmd::IFINNER => self.document.text.mode == crate::text::Mode::RestrictedHorizontal,
+            cmd::IFVMODE => self.document.text.mode.is_vertical(),
+            cmd::IFINNER => self.document.text.mode.is_inner(),
+            cmd::IFMMODE => false,
             cmd::IFTRUE => true,
             cmd::IFFALSE => false,
             cmd::IFCASE => choice == 0,

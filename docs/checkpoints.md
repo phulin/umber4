@@ -39,9 +39,10 @@ Hyphenation tables retain separate lazy pattern and exception owners plus the
 document freeze flag. Capturing these roots does not walk trie nodes, operations,
 or dictionary entries; later updates copy only the affected root's COW directories
 and pages. Restoring a pre-freeze checkpoint restores pattern-loading eligibility.
-Horizontal box registers and their saved owners are retained with the matching
-node-store root through explicit snapshot operations. Restricted horizontal box
-construction excludes eligibility even between complete commands. Restore clears
+Box registers and their saved owners are retained with the matching node-store
+root through explicit snapshot operations. Horizontal and vertical box
+construction exclude eligibility even between complete commands; internal
+vertical mode and its paragraphs cannot produce a handoff. Restore clears
 all suspended enclosing text owners before replacing the abandoned whole roots;
 ordinary group restoration instead releases displaced boxes through the live
 store. Future construction nests and output routines must extend these rules.

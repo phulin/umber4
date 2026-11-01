@@ -229,7 +229,7 @@ pub(crate) mod cmd {
         CONTROL_SPACE = 110 => [b" "];
         HSKIP = 111 => [b"hskip", b"hfil", b"hfill", b"hss", b"hfilneg"];
         KERN = 112 => [b"kern"];
-        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output"] assignment;
+        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox"] assignment;
         PAR_SHAPE = 114 => [b"parshape"] assignment;
         PENALTY = 115 => [b"penalty"];
         VSKIP = 116 => [b"vskip", b"vfil", b"vfill", b"vss", b"vfilneg"];
@@ -250,7 +250,10 @@ pub(crate) mod cmd {
         MUSKIP_REF = 133 => [] assignment;
         MUSKIP_DEF = 134 => [b"muskipdef"] assignment;
         MU_GLUE_PARAM = 135 => [b"thinmuskip", b"medmuskip", b"thickmuskip"] assignment;
-        MAKE_BOX = 137 => [b"box", b"copy", b"hbox", b"vbox", b"vtop"];
+        MAKE_BOX = 137 => [b"box", b"copy", b"hbox", b"vbox", b"vtop", b"lastbox"];
+        UNBOX = 149 => [b"unhbox", b"unhcopy", b"unvbox", b"unvcopy"];
+        BOX_SHIFT = 150 => [b"lower", b"raise", b"moveright", b"moveleft"];
+        IFMMODE = 151 => [b"ifmmode"] conditional;
         SET_BOX = 138 => [b"setbox"] assignment;
         BOX_DIMEN = 139 => [b"wd", b"ht", b"dp"] assignment;
         IFVOID = 140 => [b"ifvoid"] conditional;

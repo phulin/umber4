@@ -10,7 +10,7 @@ use crate::{
 };
 impl Engine<'_> {
     pub(crate) fn page_assignment(&mut self, read: Read) -> Result<()> {
-        if read.meaning.command == cmd::PREV_DEPTH && self.document.text.mode != Mode::Vertical {
+        if read.meaning.command == cmd::PREV_DEPTH && !self.document.text.mode.is_vertical() {
             return Err(Error::Syntax);
         }
         self.scan_equals()?;
@@ -28,7 +28,7 @@ impl Engine<'_> {
                 self.document.page.quantity(read.meaning.value as usize),
             )),
             cmd::PREV_DEPTH => {
-                if self.document.text.mode != Mode::Vertical {
+                if !self.document.text.mode.is_vertical() {
                     return Err(Error::Syntax);
                 }
                 Some(Quantity::Dimension(self.document.text.prev_depth))
@@ -103,7 +103,7 @@ impl Engine<'_> {
                     self.head_for_vertical(read);
                     return Ok(true);
                 }
-                if horizontal && self.document.text.mode == Mode::Vertical {
+                if horizontal && self.document.text.mode.is_vertical() {
                     self.back_read(read);
                     self.new_graf(true)?;
                     return Ok(true);

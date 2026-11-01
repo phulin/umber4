@@ -98,6 +98,19 @@ fn restricted_box_nesting_and_reclamation_use_owned_work_stacks() {
 }
 
 #[test]
+fn unboxing_reclaims_consumed_headers_and_only_retains_transferred_children() {
+    let mut source = String::from("\\catcode123=1\\catcode125=2\\endlinechar=-1\\relax\n");
+    for _ in 0..32 {
+        source.push_str("\\setbox0=\\vbox{\\hbox{\\kern1pt}}\\setbox1=\\vbox{\\unvcopy0\\unvbox0\\global\\setbox2=\\lastbox}\\setbox3=\\hbox{\\unhcopy2\\unhbox2}\\setbox1=\\box255\\setbox3=\\box255\n");
+    }
+    source.push_str("\\end");
+    let mut engine = crate::Engine::new(source.as_bytes());
+    engine.run_input().unwrap();
+    assert!(engine.document.nodes.pages.iter().all(Option::is_none));
+    assert!(engine.document.nodes.boxes.len() <= 8);
+}
+
+#[test]
 fn transfer_split_pop_and_nested_release_reuse_backing() {
     let mut store = NodeStore::default();
     let mut scratch = ReleaseScratch::default();

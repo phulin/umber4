@@ -1,7 +1,8 @@
-//! Restricted horizontal construction and affine box-register bindings.
+//! Scoped box construction and affine box-register bindings.
 use crate::{
     Engine, Error, Result,
     execute::{GroupKind, Save},
+    layout_values::DimenParam,
     nodes::{DetachedNode, Kind, List, NodeId},
     numeric::Scaled,
     packing::PackSpec,
@@ -9,6 +10,8 @@ use crate::{
     text::{Mode, TextState},
     token::*,
 };
+#[path = "box_transfer.rs"]
+mod transfer;
 
 #[derive(Default)]
 struct Slot {
@@ -40,19 +43,24 @@ impl Registers {
 }
 #[derive(Clone, Copy)]
 pub(crate) enum Destination {
-    Append,
+    Append(Scaled),
     Register { index: usize, global: bool },
 }
 pub(crate) struct Frame {
     outer: TextState,
     spec: PackSpec,
     destination: Destination,
+    kind: GroupKind,
+    level: u16,
 }
 
 impl Engine<'_> {
     pub(crate) fn set_box(&mut self, global: bool) -> Result<()> {
         let index = self.scan_index()?;
         self.scan_equals()?;
+        self.scan_box(Destination::Register { index, global })
+    }
+    pub(crate) fn scan_box(&mut self, destination: Destination) -> Result<()> {
         let read = loop {
             let read = self.nonspace(true)?;
             if read.meaning.command != cmd::RELAX {
@@ -62,13 +70,10 @@ impl Engine<'_> {
         if read.meaning.command != cmd::MAKE_BOX {
             return Err(Error::Syntax);
         }
-        self.make_box(read.meaning.value, Destination::Register { index, global })
+        self.make_box(read.meaning.value, destination)
     }
     pub(crate) fn make_box(&mut self, operation: i32, destination: Destination) -> Result<()> {
-        if operation > 2 {
-            return Err(Error::Unsupported);
-        }
-        if operation == 2 {
+        if (2..=4).contains(&operation) {
             let spec = if self.scan_keyword(b"to")? {
                 PackSpec::To(self.scan_dimen()?)
             } else if self.scan_keyword(b"spread")? {
@@ -76,12 +81,26 @@ impl Engine<'_> {
             } else {
                 PackSpec::Natural
             };
-            self.open_group(GroupKind::Hbox)?;
+            let kind = match operation {
+                2 => GroupKind::Hbox,
+                3 => GroupKind::Vbox,
+                _ => GroupKind::Vtop,
+            };
+            self.open_group(kind)?;
             self.opening_brace()?;
+            if kind != GroupKind::Hbox {
+                self.normal_paragraph()?;
+            }
+            let mode = if kind == GroupKind::Hbox {
+                Mode::RestrictedHorizontal
+            } else {
+                Mode::InternalVertical
+            };
             let outer = std::mem::replace(
                 &mut self.document.text,
                 TextState {
-                    mode: Mode::RestrictedHorizontal,
+                    mode,
+                    vertical_mode: mode,
                     ..TextState::default()
                 },
             );
@@ -89,13 +108,20 @@ impl Engine<'_> {
                 outer,
                 spec,
                 destination,
+                kind,
+                level: self.document.level,
             });
             // SETBOX's afterassignment token is backed above this hook by the
             // ordinary assignment epilogue, before construction resumes.
-            if let Some(owner) = self.document.token_registers[257].owner.clone() {
+            let hook = if kind == GroupKind::Hbox { 257 } else { 259 };
+            if let Some(owner) = self.document.token_registers[hook].owner.clone() {
                 self.push_tokens(owner, 0)?;
             }
             return Ok(());
+        }
+        if operation == 5 {
+            let node = self.take_last_box()?;
+            return self.finish_box(destination, node);
         }
         let index = self.scan_index()?;
         let mut list = if operation == 0 {
@@ -109,14 +135,53 @@ impl Engine<'_> {
         debug_assert!(list.is_empty());
         self.finish_box(destination, node)
     }
-    pub(crate) fn finish_hbox(&mut self) -> Result<()> {
-        let frame = self.document.box_frames.pop().expect("hbox construction");
-        let contents = std::mem::take(&mut self.document.text.horizontal);
-        let result = self.hpack(contents, frame.spec);
+    pub(crate) fn prepare_box_end(&mut self, kind: GroupKind) -> Result<Option<Scaled>> {
+        let Some(frame) = self.document.box_frames.last() else {
+            return Ok(None);
+        };
+        if kind != GroupKind::Simple || frame.level != self.document.level {
+            return Ok(None);
+        }
+        if frame.kind != GroupKind::Hbox {
+            self.end_graf()?;
+        }
+        Ok(Some(
+            self.document.layout_values.dimens[DimenParam::BoxMaxDepth.index()].value,
+        ))
+    }
+    pub(crate) fn finish_box_group(&mut self, max_depth: Scaled) -> Result<()> {
+        let frame = self.document.box_frames.pop().expect("box construction");
+        let result = if frame.kind == GroupKind::Hbox {
+            let contents = std::mem::take(&mut self.document.text.horizontal);
+            self.hpack(contents, frame.spec)
+        } else {
+            let contents = std::mem::take(&mut self.document.text.vertical);
+            self.vpackage(contents, frame.spec, max_depth)
+        };
         // Both success and failure restore the enclosing owner. Allocation
         // rejection has already released the transferred box contents.
         self.document.text = frame.outer;
-        self.finish_box(frame.destination, Some(result?))
+        let node = result?;
+        if frame.kind == GroupKind::Vtop {
+            let Kind::Box(id) = &self.document.nodes.get(node.id()).kind else {
+                unreachable!("packed box")
+            };
+            let data = self.document.nodes.box_data(id);
+            let (first, total) = (data.list.head(), data.height.0.wrapping_add(data.depth.0));
+            let height = if first.is_null() {
+                Scaled::ZERO
+            } else {
+                match &self.document.nodes.get(first).kind {
+                    Kind::Box(id) => self.document.nodes.box_data(id).height,
+                    Kind::Rule { height, .. } => *height,
+                    _ => Scaled::ZERO,
+                }
+            };
+            let data = self.document.nodes.box_mut(node.id());
+            data.height = height;
+            data.depth = Scaled(total.wrapping_sub(height.0));
+        }
+        self.finish_box(frame.destination, Some(node))
     }
     fn finish_box(&mut self, destination: Destination, node: Option<DetachedNode>) -> Result<()> {
         if let Destination::Register { index, global } = destination {
@@ -136,10 +201,15 @@ impl Engine<'_> {
                     .release(old.list, &mut self.page_release);
             }
         } else if let Some(node) = node {
-            self.document.nodes.box_mut(node.id()).shift = Scaled::ZERO;
-            if self.document.text.mode == Mode::Vertical {
+            let Destination::Append(shift) = destination else {
+                unreachable!()
+            };
+            self.document.nodes.box_mut(node.id()).shift = shift;
+            if self.document.text.mode.is_vertical() {
                 self.append_to_vlist(node)?;
-                self.build_page()?;
+                if self.document.text.mode == Mode::Vertical {
+                    self.build_page()?;
+                }
             } else {
                 self.document.text.space_factor = 1000;
                 self.document
@@ -209,3 +279,7 @@ impl Engine<'_> {
 #[cfg(test)]
 #[path = "boxes_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "vertical_box_tests.rs"]
+mod vertical_tests;
