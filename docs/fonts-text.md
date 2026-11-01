@@ -22,6 +22,16 @@ resource-set owner for [detached page output](output.md); source/header/payload
 storage can therefore outlive the session. They do not contain live TeX font descriptors. There is
 no allocation or reference counting per emitted character.
 
+Each scaled font stores one dense width/height/depth/italic record per character
+in its TFM range, at most 4 KiB of initialized metric records. These replace the
+compressed scaled dimension tables: character lookup reads the immutable record
+directly, without decoding TFM indices or resolving the source resource. A
+separate presence bitmap preserves the nonzero-width-index existence rule,
+including present zero-width characters and absent characters whose other metric
+fields remain observable through `\fontcharht`, `\fontchardp`, and `\fontcharic`.
+Scaled kerns and baseline parameters occupy separate pooled arrays. Engine and
+detached-result access share the same immutable metric lookup.
+
 Document state owns loaded-font order and IDs, source resource names, sizes,
 mutable font parameters, hyphen/skew characters, and font identifier names.
 Selectors and current-font bindings obey ordinary assignment grouping. Font

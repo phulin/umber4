@@ -168,6 +168,10 @@ Parsed TFM data and original font bytes can be cached across documents; font IDs
 font parameters, character-use sets, expansion settings, and output numbering
 remain document state. [paragraphs.md](paragraphs.md) and [output.md](output.md)
 develop their layout and serialization uses.
+The executable scaled cache owns dense character-metric records, scaled kerns,
+and baseline parameters in typed pooled buffers. These immutable baseline arrays
+are independent of restored document parameters; detached page font handles retain
+their scaled-header chunk and sealed source-resource owner.
 
 Image loading separates immutable decoded/header data from the requested TeX
 dimensions and backend placement. Depending on the format, PDF output can retain

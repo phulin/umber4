@@ -60,7 +60,9 @@ owner. Registration is already closed before execution. Runtime scaled-font
 headers occupy fixed chunks of once-initialized slots; opaque handles retain a
 chunk and slot, with safe borrowed descriptor access. A page retains one handle
 per used font and glyphs store local indices, with no per-glyph ownership or metric
-copies. Retained pages keep the entire registered source-resource set and the
+copies. Both live layout and detached handles read dense immutable scaled metric
+records through the same accessor; the header's separate presence bitmap retains
+TFM character-existence semantics. Retained pages keep the entire registered source-resource set and the
 scaled-header chunks they use alive, even after engine/checkpoint teardown.
 Document font selectors and mutable parameters remain independently restored.
 

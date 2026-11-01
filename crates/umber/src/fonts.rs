@@ -255,12 +255,11 @@ impl Engine<'_> {
             f
         } else {
             let scaled = self.font_catalog.scaled(resource, size)?;
-            let start = self.font_catalog.param_start(scaled);
-            let count = self.font_catalog.resources[resource].np.max(7);
+            let baseline = &self.font_catalog.scaled[scaled].descriptor().params;
+            let count = baseline.len();
             let params = self.document.fonts.parameter_end;
-            for i in 0..count {
-                self.document.fonts.parameters[params + i] =
-                    self.font_catalog.scaled[scaled].descriptor().numbers[start + i];
+            for (i, &value) in baseline.iter().enumerate() {
+                self.document.fonts.parameters[params + i] = value;
             }
             let f = self.document.fonts.len;
             self.document.fonts.descriptors[f] = Font {

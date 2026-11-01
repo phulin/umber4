@@ -95,7 +95,11 @@ impl Engine<'_> {
                 }
                 State::Consume => {
                     let item = scratch.stack.pop().unwrap();
-                    if !item.pseudo && self.character_metrics(font, left as u8).is_none() {
+                    if !item.pseudo
+                        && !self.font_catalog.scaled[scaled]
+                            .descriptor()
+                            .exists(left as u8)
+                    {
                         if let Some(node) = item.original {
                             self.document.nodes.release_node(node, &mut scratch.release);
                         }

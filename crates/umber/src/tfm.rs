@@ -39,7 +39,6 @@ pub(crate) struct Resource {
     pub nw: usize,
     pub nh: usize,
     pub nd: usize,
-    pub ni: usize,
     pub nk: usize,
     pub np: usize,
     metrics: usize,
@@ -49,7 +48,25 @@ pub(crate) struct Resource {
 pub(crate) struct ScaledFont {
     pub resource: usize,
     pub size: Scaled,
-    pub numbers: Buffer<Scaled>,
+    first: usize,
+    present: [u64; 4],
+    metrics: Buffer<Metrics>,
+    kerns: Buffer<Scaled>,
+    pub params: Buffer<Scaled>,
+}
+impl ScaledFont {
+    pub fn exists(&self, character: u8) -> bool {
+        self.present[character as usize / 64] & (1u64 << (character % 64)) != 0
+    }
+    pub fn metrics(&self, character: u8) -> Option<Metrics> {
+        self.exists(character)
+            .then(|| self.metrics[character as usize - self.first])
+    }
+    pub fn metric_fields(&self, character: u8) -> Option<Metrics> {
+        self.metrics
+            .get((character as usize).checked_sub(self.first)?)
+            .copied()
+    }
 }
 const FONT_SLOTS: usize = 16;
 // The allocation owns many immutable headers; payloads retain their typed pools.
@@ -93,18 +110,12 @@ impl FontResource {
         self.source().design.0
     }
     pub fn metrics(&self, character: u8) -> Option<GlyphMetrics> {
-        let r = self.source();
-        let c = character as usize;
-        if c < r.bc || c > r.ec || r.chars[c - r.bc].width == 0 {
-            return None;
-        }
-        let i = r.chars[c - r.bc];
-        let n = &self.descriptor().numbers;
+        let m = self.descriptor().metrics(character)?;
         Some(GlyphMetrics {
-            width: n[i.width].0,
-            height: n[r.nw + i.height].0,
-            depth: n[r.nw + r.nh + i.depth].0,
-            italic: n[r.nw + r.nh + r.nd + i.italic].0,
+            width: m.width.0,
+            height: m.height.0,
+            depth: m.depth.0,
+            italic: m.italic.0,
         })
     }
     pub(crate) fn same(&self, other: &Self) -> bool {
@@ -121,6 +132,7 @@ pub(crate) struct Catalog {
     bytes: Rc<Store<u8>>,
     chars: Rc<Store<CharInfo>>,
     instructions: Rc<Store<[u8; 4]>>,
+    metrics: Rc<Store<Metrics>>,
     dimensions: Rc<Store<Scaled>>,
     pub sealed: bool,
 }
@@ -298,7 +310,6 @@ impl Catalog {
             nw,
             nh,
             nd,
-            ni,
             nk,
             np,
             metrics,
@@ -315,18 +326,40 @@ impl Catalog {
             return Ok(i);
         }
         let r = &self.resources[resource];
-        let mut numbers = Buffer::new(&self.dimensions);
-        for (start, count) in [(r.metrics, r.nw + r.nh + r.nd + r.ni), (r.kerns, r.nk)] {
-            for raw in r.bytes[start * 4..(start + count) * 4].as_chunks::<4>().0 {
-                numbers.push(scale(*raw, size)?);
+        let dimension = |index| {
+            let start = (r.metrics + index) * 4;
+            scale(r.bytes[start..start + 4].try_into().unwrap(), size)
+        };
+        for index in [0, r.nw, r.nw + r.nh, r.nw + r.nh + r.nd] {
+            if dimension(index)? != Scaled::ZERO {
+                return Err(Error::Font);
             }
         }
-        if [0, r.nw, r.nw + r.nh, r.nw + r.nh + r.nd]
-            .iter()
-            .any(|&i| numbers[i] != Scaled::ZERO)
-        {
-            return Err(Error::Font);
+        let mut metrics = Buffer::new(&self.metrics);
+        metrics.reserve(r.chars.len());
+        let mut present = [0; 4];
+        for (index, i) in r.chars.iter().enumerate() {
+            let character = r.bc + index;
+            if i.width != 0 {
+                present[character / 64] |= 1u64 << (character % 64);
+            }
+            metrics.push(Metrics {
+                width: dimension(i.width)?,
+                height: dimension(r.nw + i.height)?,
+                depth: dimension(r.nw + r.nh + i.depth)?,
+                italic: dimension(r.nw + r.nh + r.nd + i.italic)?,
+            });
         }
+        let mut kerns = Buffer::new(&self.dimensions);
+        kerns.reserve(r.nk);
+        for raw in r.bytes[r.kerns * 4..(r.kerns + r.nk) * 4]
+            .as_chunks::<4>()
+            .0
+        {
+            kerns.push(scale(*raw, size)?);
+        }
+        let mut params = Buffer::new(&self.dimensions);
+        params.reserve(r.np.max(7));
         for i in 0..r.np.max(7) {
             let v = if i >= r.np {
                 Scaled::ZERO
@@ -338,7 +371,7 @@ impl Catalog {
                     scale(raw.try_into().unwrap(), size)?
                 }
             };
-            numbers.push(v);
+            params.push(v);
         }
         if self.scaled.is_empty() {
             self.scaled = Buffer::new(&self.scaled_store);
@@ -363,7 +396,11 @@ impl Catalog {
                 .set(ScaledFont {
                     resource,
                     size,
-                    numbers
+                    first: r.bc,
+                    present,
+                    metrics,
+                    kerns,
+                    params,
                 })
                 .is_ok()
         );
@@ -375,35 +412,13 @@ impl Catalog {
         Ok(id)
     }
     pub fn metrics(&self, scaled: usize, c: u8) -> Option<Metrics> {
-        let r = &self.resources[self.scaled[scaled].descriptor().resource];
-        if (c as usize) < r.bc || c as usize > r.ec || r.chars[c as usize - r.bc].width == 0 {
-            return None;
-        }
-        self.metric_fields(scaled, c)
+        self.scaled[scaled].descriptor().metrics(c)
     }
     pub fn metric_fields(&self, scaled: usize, c: u8) -> Option<Metrics> {
-        let f = self.scaled[scaled].descriptor();
-        let r = &self.resources[f.resource];
-        let c = c as usize;
-        if c < r.bc || c > r.ec {
-            return None;
-        }
-        let i = r.chars[c - r.bc];
-        Some(Metrics {
-            width: f.numbers[i.width],
-            height: f.numbers[r.nw + i.height],
-            depth: f.numbers[r.nw + r.nh + i.depth],
-            italic: f.numbers[r.nw + r.nh + r.nd + i.italic],
-        })
-    }
-    pub fn param_start(&self, scaled: usize) -> usize {
-        let r = &self.resources[self.scaled[scaled].descriptor().resource];
-        r.nw + r.nh + r.nd + r.ni + r.nk
+        self.scaled[scaled].descriptor().metric_fields(c)
     }
     pub fn kern(&self, scaled: usize, index: usize) -> Scaled {
-        let f = self.scaled[scaled].descriptor();
-        let r = &self.resources[f.resource];
-        f.numbers[r.nw + r.nh + r.nd + r.ni + index]
+        self.scaled[scaled].descriptor().kerns[index]
     }
 }
 fn validate_fix(raw: &[u8]) -> Result<()> {

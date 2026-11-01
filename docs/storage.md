@@ -200,6 +200,11 @@ root cloning is constant-sized, and final unique-chain release is iterative.
 Scaled-font headers likewise occupy sixteen-slot shared chunks; each chunk keeps
 the exact sealed resource-set owner, including its initialized metadata buffers.
 These chunk records allocate as backing blocks, not per glyph or font header.
+Each scaled header owns a pooled dense character-metric buffer and separate
+pooled kern/parameter buffers; it replaces the compressed scaled dimension tables
+rather than retaining a second metric cache. A header presence bitmap records TFM
+width-index existence independently of the four numeric metric fields. The same
+sealed immutable buffers serve engine layout and retained output owners.
 
 Future append stores hold backend bytes and descriptor sequences in pooled
 blocks. A retained prefix is a block root and endpoint. Branching after restore
