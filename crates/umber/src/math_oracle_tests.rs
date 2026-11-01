@@ -112,7 +112,7 @@ impl Oracle {
             .unwrap();
         assert_eq!(math.live, 0);
         let b = e.hpack(l, PackSpec::Natural).unwrap();
-        e.publish_page(b, 0).unwrap();
+        e.publish_page(b).unwrap();
         assert_eq!(e.document.nodes.live_count(), 0);
         let outcome = e.outcome();
         let style_name = [
