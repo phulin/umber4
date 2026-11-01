@@ -235,7 +235,7 @@ impl Engine<'_> {
             p = n.next;
         }
         if matches!(self.document.nodes.get(tail).kind, Kind::Glue { .. }) {
-            self.document.nodes.get_mut(tail).kind = Kind::Penalty(10000);
+            *self.document.nodes.kind_mut(tail) = Kind::Penalty(10000);
         } else {
             self.append_horizontal(Kind::Penalty(10000))?;
         }

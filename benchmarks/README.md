@@ -44,6 +44,9 @@ program starts once per registered resource, including its metadata/load cost.
 The [TFM character-metadata comparison](results/tfm-character-metadata.json)
 records byte-sized field domains, logical and pooled metadata savings, registration
 and scaling costs, and bounded ordinary-path nonregression checks.
+The [detached singleton-transfer comparison](results/layout-node-singleton.json)
+retains paired release samples on fixed mixed/book inputs, instruction counts,
+complete four-case output/replay equality, and the CPU sampling tool limitation.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

@@ -169,6 +169,13 @@ impl DetachedNode {
     pub fn id(&self) -> NodeId {
         self.0
     }
+    /// Consume this singleton owner in its matching store version.
+    fn into_list(self) -> List {
+        List {
+            head: self.0,
+            tail: self.0,
+        }
+    }
 }
 impl Node {
     // Copy an owned record ONLY into a different COW store version.
@@ -354,11 +361,14 @@ impl NodeStore {
         assert!(!matches!(node.kind, Kind::Free), "released node");
         node
     }
-    pub fn get_mut(&mut self, id: NodeId) -> &mut Node {
+    fn get_mut(&mut self, id: NodeId) -> &mut Node {
         let (page, offset) = Self::address(id);
         let node = &mut self.writable(page).nodes[offset];
         assert!(!matches!(node.kind, Kind::Free), "released node");
         node
+    }
+    pub fn kind_mut(&mut self, id: NodeId) -> &mut Kind {
+        &mut self.get_mut(id).kind
     }
     fn available(&self, index: usize) -> bool {
         self.pages[index].as_ref().is_some_and(|p| {
@@ -421,14 +431,8 @@ impl NodeStore {
         )))
     }
     pub fn append(&mut self, list: &mut List, node: DetachedNode) {
-        let node = node.0;
-        assert!(self.get(node).next.is_null(), "append detached node");
-        if list.is_empty() {
-            list.head = node;
-        } else {
-            self.get_mut(list.tail).next = node;
-        }
-        list.tail = node;
+        debug_assert!(self.get(node.0).next.is_null(), "append detached node");
+        self.splice(list, node.into_list());
     }
     pub fn splice(&mut self, destination: &mut List, source: List) {
         if source.is_empty() {
@@ -491,7 +495,7 @@ impl NodeStore {
         node
     }
     pub fn release_node(&mut self, node: DetachedNode, scratch: &mut ReleaseScratch) {
-        self.release(List::from_parts(node.0, node.0), scratch);
+        self.release(node.into_list(), scratch);
     }
     fn release_kind(&mut self, kind: Kind, scratch: &mut ReleaseScratch) {
         match kind {

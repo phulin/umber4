@@ -314,7 +314,7 @@ fn node_ids_resolve_in_the_captured_store_version() {
     // The following slices will keep this corresponding list root in Document.
     let retained_chain = chain.snapshot();
     let saved = engine.checkpoint().unwrap();
-    engine.document.nodes.get_mut(id).kind = Kind::Penalty(99);
+    *engine.document.nodes.kind_mut(id) = Kind::Penalty(99);
     engine
         .document
         .nodes

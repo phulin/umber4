@@ -52,7 +52,7 @@ impl Engine<'_> {
                     .split_after(&mut self.document.text.horizontal, point)
             };
             if !point.is_null() {
-                let kind = &mut self.document.nodes.get_mut(point).kind;
+                let kind = self.document.nodes.kind_mut(point);
                 match kind {
                     Kind::Glue { spec, subtype } => {
                         *spec = parameters.right;
@@ -102,7 +102,7 @@ impl Engine<'_> {
             };
             let shape = parameters.line(line_number);
             let b = self.hpack(contents, shape.width)?;
-            if let Kind::Box(data) = &mut self.document.nodes.get_mut(b.id()).kind {
+            if let Kind::Box(data) = self.document.nodes.kind_mut(b.id()) {
                 data.shift = shape.indent;
             }
             self.append_to_vlist(b)?;

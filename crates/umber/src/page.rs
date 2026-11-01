@@ -258,7 +258,7 @@ impl Engine<'_> {
     }
     fn fire_up(&mut self, candidate: NodeId) -> Result<()> {
         let s = self.document.page.state;
-        let penalty = match &mut self.document.nodes.get_mut(s.best_break).kind {
+        let penalty = match self.document.nodes.kind_mut(s.best_break) {
             Kind::Penalty(pi) => {
                 let old = *pi;
                 *pi = 10000;

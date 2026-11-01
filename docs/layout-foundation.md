@@ -67,7 +67,13 @@ and no per-node heap allocation or reference count. Box, ligature-component,
 and discretionary child lists are owned edges. A non-`Copy` `List` carries head
 and tail for building and ownership transfers. Appending/splicing consumes an
 existing list; constructing a box consumes its contents. Allocation and removal
-return a non-`Copy` detached-node owner that append consumes. Capacity failure releases any transferred children. Node, box, and
+return a non-`Copy` detached-node owner with a null next link. Appending consumes
+that singleton as a one-node list through the same splice operation as longer
+chains. Link mutation stays inside the node store; other subsystems can mutate
+only node payloads. Detached owners and lists require their matching store version;
+their types do not encode store identity. Debug append checks retain null-link
+diagnostics, while reads and tail mutations validate live nodes and preserve COW.
+Capacity failure releases any transferred children. Node, box, and
 ligature/discretionary payloads carry owned non-`Copy` child lists; only the
 private COW copier duplicates them into another version. Raw node IDs are
 internal references, never independent owners. Copying a root for a checkpoint
