@@ -137,6 +137,7 @@ impl Engine<'_> {
         // Geometry precedes any backend-specific origin offset.
         let index = page.box_record(record(b, None, 0, b.height.0));
         scratch.frames.push(Frame::new(b, index, 0, b.height.0));
+        let mut font_binding: Option<(u32, &crate::tfm::ScaledFont, u32)> = None;
         while let Some(frame) = scratch.frames.last_mut() {
             if frame.next.is_null() {
                 scratch.frames.pop();
@@ -152,18 +153,25 @@ impl Engine<'_> {
                     if frame.vertical {
                         return Err(Error::Unsupported);
                     }
-                    if *font as usize >= self.document.fonts.len {
-                        return Err(Error::Font);
-                    }
-                    let scaled = self.document.fonts.descriptors[*font as usize]
-                        .scaled
-                        .ok_or(Error::Font)?;
-                    let resource = &self.font_catalog.scaled[scaled];
-                    let m = resource
-                        .descriptor()
-                        .metrics(*character)
-                        .ok_or(Error::Font)?;
-                    let local = page.font(resource);
+                    let (m, local) = match font_binding {
+                        Some((id, metrics, local)) if id == *font => {
+                            (metrics.metrics(*character).ok_or(Error::Font)?, local)
+                        }
+                        _ => {
+                            if *font as usize >= self.document.fonts.len {
+                                return Err(Error::Font);
+                            }
+                            let scaled = self.document.fonts.descriptors[*font as usize]
+                                .scaled
+                                .ok_or(Error::Font)?;
+                            let resource = &self.font_catalog.scaled[scaled];
+                            let metrics = resource.descriptor();
+                            let m = metrics.metrics(*character).ok_or(Error::Font)?;
+                            let local = page.font(resource);
+                            font_binding = Some((*font, metrics, local));
+                            (m, local)
+                        }
+                    };
                     page.place(Placement::Glyph {
                         font: local,
                         character: *character,

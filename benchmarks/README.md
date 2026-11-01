@@ -24,6 +24,9 @@ with complete output/native placement checks and retained-root replay. Its
 [small generator](corpus/gentle-layout.py) reads the complete local Gentle source;
 [provenance](corpus/gentle.json) records the selected ranges. The report describes
 bootstrap settings and reproduction without distributing additional prose excerpts.
+The [output font-binding comparison](results/layout-output-font-binding.json)
+retains paired ordinary release samples and instruction counts for reusing a
+borrowed font descriptor and page-local index within each detached page traversal.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

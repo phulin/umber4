@@ -244,6 +244,16 @@ fn lowering_error_publishes_nothing_and_reuses_cleared_scratch() {
     e.document.fonts.descriptors[2] = e.document.fonts.descriptors[1];
     for (font, character) in [(0, b'a'), (1, 0), (2, b'a'), (u32::MAX, b'a')] {
         let mut list = List::default();
+        // Prime the binding before a missing glyph or invalid font is visited.
+        let valid = e
+            .document
+            .nodes
+            .alloc(Kind::Character {
+                font: 1,
+                character: b'a',
+            })
+            .unwrap();
+        e.document.nodes.append(&mut list, valid);
         let glyph = e
             .document
             .nodes
@@ -429,4 +439,93 @@ fn end_and_vertical_commands_insert_the_current_par_token() {
         complete(&mut e);
         assert_eq!(e.outcome().counts[0], 7);
     }
+}
+
+#[test]
+fn output_font_binding_crosses_nested_boxes_and_resets_for_each_page() {
+    fn boxed(e: &mut Engine<'_>, fonts: &[u32]) -> crate::nodes::DetachedNode {
+        let mut list = List::default();
+        for &font in fonts {
+            let glyph = e
+                .document
+                .nodes
+                .alloc(Kind::Character {
+                    font,
+                    character: b'a',
+                })
+                .unwrap();
+            e.document.nodes.append(&mut list, glyph);
+        }
+        e.document
+            .nodes
+            .alloc(Kind::Box(BoxData {
+                list,
+                ..BoxData::default()
+            }))
+            .unwrap()
+    }
+    let mut e = engine(br"\font\f=test at10pt\font\g=test at20pt\font\h=other at10pt\end");
+    e.register_tfm(b"other", &basic()).unwrap();
+    complete(&mut e);
+    // A distinct document-font ID can alias an already loaded immutable resource.
+    e.document.fonts.descriptors[4] = e.document.fonts.descriptors[1];
+    e.document.fonts.len = 5;
+    let mut list = List::default();
+    for fonts in [&[1, 1][..], &[2, 2, 4, 4, 2]] {
+        let child = boxed(&mut e, fonts);
+        e.document.nodes.append(&mut list, child);
+    }
+    // Returning from the mixed-font child resumes its parent's font.
+    let glyph = e
+        .document
+        .nodes
+        .alloc(Kind::Character {
+            font: 1,
+            character: b'a',
+        })
+        .unwrap();
+    e.document.nodes.append(&mut list, glyph);
+    let child = boxed(&mut e, &[3, 3]);
+    e.document.nodes.append(&mut list, child);
+    let outer = e
+        .document
+        .nodes
+        .alloc(Kind::Box(BoxData {
+            list,
+            ..BoxData::default()
+        }))
+        .unwrap();
+    e.publish_page(outer, 0).unwrap();
+    // The last font on the first page is the first font on the next page.
+    let next = boxed(&mut e, &[3, 3, 1, 4]);
+    e.publish_page(next, 0).unwrap();
+    let out = e.outcome();
+    drop(e);
+    let p = out.pages.get(0).unwrap();
+    assert_eq!(
+        p.fonts()
+            .iter()
+            .map(|f| (f.name(), f.size()))
+            .collect::<Vec<_>>(),
+        [
+            (b"test".as_slice(), 655360),
+            (b"test".as_slice(), 1310720),
+            (b"other".as_slice(), 655360)
+        ]
+    );
+    let indices = |p: &crate::Page| {
+        p.placements()
+            .iter()
+            .map(|x| match x {
+                Placement::Glyph { font, .. } => *font,
+                _ => panic!("expected glyph"),
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(indices(p), [0, 0, 1, 1, 0, 0, 1, 0, 2, 2]);
+    let p = out.pages.get(1).unwrap();
+    assert_eq!(p.fonts().len(), 2);
+    assert_eq!(p.fonts()[0].name(), b"other");
+    assert_eq!(p.fonts()[1].name(), b"test");
+    assert_eq!(indices(p), [0, 0, 1, 1]);
 }

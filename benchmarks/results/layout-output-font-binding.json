@@ -1,0 +1,115 @@
+{
+  "date": "2026-11-01T08:28:10.020507+00:00",
+  "change": "Bind the last resolved immutable font metrics and page-local font index within each page lowering traversal; preserve lazy glyph validation and resource registration order.",
+  "baseline_commit": "86a57cc425f5588cdb573ba8a78dc49a546bbdd1",
+  "build": "cargo build --release --bin umber --lib; default features, no extra rustflags",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "cpu": 3,
+  "warmups": 1,
+  "repetitions": 9,
+  "order": "alternating sequential pairs",
+  "scope": "Complete ordinary release CLI, warm input/resources, fixed CPU, sequential alternating pairs. Original three 600-paragraph inputs preserved unchanged; mixed Gentle workload uses existing source/generator/resources documented in layout-metric-reader.json. Short shared-host measurements; narrow is flat, and these results do not establish general TeX/LaTeX performance.",
+  "binary_sha256": {
+    "before": "cc40b6048303dbbd0547818fb19ab842f2597142c2881ee4a4ef00c7a982799c",
+    "after": "05055d67743fa170cc3aaf6d114cbc778a6d0b6892b7fa7bd9efbf3df515771d"
+  },
+  "measured_candidate": "Isolated prototype, integrated with byte-identical runtime source. Binary hashes identify timed prototype and baseline; build paths differ from integration.",
+  "candidate_sources_sha256": {
+    "crates/umber/src/page_output.rs": "65c262d29eb188973f4cf3dc90622fe86a65cd2a3d2ff10e6d9a10ff1e427a68"
+  },
+  "font_sha256": {
+    "aer10": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+    "aeti10": "243599dca0a4928095620eb211da7313bb697d2a8f94dc9400a2a08f063de09e",
+    "aett10": "a9d121fc0cdd2bb8da196b14d83dab942550822a74bdae00bbece241434c4c42",
+    "lcmss8": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+    "icmtt8": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24"
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "cpu_ms": {
+        "before": [56.312, 52.747, 53.594, 52.39, 53.15, 52.185, 52.612, 56.819, 52.959],
+        "after": [54.292, 52.997, 51.614, 51.557, 52.314, 52.008, 52.02, 52.758, 53.986]
+      },
+      "wall_ms": {
+        "before": [56.604396, 53.073805, 53.917072, 52.6878, 53.47488, 52.467991, 52.912571, 57.30747, 53.258683],
+        "after": [54.632321, 53.329732, 51.934555, 51.876955, 52.650962, 52.327883, 52.346209, 53.18438, 54.292798]
+      },
+      "median_cpu_ms": {
+        "before": 52.959,
+        "after": 52.314
+      },
+      "cpu_change_percent": -1.2179
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "cpu_ms": {
+        "before": [51.855, 58.252, 54.075, 55.852, 57.984, 53.766, 53.164, 52.561, 58.315],
+        "after": [54.115, 53.551, 56.769, 53.88, 56.047, 52.659, 53.443, 57.551, 64.891]
+      },
+      "wall_ms": {
+        "before": [52.18974, 58.560077, 54.404904, 56.188808, 58.34071, 54.096894, 53.519023, 52.914619, 58.654025],
+        "after": [54.391455, 53.825799, 57.072022, 54.174138, 56.452845, 53.101488, 53.799986, 57.899645, 65.275771]
+      },
+      "median_cpu_ms": {
+        "before": 54.075,
+        "after": 54.115
+      },
+      "cpu_change_percent": 0.074
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "cpu_ms": {
+        "before": [47.782, 47.033, 53.466, 47.925, 45.614, 46.276, 46.04, 46.531, 45.817],
+        "after": [45.432, 46.023, 55.468, 48.03, 46.22, 44.858, 46.024, 45.618, 45.656]
+      },
+      "wall_ms": {
+        "before": [48.160449, 47.408105, 53.88495, 48.228354, 45.904581, 46.592408, 46.348854, 46.807694, 46.052517],
+        "after": [45.789976, 46.384909, 55.920709, 48.398343, 46.583641, 45.12273, 46.280363, 45.880992, 45.938632]
+      },
+      "median_cpu_ms": {
+        "before": 46.531,
+        "after": 46.023
+      },
+      "cpu_change_percent": -1.0917
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "cpu_ms": {
+        "before": [51.786, 50.935, 52.169, 52.0, 51.856, 53.664, 51.35, 49.646, 51.951],
+        "after": [50.002, 50.196, 51.979, 51.34, 50.796, 50.668, 51.49, 51.669, 50.818]
+      },
+      "wall_ms": {
+        "before": [52.094203, 51.188947, 52.451914, 52.256697, 52.09096, 53.994426, 51.684649, 50.018138, 52.204453],
+        "after": [50.259403, 50.469534, 52.298693, 51.644737, 51.032385, 50.926919, 51.813965, 51.968399, 51.201831]
+      },
+      "median_cpu_ms": {
+        "before": 51.856,
+        "after": 50.818
+      },
+      "cpu_change_percent": -2.0017
+    }
+  ],
+  "mixed_callgrind": {
+    "instructions": {
+      "before": 347041690,
+      "after": 338892977
+    },
+    "output_font_resolutions_and_dedup_searches": {
+      "before": 214500,
+      "after": 6689
+    },
+    "glyphs": 214500,
+    "pages": 106,
+    "rules": 300,
+    "interpretation": "Callgrind instructions from ordinary default-feature release CLI, not CPU time. Every glyph retains its presence check; Page::font already clones only upon first resource registration."
+  },
+  "validation": "166 library tests and all three native oracle adapters pass; complete output signatures, native DVI placements and retained-root replay equal on originals book/narrow/dense and mixed; page tests cover distinct document IDs aliasing one resource, distinct same-byte resources, returning from mixed-font nested box, consecutive-page index reset, cached missing glyph and invalid font before publication; fmt/Clippy pass.",
+  "integration_validation": "Runtime source and focused tests are byte-identical to the validated prototype. All 17 page tests, rustfmt, Clippy with warnings denied, default release CLI/library/layout-example build, measured input/source identity checks, and mixed CLI output comparison pass. No additional timing sweep.",
+  "reproduction": "Preserve target/benchmark/layout/{book,narrow,dense}.tex; layout.py would regenerate changed documentation prose. Rebuild default-feature release CLI, save before/after binaries, use benchmarks/layout.py child CPU/wall accounting with one warmup and nine sequential alternating pairs on CPU3. Recreate mixed source with benchmarks/corpus/gentle-layout.py from the complete local Gentle source; match its recorded source SHA and the existing INITEX/font setup from layout-metric-reader.json. No additional corpus excerpts or harness are committed."
+}

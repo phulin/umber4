@@ -17,6 +17,11 @@ glyph and box y coordinates denote baselines, while rules use top-left corners.
 Font indices are page-local. `FontResource` exposes source name, exact retained TFM
 bytes, design/scaled size, and immutable glyph metrics, independent of the engine.
 
+Within each page traversal, a local binding reuses the last glyph font's borrowed
+immutable metrics and page-local index. Every glyph still checks character
+existence before placement; resource registration follows successful validation.
+The binding spans nested boxes and is discarded before the next page.
+
 The traversal uses existing node lists and cumulative glue rounding, writes
 records directly into typed pooled buffers, and releases the live page tree on
 success or failure. Only complete successful traversals append a page record.
