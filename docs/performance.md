@@ -101,6 +101,12 @@ resource caches. This comparison covers text composition with different output
 endpoints; it excludes package/format loading, hyphenation patterns, math, custom
 output routines, and PDF serialization.
 
+Detached pages retain compact glyph runs and immutable font metrics. The ordinary
+CLI does not scan the positioned-placement iterator; each consumer scan reconstructs
+intra-run positions and adds metric reads. Construction-plus-scan and repeated-scan
+costs, storage, and the forward-iterator API are measured separately in the
+[glyph-run report](../benchmarks/results/layout-glyph-runs.json).
+
 The process helper also retains user CPU, system CPU, and minor page faults from
 the same child usage record. These include startup, input, output, and teardown;
 they do not isolate interpreter phases. Per-field medians need not sum to the
