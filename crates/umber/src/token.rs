@@ -176,7 +176,7 @@ pub(crate) mod cmd {
         FUTURELET = 40 => [b"futurelet"] assignment;
         AFTER_ASSIGN = 42 => [b"afterassignment"];
         AFTER_GROUP = 43 => [b"aftergroup"];
-        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty"] assignment;
+        INTEGER_PARAM = 44 => [b"globaldefs", b"escapechar", b"time", b"day", b"month", b"year", b"mag", b"defaulthyphenchar", b"defaultskewchar", b"pretolerance", b"tolerance", b"linepenalty", b"hyphenpenalty", b"exhyphenpenalty", b"adjdemerits", b"doublehyphendemerits", b"finalhyphendemerits", b"looseness", b"hangafter", b"interlinepenalty", b"clubpenalty", b"widowpenalty", b"brokenpenalty", b"outputpenalty", b"hbadness", b"vbadness", b"binoppenalty", b"relpenalty", b"displaywidowpenalty", b"predisplaypenalty", b"tracinglostchars", b"uchyph", b"newlinechar", b"delimiterfactor", b"showboxbreadth", b"showboxdepth", b"errorcontextlines"] assignment;
         CASE_CODE = 45 => [b"lccode", b"uccode"] assignment;
         CHANGE_CASE = 46 => [b"lowercase", b"uppercase"];
         PROTECTED = 47 => [b"protected"];
@@ -200,8 +200,8 @@ pub(crate) mod cmd {
         SKIP = 94 => [b"skip"] assignment;
         SKIP_REF = 95 => [] assignment;
         SKIP_DEF = 96 => [b"skipdef"] assignment;
-        DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz"] assignment;
-        GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip"] assignment;
+        DIMEN_PARAM = 97 => [b"hsize", b"vsize", b"maxdepth", b"parindent", b"hangindent", b"emergencystretch", b"lineskiplimit", b"hfuzz", b"vfuzz", b"overfullrule", b"splitmaxdepth", b"boxmaxdepth", b"delimitershortfall", b"nulldelimiterspace", b"scriptspace"] assignment;
+        GLUE_PARAM = 98 => [b"baselineskip", b"lineskip", b"parskip", b"topskip", b"leftskip", b"rightskip", b"parfillskip", b"spaceskip", b"xspaceskip", b"abovedisplayskip", b"abovedisplayshortskip", b"belowdisplayskip", b"belowdisplayshortskip", b"splittopskip"] assignment;
         FONT = 100 => [b"font"] assignment;
         SELECT_FONT = 101 => [b"nullfont"] assignment;
         FONT_DIMEN = 102 => [b"fontdimen"] assignment;

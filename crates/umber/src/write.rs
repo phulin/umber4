@@ -45,7 +45,7 @@ impl Engine<'_> {
             self.with_scanner(Scanner::Absorbing, |engine| {
                 engine.opening_brace()?;
                 engine.scan_body::<true>(None, &mut |engine: &mut Self, token: Token| {
-                    engine.print_token(token, &mut bytes);
+                    engine.print_token::<false>(token, &mut bytes);
                     Ok(())
                 })?;
                 Ok(())

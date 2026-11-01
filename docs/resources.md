@@ -167,8 +167,22 @@ this slice, and select terminal-and-log output, as do nonnegative streams above
 15 other than unsupported stream 18. Each successful write appends one owned
 diagnostic record after expansion and validation have finished. Rendering uses
 the same supported token spelling and printable-byte rules as message output.
-Rendering follows the default `\newlinechar=-1` behavior; the parameter itself
-is outside the current primitive slice.
+`\newlinechar` is restored integer state, initially zero as in INITEX. A rendered
+token byte equal to its value emits LF into the diagnostic payload before
+nonprinting bytes are expanded into their `^^` spelling. Values outside 0 through
+255 disable matching. Direct writes disable newline matching inside a generated
+`^^` spelling. Messages follow native pdfTeX's two printing stages: unmatched
+nonprinting bytes first produce their spelling, and the final string output
+checks each generated spelling byte for a newline match. Thus a newline value
+of 94 splits the two carets of a message's `^^A`, while a write retains `^^A`.
+This composition writes directly into the diagnostic payload; no intermediate
+message string is retained. String, meaning, and token-list conversions retain their
+ordinary bytes until diagnostic rendering; retained diagnostics already contain
+their emitted line breaks and are not reinterpreted after a parameter change or
+checkpoint restore. Both diagnostic destinations use the same rendering path.
+The message-specific stages follow the native
+[encTeX printing changes](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/enctexdir/enctex1.ch)
+and [message changes](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/enctexdir/enctex2.ch).
 
 `Outcome::diagnostics` is one chronological `Vec<Diagnostic>` containing
 `Message` payloads and `Write` payloads with an explicit diagnostic destination.

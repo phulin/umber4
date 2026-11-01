@@ -59,6 +59,12 @@ pub(crate) enum DimenParam {
     LineSkipLimit,
     HFuzz,
     VFuzz,
+    OverfullRule,
+    SplitMaxDepth,
+    BoxMaxDepth,
+    DelimiterShortfall,
+    NullDelimiterSpace,
+    ScriptSpace,
 }
 #[allow(dead_code)]
 impl DimenParam {
@@ -79,6 +85,11 @@ pub(crate) enum GlueParam {
     ParFill,
     Space,
     XSpace,
+    AboveDisplay,
+    AboveDisplayShort,
+    BelowDisplay,
+    BelowDisplayShort,
+    SplitTop,
 }
 #[allow(dead_code)]
 impl GlueParam {

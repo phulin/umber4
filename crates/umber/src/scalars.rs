@@ -24,6 +24,7 @@ impl Target {
     pub const MAG: Self = Self((PARAM_BASE + 6) as u16);
     pub const DEFAULT_HYPHEN: Self = Self((PARAM_BASE + 7) as u16);
     pub const DEFAULT_SKEW: Self = Self((PARAM_BASE + 8) as u16);
+    pub const NEWLINECHAR: Self = Self((PARAM_BASE + 32) as u16);
     pub fn paragraph(parameter: ParagraphParam) -> Self {
         Self::parameter(9 + parameter as usize)
     }

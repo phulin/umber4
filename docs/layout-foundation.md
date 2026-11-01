@@ -46,11 +46,32 @@ The supported numeric primitives are `\dimen`, `\dimendef`, `\skip`,
 `\skipdef`, `\ifdim`, `\mag`, and their existing assignment/arithmetic and
 conversion paths. Register indices are 0–255. New dimension parameters are
 `\hsize`, `\vsize`, `\maxdepth`, `\parindent`, `\hangindent`,
-`\emergencystretch`, `\lineskiplimit`, `\hfuzz`, and `\vfuzz`.
+`\emergencystretch`, `\lineskiplimit`, `\hfuzz`, `\vfuzz`, `\overfullrule`,
+`\splitmaxdepth`, `\boxmaxdepth`, `\delimitershortfall`, `\nulldelimiterspace`,
+and `\scriptspace`.
 Glue parameters are `\baselineskip`, `\lineskip`, `\parskip`, `\topskip`,
-`\leftskip`, `\rightskip`, `\parfillskip`, `\spaceskip`, and `\xspaceskip`.
+`\leftskip`, `\rightskip`, `\parfillskip`, `\spaceskip`, `\xspaceskip`,
+`\abovedisplayskip`, `\abovedisplayshortskip`, `\belowdisplayskip`,
+`\belowdisplayshortskip`, and `\splittopskip`.
 Their initial values are zero, as in INITEX; `\mag` starts at 1000. Loading
-plain-format conventions is outside this foundation.
+macro-package conventions uses ordinary assignments rather than a preset format.
+
+Integer initialization state also includes `\hbadness`, `\vbadness`,
+`\binoppenalty`, `\relpenalty`, `\displaywidowpenalty`, `\predisplaypenalty`,
+`\tracinglostchars`, `\uchyph`, `\newlinechar`, `\delimiterfactor`,
+`\showboxbreadth`, `\showboxdepth`, and `\errorcontextlines`. These start at
+zero and accept signed integers without per-parameter clamping. Their slots use
+the existing scalar array, save levels, and checkpoint copy; dimension and glue
+parameters share their existing typed COW roots. Reads, aliases, arithmetic,
+`\globaldefs`, and after-assignment tokens use the ordinary quantity/assignment
+paths. Invalid syntax or numeric overflow leaves the preceding binding intact.
+
+This state contract does not implement math/display layout, hyphenation,
+insertion splitting, packing warnings, lost-character tracing, or box/context
+diagnostics. Those consumers remain unsupported; accepting and retaining their
+parameter assignments does not claim those rendering or diagnostic effects.
+`\newlinechar` does affect emitted messages and immediate diagnostic writes as
+defined in [resources.md](resources.md).
 
 ## Mutable nodes
 

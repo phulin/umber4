@@ -230,7 +230,7 @@ impl Engine<'_> {
                     engine.opening_brace()?;
                     let mut bytes = Vec::new();
                     engine.scan_body::<true>(None, &mut |engine: &mut Self, token: Token| {
-                        engine.print_token(token, &mut bytes);
+                        engine.print_token::<true>(token, &mut bytes);
                         Ok(())
                     })?;
                     engine
@@ -381,24 +381,38 @@ impl Engine<'_> {
             }
         }
     }
-    pub(crate) fn print_token(&mut self, token: Token, output: &mut Vec<u8>) {
-        self.token_text(token, true, |_, byte| {
-            Self::print_byte(byte, output);
+    pub(crate) fn print_token<const MESSAGE: bool>(&mut self, token: Token, output: &mut Vec<u8>) {
+        self.token_text(token, true, |engine, byte| {
+            engine.print_byte::<MESSAGE>(byte, output);
             Ok(())
         })
         .unwrap();
     }
-    fn print_byte(byte: u8, output: &mut Vec<u8>) {
-        if (32..=126).contains(&byte) {
+    fn print_byte<const MESSAGE: bool>(&self, byte: u8, output: &mut Vec<u8>) {
+        let newline = self.document.scalars[Target::NEWLINECHAR].value;
+        if i32::from(byte) == newline {
+            output.push(b'\n');
+        } else if (32..=126).contains(&byte) {
             output.push(byte);
         } else {
-            output.extend_from_slice(b"^^");
-            if byte < 128 {
-                output.push(byte ^ 64);
+            let mut spelling = [b'^', b'^', 0, 0];
+            let length = if byte < 128 {
+                spelling[2] = byte ^ 64;
+                3
             } else {
                 let hex = b"0123456789abcdef";
-                output.push(hex[(byte >> 4) as usize]);
-                output.push(hex[(byte & 15) as usize]);
+                spelling[2] = hex[(byte >> 4) as usize];
+                spelling[3] = hex[(byte & 15) as usize];
+                4
+            };
+            for &rendered in &spelling[..length] {
+                // Native pdfTeX composes message_printing with print(string).
+                // Direct writes disable newline matching inside this spelling.
+                output.push(if MESSAGE && i32::from(rendered) == newline {
+                    b'\n'
+                } else {
+                    rendered
+                });
             }
         }
     }
