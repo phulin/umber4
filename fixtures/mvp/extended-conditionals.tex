@@ -12,4 +12,13 @@
 \catcode64=13\def@{X}
 \message{UMBER:\ifcat\noexpand@\noexpand@ACTIVE\else BAD\fi/\if\noexpand@\noexpand@YES\else BAD\fi:END}
 \message{UMBER:\iffalse\unless\ifdefined\missing BAD\else BAD\fi\else OK\fi:END}
+\message{UMBER:\ifdefined\freshoperand BAD\else UNDEFINED\fi/\ifx\firstoperand\secondoperand SAME\else BAD\fi/\ifx\thirdoperand\relax BAD\else DIFFERENT\fi:END}
+\let\knownundefined=\ordinaryundefined
+\message{UMBER:\ifx\freshcompare\knownundefined SAME\else BAD\fi:END}
+\def\lefttokens{\leftundefined}\def\righttokens{\rightundefined}
+\message{UMBER:\ifx\lefttokens\righttokens BAD\else DISTINCT\fi/\ifx\leftundefined\rightundefined SAME\else BAD\fi:END}
+\let\nestedtest=\iftrue\let\nestedend=\fi\let\skipelse=\else\let\caseor=\or
+\message{UMBER:\iffalse\shortmissing\nestedtest\thisisaverylongunknowncontrolwordwhichmustnotbeinternedwhileskippinganyconditionalbranch\nestedend\skipelse FALSE\fi/\iftrue TRUE\skipelse\shortmissing\fi/\ifcase1\relax\missingcase\caseor CASE\caseor\othercase\else\lastcase\fi:END}
+\catcode64=11\relax
+\message{UMBER:\iffalse\unknown@word\tr^^61nslatedskip^^5cfi TRANSLATED:END}
 \end

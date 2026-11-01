@@ -172,6 +172,138 @@ fn malformed_conditional_names_preserve_error_order_and_return_scratch() {
 }
 
 #[test]
+fn skipped_file_names_do_not_retain_symbols_across_restore() {
+    let short = "skippedshort";
+    let long = "skippedlong".repeat(18);
+    for source in [
+        format!(r"\iffalse\{short}\{long}\iftrue\{short}\fi\else\count0=7\relax\fi\end"),
+        format!(r"\iftrue\count0=7\relax\else\{short}\{long}\fi\end"),
+        format!(
+            r"\ifcase1\relax\{short}\{long}\or\count0=7\relax\or\{short}\{long}\else\{short}\fi\end"
+        ),
+        format!(r"\ifcase-1\relax\{short}\or\{long}\else\count0=7\relax\fi\end"),
+    ] {
+        let mut engine = Engine::new(source.as_bytes());
+        let before = retained_state(&engine);
+        let initial = engine.checkpoint().unwrap();
+        for _ in 0..3 {
+            engine.run_input().unwrap();
+            assert_eq!(engine.outcome().counts[0], 7);
+            assert_eq!(engine.names.lookup(short.as_bytes()), None);
+            assert_eq!(engine.names.lookup(long.as_bytes()), None);
+            assert_eq!(retained_state(&engine), before);
+            engine.restore(&initial).unwrap();
+        }
+    }
+}
+
+#[test]
+fn conditional_operands_compare_undefined_meanings_without_interning() {
+    let source = br"\ifdefined\neverdefined\count0=99\relax\else\count0=7\relax\fi
+\ifx\firstunseen\secondunseen\count1=7\relax\fi
+\ifx\thirdunseen\residentundefined\count2=7\relax\fi
+\ifx\fourthunseen\relax\count3=99\relax\else\count3=7\relax\fi\end";
+    let mut engine = Engine::new(source);
+    engine.intern(b"residentundefined").unwrap();
+    let before = retained_state(&engine);
+    let initial = engine.checkpoint().unwrap();
+    for _ in 0..3 {
+        engine.run_input().unwrap();
+        assert_eq!(engine.outcome().counts[..4], [7; 4]);
+        assert_eq!(retained_state(&engine), before);
+        engine.restore(&initial).unwrap();
+    }
+}
+
+#[test]
+fn lookup_meanings_do_not_alias_relax_or_grow_restored_binding_extent() {
+    let mut engine = Engine::new(br"\oldidentity\freshidentity\relax\freshidentity");
+    let initial = engine.checkpoint().unwrap();
+    let old = engine.intern(b"oldidentity").unwrap();
+    engine.restore(&initial).unwrap();
+    assert!(old as usize >= engine.document.bindings.len());
+    let before = retained_state(&engine);
+    for _ in 0..2 {
+        let missing = engine.next_lookup_meaning().unwrap();
+        assert_eq!(missing, Meaning::UNDEFINED);
+        assert_ne!(missing, Meaning::RELAX);
+        assert_eq!(retained_state(&engine), before);
+    }
+    assert_eq!(engine.next_lookup_meaning().unwrap(), Meaning::RELAX);
+    assert_eq!(retained_state(&engine), before);
+    let ordinary = engine.next_token().unwrap();
+    assert_eq!(ordinary.meaning, Meaning::UNDEFINED);
+    assert!(ordinary.token.id() < crate::token::CS as usize);
+    assert_eq!(
+        engine.names.lookup(b"freshidentity"),
+        Some(ordinary.token.id() as u32)
+    );
+    assert_eq!(engine.names.len(), before.0 + 1);
+    engine.push_inline([ordinary.token, crate::token::Token(0)], 1, true);
+    assert_eq!(
+        engine.next_lookup_meaning().unwrap(),
+        Meaning::NOEXPAND_RELAX
+    );
+}
+
+#[test]
+fn skipped_stored_tokens_aliases_and_argument_cleanup_preserve_identities() {
+    let source = br"\catcode123=1\catcode125=2\catcode35=6\relax
+\let\test=\iftrue\let\done=\fi\let\other=\else\let\next=\or
+\let\held=\storedunknown\def\skip#1{\iffalse#1}
+\def\left{\storedleft}\def\right{\storedright}\count9=1\relax
+\skip{\storedunknown}\fileonlyunknown\test\insidenested\done\other
+\count0=7\relax\done
+\ifcase1\relax\caseunknown\next\count1=7\relax\next\caseunknown\other\caseunknown\done
+\ifx\left\right\count2=99\relax\other\count2=7\relax\done
+\ifx\storedleft\storedright\count3=7\relax\done\end";
+    let mut engine = Engine::new(source);
+    while engine.outcome().counts[9] == 0 {
+        assert_ne!(engine.advance(1).unwrap(), Progress::Complete);
+    }
+    let before = retained_state(&engine);
+    let stored = engine.names.lookup(b"storedunknown").unwrap();
+    assert_ne!(
+        engine.names.lookup(b"storedleft"),
+        engine.names.lookup(b"storedright")
+    );
+    let initial = engine.checkpoint().unwrap();
+    for _ in 0..3 {
+        engine.run_input().unwrap();
+        assert_eq!(engine.outcome().counts[..4], [7; 4]);
+        assert_eq!(retained_state(&engine), before);
+        assert_eq!(engine.names.lookup(b"storedunknown"), Some(stored));
+        assert!(engine.document.sources.is_empty());
+        assert!(engine.packets.iter().all(|packet| packet.owners.is_empty()));
+        engine.restore(&initial).unwrap();
+    }
+}
+
+#[test]
+fn skipped_names_keep_current_categories_translation_and_error_order() {
+    let source = br"\catcode94=7\catcode64=11\relax
+\iffalse\unknown@word\tr^^61nslatedskip^^5cfi\count0=7\relax\end";
+    let mut engine = Engine::new(source);
+    let before = retained_state(&engine);
+    engine.run_input().unwrap();
+    assert_eq!(engine.outcome().counts[0], 7);
+    assert_eq!(retained_state(&engine), before);
+    assert_eq!(engine.names.lookup(b"unknown@word"), None);
+    assert_eq!(engine.names.lookup(b"translatedskip"), None);
+    for (source, error) in [
+        (br"\iffalse\discarded".as_slice(), Error::Eof),
+        (b"\\iffalse\\discarded\x7f", Error::Syntax),
+        (b"\\ifx\\discarded\x7f", Error::Syntax),
+    ] {
+        let mut engine = Engine::new(source);
+        let before = retained_state(&engine);
+        assert_eq!(engine.run_input(), Err(error));
+        assert_eq!(retained_state(&engine), before);
+        assert!(!engine.can_checkpoint());
+    }
+}
+
+#[test]
 fn published_spellings_survive_suffix_writes_and_chunk_growth() {
     let mut store = SpellingStore::default();
     let empty = store.append(b"");

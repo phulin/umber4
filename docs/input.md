@@ -46,8 +46,8 @@ or produce the control-sequence identity `\par`. A comment discards the rest of
 the prepared line. An ignored character produces no token. An invalid character
 takes the compatibility error path before reading continues.
 
-An escape scans a control word using the current letter category, or one
-nonletter for a control symbol, then interns its byte spelling. A control word
+An ordinary token read scans an escaped control word using the current letter
+category, or one nonletter for a control symbol, then interns its byte spelling. A control word
 switches to skipping blanks. A control symbol takes TeX's category-dependent state
 transition; control space uses the special space handling. Active characters
 produce active-character IDs rather than ordinary character tokens.
@@ -116,6 +116,14 @@ storage only when lookup misses.
 The MVP uses its own packed name table for probing and growth. Entries retain a
 hash fragment and stable name ID; spelling bytes remain in the session arena.
 
+Skipped conditional text and the unexpanded operands of `\ifdefined` and `\ifx`
+need only current meanings. Their file reads share the same lexical cursor and
+hash probe but do not insert missing control words or grow binding storage.
+An absent spelling has undefined meaning. Already stored tokens retain their
+original identities, including distinct undefined names in macro text, and their
+ordinary one-read suppression behavior. Normal token reads still intern names;
+`\csname` also creates an identity and defines it as `\relax` when required.
+
 Single-character control sequences and active-character identities can use
 preassigned dense IDs. The empty control-sequence name has its own identity.
 Named identities and current meanings remain separate; name lookup does not make
@@ -124,7 +132,7 @@ assignment, as `\csname` does in the relevant profile.
 
 The spelling stored by the interner is the interpreter's byte spelling. Printable
 escaping and `\escapechar` belong to conversion and diagnostic formatting, not
-to the identity. Rollback retains names discovered later in the document.
+to the identity. Rollback retains names interned later in the document.
 
 ## 5. Scanner functions
 

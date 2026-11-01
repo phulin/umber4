@@ -53,6 +53,8 @@ restored meanings until assigned again.
 Negative `\ifcsname` lookup does not intern its completed name; ordinary token
 reads and `\csname` creation during its operand expansion retain their usual
 name identities across restore.
+Skipped file control words and unexpanded `\ifdefined`/`\ifx` operands likewise
+add no name identities or binding extent.
 
 Live packet slots remain reusable expansion storage. A checkpoint copies only
 active argument span descriptors into its own immutable metadata buffers and

@@ -30,7 +30,7 @@ impl Engine<'_> {
             cmd::IFFALSE => false,
             cmd::IFCASE => choice == 0,
             cmd::IFODD => self.scan_int()? & 1 != 0,
-            cmd::IFDEFINED => self.next_token()?.meaning != Meaning::UNDEFINED,
+            cmd::IFDEFINED => self.next_lookup_meaning()? != Meaning::UNDEFINED,
             cmd::IFCSNAME => {
                 let id = self.scan_name_with(|engine, name| Ok(engine.names.lookup(name)))?;
                 id.is_some_and(|id| {
@@ -38,8 +38,8 @@ impl Engine<'_> {
                 })
             }
             cmd::IFX => {
-                let a = self.next_token()?.meaning;
-                let b = self.next_token()?.meaning;
+                let a = self.next_lookup_meaning()?;
+                let b = self.next_lookup_meaning()?;
                 self.same_meaning(a, b)
             }
             cmd::IF | cmd::IFCAT => {
@@ -133,7 +133,7 @@ impl Engine<'_> {
         let mut depth = 0;
         loop {
             self.skip_characters();
-            let meaning = self.next_token()?.meaning;
+            let meaning = self.next_lookup_meaning()?;
             if meaning.is_conditional() {
                 depth += 1;
             } else if meaning.command == cmd::FI {

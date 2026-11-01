@@ -3,6 +3,12 @@ use crate::{Engine, Error, Result, names::Names, token::*, values::Builder};
 // Installed token sources, including generated text, share one nesting limit.
 const MAX_SOURCES: usize = 10000;
 
+// Lookup-only reads expose only a Meaning. A missing file name uses the first
+// impossible name ID: Names::insert rejects IDs >= CS in release builds too.
+// The binding table's out-of-range default resolves it as undefined. This token
+// never reaches ordinary readers, stored input, assignments, or diagnostics.
+const MISSING_NAME: Token = Token(2 * CS);
+
 #[derive(Clone)]
 pub(crate) struct FileInput<'a> {
     bytes: &'a [u8],
@@ -175,6 +181,15 @@ impl<'a> FileInput<'a> {
         names: &mut Names,
         par: Token,
     ) -> Result<Token> {
+        self.read_with::<true>(cats, endline, names, par)
+    }
+    fn read_with<const INTERN: bool>(
+        &mut self,
+        cats: &[Integer; 256],
+        endline: i32,
+        names: &mut Names,
+        par: Token,
+    ) -> Result<Token> {
         loop {
             if self.position == self.line.len() {
                 self.load(endline)?;
@@ -219,7 +234,15 @@ impl<'a> FileInput<'a> {
                         return Ok(if self.position - start == 1 {
                             Token::single(first)
                         } else {
-                            Token::cs(names.intern_hashed(&self.line[start..self.position], hash)?)
+                            let name = &self.line[start..self.position];
+                            let id = if INTERN {
+                                names.intern_hashed(name, hash)?
+                            } else if let Some(id) = names.lookup_hashed(name, hash) {
+                                id
+                            } else {
+                                return Ok(MISSING_NAME);
+                            };
+                            Token::cs(id)
                         });
                     }
                     self.position += 1;
@@ -270,19 +293,37 @@ impl Engine<'_> {
         }
         Ok(())
     }
+    #[inline]
+    pub(crate) fn next_raw(&mut self) -> Result<Raw> {
+        self.next_raw_with::<true>()
+    }
+    // Consumers of non-inserting file lookup receive only the effective
+    // meaning, so a missing spelling cannot escape as a token identity.
+    pub(crate) fn next_lookup_meaning(&mut self) -> Result<Meaning> {
+        let raw = self.next_raw_with::<false>()?;
+        Ok(self.raw_meaning(raw))
+    }
     // Debug scanner recursion keeps a reader call boundary instead of
     // duplicating its unoptimized temporaries in every expansion frame.
     #[cfg_attr(not(debug_assertions), inline(always))]
-    pub(crate) fn next_raw(&mut self) -> Result<Raw> {
+    fn next_raw_with<const INTERN: bool>(&mut self) -> Result<Raw> {
         loop {
             let Some(source) = self.document.sources.last_mut() else {
-                let token = self.document.file.read(
-                    self.document.scalars.catcodes(),
-                    self.document.scalars[crate::scalars::Target::ENDLINE].value,
-                    &mut self.names,
-                    self.document.par,
-                )?;
-                if self.names.len() > self.document.bindings.len() {
+                let cats = self.document.scalars.catcodes();
+                let endline = self.document.scalars[crate::scalars::Target::ENDLINE].value;
+                let token = if INTERN {
+                    self.document
+                        .file
+                        .read(cats, endline, &mut self.names, self.document.par)?
+                } else {
+                    self.document.file.read_with::<false>(
+                        cats,
+                        endline,
+                        &mut self.names,
+                        self.document.par,
+                    )?
+                };
+                if INTERN && self.names.len() > self.document.bindings.len() {
                     self.grow_bindings(self.names.len());
                 }
                 return Ok(Raw {

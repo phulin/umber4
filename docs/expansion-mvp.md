@@ -32,6 +32,9 @@ and performs a non-inserting lookup: a missing name acquires neither a symbol ID
 nor retained spelling bytes. Expansion while building that name preserves its
 ordinary side effects, including creation by nested `\csname`. Name tests do not
 define a previously undefined name. This follows the [e-TeX conditional lookup contract](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/etexdir/etex.ch#L4616).
+Unexpanded `\ifdefined` and `\ifx` operands and skipped file control words also
+use non-inserting lookup. Undefined operands compare by meaning; undefined names
+already captured in macro text keep their distinct token identities.
 Skipping recognizes every supported conditional by its current
 meaning and leaves skipped macro bodies unexpanded. Case selection and boolean
 selection share the existing conditional stack; their operand progress remains

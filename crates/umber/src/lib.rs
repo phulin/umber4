@@ -223,14 +223,18 @@ impl<'a> Engine<'a> {
     #[inline(always)]
     pub(crate) fn next_token(&mut self) -> Result<Read> {
         let raw = self.next_raw()?;
+        Ok(Read {
+            token: raw.token,
+            meaning: self.raw_meaning(raw),
+        })
+    }
+    #[inline(always)]
+    pub(crate) fn raw_meaning(&self, raw: Raw) -> Meaning {
         let mut meaning = self.resolve(raw.token);
         if raw.suppress && meaning.expandable() {
             meaning = Meaning::NOEXPAND_RELAX;
         }
-        Ok(Read {
-            token: raw.token,
-            meaning,
-        })
+        meaning
     }
     #[inline(always)]
     pub(crate) fn next_expanded(&mut self) -> Result<Read> {

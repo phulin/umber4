@@ -67,7 +67,10 @@ impl Names {
         if name.len() == 1 {
             return Some(SINGLE_BASE + u32::from(name[0]));
         }
-        let bucket = self.buckets[self.find_slot(name, Self::hash(name))];
+        self.lookup_hashed(name, Self::hash(name))
+    }
+    pub fn lookup_hashed(&self, name: &[u8], hash: u64) -> Option<u32> {
+        let bucket = self.buckets[self.find_slot(name, hash)];
         (bucket != 0).then_some(bucket as u32)
     }
     fn hash(name: &[u8]) -> u64 {
