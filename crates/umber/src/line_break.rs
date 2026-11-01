@@ -171,6 +171,7 @@ pub(crate) fn find_breaks(
                 }
                 Kind::Insertion(_) | Kind::Adjustment(_) => {}
                 Kind::Language(new) => language = *new,
+                Kind::Unset(_) => return Err(Error::Unsupported),
                 Kind::Free => unreachable!(),
             }
             previous = p;

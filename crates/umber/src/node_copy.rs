@@ -92,6 +92,7 @@ impl NodeStore {
         let copied = match &node.kind {
             Kind::Language(language) => self.alloc_with_limit(Kind::Language(*language), limit)?,
             Kind::Free => unreachable!(),
+            Kind::Unset(_) => return Err(crate::Error::Unsupported),
             Kind::Character { font, character } => self.alloc_with_limit(
                 Kind::Character {
                     font: *font,

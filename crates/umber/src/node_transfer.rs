@@ -9,6 +9,40 @@ impl NodeStore {
         };
         self.boxes.take(id)
     }
+    pub fn mark_unset(&mut self, node: DetachedNode) -> DetachedNode {
+        let kind = self.kind_mut(node.id());
+        let Kind::Box(id) = std::mem::take(kind) else {
+            panic!("unset source must be a box")
+        };
+        *kind = Kind::Unset(id);
+        node
+    }
+    pub fn unset_mut(&mut self, node: NodeId) -> &mut BoxData {
+        let Kind::Unset(id) = &self.get(node).kind else {
+            panic!("not unset")
+        };
+        self.boxes.get_mut(id.0)
+    }
+    pub fn finish_unset(&mut self, node: NodeId) {
+        let kind = self.kind_mut(node);
+        let Kind::Unset(id) = std::mem::take(kind) else {
+            panic!("not unset")
+        };
+        *kind = Kind::Box(id);
+    }
+    /// Splice an owned chain after a member without reallocating either list.
+    pub fn insert_after(&mut self, list: &mut List, previous: NodeId, source: List) {
+        if source.is_empty() {
+            return;
+        }
+        assert!(!previous.is_null());
+        let next = self.get(previous).next;
+        self.get_mut(previous).next = source.head;
+        self.get_mut(source.tail).next = next;
+        if list.tail == previous {
+            list.tail = source.tail;
+        }
+    }
     /// Remove the successor of a list member, or its head when previous is null.
     pub fn remove_after(&mut self, list: &mut List, previous: NodeId) -> Option<DetachedNode> {
         if previous.is_null() {

@@ -153,6 +153,14 @@ A rightskip can retain an inert template owner after a paragraph break; changing
 the node to a penalty releases that owner. Lowering borrows templates repeatedly
 without modifying their lists, and final release visits each owned edge once.
 
+Unfinished horizontal alignment cells and rows use an `Unset(BoxId)` node tag
+with the same box slot and owned child list. Alignment-lifetime scalar records
+hold span/glue measurements; `BoxData` gains no cache. Normal packing, semantic
+copying and publication reject unfinished nodes. Private row packing measures
+unset geometry once, and finalization retags existing headers in place. COW
+copying retains the paired box/node roots, while release consumes an unset header
+exactly as a box. Active alignment roots exclude checkpoints.
+
 Nested release walks owned child lists using reusable session scratch, avoiding
 recursion and allocations per node. Scratch must be empty on return and is not
 checkpoint state. Chunk references retain their backing independently of engine

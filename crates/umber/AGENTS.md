@@ -88,6 +88,12 @@ boundaries, and native diagnostics and layout;
 formatting, `layout_values.rs` owns typed COW bindings, and `layout_assign.rs`
 applies typed assignments/arithmetic, with operand and fixture tests in
 `dimension_tests.rs`;
+`alignment_layout.rs` owns pure horizontal alignment cells/rows and reusable
+per-depth metadata; `alignment_finalize.rs` resolves sparse spans and finalizes
+unset boxes in place. `alignment_layout_tests.rs` and
+`alignment_layout_ownership_tests.rs` cover body handoff, pools, failure/replay,
+and Unset boundaries; `alignment_layout_oracle_tests.rs` compares constructed
+inputs with native halign geometry and DVI.
 `nodes.rs` owns versioned chunked node storage and consuming list/node transfers;
 `node_boxes.rs` owns its dense reusable COW box payload slots,
 with branch/reclamation tests in `nodes_tests.rs`;

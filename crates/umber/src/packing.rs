@@ -1,6 +1,6 @@
 //! Packing existing owned lists; the page builder can share glue calculations.
 use crate::{
-    Engine, Result,
+    Engine, Error, Result,
     layout_values::{DimenParam, GlueParam},
     nodes::{BoxData, DetachedNode, GlueKind, GlueSet, GlueSign, Kind, List, NodeId},
     numeric::{GlueOrder, Scaled},
@@ -23,7 +23,7 @@ pub(crate) struct HorizontalTotals {
     pub shrink: [i32; 4],
 }
 impl PackSpec {
-    fn target(self, natural: i32) -> Scaled {
+    pub(crate) fn target(self, natural: i32) -> Scaled {
         match self {
             Self::Natural => Scaled(natural),
             Self::To(target) => target,
@@ -72,6 +72,29 @@ pub(crate) fn glue_setting(
     }
     setting
 }
+pub(crate) fn baseline_glue(
+    values: &crate::layout_values::LayoutValues,
+    previous_depth: Scaled,
+    height: Scaled,
+) -> Option<Kind> {
+    if previous_depth.0 <= -65_536_000 {
+        return None;
+    }
+    let mut spec = values.glues[GlueParam::Baseline.index()].value;
+    let d = spec
+        .width
+        .0
+        .wrapping_sub(previous_depth.0)
+        .wrapping_sub(height.0);
+    let subtype = if d < values.dimens[DimenParam::LineSkipLimit.index()].value.0 {
+        spec = values.glues[GlueParam::Line.index()].value;
+        GlueKind::LineSkip
+    } else {
+        spec.width = Scaled(d);
+        GlueKind::BaselineSkip
+    };
+    Some(Kind::Glue { spec, subtype })
+}
 impl Engine<'_> {
     pub(crate) fn hpack(&mut self, list: List, spec: PackSpec) -> Result<DetachedNode> {
         self.hpack_with_totals(list, spec).map(|(node, _)| node)
@@ -81,7 +104,7 @@ impl Engine<'_> {
         list: List,
         spec: PackSpec,
     ) -> Result<(DetachedNode, HorizontalTotals)> {
-        self.hpack_inner(list, spec, None)
+        self.hpack_inner(list, spec, None, false)
     }
     /// Only paragraph lines and newly constructed direct vertical hboxes extract
     /// migrating material; ordinary retained hboxes keep these zero-size owners.
@@ -100,13 +123,18 @@ impl Engine<'_> {
         spec: PackSpec,
         adjustments: &mut List,
     ) -> Result<(DetachedNode, HorizontalTotals)> {
-        self.hpack_inner(list, spec, Some(adjustments))
+        self.hpack_inner(list, spec, Some(adjustments), false)
+    }
+    pub(crate) fn hpack_alignment_row(&mut self, list: List) -> Result<DetachedNode> {
+        self.hpack_inner(list, PackSpec::Natural, None, true)
+            .map(|(node, _)| node)
     }
     fn hpack_inner(
         &mut self,
         mut list: List,
         spec: PackSpec,
         mut adjustments: Option<&mut List>,
+        allow_unset: bool,
     ) -> Result<(DetachedNode, HorizontalTotals)> {
         let mut totals = HorizontalTotals::default();
         let mut metrics = crate::fonts::MetricReader::new(&self.document.fonts, &self.font_catalog);
@@ -126,6 +154,16 @@ impl Engine<'_> {
                     totals.width.0 = totals.width.0.wrapping_add(m.width.0);
                     totals.height.0 = totals.height.0.max(m.height.0);
                     totals.depth.0 = totals.depth.0.max(m.depth.0);
+                }
+                Kind::Unset(b) => {
+                    if !allow_unset {
+                        self.document.nodes.release(list, &mut self.page_release);
+                        return Err(Error::Unsupported);
+                    }
+                    let b = self.document.nodes.box_data(b);
+                    totals.width.0 = totals.width.0.wrapping_add(b.width.0);
+                    totals.height.0 = totals.height.0.max(b.height.0);
+                    totals.depth.0 = totals.depth.0.max(b.depth.0);
                 }
                 Kind::Box(b) => {
                     let b = self.document.nodes.box_data(b);
@@ -216,6 +254,10 @@ impl Engine<'_> {
         while !p.is_null() {
             let n = self.document.nodes.get(p);
             match &n.kind {
+                Kind::Unset(_) => {
+                    self.document.nodes.release(list, &mut self.page_release);
+                    return Err(Error::Unsupported);
+                }
                 Kind::Box(b) => {
                     let b = self.document.nodes.box_data(b);
                     natural = natural.wrapping_add(depth).wrapping_add(b.height.0);
@@ -286,29 +328,14 @@ impl Engine<'_> {
             }
             _ => unreachable!(),
         };
-        if self.document.text.prev_depth.0 > -65_536_000 {
-            let mut glue = self.document.layout_values.glues[GlueParam::Baseline.index()].value;
-            let d = glue
-                .width
-                .0
-                .wrapping_sub(self.document.text.prev_depth.0)
-                .wrapping_sub(height.0);
-            let limit = self.document.layout_values.dimens[DimenParam::LineSkipLimit.index()]
-                .value
-                .0;
-            let subtype = if d < limit {
-                glue = self.document.layout_values.glues[GlueParam::Line.index()].value;
-                GlueKind::LineSkip
-            } else {
-                glue.width = Scaled(d);
-                GlueKind::BaselineSkip
-            };
+        if let Some(kind) = baseline_glue(
+            &self.document.layout_values,
+            self.document.text.prev_depth,
+            height,
+        ) {
             // If adding the baseline node fails, retain the still-owned box in
             // the vertical root so error/restore bulk release reaches its list.
-            match self.document.nodes.alloc(Kind::Glue {
-                spec: glue,
-                subtype,
-            }) {
+            match self.document.nodes.alloc(kind) {
                 Ok(node) => self
                     .document
                     .nodes

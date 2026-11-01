@@ -103,7 +103,10 @@ impl Engine<'_> {
             [crate::scalars::Target::page(crate::scalars::PageParam::OutputPenalty)]
         .value;
         let Kind::Box(b) = &self.document.nodes.get(node.id()).kind else {
-            unreachable!()
+            self.document
+                .nodes
+                .release_node(node, &mut self.page_release);
+            return Err(Error::Unsupported);
         };
         let b = self.document.nodes.box_data(b);
         if b.height.0 > crate::numeric::Scaled::MAX.0
@@ -290,6 +293,7 @@ impl Engine<'_> {
                 | Kind::Insertion(_)
                 | Kind::Adjustment(_)
                 | Kind::Language(_) => {}
+                Kind::Unset(_) => return Err(Error::Unsupported),
                 Kind::Free => unreachable!(),
             }
         }

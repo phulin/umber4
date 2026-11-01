@@ -128,6 +128,7 @@ pub(crate) enum GlueKind {
     AlignedLeaders,
     CenteredLeaders,
     ExpandedLeaders,
+    TabSkip,
 }
 impl GlueKind {
     pub fn is_leader(self) -> bool {
@@ -178,6 +179,7 @@ pub(crate) enum Kind {
         depth: Scaled,
     },
     Box(BoxId),
+    Unset(BoxId),
     Insertion(InsertionId),
     Leader(LeaderId),
     Adjustment(List),
@@ -305,6 +307,8 @@ pub(crate) struct NodeStore {
     boxes: box_slots::Boxes,
     insertions: insertion_slots::Insertions,
     leaders: leader_slots::Leaders,
+    #[cfg(test)]
+    allocation_budget: Option<usize>,
 }
 impl Default for NodeStore {
     fn default() -> Self {
@@ -315,6 +319,8 @@ impl Default for NodeStore {
             boxes: box_slots::Boxes::default(),
             insertions: insertion_slots::Insertions::default(),
             leaders: leader_slots::Leaders::default(),
+            #[cfg(test)]
+            allocation_budget: None,
         }
     }
 }
@@ -334,6 +340,11 @@ impl NodeStore {
             .flatten()
             .map(|page| usize::from(page.data.as_ref().unwrap().live))
             .sum()
+    }
+    /// Exercise the same consuming rejection path as an exhausted node address space.
+    #[cfg(test)]
+    pub(crate) fn reject_after_allocations(&mut self, successful: usize) {
+        self.allocation_budget = Some(successful);
     }
     pub fn copy_list(&mut self, source: NodeId, scratch: &mut CopyScratch) -> Result<List> {
         copying::copy_list(self, source, scratch, (u32::MAX as usize) / CELLS)
@@ -430,6 +441,14 @@ impl NodeStore {
         self.boxes.get_mut(id)
     }
     fn allocation_page(&mut self, limit: usize) -> Result<usize> {
+        #[cfg(test)]
+        if let Some(budget) = &mut self.allocation_budget {
+            if *budget == 0 {
+                return Err(Error::Capacity);
+            }
+            *budget -= 1;
+        }
+
         let page = if let Some(index) = self.allocation.filter(|&i| self.available(i)) {
             index
         } else if let Some(index) = (0..self.pages.len()).find(|&i| self.available(i)) {
@@ -503,7 +522,7 @@ impl NodeStore {
     }
     fn release_kind(&mut self, kind: Kind, scratch: &mut ReleaseScratch) {
         match kind {
-            Kind::Box(id) => {
+            Kind::Box(id) | Kind::Unset(id) => {
                 let data = self.boxes.take(id);
                 self.release(data.list, scratch);
             }
@@ -531,7 +550,7 @@ impl NodeStore {
             while !id.is_null() {
                 let node = self.free(id);
                 match node.kind {
-                    Kind::Box(id) => {
+                    Kind::Box(id) | Kind::Unset(id) => {
                         let data = self.boxes.take(id);
                         scratch.pending.push(data.list.head);
                     }

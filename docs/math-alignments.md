@@ -389,6 +389,52 @@ that unfinished math construction excludes a checkpoint. Once execution returns 
 eligible external vertical mode, the driver can take a checkpoint. Display-layout
 locals have already disappeared.
 
+## Pure horizontal alignment layout
+
+The horizontal layout backend accepts constructed cell lists and captured tabskip
+specifications independently of preamble/template reading. `\halign` execution
+and display alignment remain outside this backend contract.
+
+An active document owner holds unfinished cells/rows, extracted adjustments and
+any partly allocated span placeholders. Cells and rows use `Unset(BoxId)`, sharing
+ordinary box payload storage without extending `BoxData` or ordinary node size.
+Only private row packing accepts unset cell geometry; normal packing, publication,
+and semantic copying reject unfinished nodes. COW snapshot copying and iterative
+release preserve their existing list ownership. No unfinished layout can be
+checkpointed; restore abandons its numeric list handles before replacing node
+roots, while explicit abort releases those forests through the current root.
+
+Cell packing measures once through `hpack_adjusted_with_totals`. Only dominant
+stretch/shrink orders and amounts survive in alignment-lifetime cell records.
+Rows pack their existing cell headers once and retain their natural height/depth.
+The backend appends baseline glue and adjustments at row completion using the
+current baseline parameters and actual `TextState.prev_depth`; it executes no
+tokens or page work. Between rows, narrow take/put operations move the sole body
+owner through ordinary internal-vertical execution for `\everycr` and `\noalign`.
+The active owner remains checkpoint-ineligible while its body is outside; it
+cannot begin a row, finalize or explicitly abort until that owner returns. An
+operation error retains its active forests for abort or checkpoint restore;
+callers do not resume from partially completed finalization.
+
+Column records retain optional natural widths and following tabskip glue. Sparse
+span records coalesce equal starting-column/span constraints by maximum width.
+Finalization propagates residual constraints left to right, zeroing an unused
+column and its entire following tabskip before propagation. A local scalar
+prototype supplies natural/to/spread width and glue setting. Each row and cell is
+finalized in place; spanning cells retain the first column's header width and get
+tabskip/empty-box placeholders for later columns. The span target uses separately
+rounded internal tabskips, while row output retains ordinary cumulative rounding.
+Zero-stretch cell signs/orders, finite shrink caps and running rules follow TeX.
+Short rows retain their existing cell count. Completed output owns ordinary nodes
+and retains no alignment measurement records.
+
+Engine-owned typed buffer slots are retained by nesting depth. Sequential layouts
+reuse the same cleared backing; nested layouts move a distinct slot into their
+active owner and cannot reset an outer layout's records. Completion/abort/restore
+returns that owner to its depth slot. Buffers grow only at a capacity high-water,
+without per-cell allocation or reference counting. These rules follow `fin_col`,
+`fin_row` and `fin_align` in the retained TeX82 source.
+
 ## 4. Alignment state and templates
 
 The alignment reader is executable independently of row or preamble execution.

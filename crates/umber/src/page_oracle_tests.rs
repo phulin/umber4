@@ -10,7 +10,7 @@ fn scaled(v: i32) -> String {
     print_scaled(Scaled(v), |c| b.push(c));
     String::from_utf8(b).unwrap()
 }
-fn displayed(b: &PackedBox, boxes: &[PackedBox]) -> String {
+pub(crate) fn displayed(b: &PackedBox, boxes: &[PackedBox]) -> String {
     let mut s = format!(
         "\\{}box({}+{})x{}",
         if b.vertical { "v" } else { "h" },

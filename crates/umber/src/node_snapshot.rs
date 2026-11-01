@@ -46,6 +46,7 @@ impl Node {
                 depth: *depth,
             },
             Kind::Box(b) => Kind::Box(BoxId(b.0)),
+            Kind::Unset(b) => Kind::Unset(BoxId(b.0)),
             Kind::Insertion(id) => Kind::Insertion(InsertionId(id.0)),
             Kind::Leader(id) => Kind::Leader(LeaderId(id.0)),
             Kind::Adjustment(list) => Kind::Adjustment(list.snapshot()),

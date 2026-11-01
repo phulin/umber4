@@ -1,3 +1,8 @@
+#[cfg_attr(
+    not(test),
+    expect(dead_code, reason = "pure alignment layout awaits its reader")
+)]
+mod alignment_layout;
 mod boxes;
 mod checkpoint;
 mod condition;
@@ -128,6 +133,7 @@ pub struct Engine<'a> {
     box_copy: nodes::CopyScratch,
     output_pools: output::Pools,
     checkpoint_stores: checkpoint::Stores,
+    alignment_layout_pool: Vec<Option<alignment_layout::LayoutBuffers>>,
     session: std::rc::Rc<()>,
     quiescent: bool,
 }
@@ -145,6 +151,7 @@ pub(crate) struct Document<'a> {
     pub nodes: nodes::NodeStore,
     pub boxes: boxes::Registers,
     pub box_frames: Vec<boxes::Frame>,
+    pub alignment_layouts: Vec<alignment_layout::LayoutFrame>,
     pub math_frames: Vec<math_frontend::Frame>,
     pub output_frame: Option<page::OutputFrame>,
     pub fonts: fonts::Fonts,
@@ -180,6 +187,7 @@ impl<'a> Engine<'a> {
                 nodes: nodes::NodeStore::default(),
                 boxes: boxes::Registers::default(),
                 box_frames: Vec::new(),
+                alignment_layouts: Vec::new(),
                 math_frames: Vec::new(),
                 output_frame: None,
                 fonts: fonts::Fonts::default(),
@@ -218,6 +226,7 @@ impl<'a> Engine<'a> {
             box_copy: nodes::CopyScratch::default(),
             output_pools: output::Pools::default(),
             checkpoint_stores: checkpoint::Stores::default(),
+            alignment_layout_pool: Vec::new(),
             session: std::rc::Rc::new(()),
             quiescent: true,
         };

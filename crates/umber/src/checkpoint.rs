@@ -89,6 +89,7 @@ impl<'a> Engine<'a> {
         self.quiescent
             && self.scanner == crate::scanner::Scanner::Normal
             && self.document.text.mode == crate::text::Mode::Vertical
+            && self.document.alignment_layouts.is_empty()
             && self.document.box_frames.is_empty()
             && self.document.math_frames.is_empty()
             && !self.alignment_reader.active()
@@ -290,6 +291,7 @@ impl<'a> Engine<'a> {
         self.scanner = crate::scanner::Scanner::Normal;
         // These handles belong to the abandoned whole node-store root. Dropping
         // them is inert; never traverse their IDs through restored storage.
+        self.abandon_alignment_layouts();
         self.document.box_frames.clear();
         self.document.math_frames.clear();
         self.math
@@ -382,6 +384,7 @@ impl<'a> Engine<'a> {
             nodes,
             boxes,
             box_frames: _,
+            alignment_layouts: _,
             math_frames: _,
             output_frame: _,
             fonts,
