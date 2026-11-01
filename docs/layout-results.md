@@ -12,6 +12,10 @@ This is a bounded measurement of the implemented text slice, after paragraph,
 page, detached-resource, and checkpoint correctness validation. No interpreter
 optimization or architecture changes accompanied this pass.
 
+The tables below retain that initial baseline. The [dense-metric follow-up](#dense-scaled-metrics-follow-up)
+compares its preserved executables with the first measured layout optimization
+on exactly the same input files.
+
 ## Prose and native comparison
 
 The [runner](../benchmarks/layout.py) extracts 194 distinct prose paragraphs from
@@ -128,3 +132,121 @@ The runner validates native placements and replay equality itself. The helper
 changes passed rustfmt, release Clippy with warnings denied, Python compilation,
 and whitespace checks. This completed pass supplies measurements; it adds no
 benchmark gates and starts no optimization work.
+
+## Dense scaled metrics follow-up
+
+Measured on 2026-11-01, comparing preserved baseline executables from `930cc4d`
+(the same engine binary as the initial `159ebe5` report) with `02c29ec`.
+The [raw comparison](../benchmarks/results/layout-dense-metrics.json) records
+binary and input hashes, every sample, allocation stages, checkpoint results,
+and instruction attribution. Both use ordinary release builds with the settings
+and toolchain above. No instrumentation executes in timing binaries.
+
+The original three 600-paragraph input files were reused without regeneration;
+their hashes equal the initial report. This matters because the runner extracts
+prose from documentation that has since changed. Processes ran sequentially on
+CPU 0, rotating baseline, new engine, and native order after one warmup, with nine
+measured samples per engine and case. Native again suppresses underfull diagnostics
+through startup settings only. Umber retains detached output; pdfTeX writes DVI
+and a log. This is still a bounded INITEX text comparison, not backend parity.
+
+| Case | Baseline CPU (ms) | Dense metrics CPU (ms) | Change | Native CPU (ms) | New/native |
+| ---- | ----------------- | ---------------------- | ------ | --------------- | ---------- |
+| Book | 70.669 | 59.290 | -16.1% | 48.317 | 1.227 |
+| Narrow | 70.247 | 59.069 | -15.9% | 49.948 | 1.183 |
+| Dense | 62.790 | 52.366 | -16.6% | 41.595 | 1.259 |
+
+Median wall times before/after/native were 70.936/59.624/48.778 ms,
+70.693/59.415/50.360 ms, and 63.097/52.716/41.954 ms. Shared-machine CPU ranges
+for the new engine were 57.748–64.122, 56.909–66.562, and 50.805–53.821 ms;
+the raw report retains all old/native ranges too. The improvement appears in
+every case; the short timings do not establish a universal speedup.
+
+Old and new inspection results agreed exactly on paragraph/page/box counts and
+glyph character, coordinates, and width. Every page and glyph character/x/y also
+matched native DVI through the existing independent reader and raw-TFM scaling.
+The checkpoint adapters separately check complete boxes, placements, penalties,
+counts, messages, and font resources against uninterrupted execution.
+
+### Attribution and change
+
+Hardware sampling was unavailable (`perf_event_paranoid=4`). Valgrind 3.22.0
+Callgrind profiled the actual release CLI on each existing input, separately from
+timing. Its instruction counts describe executed work, not CPU-time shares.
+Before the change, the complete `character_metrics` path accounted for
+26.4–26.7% of instructions. Book made 966,804 metric calls, about 4.25 per
+emitted glyph, across character construction, paragraph passes, packing, and
+page lowering. Its instruction shares were 6.17% document-font lookup, 6.78%
+catalog existence checks and repeated descriptor resolution, and 13.75% metric
+table decoding and four dimension gathers.
+
+The change replaces compressed scaled character-dimension tables with dense
+immutable records in the existing typed pools. It retains separate kern and
+baseline-parameter arrays and a presence bitmap, preserving absent-glyph field
+queries independently of glyph existence. Character construction uses its already
+resolved scaled-font ID for existence checks. Engine and detached-resource
+lookups share the immutable representation; nodes do not acquire metric copies
+or additional owners.
+
+| Case | Instructions before/after (million) | Change | Metric-path instructions before/after (million) |
+| ---- | ----------------------------------- | ------ | ---------------------------------------------- |
+| Book | 485.129 / 401.112 | -17.3% | 129.552 / 45.050 |
+| Narrow | 477.083 / 395.117 | -17.2% | 125.870 / 43.374 |
+| Dense | 480.750 / 397.942 | -17.2% | 127.959 / 44.325 |
+
+The residual book profile has 44.274 million instructions in active-list search
+and 37.610 million in the principal node-read path; their absolute counts are
+unchanged. Remaining work spans character dispatch, node allocation/access/release,
+line breaking, packing, and detached page publication. Smaller repeated node
+lookups and a paragraph validation traversal remain, but this profile supplies no
+similarly clear substantial simplification. It does not attribute the entire
+remaining native gap: native phase costs were not profiled. This pass stops after
+the measured metric change rather than redesigning nodes or exact line search.
+
+### Storage and checkpoints
+
+Initialized character-metric payload grows from 320 to 4,096 bytes for aer10,
+324 to 2,048 for lcmss8, and 124 to 2,048 for icmtt8, plus a 32-byte presence
+bitmap per scaled header. These replace compressed character dimensions; raw
+TFM bytes, kerns, and baseline parameters retain their separate roles. Pooled
+backing reservation differs from initialized payload, so this growth does not
+imply higher aggregate requested heap.
+
+| Case | Allocation requests through completion before/after | Peak requested heap before/after (bytes) |
+| ---- | --------------------------------------------------- | ---------------------------------------- |
+| Book | 541 / 530 | 7,393,832 / 7,383,152 |
+| Narrow | 855 / 844 | 7,418,880 / 7,406,104 |
+| Dense | 511 / 503 | 6,240,064 / 6,231,512 |
+
+Requested heap excludes allocator headers and host buffers, as above. Separate
+RSS samples before/after were 8,320/8,192, 9,472/9,472, and 8,192/8,192 KiB;
+these small differences should not be interpreted as precise memory savings.
+Counted live heap returned to zero after all owners released in every run.
+
+Book checkpoint capture/release and unchanged-root restore remain around 2 µs,
+with zero additional allocations in both warmed 200-operation batches. Median
+suffix replay before/after was 57.400/48.118 ms after paragraph 60,
+29.872/24.554 ms after 300, and 5.693/4.532 ms after 540. Retained checkpoint
+and prefix heap fell from 15,545,613 to 15,534,933 bytes. Fixed late-suffix
+replay still makes six requests for 32,205 bytes each; live heap plateaus at
+16,290,589 bytes rather than 16,301,269. Retaining five suffix outputs and then
+releasing them preserves the same retention behavior with 10,680 fewer requested
+live bytes. This change does not resolve the preexisting replay allocations or
+partially shared output-chunk retention.
+
+The implementation passed 162 library tests, doctests, all three existing native
+font/paragraph/page oracles, rustfmt, release Clippy, a WebAssembly check, and
+retained-font Miri coverage before measurement. This report adds same-input output
+and replay comparisons, ordinary release timing, and separate allocation/profile
+runs. The earlier expansion-only results execute a different feature scope and
+cannot establish a layout regression; the initial layout baseline measured newly
+implemented font, paragraph, page, and detached-output work.
+
+For reproduction, preserve `target/benchmark/layout/*.tex` from the initial
+runner at `930cc4d`, or generate them in a detached checkout of that revision.
+Build both revisions with the ordinary release command above, then invoke each
+CLI with the same input and `--tfm NAME=PATH`, rotating old/new/quiet-native
+processes sequentially. The unchanged example modes `inspect`, `time`,
+`alloc-full`, and `alloc` supply the same correctness, checkpoint, and allocation
+checks. Running the current runner without preserving those inputs generates a
+different documentation-prose corpus.

@@ -1,0 +1,1341 @@
+{
+  "date": "2026-11-01T07:10:18.126077+00:00",
+  "before_commit": "930cc4d",
+  "after_commit": "02c29ec4dbd78ef3008984eed8a9614dd2f48a46",
+  "cpu": 0,
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "pdftex": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "build": "ordinary cargo build --release; default features; fat LTO; codegen-units=1; no extra rustflags",
+  "source_policy": "Reuse original target/benchmark/layout/*.tex from retained initial report, without regenerating from changed documentation.",
+  "native_only_setup": "\\hbadness=10000\\vbadness=10000; identical typesetting file",
+  "output_boundary": "Umber constructs, retains and releases detached page artifacts; native writes DVI and log.",
+  "warmups": 1,
+  "repeats": 9,
+  "order": "rotate before/after/pdftex each repetition, all sequential",
+  "binary_sha256": {
+    "before": "bde5e548c91b30ef10d2e5c94ad5d32dae8eb196ddc168d4e16c5e85fe7f9613",
+    "after": "86eeb54a2258e983ba89a8a5b464a64412566eb0d759055318e8a78ca62ed726"
+  },
+  "adapter_sha256": {
+    "before": "b8278bdea4caeb2470ce2f12cd156fb9334fafdb89565f0133aa9e9d8332d283",
+    "after": "3d9721d01832a7c1a8158a588cb1f7f58725738595ca06ccd520734356a0d088"
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_bytes": 270608,
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "font": "ae/aer10",
+      "font_sha256": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+      "paragraphs": 600,
+      "geometry_pt": [
+        360,
+        540,
+        12,
+        0
+      ],
+      "pages": 79,
+      "glyphs": 227323,
+      "lines": 3517,
+      "validation": "complete inspection before==after; all pages and glyph character/x/y equal independently decoded native DVI",
+      "native_underfull_diagnostics": 0,
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.076878331,
+            "cpu_seconds": 0.076459
+          },
+          {
+            "wall_seconds": 0.070266446,
+            "cpu_seconds": 0.06999599999999999
+          },
+          {
+            "wall_seconds": 0.070995987,
+            "cpu_seconds": 0.070669
+          },
+          {
+            "wall_seconds": 0.073358762,
+            "cpu_seconds": 0.07291299999999999
+          },
+          {
+            "wall_seconds": 0.070219951,
+            "cpu_seconds": 0.069866
+          },
+          {
+            "wall_seconds": 0.071306463,
+            "cpu_seconds": 0.070989
+          },
+          {
+            "wall_seconds": 0.06963754,
+            "cpu_seconds": 0.06936
+          },
+          {
+            "wall_seconds": 0.070935856,
+            "cpu_seconds": 0.07073099999999999
+          },
+          {
+            "wall_seconds": 0.07022951,
+            "cpu_seconds": 0.069926
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.058106465,
+            "cpu_seconds": 0.057747999999999994
+          },
+          {
+            "wall_seconds": 0.058564203,
+            "cpu_seconds": 0.05821799999999999
+          },
+          {
+            "wall_seconds": 0.059626762,
+            "cpu_seconds": 0.059289999999999995
+          },
+          {
+            "wall_seconds": 0.064489869,
+            "cpu_seconds": 0.064122
+          },
+          {
+            "wall_seconds": 0.059094789,
+            "cpu_seconds": 0.05872499999999999
+          },
+          {
+            "wall_seconds": 0.059666906,
+            "cpu_seconds": 0.059313
+          },
+          {
+            "wall_seconds": 0.059623631,
+            "cpu_seconds": 0.059297
+          },
+          {
+            "wall_seconds": 0.059376399,
+            "cpu_seconds": 0.059115999999999995
+          },
+          {
+            "wall_seconds": 0.059733446,
+            "cpu_seconds": 0.059421
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.05027546,
+            "cpu_seconds": 0.049842
+          },
+          {
+            "wall_seconds": 0.047175774,
+            "cpu_seconds": 0.046803
+          },
+          {
+            "wall_seconds": 0.047939485,
+            "cpu_seconds": 0.047585
+          },
+          {
+            "wall_seconds": 0.049224452,
+            "cpu_seconds": 0.048731
+          },
+          {
+            "wall_seconds": 0.05396234,
+            "cpu_seconds": 0.053532
+          },
+          {
+            "wall_seconds": 0.04877753,
+            "cpu_seconds": 0.048317
+          },
+          {
+            "wall_seconds": 0.048661085,
+            "cpu_seconds": 0.048242
+          },
+          {
+            "wall_seconds": 0.047166238,
+            "cpu_seconds": 0.046888
+          },
+          {
+            "wall_seconds": 0.048850644,
+            "cpu_seconds": 0.048447
+          }
+        ]
+      },
+      "medians": {
+        "before": {
+          "wall_seconds": 0.070935856,
+          "cpu_seconds": 0.070669
+        },
+        "after": {
+          "wall_seconds": 0.059623631,
+          "cpu_seconds": 0.059289999999999995
+        },
+        "pdftex": {
+          "wall_seconds": 0.04877753,
+          "cpu_seconds": 0.048317
+        }
+      },
+      "cpu_change_fraction": -0.1610182682647271,
+      "after_native_cpu_ratio": 1.22710433180868,
+      "allocations": {
+        "before": {
+          "stages": [
+            {
+              "stage": "begin",
+              "calls": 0,
+              "requested_bytes": 0,
+              "live_bytes": 0,
+              "peak_bytes": 0
+            },
+            {
+              "stage": "complete",
+              "calls": 541,
+              "requested_bytes": 7538768,
+              "live_bytes": 7379472,
+              "peak_bytes": 7393832
+            },
+            {
+              "stage": "all_engine_owners_released",
+              "calls": 553,
+              "requested_bytes": 7539328,
+              "live_bytes": 0,
+              "peak_bytes": 7393832
+            }
+          ]
+        },
+        "after": {
+          "stages": [
+            {
+              "stage": "begin",
+              "calls": 0,
+              "requested_bytes": 0,
+              "live_bytes": 0,
+              "peak_bytes": 0
+            },
+            {
+              "stage": "complete",
+              "calls": 530,
+              "requested_bytes": 7527896,
+              "live_bytes": 7368792,
+              "peak_bytes": 7383152
+            },
+            {
+              "stage": "all_engine_owners_released",
+              "calls": 542,
+              "requested_bytes": 7528456,
+              "live_bytes": 0,
+              "peak_bytes": 7383152
+            }
+          ]
+        }
+      },
+      "max_rss_kib": {
+        "before": 8320,
+        "after": 8192
+      }
+    },
+    {
+      "case": "narrow",
+      "source_bytes": 270609,
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "font": "latex-fonts/lcmss8",
+      "font_sha256": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+      "paragraphs": 600,
+      "geometry_pt": [
+        180,
+        360,
+        12,
+        3
+      ],
+      "pages": 295,
+      "glyphs": 227323,
+      "lines": 8533,
+      "validation": "complete inspection before==after; all pages and glyph character/x/y equal independently decoded native DVI",
+      "native_underfull_diagnostics": 0,
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.071101503,
+            "cpu_seconds": 0.070708
+          },
+          {
+            "wall_seconds": 0.070692744,
+            "cpu_seconds": 0.070247
+          },
+          {
+            "wall_seconds": 0.071740556,
+            "cpu_seconds": 0.071409
+          },
+          {
+            "wall_seconds": 0.069821182,
+            "cpu_seconds": 0.069468
+          },
+          {
+            "wall_seconds": 0.07086852,
+            "cpu_seconds": 0.070502
+          },
+          {
+            "wall_seconds": 0.07260584,
+            "cpu_seconds": 0.07227
+          },
+          {
+            "wall_seconds": 0.070539944,
+            "cpu_seconds": 0.070232
+          },
+          {
+            "wall_seconds": 0.069465736,
+            "cpu_seconds": 0.06910999999999999
+          },
+          {
+            "wall_seconds": 0.069033432,
+            "cpu_seconds": 0.06869099999999999
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.062570051,
+            "cpu_seconds": 0.062203999999999995
+          },
+          {
+            "wall_seconds": 0.066901982,
+            "cpu_seconds": 0.066562
+          },
+          {
+            "wall_seconds": 0.057272853,
+            "cpu_seconds": 0.056908999999999994
+          },
+          {
+            "wall_seconds": 0.057359881,
+            "cpu_seconds": 0.056997
+          },
+          {
+            "wall_seconds": 0.058184833,
+            "cpu_seconds": 0.057867
+          },
+          {
+            "wall_seconds": 0.062528865,
+            "cpu_seconds": 0.062123
+          },
+          {
+            "wall_seconds": 0.059771889,
+            "cpu_seconds": 0.059323
+          },
+          {
+            "wall_seconds": 0.058429068,
+            "cpu_seconds": 0.058075
+          },
+          {
+            "wall_seconds": 0.059414926,
+            "cpu_seconds": 0.059068999999999997
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.049298996,
+            "cpu_seconds": 0.048902
+          },
+          {
+            "wall_seconds": 0.050406379,
+            "cpu_seconds": 0.049948
+          },
+          {
+            "wall_seconds": 0.048644043,
+            "cpu_seconds": 0.04825
+          },
+          {
+            "wall_seconds": 0.048308689,
+            "cpu_seconds": 0.04792899999999999
+          },
+          {
+            "wall_seconds": 0.050533601,
+            "cpu_seconds": 0.050130999999999995
+          },
+          {
+            "wall_seconds": 0.051255359,
+            "cpu_seconds": 0.050755
+          },
+          {
+            "wall_seconds": 0.05036003,
+            "cpu_seconds": 0.049957999999999995
+          },
+          {
+            "wall_seconds": 0.049334222,
+            "cpu_seconds": 0.048926
+          },
+          {
+            "wall_seconds": 0.051111011,
+            "cpu_seconds": 0.050564
+          }
+        ]
+      },
+      "medians": {
+        "before": {
+          "wall_seconds": 0.070692744,
+          "cpu_seconds": 0.070247
+        },
+        "after": {
+          "wall_seconds": 0.059414926,
+          "cpu_seconds": 0.059068999999999997
+        },
+        "pdftex": {
+          "wall_seconds": 0.05036003,
+          "cpu_seconds": 0.049948
+        }
+      },
+      "cpu_change_fraction": -0.1591242330633338,
+      "after_native_cpu_ratio": 1.1826099143108832,
+      "allocations": {
+        "before": {
+          "stages": [
+            {
+              "stage": "begin",
+              "calls": 0,
+              "requested_bytes": 0,
+              "live_bytes": 0,
+              "peak_bytes": 0
+            },
+            {
+              "stage": "complete",
+              "calls": 855,
+              "requested_bytes": 7449264,
+              "live_bytes": 7418880,
+              "peak_bytes": 7418880
+            },
+            {
+              "stage": "all_engine_owners_released",
+              "calls": 867,
+              "requested_bytes": 7449824,
+              "live_bytes": 0,
+              "peak_bytes": 7418880
+            }
+          ]
+        },
+        "after": {
+          "stages": [
+            {
+              "stage": "begin",
+              "calls": 0,
+              "requested_bytes": 0,
+              "live_bytes": 0,
+              "peak_bytes": 0
+            },
+            {
+              "stage": "complete",
+              "calls": 844,
+              "requested_bytes": 7436296,
+              "live_bytes": 7406104,
+              "peak_bytes": 7406104
+            },
+            {
+              "stage": "all_engine_owners_released",
+              "calls": 856,
+              "requested_bytes": 7436856,
+              "live_bytes": 0,
+              "peak_bytes": 7406104
+            }
+          ]
+        }
+      },
+      "max_rss_kib": {
+        "before": 9472,
+        "after": 9472
+      }
+    },
+    {
+      "case": "dense",
+      "source_bytes": 270609,
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "font": "latex-fonts/icmtt8",
+      "font_sha256": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24",
+      "paragraphs": 600,
+      "geometry_pt": [
+        420,
+        600,
+        10,
+        0
+      ],
+      "pages": 63,
+      "glyphs": 228277,
+      "lines": 3775,
+      "validation": "complete inspection before==after; all pages and glyph character/x/y equal independently decoded native DVI",
+      "native_underfull_diagnostics": 0,
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.062647758,
+            "cpu_seconds": 0.062072
+          },
+          {
+            "wall_seconds": 0.063096607,
+            "cpu_seconds": 0.06279
+          },
+          {
+            "wall_seconds": 0.062411243,
+            "cpu_seconds": 0.062077
+          },
+          {
+            "wall_seconds": 0.063965646,
+            "cpu_seconds": 0.063645
+          },
+          {
+            "wall_seconds": 0.061941114,
+            "cpu_seconds": 0.061689999999999995
+          },
+          {
+            "wall_seconds": 0.062673604,
+            "cpu_seconds": 0.062377
+          },
+          {
+            "wall_seconds": 0.063557645,
+            "cpu_seconds": 0.063245
+          },
+          {
+            "wall_seconds": 0.064043811,
+            "cpu_seconds": 0.06369899999999999
+          },
+          {
+            "wall_seconds": 0.063684431,
+            "cpu_seconds": 0.063342
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.051465483,
+            "cpu_seconds": 0.051216
+          },
+          {
+            "wall_seconds": 0.051549658,
+            "cpu_seconds": 0.05120999999999999
+          },
+          {
+            "wall_seconds": 0.051589771,
+            "cpu_seconds": 0.051285
+          },
+          {
+            "wall_seconds": 0.054182682,
+            "cpu_seconds": 0.053820999999999994
+          },
+          {
+            "wall_seconds": 0.051089331,
+            "cpu_seconds": 0.050805
+          },
+          {
+            "wall_seconds": 0.052715895,
+            "cpu_seconds": 0.052365999999999996
+          },
+          {
+            "wall_seconds": 0.052861018,
+            "cpu_seconds": 0.052541000000000004
+          },
+          {
+            "wall_seconds": 0.053241016,
+            "cpu_seconds": 0.052895
+          },
+          {
+            "wall_seconds": 0.053024797,
+            "cpu_seconds": 0.05269599999999999
+          }
+        ],
+        "pdftex": [
+          {
+            "wall_seconds": 0.041678461,
+            "cpu_seconds": 0.041353999999999995
+          },
+          {
+            "wall_seconds": 0.041145167,
+            "cpu_seconds": 0.04082
+          },
+          {
+            "wall_seconds": 0.043270918,
+            "cpu_seconds": 0.042844999999999994
+          },
+          {
+            "wall_seconds": 0.04192144,
+            "cpu_seconds": 0.041558
+          },
+          {
+            "wall_seconds": 0.040749646,
+            "cpu_seconds": 0.040437
+          },
+          {
+            "wall_seconds": 0.042807471,
+            "cpu_seconds": 0.042418
+          },
+          {
+            "wall_seconds": 0.041954096,
+            "cpu_seconds": 0.041595
+          },
+          {
+            "wall_seconds": 0.044008719,
+            "cpu_seconds": 0.043055
+          },
+          {
+            "wall_seconds": 0.042724929,
+            "cpu_seconds": 0.042335
+          }
+        ]
+      },
+      "medians": {
+        "before": {
+          "wall_seconds": 0.063096607,
+          "cpu_seconds": 0.06279
+        },
+        "after": {
+          "wall_seconds": 0.052715895,
+          "cpu_seconds": 0.052365999999999996
+        },
+        "pdftex": {
+          "wall_seconds": 0.041954096,
+          "cpu_seconds": 0.041595
+        }
+      },
+      "cpu_change_fraction": -0.16601369644847908,
+      "after_native_cpu_ratio": 1.258949392955884,
+      "allocations": {
+        "before": {
+          "stages": [
+            {
+              "stage": "begin",
+              "calls": 0,
+              "requested_bytes": 0,
+              "live_bytes": 0,
+              "peak_bytes": 0
+            },
+            {
+              "stage": "complete",
+              "calls": 511,
+              "requested_bytes": 6938832,
+              "live_bytes": 6211344,
+              "peak_bytes": 6240064
+            },
+            {
+              "stage": "all_engine_owners_released",
+              "calls": 523,
+              "requested_bytes": 6939392,
+              "live_bytes": 0,
+              "peak_bytes": 6240064
+            }
+          ]
+        },
+        "after": {
+          "stages": [
+            {
+              "stage": "begin",
+              "calls": 0,
+              "requested_bytes": 0,
+              "live_bytes": 0,
+              "peak_bytes": 0
+            },
+            {
+              "stage": "complete",
+              "calls": 503,
+              "requested_bytes": 6930088,
+              "live_bytes": 6202792,
+              "peak_bytes": 6231512
+            },
+            {
+              "stage": "all_engine_owners_released",
+              "calls": 515,
+              "requested_bytes": 6930648,
+              "live_bytes": 0,
+              "peak_bytes": 6231512
+            }
+          ]
+        }
+      },
+      "max_rss_kib": {
+        "before": 8192,
+        "after": 8192
+      }
+    }
+  ],
+  "checkpoint": {
+    "before": {
+      "paragraphs": 600,
+      "cadence": 10,
+      "samples": [
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2346.91,
+          "stable_restore_ns": 1890.04,
+          "changed_restore_ns": 19055,
+          "suffix_seconds": 0.057469376
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2256.085,
+          "stable_restore_ns": 1989.47,
+          "changed_restore_ns": 20526,
+          "suffix_seconds": 0.057399791
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2203.095,
+          "stable_restore_ns": 1977.56,
+          "changed_restore_ns": 14180,
+          "suffix_seconds": 0.0573167
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2212.155,
+          "stable_restore_ns": 1889.84,
+          "changed_restore_ns": 18996,
+          "suffix_seconds": 0.057275148
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2163.93,
+          "stable_restore_ns": 1974.21,
+          "changed_restore_ns": 20567,
+          "suffix_seconds": 0.057963325
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2343.36,
+          "stable_restore_ns": 1942.78,
+          "changed_restore_ns": 12450,
+          "suffix_seconds": 0.02969369
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2191.54,
+          "stable_restore_ns": 1959.79,
+          "changed_restore_ns": 46428,
+          "suffix_seconds": 0.029759112
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2161.41,
+          "stable_restore_ns": 1947.585,
+          "changed_restore_ns": 9757,
+          "suffix_seconds": 0.029872025
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2326.05,
+          "stable_restore_ns": 1858.71,
+          "changed_restore_ns": 18766,
+          "suffix_seconds": 0.030171709
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2278.455,
+          "stable_restore_ns": 1850.16,
+          "changed_restore_ns": 11339,
+          "suffix_seconds": 0.03293283
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2024.95,
+          "stable_restore_ns": 1853.96,
+          "changed_restore_ns": 8496,
+          "suffix_seconds": 0.005574109
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2155.16,
+          "stable_restore_ns": 2070.085,
+          "changed_restore_ns": 8996,
+          "suffix_seconds": 0.00568534
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2526.61,
+          "stable_restore_ns": 2071.49,
+          "changed_restore_ns": 10960,
+          "suffix_seconds": 0.006507438
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2116.625,
+          "stable_restore_ns": 2264.99,
+          "changed_restore_ns": 8677,
+          "suffix_seconds": 0.005704235
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2107.87,
+          "stable_restore_ns": 1741.02,
+          "changed_restore_ns": 6465,
+          "suffix_seconds": 0.005692505
+        }
+      ]
+    },
+    "after": {
+      "paragraphs": 600,
+      "cadence": 10,
+      "samples": [
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2258.79,
+          "stable_restore_ns": 1989.02,
+          "changed_restore_ns": 19996,
+          "suffix_seconds": 0.04793169
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2250.535,
+          "stable_restore_ns": 2007.685,
+          "changed_restore_ns": 17974,
+          "suffix_seconds": 0.048117857
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2242.37,
+          "stable_restore_ns": 1973.91,
+          "changed_restore_ns": 14741,
+          "suffix_seconds": 0.048498461
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2348.86,
+          "stable_restore_ns": 1913.005,
+          "changed_restore_ns": 18335,
+          "suffix_seconds": 0.048320616
+        },
+        {
+          "paragraph": 60,
+          "capture_release_ns": 2417.325,
+          "stable_restore_ns": 1993.07,
+          "changed_restore_ns": 15502,
+          "suffix_seconds": 0.047763534
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2382.28,
+          "stable_restore_ns": 2027.195,
+          "changed_restore_ns": 14381,
+          "suffix_seconds": 0.024371176
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2222.56,
+          "stable_restore_ns": 1884.285,
+          "changed_restore_ns": 7447,
+          "suffix_seconds": 0.026910236
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2330.8,
+          "stable_restore_ns": 1887.435,
+          "changed_restore_ns": 17134,
+          "suffix_seconds": 0.024554184
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2213.85,
+          "stable_restore_ns": 2011.69,
+          "changed_restore_ns": 15071,
+          "suffix_seconds": 0.024470596
+        },
+        {
+          "paragraph": 300,
+          "capture_release_ns": 2305.22,
+          "stable_restore_ns": 2016.095,
+          "changed_restore_ns": 18245,
+          "suffix_seconds": 0.024825394
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2534.805,
+          "stable_restore_ns": 1887.785,
+          "changed_restore_ns": 5465,
+          "suffix_seconds": 0.004520722
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2083.195,
+          "stable_restore_ns": 1815.93,
+          "changed_restore_ns": 4885,
+          "suffix_seconds": 0.004545472
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2154.8,
+          "stable_restore_ns": 1762.685,
+          "changed_restore_ns": 4793,
+          "suffix_seconds": 0.004525064
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2136.64,
+          "stable_restore_ns": 1728.105,
+          "changed_restore_ns": 4464,
+          "suffix_seconds": 0.00453159
+        },
+        {
+          "paragraph": 540,
+          "capture_release_ns": 2058.33,
+          "stable_restore_ns": 1807.02,
+          "changed_restore_ns": 4763,
+          "suffix_seconds": 0.004603949
+        }
+      ]
+    }
+  },
+  "checkpoint_allocations": {
+    "before": {
+      "stages": [
+        {
+          "stage": "begin",
+          "calls": 0,
+          "requested_bytes": 0,
+          "live_bytes": 0,
+          "peak_bytes": 0
+        },
+        {
+          "stage": "completed_with_checkpoints_and_prefixes",
+          "calls": 1161,
+          "requested_bytes": 16343767,
+          "live_bytes": 15545613,
+          "peak_bytes": 15545613
+        },
+        {
+          "stage": "fresh_comparison_released",
+          "calls": 1716,
+          "requested_bytes": 23883204,
+          "live_bytes": 15545613,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "late_checkpoint_restored",
+          "calls": 1718,
+          "requested_bytes": 23887332,
+          "live_bytes": 15549725,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "capture_release_200",
+          "calls": 1718,
+          "requested_bytes": 23887332,
+          "live_bytes": 15549725,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "restore_200",
+          "calls": 1718,
+          "requested_bytes": 23887332,
+          "live_bytes": 15549725,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "replay_1",
+          "calls": 1745,
+          "requested_bytes": 24653321,
+          "live_bytes": 16301237,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "replay_5",
+          "calls": 1776,
+          "requested_bytes": 24814378,
+          "live_bytes": 16301269,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "replay_20",
+          "calls": 1896,
+          "requested_bytes": 25458478,
+          "live_bytes": 16301269,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "five_suffix_outputs_retained",
+          "calls": 1999,
+          "requested_bytes": 28389679,
+          "live_bytes": 19142702,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "five_suffix_outputs_released",
+          "calls": 1999,
+          "requested_bytes": 28389679,
+          "live_bytes": 19065949,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "engine_released",
+          "calls": 2190,
+          "requested_bytes": 28406447,
+          "live_bytes": 19009789,
+          "peak_bytes": 22939445
+        },
+        {
+          "stage": "all_engine_owners_released",
+          "calls": 2200,
+          "requested_bytes": 28407055,
+          "live_bytes": 0,
+          "peak_bytes": 22939445
+        }
+      ]
+    },
+    "after": {
+      "stages": [
+        {
+          "stage": "begin",
+          "calls": 0,
+          "requested_bytes": 0,
+          "live_bytes": 0,
+          "peak_bytes": 0
+        },
+        {
+          "stage": "completed_with_checkpoints_and_prefixes",
+          "calls": 1150,
+          "requested_bytes": 16332895,
+          "live_bytes": 15534933,
+          "peak_bytes": 15534933
+        },
+        {
+          "stage": "fresh_comparison_released",
+          "calls": 1694,
+          "requested_bytes": 23861460,
+          "live_bytes": 15534933,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "late_checkpoint_restored",
+          "calls": 1696,
+          "requested_bytes": 23865588,
+          "live_bytes": 15539045,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "capture_release_200",
+          "calls": 1696,
+          "requested_bytes": 23865588,
+          "live_bytes": 15539045,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "restore_200",
+          "calls": 1696,
+          "requested_bytes": 23865588,
+          "live_bytes": 15539045,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "replay_1",
+          "calls": 1723,
+          "requested_bytes": 24631577,
+          "live_bytes": 16290557,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "replay_5",
+          "calls": 1754,
+          "requested_bytes": 24792634,
+          "live_bytes": 16290589,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "replay_20",
+          "calls": 1874,
+          "requested_bytes": 25436734,
+          "live_bytes": 16290589,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "five_suffix_outputs_retained",
+          "calls": 1977,
+          "requested_bytes": 28367935,
+          "live_bytes": 19132022,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "five_suffix_outputs_released",
+          "calls": 1977,
+          "requested_bytes": 28367935,
+          "live_bytes": 19055269,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "engine_released",
+          "calls": 2168,
+          "requested_bytes": 28384703,
+          "live_bytes": 18999109,
+          "peak_bytes": 22918085
+        },
+        {
+          "stage": "all_engine_owners_released",
+          "calls": 2178,
+          "requested_bytes": 28385311,
+          "live_bytes": 0,
+          "peak_bytes": 22918085
+        }
+      ]
+    }
+  },
+  "profile": {
+    "tool": "Valgrind 3.22.0 Callgrind",
+    "perf_unavailable": "perf_event_paranoid=4; perf stat true rejected",
+    "method": "Separate sequential release CLI executions, no timing interpretation of instrumented runtime. Book uses --cache-sim=yes --branch-sim=yes for both versions; narrow/dense use default instruction simulation.",
+    "commands": "taskset -c 0 valgrind --tool=callgrind [--cache-sim=yes --branch-sim=yes] --callgrind-out-file=FILE CLI INPUT --tfm NAME=TFM",
+    "interpretation": "Instruction attribution, not CPU time. Inclusive paths can overlap and must not be summed. LTO inline contexts retain source-location naming.",
+    "cases": {
+      "book": {
+        "before": {
+          "instructions": 485129345,
+          "inclusive_paths": {
+            "metric_lookup": {
+              "instructions": 129551736,
+              "fraction": 0.2670457628161001
+            },
+            "line_search": {
+              "instructions": 44273829,
+              "fraction": 0.09126190665707926
+            },
+            "node_read": {
+              "instructions": 37609968,
+              "fraction": 0.07752565040154394
+            },
+            "paragraph_completion": {
+              "instructions": 262976105,
+              "fraction": 0.5420742070344147
+            },
+            "character_execution": {
+              "instructions": 140886475,
+              "fraction": 0.29041012763307483
+            },
+            "page_work": {
+              "instructions": 96812818,
+              "fraction": 0.19956083670840402
+            },
+            "page_lowering": {
+              "instructions": 50869869,
+              "fraction": 0.10485836308253008
+            },
+            "packing_construction": {
+              "instructions": 39504051,
+              "fraction": 0.08142993493827919
+            }
+          },
+          "profile_sha256": "98b8322cd7bda5910f617986bd9439bde3fbc43a570edfbc9fa5719e2adbb8d2"
+        },
+        "after": {
+          "instructions": 401112232,
+          "inclusive_paths": {
+            "metric_lookup": {
+              "instructions": 45050147,
+              "fraction": 0.11231307201820762
+            },
+            "line_search": {
+              "instructions": 44273829,
+              "fraction": 0.1103776585900776
+            },
+            "node_read": {
+              "instructions": 37609968,
+              "fraction": 0.09376420113760081
+            },
+            "paragraph_completion": {
+              "instructions": 211011126,
+              "fraction": 0.5260650490459239
+            },
+            "character_execution": {
+              "instructions": 114394233,
+              "fraction": 0.28519258171114564
+            },
+            "page_work": {
+              "instructions": 80250484,
+              "fraction": 0.20006989963846328
+            },
+            "page_lowering": {
+              "instructions": 34275290,
+              "fraction": 0.08545062270751194
+            },
+            "packing_construction": {
+              "instructions": 22909472,
+              "fraction": 0.057114867541611145
+            }
+          },
+          "profile_sha256": "5040ae34329258bb1568068c704fb8446b1e23a9e983d4f8e124bcd0c465b8df"
+        }
+      },
+      "narrow": {
+        "before": {
+          "instructions": 477082851,
+          "inclusive_paths": {
+            "metric_lookup": {
+              "instructions": 125870220,
+              "fraction": 0.2638330422822094
+            },
+            "line_search": {
+              "instructions": 39999923,
+              "fraction": 0.08384271812779957
+            },
+            "node_read": {
+              "instructions": 38039592,
+              "fraction": 0.07973372323122971
+            },
+            "paragraph_completion": {
+              "instructions": 263996943,
+              "fraction": 0.5533565971751938
+            },
+            "character_execution": {
+              "instructions": 135976146,
+              "fraction": 0.2850157906849601
+            },
+            "page_work": {
+              "instructions": 100958142,
+              "fraction": 0.21161553342021092
+            },
+            "page_lowering": {
+              "instructions": 51581867,
+              "fraction": 0.1081193065143312
+            },
+            "packing_construction": {
+              "instructions": 41973223,
+              "fraction": 0.08797889698198354
+            }
+          },
+          "profile_sha256": "5132afeb06af165603f558301ee3a560c9f3b75114eec4e8513651a0d6438be1"
+        },
+        "after": {
+          "instructions": 395117410,
+          "inclusive_paths": {
+            "metric_lookup": {
+              "instructions": 43374233,
+              "fraction": 0.10977555506855545
+            },
+            "line_search": {
+              "instructions": 39999923,
+              "fraction": 0.10123553654595985
+            },
+            "node_read": {
+              "instructions": 38039592,
+              "fraction": 0.0962741479804699
+            },
+            "paragraph_completion": {
+              "instructions": 213353398,
+              "fraction": 0.5399746824621067
+            },
+            "character_execution": {
+              "instructions": 109522599,
+              "fraction": 0.2771900104325952
+            },
+            "page_work": {
+              "instructions": 84421844,
+              "fraction": 0.21366267813913845
+            },
+            "page_lowering": {
+              "instructions": 34987288,
+              "fraction": 0.0885490922812032
+            },
+            "packing_construction": {
+              "instructions": 25378644,
+              "fraction": 0.06423063969770403
+            }
+          },
+          "profile_sha256": "c69feee5f9073c2522af47195e06b641f5a8f780a09ed7efd85a09739b4561c8"
+        }
+      },
+      "dense": {
+        "before": {
+          "instructions": 480749896,
+          "inclusive_paths": {
+            "metric_lookup": {
+              "instructions": 127959280,
+              "fraction": 0.2661660066172952
+            },
+            "line_search": {
+              "instructions": 61860753,
+              "fraction": 0.12867554109673693
+            },
+            "node_read": {
+              "instructions": 36373584,
+              "fraction": 0.07566009749069191
+            },
+            "paragraph_completion": {
+              "instructions": 270446470,
+              "fraction": 0.5625512813423469
+            },
+            "character_execution": {
+              "instructions": 131560057,
+              "fraction": 0.27365592399420924
+            },
+            "page_work": {
+              "instructions": 92626155,
+              "fraction": 0.19267015088444242
+            },
+            "page_lowering": {
+              "instructions": 50173421,
+              "fraction": 0.10436491285273206
+            },
+            "packing_construction": {
+              "instructions": 39522463,
+              "fraction": 0.08221002922484251
+            }
+          },
+          "profile_sha256": "7f28b2ec10637791331d145d4459fe69d00f2a62637f1737755b91c6caa39a0c"
+        },
+        "after": {
+          "instructions": 397941718,
+          "inclusive_paths": {
+            "metric_lookup": {
+              "instructions": 44325223,
+              "fraction": 0.11138621811950865
+            },
+            "line_search": {
+              "instructions": 61860753,
+              "fraction": 0.15545179156109487
+            },
+            "node_read": {
+              "instructions": 36373584,
+              "fraction": 0.09140429956127394
+            },
+            "paragraph_completion": {
+              "instructions": 219769063,
+              "fraction": 0.5522644474284548
+            },
+            "character_execution": {
+              "instructions": 105197771,
+              "fraction": 0.2643547188988112
+            },
+            "page_work": {
+              "instructions": 76203195,
+              "fraction": 0.19149335581850205
+            },
+            "page_lowering": {
+              "instructions": 33509200,
+              "fraction": 0.08420630078297044
+            },
+            "packing_construction": {
+              "instructions": 22858242,
+              "fraction": 0.05744118036903082
+            }
+          },
+          "profile_sha256": "40c4529886784bd31c8380d1e05711d79bb0d647da2985670c66e49c983a16de"
+        }
+      }
+    }
+  },
+  "original_report_sha256": "8ee0f19e908388604628124248b07319618e3e93e99031895c05a54d6954612e",
+  "prose_sources": {
+    "docs/architecture.md": "74ace19d7732e767c522d54aea9408d065e1a057f6b1c0f6a2494ab5ef470257",
+    "docs/storage.md": "c1b16ba273028168edc5fa8c86773fc2c64910559575714d81084fdcc7c3773c",
+    "docs/checkpoints.md": "4e8c1fde3c3905104c94afe738192c11e81b196b485f81d243e550cdcd15c9f4",
+    "docs/fonts-text.md": "bd17f774da67b0d23f4cf002125a199e016e707d0ab71c32aefd962b6efa33ff",
+    "docs/paragraphs.md": "f2d5a8aa01a65ca16b63c2a5d87bf72668c5c3cbe0866f472969bdb7a6066bb3",
+    "docs/pages.md": "d4548810eb09881e65ee9cb70c6ad1168871b05f3a546ca43f92bc8c43ba1202"
+  },
+  "allocator_binary_sha256": {
+    "before": "62034b584b4e5614efc574865c87c39034ab6de5fa61d72f62d25e320133404e",
+    "after": "afecdd1ef78dbaa1b5879093a05aaa221293f016fb6dbde88ac4cf4300ebbeaf"
+  },
+  "metric_payload_bytes": {
+    "aer10": {
+      "before": 320,
+      "after": 4096
+    },
+    "lcmss8": {
+      "before": 324,
+      "after": 2048
+    },
+    "icmtt8": {
+      "before": 124,
+      "after": 2048
+    },
+    "presence_bitmap_bytes_per_scaled_header": 32,
+    "interpretation": "Initialized character-dimension payload only, excludes kerns/params/raw resources. Pooled requested backing and allocator counters are reported independently."
+  },
+  "checkpoint_validation": "Existing adapter compares complete boxes, placements, counts, messages, penalties, and font resources with uninterrupted execution; retained prefixes remain unchanged. Both before and after exit successfully.",
+  "allocation_interpretation": "Successful system allocation/reallocation requests and payload bytes; excludes host source/TFM buffers and allocator headers. Counted live bytes return to zero after all owners release. RSS is one separate GNU time sample per CLI.",
+  "reproduction": "Reuse initial report input hashes. Generate inputs with benchmarks/layout.py from checkout 930cc4d, not modified current documentation. Build each revision with ordinary release command, preserve executable examples. Run the same CLI commands sequentially rotating before/after/quiet-native order; warm once then measure nine times using benchmarks.layout.child. Inspect with layout example, compare its placements against layout.dvi_pages. Use layout time/alloc-full/alloc modes for checkpoint/allocation diagnostics.",
+  "conclusion": "Substantial simpler metric lookup change retained. No second production change from this profile: residual generic node operations/search are not evidence for broad redesign. No native phase profile, so remaining ratio is not fully attributed. Prior expansion-only results have a different feature scope.",
+  "complete": true
+}

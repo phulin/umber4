@@ -38,7 +38,8 @@ Read the root `AGENTS.md` first.
 - `performance.md` develops native/Wasm hot paths, allocation experiments,
   comparable upstream measurements, and compatibility checks.
 - `layout-results.md` records prose paragraph/page timings against INITEX,
-  same-source checkpoint replay, allocation, and retention measurements.
+  same-source checkpoint replay, allocation, retention, and the dense scaled
+  metric comparison.
 - `mvp.md` defines the first executable expansion/register slice, supported
   primitives, compatibility fixtures, and same-source performance comparison.
 - `mvp-results.md` records the implemented slice, native measurements, allocation
