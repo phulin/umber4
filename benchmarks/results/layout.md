@@ -2,9 +2,10 @@
 
 ## Current cumulative milestone
 
-Measured on 2026-11-01 at `3e3948c`, ordinary default-feature release with fat LTO,
-one codegen unit, and rustc 1.98.1 on AMD EPYC 7642. An up-to-date release build
-and clean checkout were verified before timing. The [current raw result](layout-current.json)
+Measured on 2026-11-01 at `e54c273`, ordinary default-feature release with fat LTO,
+one codegen unit, and rustc 1.98.1 on AMD EPYC 7642. The default-feature CLI/library
+were explicitly rebuilt after the latest tests, without all-feature options;
+the checkout was clean before timing. The [current raw result](layout-current.json)
 retains seven rotating samples after one warmup, sequentially on CPU 3. The
 preserved original `930cc4d` executable matches the initial page-capable binary
 below. The three fixed prose files and existing local Gentle mixed file were
@@ -12,26 +13,27 @@ reused with saved font mappings and hashes; no corpus was regenerated.
 
 | Case | Original / current / native CPU (ms) | Current vs original | Current/native |
 | ---- | ------------------------------------ | ------------------- | -------------- |
-| Book | 68.787 / 44.516 / 46.948 | -35.3% | 0.948 |
-| Narrow | 68.044 / 44.080 / 47.825 | -35.2% | 0.922 |
-| Dense | 62.573 / 39.008 / 40.743 | -37.7% | 0.957 |
-| Mixed | — / 44.149 / 41.116 | — | 1.074 |
+| Book | 69.382 / 44.264 / 47.846 | -36.2% | 0.925 |
+| Narrow | 69.075 / 43.812 / 48.439 | -36.6% | 0.904 |
+| Dense | 63.293 / 36.786 / 41.338 | -41.9% | 0.890 |
+| Mixed | — / 43.896 / 41.468 | — | 1.059 |
 
 The same samples retain separate process CPU components and minor faults:
 
 | Case | User CPU Umber/native (ms) | System CPU Umber/native (ms) | Minor faults Umber/native |
 | ---- | -------------------------- | ---------------------------- | ------------------------- |
-| Book | 41.059 / 42.571 | 3.037 / 4.012 | 869 / 668 |
-| Narrow | 39.788 / 42.886 | 4.007 / 4.999 | 1,025 / 660 |
-| Dense | 35.860 / 36.568 | 3.927 / 4.047 | 787 / 668 |
-| Mixed | 40.655 / 37.010 | 3.966 / 4.001 | 990 / 645 |
+| Book | 40.645 / 43.223 | 3.965 / 4.964 | 841 / 668 |
+| Narrow | 39.865 / 43.767 | 3.989 / 5.984 | 1,008 / 660 |
+| Dense | 34.100 / 36.092 | 2.978 / 4.018 | 743 / 669 |
+| Mixed | 40.052 / 37.810 | 3.989 / 3.976 | 968 / 644 |
 
 Each field is independently median-reduced; user/system medians need not sum to
-median total CPU. Arithmetic means over the mixed samples give a 3.100 ms mean
-excess: 3.505 ms more user CPU and 0.405 ms less system CPU. Current/native total
-CPU ranges were 43.559–45.048/40.388–41.759 ms. Mixed retains a 7.4% median gap;
-its process-level user CPU remains higher. Fault counts remain above native but
-do not identify a particular allocation, buffer, or kernel operation as the cause.
+median total CPU. Arithmetic means over the mixed samples give a 2.556 ms mean
+excess: 2.857 ms more user CPU and 0.300 ms less system CPU, rounded independently.
+Current/native total CPU ranges were 42.539–45.879/40.250–42.793 ms.
+Mixed retains a 5.9% median gap; its process-level user CPU remains higher while
+median system CPU is nearly equal. Fault counts remain above native but do not
+identify a particular allocation, buffer, or kernel operation as the cause.
 
 Umber now retains compact glyph runs, glyph bytes, ordered rules, and immutable
 font resources. `Page::placements()` reconstructs owned absolute placements through
@@ -45,15 +47,20 @@ underfull diagnostics; both engines consume the same source and emit the final
 counter message. Timings include startup, input, execution/layout, output ownership,
 and teardown, with different backend/consumer endpoints.
 
-Integrated glyph-run tests, native/output comparisons, retained-root replays, and
-Miri passed before this refresh. This bounded measurement rechecked identities,
+The [paired box-payload report](layout-box-payloads.json) records compact node
+cells with reusable COW box headers, paired book/mixed CPU, and retained 60-root
+heap measurements. This CLI refresh does not isolate that change or measure
+checkpoint capture; it makes no new timing claim for private capture-map sorting.
+
+Latest implementation tests, native/output comparisons, and retained-root replays
+passed before this refresh. This bounded measurement rechecked identities,
 successful exits, and every process's final counter. It did not repeat correctness
 suites, profiles, RSS, or allocation runs. Saved mixed workload counts are 106 pages,
 214,500 glyphs, and 300 rules.
 
 Matched per-change CLI gains do not guarantee identical cumulative/native ratios
-across measurement runs. This refresh does not isolate the glyph-run change;
-its paired report does. The original prose cases are below native CPU time in
+across measurement runs. This refresh does not isolate individual storage changes;
+their paired reports do. The original prose cases are below native CPU time in
 this pass, but different output endpoints and short shared-host samples do not
 establish broad TeX/LaTeX or backend parity. Earlier expansion-only results cover
 a different feature scope. Git retains previous current measurements; the
