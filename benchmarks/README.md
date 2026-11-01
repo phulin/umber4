@@ -66,8 +66,8 @@ python3 benchmarks/layout.py --report target/benchmark/layout.json
 
 The prose is extracted from six repository design documents; `--paragraphs`
 defaults to 600 and can be changed in multiples of 100. Local real TFMs use the
-corpus paths from [fast-lexing.md](../docs/fast-lexing.md). The helper adapters share
-`crates/umber/examples/layout_support/mod.rs`; generated inputs and native output
+corpus paths from the [lexer report](results/fast-lexing.md#reproduction). The
+helper adapters share `crates/umber/examples/layout_support/mod.rs`; generated inputs and native output
 stay in `target/benchmark/layout/`. Preserve and reuse these files for paired
 revision measurements: regenerating after documentation edits changes the corpus.
 No format, package loading, hyphenation patterns, math, custom output routine,
@@ -297,6 +297,7 @@ target/release/examples/lexing --report target/benchmark/fast-lexing.json \
   gentle=plain:.tools/corpus/gentle.tex
 ```
 
-The [lexer report](results/fast-lexing.json) retains the TeX Live corpus cases,
-samples, token mixes, and file hashes; fast-lexing.md section 8 gives the corpus
-setup and full command.
+The [lexer report](results/fast-lexing.md) retains the historical timing and
+instruction comparisons, corpus setup, and full command. Its
+[raw samples](results/fast-lexing.json) retain the TeX Live corpus cases, token
+mixes, and file hashes.

@@ -33,8 +33,8 @@ identical-assignment, alias, and after-assignment behavior uses the existing
 assignment rules; checkpoint capture/restore includes both typed roots. Integer
 table regions derive from explicit counts rather than hardcoded offsets.
 `\mag` and its first-use frozen value belong to restored document state.
-Font-relative units call a narrow current-font unit getter; before fonts are
-implemented the null font supplies zero quad and x-height, as in INITEX.
+Font-relative units read the current font's quad and x-height through a narrow
+getter. The initial null font supplies zero for both, as in INITEX.
 
 `\the`, `\number` coercions, ordinary expansion, expanded-list scanning, and
 `\meaning` share the same typed quantity and formatting rules. Formatting uses
@@ -105,19 +105,20 @@ version. A node ID from an abandoned branch cannot be used with another version.
 
 The initial node kinds cover characters, ligatures and their boundary flags,
 explicit/TFM kerns, glue, penalties, rules, horizontal/vertical boxes, and
-discretionaries. No kind implements text execution yet. Box headers carry
-dimensions, shift, and glue sign/order/ratio; packing will supply the compatible
-glue calculation. Font metrics resolve through immutable font IDs rather than
-per-character owners. Paragraph/page algorithms traverse and splice these
+discretionaries. Text execution constructs these nodes, and paragraph and page
+packing supply compatible glue calculations. Box headers carry dimensions,
+shift, and glue sign/order/ratio. Font metrics resolve through immutable font IDs
+rather than per-character owners. Paragraph/page algorithms traverse and splice these
 lists directly, and publish detached immutable results without live node IDs.
 
 ## Driver and validation
 
-The existing driver quiescent flag distinguishes completed outer commands from
-errors that require restore. Font/text execution will add mode eligibility
-separately: entering `advance` must require quiescence, while returning a budget
-handoff and creating a checkpoint also require eligible external vertical mode.
-The foundation does not introduce placeholder modes or layout behavior.
+The driver quiescent flag distinguishes completed outer commands from errors
+that require restore. Entering `advance` requires quiescence. Returning a budget
+handoff and creating a checkpoint also require external vertical mode; horizontal
+construction defers the handoff until an eligible boundary. Ordinary assignment
+groups and unfinished pages may remain open, as defined in
+[checkpoints.md](checkpoints.md).
 
 Validation covers independent arithmetic/format examples, exact operand cursor
 boundaries, same-source INITEX register fixtures, grouped typed assignments,

@@ -164,12 +164,15 @@ once. Repeating a warmed fixed workload reuses these stores, including nested
 argument packets and long-name scratch. First long-name spill reserves the inline prefix plus its overflow byte together,
 so it starts in the 128-byte size class and reuses that capacity on later calls.
 
-The MVP's public message result remains `Vec<Vec<u8>>`: each `\message` constructs
-independently owned output bytes and transfers that vector to the result. Those
-adapter/result-boundary allocations are intentionally retained; this revision does
-not redesign public output ownership. The planned append-block diagnostic/output
-stores belong to the later runtime architecture. The optional whole-file lexer
-prototype is separate from the engine and keeps its own benchmark buffers.
+Each `\message` constructs an independently owned byte vector. Internal message
+history retains those vectors in shared immutable blocks of at most sixteen
+messages; appending to a shared tail starts a new block. Checkpoints share the
+blocks without copying message bytes. The public result remains `Vec<Vec<u8>>`:
+`outcome()` copies the retained messages into independent vectors, while consuming
+publication transfers uniquely owned vectors and copies shared ones. These
+execution and publication allocations remain part of the contract. Backend byte
+stores remain proposals. The optional whole-file lexer prototype is separate from
+the engine and keeps its own benchmark buffers.
 
 Typed pages retain each size class's capacity until its last buffer owner dies;
 a surviving value can retain its entire 64-slot header slab and shared metadata

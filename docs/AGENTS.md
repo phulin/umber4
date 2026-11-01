@@ -18,8 +18,9 @@ Keep implementation histories, before/after reports, and validation logs out of
   modes, and paragraph handoff.
 - `input.md` develops lazy character scanning, bounded literal cursor operations,
   name lookup, operand scanners, and retained file cursors.
-- `fast-lexing.md` measures a whole-file lexer prototype under fixed category
-  codes and explores deferred cross-line lookahead and worker lexing experiments.
+- `fast-lexing.md` describes a whole-file lexer prototype under fixed category
+  codes and explores deferred cross-line lookahead and worker lexing experiments;
+  retained measurements live in `benchmarks/results/fast-lexing.md`.
 - `checkpoints.md` defines quiescent driver handoff, heterogeneous snapshots,
   implemented expansion/register restore, and proposed conservative prefix restart
   after edits.
@@ -33,7 +34,7 @@ Keep implementation histories, before/after reports, and validation logs out of
   templates, entry measurement, and result-list transfers.
 - `pages.md` contracts executable vertical contributions, page breaks, detached
   publication and retained unfinished pages, and develops insertions, marks,
-  output routines, and retained unfinished pages.
+  and output routines.
 - `output.md` records detached page publication and develops ordered backend
   shipout, document state,
   DVI/PDF resources, and direct serialization.
