@@ -318,3 +318,101 @@ fn abandoned_font_mutations_do_not_pollute_cached_metric_baselines() {
     assert_eq!(e.document.fonts.descriptors[2].count, 7);
     assert_eq!(e.font_parameter(2, 2), Scaled(262143));
 }
+
+#[test]
+fn literal_character_reads_preserve_dynamic_categories_and_line_state() {
+    let cases: &[(&[u8], &[u8])] = &[
+        (br"\catcode64=11\relax a@b", b"a@b"),
+        (br"\catcode64=13\relax\def@{b}a@c", b"abc"),
+        (br"\catcode94=7\relax a^^62c", b"abc"),
+        (br"\catcode94=7\def\m{\catcode94=12\relax}a\m^^2bb", b"a+b"),
+        (
+            br"\catcode64=11\relax a@{\catcode64=13\relax\def@{b}a@c}a@",
+            b"a@abca@",
+        ),
+        (br"\catcode126=9\relax a~b", b"ab"),
+        (b"a% discard\n b", b"ab"),
+        (b"a\nb", b"ab"),
+        (b"\\endlinechar=98\\relax a\nc\n", b"acb"),
+    ];
+    for &(body, expected) in cases {
+        let mut source = br"\font\f=test \f\noindent ".to_vec();
+        source.extend_from_slice(body);
+        source.extend_from_slice(br"\relax\end\relax");
+        let mut e = engine(&source);
+        build(&mut e);
+        assert_eq!(
+            glyphs(&e),
+            expected.iter().map(|&c| (c, false)).collect::<Vec<_>>(),
+            "{}",
+            String::from_utf8_lossy(body)
+        );
+    }
+    for (body, spaces) in [(b"a% discard\n b".as_slice(), 0), (b"a\nb", 1)] {
+        let mut source = br"\font\f=test \f\noindent ".to_vec();
+        source.extend_from_slice(body);
+        source.extend_from_slice(br"\relax\end\relax");
+        let mut e = engine(&source);
+        build(&mut e);
+        let mut p = e.document.text.horizontal.head();
+        let mut actual = 0;
+        while !p.is_null() {
+            let node = e.document.nodes.get(p);
+            actual += usize::from(matches!(node.kind, Kind::Glue { .. }));
+            p = node.next;
+        }
+        assert_eq!(actual, spaces);
+    }
+}
+
+#[test]
+fn literal_character_reads_preserve_aliases_and_nested_argument_boundaries() {
+    let cases: &[(&[u8], &[u8])] = &[
+        (br"\let\letter=b a\letter c", b"abc"),
+        (br"\chardef\given=98 a\given c", b"abc"),
+        (br"\def\id#1{#1}\def\m#1{a\id{#1}b}\m{C}d", b"aCbd"),
+        (br"\def\empty{}\def\m#1{a#1b}\m{\empty}c", b"abc"),
+        (
+            br"\catcode64=11\def\m{a@b}\catcode64=13\relax\def@{C}\m a@b",
+            b"a@baCb",
+        ),
+    ];
+    for &(body, expected) in cases {
+        let mut source = br"\font\f=test \f\noindent ".to_vec();
+        source.extend_from_slice(body);
+        source.extend_from_slice(br"\relax\end\relax");
+        let mut e = engine(&source);
+        build(&mut e);
+        assert_eq!(
+            glyphs(&e),
+            expected.iter().map(|&c| (c, false)).collect::<Vec<_>>()
+        );
+    }
+}
+
+#[test]
+fn literal_character_reads_preserve_missing_character_and_error_consumption() {
+    let mut source = br"\font\f=test \f\noindent\sfcode0=2000\catcode0=12 a".to_vec();
+    source.extend_from_slice(b"\0b\\relax\\end");
+    let mut e = engine(&source);
+    loop {
+        let read = e.next_expanded().unwrap();
+        let first = read.meaning.command == 11 && read.meaning.value == i32::from(b'a');
+        e.execute(read).unwrap();
+        if first {
+            break;
+        }
+    }
+    assert_eq!(glyphs(&e), vec![(b'a', false)]);
+    assert_eq!(e.document.text.space_factor, 2000);
+    assert_eq!(e.next_token().unwrap().token, Token::character(11, b'b'));
+    let mut e = engine(br"\font\f=test \f\noindent\catcode33=15\relax abc!d");
+    assert_eq!(e.advance(usize::MAX), Err(Error::Syntax));
+    assert_eq!(e.next_token().unwrap().token, Token::character(11, b'd'));
+    let mut e = engine(br"\font\f=test \f\noindent abc");
+    assert_eq!(e.advance(usize::MAX), Err(Error::Eof));
+    assert_eq!(
+        glyphs(&e),
+        vec![(b'a', false), (b'b', false), (b'c', false)]
+    );
+}

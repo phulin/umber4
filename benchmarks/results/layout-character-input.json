@@ -1,0 +1,105 @@
+{
+  "date": "2026-11-01T08:48:04.699184+00:00",
+  "baseline_commit": "428abee0ed9395bc90cf6fb1987c89a8088c8e07",
+  "candidate": "Character construction consumes a current-line letter/other character through the existing FileInput::read_character only when the token-source stack is empty; the generic reader handles every other condition.",
+  "build": "cargo build --release --bin umber --lib; ordinary default features, no extra rustflags",
+  "cpu": 3,
+  "warmups": 1,
+  "repetitions": 9,
+  "order": "serial alternating pairs; attribution run separately",
+  "scope": "Complete ordinary CLI on the unchanged three 600-paragraph layout inputs and existing authentic Gentle mixed input. Short shared-host measurements; modest gains do not establish general TeX/LaTeX performance.",
+  "binary_sha256": {
+    "before": "c6f4bdb7f44b70d7acd7870623d14598fc05204f730724061d966067272bb8e2",
+    "after": "64f33d93862aeb7aa144f89613b9d2404b522dd5ad71da832d719a398e788a71"
+  },
+  "runtime_source_sha256": "e32e9b9d59470bf5769fa7b9ea7bf87cd2f6e002386b395076b01a56813e511c",
+  "runtime_source_delta": {
+    "added": 45,
+    "removed": 34,
+    "net": 11,
+    "new_api_or_state": false
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "cpu_ms": {
+        "before": [51.43, 50.082, 51.584, 50.708, 50.885, 50.398, 50.57, 50.612, 50.322],
+        "after": [51.393, 49.306, 49.241, 49.797, 49.399, 49.281, 49.434, 50.299, 49.899]
+      },
+      "median_cpu_ms": {
+        "before": 50.612,
+        "after": 49.434
+      },
+      "cpu_change_percent": -2.3275,
+      "median_paired_cpu_change_percent": -1.7966
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "cpu_ms": {
+        "before": [51.49, 50.87, 51.097, 50.031, 50.232, 50.493, 50.844, 50.121, 52.321],
+        "after": [50.19, 49.691, 50.279, 50.807, 49.706, 49.378, 50.945, 50.302, 50.352]
+      },
+      "median_cpu_ms": {
+        "before": 50.844,
+        "after": 50.279
+      },
+      "cpu_change_percent": -1.1112,
+      "median_paired_cpu_change_percent": -1.6009
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "cpu_ms": {
+        "before": [49.029, 45.835, 44.741, 44.528, 44.477, 45.19, 45.048, 44.737, 45.175],
+        "after": [44.257, 44.829, 44.516, 44.093, 43.661, 43.714, 44.007, 43.948, 43.956]
+      },
+      "median_cpu_ms": {
+        "before": 45.048,
+        "after": 44.007
+      },
+      "cpu_change_percent": -2.3109,
+      "median_paired_cpu_change_percent": -2.1948
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "cpu_ms": {
+        "before": [49.977, 50.069, 50.501, 49.8, 48.868, 52.579, 50.88, 48.69, 49.415],
+        "after": [49.378, 50.257, 49.38, 49.284, 48.51, 51.538, 48.363, 48.163, 48.809]
+      },
+      "median_cpu_ms": {
+        "before": 49.977,
+        "after": 49.284
+      },
+      "cpu_change_percent": -1.3866,
+      "median_paired_cpu_change_percent": -1.1986
+    }
+  ],
+  "mixed_callgrind": {
+    "before": 338892841,
+    "after": 331375111,
+    "instruction_change_percent": -2.2183,
+    "generic_file_reads_during_construction_before": 167100,
+    "generic_file_reads_during_construction_after": 42900,
+    "direct_literal_file_characters": 124200,
+    "file_read_inclusive_instructions_during_construction_before": 8848800,
+    "file_read_inclusive_instructions_during_construction_after": 2266200
+  },
+  "release_path_attribution": {
+    "ordinary_literal_before_space_factor_and_node_work": {
+      "file_reader_instructions": 53,
+      "caller_source_selection_meaning_expansion_and_command_instructions": 39,
+      "total": 92
+    },
+    "llvm_eliminates": "Raw origin coordinates and unused aggregate fields; direct candidate also eliminates token packing before byte extraction. Generic reader call/prologue, category dispatch, name-capacity check, token decoding, expansion tests and final command classification survive on the original path.",
+    "caution": "Inline source attribution is not a complete function/phase total. Whole-CLI totals and call arcs are measured directly."
+  },
+  "invariants": "Direct read is attempted only with an empty token-source stack; pending, backed, inline, replacement-body and argument sources therefore retain priority and generic ownership/retirement. Existing operation accepts only current category 11/12 in the already-prepared line, consumes exactly one reported byte and sets lexical state M. Every miss is unread and uses the existing reader, including line load/EOF, ^^, active/control characters, invalid bytes, comments and ignored bytes. No pretokenization or persistent cache/state. Space-factor, missing-character, node/ligature processing, budget and checkpoint paths are unchanged.",
+  "validation": "169 ordinary tests and all 3 native oracle adapters pass; rustfmt and Clippy with warnings denied pass. Three focused tests cover dynamic/group-restored categories, committed ^^ rewrites, active characters, comments and line state, changed endlinechar, character aliases, chardef, nested argument/empty-macro boundaries, frozen categories in stored tokens, missing glyph consumption/space factor, invalid-character consumption and EOF. Complete output/font records and retained-root replay equal on all four workloads; native DVI placements equal on all three originals and 214800 glyph/rule records over 106 mixed pages.",
+  "measured_candidate": "Isolated prototype; integrated runtime source and focused tests are byte-identical. Binary hashes identify the timed prototype and baseline; build paths differ from integration.",
+  "reproduction": "Preserve target/benchmark/layout/{book,narrow,dense}.tex unchanged; regenerating from edited docs changes the inputs. Use the existing mixed Gentle source and AE font resources identified by layout-metric-reader.json. Build default-feature release CLI, save before/after binaries, and use benchmarks/layout.py child CPU/wall accounting with one warmup and nine serial alternating pairs on CPU3. Run Callgrind separately from ordinary timing.",
+  "integration_validation": "Runtime source and focused tests are byte-identical to the validated prototype. All three focused semantic tests, rustfmt, Clippy with warnings denied, ordinary default release CLI/library/layout-example rebuild, wasm32-unknown-unknown library check, source identity and mixed CLI output comparison pass. No further timing sweep.",
+  "integrated_binary_sha256": "425c52d7ae1367580db06ffdb59d459255e89dd7c03886854af63b7b384f1c08"
+}

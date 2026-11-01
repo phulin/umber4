@@ -1,7 +1,7 @@
 # Whole-file lexing under fixed category codes
 
 This document explores a fast path for file input that holds while category codes and
-`\endlinechar` stay unchanged. It extends the line lookahead in
+`\endlinechar` stay unchanged. It explores alternatives to the lazy reader in
 [input.md](input.md) section 3 and reports a measured prototype. The engine
 does not use the prototype. Sections 1–4 describe and measure what is built.
 Sections 5–7 are experiments and open questions, not required runtime architecture.
@@ -239,16 +239,16 @@ place without a call per token gives 12–75% over `current`.
 
 ### 5.1 Lookahead beyond the line
 
-Section 3 of [input.md](input.md) lexes ahead within the prepared line and rewinds
-on any category write. The whole-file pass could replace the per-line buffer with
-chunks of lines under a _regime_: the category table and `\endlinechar` in
-force. Each chunk records its starting byte offset, its token range per line,
-and the regime it assumed. A line starts in state N, so line boundaries are
+The reader in [input.md](input.md) section 3 consumes characters lazily, with
+narrow current-line operations and no token lookahead buffer. A speculative
+whole-file pass could instead prepare chunks of lines under a _regime_: the
+category table and `\endlinechar` in force. Each chunk records its starting byte
+offset, its token range per line, and the regime it assumed. A line starts in state N, so line boundaries are
 natural rewind points. A rewind inside a line relexes that line from its start
 under the old table to recover the position, which costs at most one line.
 
-The committed path remains the reference. The stops in input.md section 3
-become per-line fallbacks or markers:
+The lazy reader remains the reference. Speculation would need per-line fallbacks
+or markers to preserve its consumption order:
 
 - A translated `^^` line is lexed lazily when reached.
 - An invalid character becomes a marker whose error is raised on consumption.
@@ -390,10 +390,11 @@ measurements.
 
 ## 7. Integration tradeoffs
 
-Line lookahead in [input.md](input.md) section 3 provides a bounded integration
-point. In this prototype, reading lines in place without a per-token call is the
-largest single gain. Raw-byte line lexing and the word hash are portable, need no
-unsafe code beyond the bounded output writes, and give 1.25–1.78× here.
+The lazy reader in [input.md](input.md) section 3 remains the semantic reference
+for any integration. In this prototype, reading lines in place without a
+per-token call is the largest single gain. Raw-byte line lexing and the word hash
+are portable, need no unsafe code beyond the bounded output writes, and give
+1.25–1.78× here.
 
 Stage 1 can remain an optional, target-specific accelerator behind the same
 interface, with scalar loops as the portable reference. Its gain is large on

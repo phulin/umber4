@@ -27,6 +27,9 @@ bootstrap settings and reproduction without distributing additional prose excerp
 The [output font-binding comparison](results/layout-output-font-binding.json)
 retains paired ordinary release samples and instruction counts for reusing a
 borrowed font descriptor and page-local index within each detached page traversal.
+The [literal character-reader comparison](results/layout-character-input.json)
+retains paired ordinary release samples on the same four workloads and instruction
+attribution for consuming current-line literals through the existing reader operation.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

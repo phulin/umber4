@@ -94,11 +94,12 @@ Putting a token back into input preserves its identity. Reading it again resolve
 its meaning at that moment. One-read expansion suppression is handled separately
 by the reader, as described in section 8.
 
-File tokens take the category codes in force when they are consumed. The reader's
-line lookahead is discarded when those codes change, as described in
-[input.md](input.md). Category-code changes affect subsequent characters, while
-tokens already captured in a definition or argument keep their category codes. The file reader retains the current line and lexical cursor;
-the detailed character scanner will build on this interface.
+File tokens take the category codes in force when they are consumed. The lazy
+reader retains the current prepared line and lexical cursor, without buffering
+unconsumed tokens, as described in [input.md](input.md). Category-code changes
+affect subsequent file characters, while tokens already captured in a definition
+or argument keep their category codes. Narrow literal-character reads share the
+same cursor and leave all other input to the general reader.
 
 ## 3. Token sequences and input cursors
 

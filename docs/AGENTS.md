@@ -16,7 +16,7 @@ Keep implementation histories, before/after reports, and validation logs out of
   bindings, and versioned node/list ownership before text layout execution.
 - `execution.md` develops primitive dispatch, meanings, assignment restoration,
   modes, and paragraph handoff.
-- `input.md` develops character scanning, line lookahead and its invalidation,
+- `input.md` develops lazy character scanning, bounded literal cursor operations,
   name lookup, operand scanners, and retained file cursors.
 - `fast-lexing.md` measures a whole-file lexer prototype under fixed category
   codes and explores deferred cross-line lookahead and worker lexing experiments.

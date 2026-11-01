@@ -128,43 +128,54 @@ impl Engine<'_> {
                     }
                 }
                 State::Look => {
-                    let mut read = self.next_token()?;
-                    while read.meaning.expandable() {
-                        if read.meaning.is_macro() {
-                            self.begin_macro(read.meaning.value as u32)?;
-                        } else {
-                            self.expand(read)?;
-                        }
-                        read = self.next_token()?;
-                    }
-                    let c = match read.meaning.command {
-                        11 | 12 | cmd::CHAR_GIVEN => Some(read.meaning.value as u8),
-                        cmd::CHAR => Some(self.scan_index()? as u8),
-                        _ => None,
-                    };
-                    if let Some(c) = c {
-                        self.adjust_space_factor(c);
-                        let node = self
-                            .document
-                            .nodes
-                            .alloc(Kind::Character { font, character: c })?;
-                        scratch.stack.push(Item {
-                            character: c as u16,
-                            original: Some(node),
-                            pseudo: false,
-                        });
-                        right = if c as u16 == false_boundary {
-                            256
-                        } else {
-                            c as u16
-                        };
+                    let literal = if self.document.sources.is_empty() {
+                        self.document
+                            .file
+                            .read_character(self.document.scalars.catcodes())
                     } else {
-                        if read.meaning.command == cmd::NO_BOUNDARY {
-                            boundary = 256;
+                        None
+                    };
+                    let c = if let Some(token) = literal {
+                        token.byte()
+                    } else {
+                        let mut read = self.next_token()?;
+                        while read.meaning.expandable() {
+                            if read.meaning.is_macro() {
+                                self.begin_macro(read.meaning.value as u32)?;
+                            } else {
+                                self.expand(read)?;
+                            }
+                            read = self.next_token()?;
                         }
-                        right = boundary;
-                        pending = Some(read);
-                    }
+                        match read.meaning.command {
+                            11 | 12 | cmd::CHAR_GIVEN => read.meaning.value as u8,
+                            cmd::CHAR => self.scan_index()? as u8,
+                            _ => {
+                                if read.meaning.command == cmd::NO_BOUNDARY {
+                                    boundary = 256;
+                                }
+                                right = boundary;
+                                pending = Some(read);
+                                state = State::Program;
+                                continue;
+                            }
+                        }
+                    };
+                    self.adjust_space_factor(c);
+                    let node = self
+                        .document
+                        .nodes
+                        .alloc(Kind::Character { font, character: c })?;
+                    scratch.stack.push(Item {
+                        character: c as u16,
+                        original: Some(node),
+                        pseudo: false,
+                    });
+                    right = if c as u16 == false_boundary {
+                        256
+                    } else {
+                        c as u16
+                    };
                     state = State::Program;
                 }
                 State::Wrap => {
