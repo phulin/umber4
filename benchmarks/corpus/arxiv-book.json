@@ -1,0 +1,17 @@
+{
+  "title": "The Hitchhiker's Guide to Agentic AI: From Foundations to Systems",
+  "author": "Haggai Roitman",
+  "arxiv_id": "2606.24937",
+  "url": "https://arxiv.org/abs/2606.24937",
+  "source_origin": "../umber/target/catcode-census-20261016/archives/2606.24937.src",
+  "sha256": "3a052603f4914ef4226b2ad7401ae56c7e64919a53c5a422061329c555f2ebbe",
+  "cache": ".tools/corpus/arxiv/2606.24937",
+  "archive": ".tools/corpus/arxiv/2606.24937/source.src",
+  "entrypoint": ".tools/corpus/arxiv/2606.24937/source/book.tex",
+  "compiler": "pdflatex",
+  "reference": {
+    "pages": 588,
+    "texlive_version": "2025",
+    "evidence": "Sibling-reported in ../umber/docs/arxiv_book_performance.md for this source archive; the original PDF is not present locally."
+  }
+}
