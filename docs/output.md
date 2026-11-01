@@ -9,13 +9,16 @@ and immutable resource owners, not live TeX node IDs.
 
 The [page contract](pages.md) defines the current default output path, without
 DVI/PDF serialization. `Outcome.pages` is a cheap retained prefix; `Pages::iter`
-and `get` expose immutable `Page` records. Each page owns packed box records
-(including parent indices and glue settings), ordered glyph-run/rule records and
+and `get` expose immutable `Page` records. `Pages::iter` builds a temporary
+directory of borrowed chunk references in an iterator-owned `Vec` for forward
+document traversal. Each page owns packed box records (including parent indices
+and glue settings), ordered glyph-run/rule records and
 glyph bytes, count registers, output penalty, and an immutable font-resource table.
 `Page::items` exposes compact ordered records; run ranges index `Page::glyphs`.
 `Page::placements` yields owned absolute `Placement` values through a forward,
-exact-size iterator. It does not expose a placement slice, element borrows, range
-slicing, or constant-time random placement access. Each traversal reconstructs
+exact-size iterator; its construction and iteration allocate no storage.
+It does not expose a placement slice, element borrows, range slicing, or
+constant-time random placement access. Each traversal reconstructs
 intra-run x coordinates using the retained immutable scaled font widths and
 wrapping integer addition; it borrows the font descriptor once per run. Consumers
 that need an owned position array can collect the iterator explicitly. Repeated
