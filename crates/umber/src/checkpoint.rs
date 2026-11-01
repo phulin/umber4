@@ -289,9 +289,6 @@ impl<'a> Engine<'a> {
         }
         self.quiescent = false;
         self.scanner = crate::scanner::Scanner::Normal;
-        // These handles belong to the abandoned whole node-store root. Dropping
-        // them is inert; never traverse their IDs through restored storage.
-        self.abandon_alignment_layouts();
         self.document.box_frames.clear();
         self.document.math_frames.clear();
         self.math
@@ -304,6 +301,10 @@ impl<'a> Engine<'a> {
         // that never installed a body owner, and rebuild only allocator lists.
         self.document.sources.clear();
         self.alignment_reader.abandon();
+        // Template cursors and backing owners are gone before layout handles.
+        // These IDs belong to the abandoned whole node-store root: returning
+        // their buffers is inert and must precede installing restored storage.
+        self.abandon_alignment_layouts();
         self.free_packets.fill(NO_PACKET);
         for (id, packet) in self.packets.iter_mut().enumerate() {
             packet.clear();

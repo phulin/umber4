@@ -272,14 +272,25 @@ fn escaped_capture_outlives_borrowed_template_and_restore_clears_old_sources_fir
     assert_eq!(e.next_raw().unwrap().token.byte(), b'u');
     e.retire_exhausted().unwrap();
     e.release_packet(packet);
-    start(&mut e, &[], &[]);
+    start(&mut e, &[Token::other(b'u')], &[]);
+    e.begin_alignment_layout(&[crate::numeric::Glue::default(); 2])
+        .unwrap();
+    e.begin_alignment_row().unwrap();
+    e.alignment_cell(crate::nodes::List::default(), 1).unwrap();
+    e.end_alignment_row().unwrap();
+    assert!(e.document.nodes.live_count() > 0);
     assert!(!e.can_checkpoint());
     let foreign = Engine::new(b"").checkpoint().unwrap();
     assert_eq!(e.restore(&foreign), Err(Error::Checkpoint));
     assert!(e.alignment_reader.active());
+    assert_eq!(e.document.alignment_layouts.len(), 1);
     e.restore(&checkpoint).unwrap();
     assert!(!e.alignment_reader.active());
     assert!(e.document.sources.is_empty());
+    assert!(e.document.alignment_layouts.is_empty());
+    assert!(e.alignment_layout_pool.iter().all(Option::is_some));
+    assert_eq!(e.document.nodes.live_count(), 0);
+    assert!(e.can_checkpoint());
 }
 
 #[path = "alignment_reader_oracle_tests.rs"]
