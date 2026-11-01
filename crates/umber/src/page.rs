@@ -445,7 +445,7 @@ impl Engine<'_> {
         {
             return Ok(true);
         }
-        self.back_read(read);
+        self.back_read(read)?;
         let width = self.document.layout_values.dimens[DimenParam::HSize.index()].value;
         let node = self.document.nodes.alloc_box(BoxData {
             width,

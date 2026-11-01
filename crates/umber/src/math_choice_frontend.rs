@@ -24,7 +24,7 @@ impl Engine<'_> {
                 cmd::RELAX => continue,
                 cmd::BEGIN => return Ok(()),
                 _ => {
-                    self.back(read.token);
+                    self.back(read.token)?;
                     return Err(Error::Syntax);
                 }
             }

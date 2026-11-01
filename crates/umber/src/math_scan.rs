@@ -14,7 +14,7 @@ impl Engine<'_> {
                 };
                 let code = self.document.scalars[Target::mathcode(character as usize)].value;
                 if code == 0x8000 {
-                    self.back(Token::active(character));
+                    self.back(Token::active(character))?;
                     return Ok(None);
                 }
                 code

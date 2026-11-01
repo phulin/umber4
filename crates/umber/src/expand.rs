@@ -20,6 +20,7 @@ impl Engine<'_> {
     fn expand_inner(&mut self, read: Read) -> Result<()> {
         match read.meaning.command {
             cmd::UNDEFINED => Err(Error::Undefined),
+            cmd::END_TEMPLATE => self.back(FROZEN_ENDV),
             cmd::INPUT => self.input_command(read),
             cmd::NUMBER => {
                 let value = self.scan_int()?;
@@ -62,16 +63,16 @@ impl Engine<'_> {
                 } else if second.meaning.expandable() {
                     self.expand(second)?;
                 } else {
-                    self.back(second.token);
+                    self.back(second.token)?;
                 }
-                self.back(first);
+                self.back(first)?;
                 Ok(())
             }
             cmd::NOEXPAND => {
                 let token = self
                     .with_scanner(crate::scanner::Scanner::Normal, |engine| engine.next_raw())?
                     .token;
-                self.push_backed(token, true);
+                self.push_backed(token, true)?;
                 Ok(())
             }
             cmd::CSNAME => {
@@ -79,7 +80,7 @@ impl Engine<'_> {
                 if self.document.bindings[id as usize].meaning() == Meaning::UNDEFINED {
                     self.assign_meaning(id as usize, Meaning::RELAX, false);
                 }
-                self.back(Token::cs(id));
+                self.back(Token::cs(id))?;
                 Ok(())
             }
             cmd::ENDCSNAME => Err(Error::Syntax),

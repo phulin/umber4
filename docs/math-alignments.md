@@ -391,6 +391,33 @@ locals have already disappeared.
 
 ## 4. Alignment state and templates
 
+The alignment reader is executable independently of row or preamble execution.
+An explicit activation owns immutable template backing through a reusable nested
+reader frame. U/V cursors borrow ranges from that owner without copying tokens or
+cloning an owner per entry. Escaping argument captures retain backing through the
+ordinary packet machinery. Active reader frames exclude checkpoints; restore
+clears old sources before abandoning their template owners.
+
+The common raw reader counts literal category-1/2 character tokens and intercepts
+effective tab/span/cr/crcr commands at alignment state zero. Brace aliases do not
+change the count; terminator aliases do intercept. Backing first retires exhausted
+ordinary/U token sources, stops at an exhausted V, and reverses literal-brace
+accounting. Generated insertion does not reverse accounting. U exhaustion checks
+the native state threshold before retirement and resets it to zero. Normal raw
+overread can retire V; eager cleanup cannot. End-V validation walks only exhausted
+token sources to an exhausted actual V and preserves pending wrappers.
+
+Frozen expandable END_TEMPLATE and unexpandable ENDV identities remain distinct.
+Scanner legality is checked before transformation. Protected entry lookahead
+stops protected macros while ordinary execution expands them. Direct cursor
+shortcuts are disabled during active alignment so assignments, numeric scans,
+captures, and conditionals observe template insertion at the native read boundary.
+Backtick brace operands and macro delimiters ending in `#{` compensate their
+special reads; write expansion isolates its temporary alignment counter.
+
+Preamble parsing, rows, and production `\halign`/`\valign` execution are not part
+of this reader contract.
+
 An alignment owns a preamble, column measurements, span records, rows, and current
 entry information until the alignment group closes. This is TeX's semantic state
 for `\halign`/`\valign`, not a scanner continuation. Nested alignments push an

@@ -35,7 +35,7 @@ impl<'a> Engine<'a> {
         }
         if self.name_in_progress {
             self.check_source_limit()?;
-            self.insert_relax(read.token);
+            self.insert_relax(read.token)?;
             return Ok(());
         }
         let mut name = self
@@ -87,7 +87,7 @@ impl<'a> Engine<'a> {
             let mut quoted = false;
             loop {
                 if read.meaning.command > 12 || !(0..=255).contains(&read.meaning.value) {
-                    self.back(read.token);
+                    self.back(read.token)?;
                     return Ok(());
                 }
                 let byte = read.meaning.value as u8;

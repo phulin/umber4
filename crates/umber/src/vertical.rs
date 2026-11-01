@@ -97,7 +97,7 @@ impl Engine<'_> {
                     return Err(Error::Syntax);
                 }
                 if self.document.text.mode == Mode::Horizontal {
-                    self.head_for_vertical(read);
+                    self.head_for_vertical(read)?;
                     return Ok(true);
                 }
                 let spec = self.scan_skip(read.meaning.value)?;
@@ -115,11 +115,11 @@ impl Engine<'_> {
                     return Err(Error::Syntax);
                 }
                 if !horizontal && self.document.text.mode == Mode::Horizontal {
-                    self.head_for_vertical(read);
+                    self.head_for_vertical(read)?;
                     return Ok(true);
                 }
                 if horizontal && self.document.text.mode.is_vertical() {
-                    self.back_read(read);
+                    self.back_read(read)?;
                     self.new_graf(true)?;
                     return Ok(true);
                 }

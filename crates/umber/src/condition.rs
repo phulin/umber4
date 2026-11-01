@@ -122,7 +122,7 @@ impl Engine<'_> {
         let phase = *self.document.conditions.last().ok_or(Error::Conditional)?;
         match phase {
             Condition::Pending => {
-                self.insert_relax(read.token);
+                self.insert_relax(read.token)?;
                 return Ok(());
             }
             _ if read.meaning.command == cmd::FI => {
@@ -163,6 +163,9 @@ impl Engine<'_> {
     }
     #[inline]
     fn skip_characters(&mut self) {
+        if self.alignment_reader.active() {
+            return;
+        }
         if self.at_file_input() {
             while self
                 .document

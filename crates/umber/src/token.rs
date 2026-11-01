@@ -6,6 +6,8 @@ pub(crate) const PARAM: u32 = 1 << 23;
 pub(crate) const SINGLE: u32 = u32::MAX - 1;
 pub(crate) const FROZEN_RELAX: Token = Token(CS);
 pub(crate) const FROZEN_END_WRITE: Token = Token(CS | END_WRITE_ID);
+pub(crate) const FROZEN_END_TEMPLATE: Token = Token(CS | END_TEMPLATE_ID);
+pub(crate) const FROZEN_ENDV: Token = Token(CS | ENDV_ID);
 pub(crate) const CHUNK_BITS: u32 = 12;
 // Control-sequence IDs follow TeX's layout: the frozen relax, the empty name,
 // one single-character name and one active character per byte, the private
@@ -14,7 +16,9 @@ pub(crate) const NULL_CS: u32 = 1;
 pub(crate) const SINGLE_BASE: u32 = 2;
 pub(crate) const ACTIVE_BASE: u32 = SINGLE_BASE + 256;
 pub(crate) const END_WRITE_ID: u32 = ACTIVE_BASE + 256;
-pub(crate) const NAMED_BASE: u32 = END_WRITE_ID + 1;
+pub(crate) const END_TEMPLATE_ID: u32 = END_WRITE_ID + 1;
+pub(crate) const ENDV_ID: u32 = END_TEMPLATE_ID + 1;
+pub(crate) const NAMED_BASE: u32 = ENDV_ID + 1;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -282,6 +286,10 @@ pub(crate) mod cmd {
         VCENTER = 169 => [b"vcenter"];
         MATH_CHOICE = 170 => [b"mathchoice"];
         EQNO = 171 => [b"eqno", b"leqno"];
+        ALIGN_CR = 5 => [b"cr", b"crcr"];
+        ALIGN_SPAN = 172 => [b"span"];
+        END_TEMPLATE = 173 => [] expandable;
+        ENDV = 9 => [];
         UNSUPPORTED_MATH = 161 => [b"middle", b"mskip", b"nonscript", b"halign", b"valign"];
     }
 }
@@ -543,6 +551,8 @@ pub(crate) enum SourceRole {
     Inserted,
     BackedUp,
     Output,
+    AlignmentU(u32),
+    AlignmentV(u32),
 }
 pub(crate) struct Cursor {
     pub role: SourceRole,

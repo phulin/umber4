@@ -56,7 +56,7 @@ fn decimal_sources_retain_signs_digits_and_nested_backing() {
                 assert_eq!(engine.next_raw().unwrap().token, Token::other(byte));
             }
         }
-        engine.retire_exhausted();
+        engine.retire_exhausted().unwrap();
         assert!(engine.document.sources.is_empty());
     }
 }

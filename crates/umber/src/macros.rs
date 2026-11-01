@@ -119,7 +119,7 @@ impl Engine<'_> {
         let definition = owner.definition();
         let arity = definition.arity;
         if definition.prefix_end == 0 && arity == Arity::Zero {
-            self.retire_exhausted();
+            self.retire_exhausted()?;
             return self.push_body(owner, None);
         }
         if definition.uses_parameters {
@@ -139,6 +139,9 @@ impl Engine<'_> {
         argument: usize,
         long: bool,
     ) -> bool {
+        if self.alignment_reader.active() {
+            return false;
+        }
         let Some(cursor) = self.document.sources.last().and_then(Source::cursor) else {
             return false;
         };
@@ -202,6 +205,9 @@ impl Engine<'_> {
         builder: &mut Option<crate::values::Builder>,
         except: Token,
     ) -> Result<usize> {
+        if self.alignment_reader.active() {
+            return Ok(0);
+        }
         if !RETAIN {
             let mut count = 0;
             while self
@@ -269,14 +275,22 @@ impl Engine<'_> {
         arity: Arity,
     ) -> Result<()> {
         let definition = owner.definition();
-        for expected in owner.tokens.iter().take(definition.prefix_end as usize) {
+        for (index, expected) in owner
+            .tokens
+            .iter()
+            .take(definition.prefix_end as usize)
+            .enumerate()
+        {
             if self.next_raw()?.token != expected {
                 return Err(Error::Argument);
+            }
+            if index + 1 == definition.prefix_end as usize && expected.is_begin() {
+                self.undo_alignment_brace(expected)?;
             }
         }
         let count = arity as usize;
         if count == 0 {
-            self.retire_exhausted();
+            self.retire_exhausted()?;
             return self.push_body(owner, None);
         }
         let packet = if RETAIN { self.take_packet(arity)? } else { 0 };
@@ -316,7 +330,7 @@ impl Engine<'_> {
         if RETAIN {
             self.finish_capture(packet, builder);
         }
-        self.retire_exhausted();
+        self.retire_exhausted()?;
         self.push_body(owner, RETAIN.then_some(packet))
     }
     pub(crate) fn same_meaning(&self, a: Meaning, b: Meaning) -> bool {

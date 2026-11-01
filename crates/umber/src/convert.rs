@@ -147,6 +147,18 @@ impl Engine<'_> {
         emit: &mut impl FnMut(&mut Self, u8) -> Result<()>,
     ) -> Result<()> {
         let meaning = read.meaning;
+        if meaning.command == cmd::END_TEMPLATE {
+            return self.escaped_text(b"outer endtemplate", emit);
+        }
+        if meaning.command == cmd::ENDV {
+            return self.emit_text(b"end of alignment template", emit);
+        }
+        if meaning.command == 4 && meaning.value == 256 {
+            return self.escaped_text(b"span", emit);
+        }
+        if meaning.command == cmd::ALIGN_CR && (257..=258).contains(&meaning.value) {
+            return self.escaped_text(if meaning.value == 257 { b"cr" } else { b"crcr" }, emit);
+        }
         if meaning.command == cmd::END_WRITE {
             self.escaped_text(b"outer", emit)?;
             return self.emit_text(b" macro:->", emit);

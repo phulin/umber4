@@ -18,6 +18,11 @@ scratch ownership, reuse, and failure cleanup;
 `input.rs` supplies lazy character input; `input_tokens.rs` owns ordered token
 and file-boundary cursors; `input_files.rs` supplies borrowed host resolution and
 filename scanning, with native, cleanup, and replay tests in `input_files_tests.rs`;
+`alignment_reader.rs` owns active template backing, borrowed U/V sources, lexical
+brace/interception state, frozen end-template boundaries and protected lookahead;
+`alignment_reader_tests.rs` checks source, scanner, capture, nesting, and restore
+lifetimes; `alignment_reader_oracle_tests.rs` compares a small explicit reader
+driver with native alignment diagnostics and errors.
 `define.rs` builds macro definitions; `macros.rs` builds invocation packets and
 captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;

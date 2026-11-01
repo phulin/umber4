@@ -22,7 +22,7 @@ impl Engine<'_> {
             _ => -1,
         };
         if code < 0 {
-            self.back_read(read);
+            self.back_read(read)?;
             return Err(Error::Syntax);
         }
         Ok(Delimiter::from_code(code))

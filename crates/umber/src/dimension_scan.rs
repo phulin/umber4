@@ -91,7 +91,7 @@ impl Engine<'_> {
                 }
             }
         } else if !matches!(read.token, t if t == Token::other(b'.') || t == Token::other(b',')) {
-            self.back(read.token);
+            self.back(read.token)?;
             integer = i64::from(self.scan_int()?);
             return self.dimension_units::<MU>(integer, 0, negative, infinite);
         }
@@ -111,7 +111,7 @@ impl Engine<'_> {
             fraction = round_decimals(&digits[..len]);
         }
         if next.meaning.command != cmd::SPACE {
-            self.back(next.token);
+            self.back(next.token)?;
         }
         self.dimension_units::<MU>(integer, fraction, negative, infinite)
     }
@@ -156,7 +156,7 @@ impl Engine<'_> {
                     integer * i64::from(unit) + i64::from(unit) * i64::from(fraction) / 65536;
                 return Ok((self.signed_dimension(value, negative)?, order));
             }
-            self.back(read.token);
+            self.back(read.token)?;
             if MU {
                 if !self.scan_keyword(b"mu")? {
                     return Err(Error::Number);
@@ -241,7 +241,7 @@ impl Engine<'_> {
     fn dimension_space(&mut self) -> Result<()> {
         let read = self.next_expanded()?;
         if read.meaning.command != cmd::SPACE {
-            self.back(read.token);
+            self.back(read.token)?;
         }
         Ok(())
     }

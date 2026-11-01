@@ -91,6 +91,7 @@ impl<'a> Engine<'a> {
             && self.document.text.mode == crate::text::Mode::Vertical
             && self.document.box_frames.is_empty()
             && self.document.math_frames.is_empty()
+            && !self.alignment_reader.active()
             && self.document.output_frame.is_none()
     }
 
@@ -119,7 +120,7 @@ impl<'a> Engine<'a> {
             }
             if read.meaning.command == cmd::END {
                 if self.document.text.mode == crate::text::Mode::Horizontal {
-                    self.head_for_vertical(read);
+                    self.head_for_vertical(read)?;
                     self.quiescent = true;
                     commands = commands.saturating_add(1);
                     continue;
@@ -300,6 +301,7 @@ impl<'a> Engine<'a> {
         // read after this point. Clear every packet, including scanner failures
         // that never installed a body owner, and rebuild only allocator lists.
         self.document.sources.clear();
+        self.alignment_reader.abandon();
         self.free_packets.fill(NO_PACKET);
         for (id, packet) in self.packets.iter_mut().enumerate() {
             packet.clear();

@@ -44,6 +44,9 @@ impl Engine<'_> {
         builder: &mut Option<crate::values::Builder>,
         except: Token,
     ) -> Result<usize> {
+        if self.alignment_reader.active() {
+            return Ok(0);
+        }
         let Some(cursor) = self
             .document
             .sources
@@ -132,7 +135,8 @@ impl Engine<'_> {
                     )?;
                 }
             }
-            if !DELIMITED
+            if !self.alignment_reader.active()
+                && !DELIMITED
                 && let Some(cursor) = self.document.sources.last().and_then(Source::cursor)
                 && cursor.next == cursor.end
             {
@@ -141,7 +145,7 @@ impl Engine<'_> {
             }
             // The grouped-window path reports a non-long paragraph before
             // advancing that window, as its existing bulk scanner does.
-            if !DELIMITED && !long
+            if !self.alignment_reader.active() && !DELIMITED && !long
                 && let Some(cursor) = self.document.sources.last().and_then(Source::cursor)
                 && cursor.next != cursor.end
                 // SAFETY: next precedes end in the retained immutable window.
@@ -178,6 +182,9 @@ impl Engine<'_> {
                     matched = fallback;
                 }
                 if matched == length {
+                    if raw.token.is_begin() {
+                        self.undo_alignment_brace(raw.token)?;
+                    }
                     break;
                 }
             }

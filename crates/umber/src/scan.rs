@@ -21,6 +21,9 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn scan_digit_window(&mut self, radix: i32, value: &mut i32) -> Result<bool> {
+        if self.alignment_reader.active() {
+            return Ok(false);
+        }
         let Some(cursor) = self
             .document
             .sources
@@ -71,7 +74,7 @@ impl Engine<'_> {
             // SAFETY: the terminating token is inside this source window.
             cursor.next = unsafe { cursor.next.add(1) };
             if meaning.command != cmd::SPACE {
-                self.back(token);
+                self.back(token)?;
             }
             return Ok(true);
         }
@@ -99,7 +102,7 @@ impl Engine<'_> {
     pub(crate) fn scan_equals(&mut self) -> Result<()> {
         let read = self.nonspace(true)?;
         if read.token != Token::other(b'=') {
-            self.back(read.token);
+            self.back(read.token)?;
         }
         Ok(())
     }
@@ -160,6 +163,9 @@ impl Engine<'_> {
     }
     #[inline(always)]
     fn literal_digit(&mut self) -> Option<i32> {
+        if self.alignment_reader.active() {
+            return None;
+        }
         if self.at_file_input() {
             return self
                 .document
@@ -196,7 +202,7 @@ impl Engine<'_> {
             let digit = Self::digit(read.token, RADIX);
             if digit >= RADIX {
                 if read.meaning.command != cmd::SPACE {
-                    self.back(read.token);
+                    self.back(read.token)?;
                 }
                 return Ok(value);
             }
@@ -232,9 +238,10 @@ impl Engine<'_> {
                 Some(token.byte())
             };
             let value = i32::from(byte.ok_or(Error::Number)?);
+            self.undo_alignment_brace(token)?;
             let read = self.next_expanded()?;
             if read.meaning.command != cmd::SPACE {
-                self.back(read.token);
+                self.back(read.token)?;
             }
             value
         } else if let Some(value) = self.quantity(read)? {
@@ -258,7 +265,7 @@ impl Engine<'_> {
             let digit = Self::digit(read.token, radix);
             if digit >= radix {
                 if read.meaning.command != cmd::SPACE {
-                    self.back(read.token);
+                    self.back(read.token)?;
                 }
                 return Err(Error::Number);
             }
@@ -275,11 +282,12 @@ impl Engine<'_> {
         })
     }
     pub(crate) fn scan_keyword(&mut self, keyword: &[u8]) -> Result<bool> {
-        if let Some(cursor) = self
-            .document
-            .sources
-            .last_mut()
-            .and_then(Source::cursor_mut)
+        if !self.alignment_reader.active()
+            && let Some(cursor) = self
+                .document
+                .sources
+                .last_mut()
+                .and_then(Source::cursor_mut)
         {
             // SAFETY: both pointers belong to this retained immutable window.
             let available = unsafe { cursor.end.offset_from(cursor.next) } as usize;
@@ -312,7 +320,7 @@ impl Engine<'_> {
                 }
                 tokens[index] = read.token;
                 for token in tokens[..=index].iter().rev() {
-                    self.back(*token);
+                    self.back(*token)?;
                 }
                 return Ok(false);
             }

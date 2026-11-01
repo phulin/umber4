@@ -37,7 +37,7 @@ impl Engine<'_> {
         } else if (Token::other(b'0').0..=Token::other(b'9').0).contains(&read.token.0) {
             self.scan_digits::<10>(i32::from(read.token.byte() - b'0'))
         } else {
-            self.back(read.token);
+            self.back(read.token)?;
             self.scan_int()
         }
     }
@@ -100,7 +100,7 @@ impl Engine<'_> {
                 return Err(Error::Syntax);
             }
         } else if operator.meaning.command != cmd::RELAX {
-            self.back(operator.token);
+            self.back(operator.token)?;
         }
         Ok(value)
     }

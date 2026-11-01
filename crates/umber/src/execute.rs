@@ -145,8 +145,8 @@ impl Engine<'_> {
                 let first = self.next_token()?;
                 let second = self.next_token()?;
                 self.assign_meaning(id, second.meaning, assignment_global);
-                self.back(second.token);
-                self.back(first.token);
+                self.back(second.token)?;
+                self.back(first.token)?;
                 Ok(())
             }
             cmd::COUNT_DEF
@@ -334,7 +334,7 @@ impl Engine<'_> {
             && cmd::is_assignment(read.meaning.command)
         {
             self.document.after_assignment = None;
-            self.back(token);
+            self.back(token)?;
         }
         result
     }
@@ -489,7 +489,7 @@ impl Engine<'_> {
                         self.document.layout_values.shape = old;
                     }
                 }
-                Save::After(token) => self.back(token),
+                Save::After(token) => self.back(token)?,
                 Save::Box(index, list, level) => self.restore_box(index, list, level),
                 Save::Tokens(index, old) => {
                     if self.document.token_registers[index].level != 0 {

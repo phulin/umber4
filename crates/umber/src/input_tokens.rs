@@ -37,6 +37,15 @@ impl Engine<'_> {
     #[cfg_attr(not(debug_assertions), inline(always))]
     fn next_raw_with<const INTERN: bool>(&mut self) -> Result<Raw> {
         loop {
+            let raw = self.fetch_raw::<INTERN>()?;
+            if self.alignment_token(raw)? {
+                continue;
+            }
+            return Ok(raw);
+        }
+    }
+    fn fetch_raw<const INTERN: bool>(&mut self) -> Result<Raw> {
+        loop {
             if self.at_file_input() {
                 let cats = self.document.scalars.catcodes();
                 let endline = self.document.scalars[crate::scalars::Target::ENDLINE].value;
@@ -94,7 +103,7 @@ impl Engine<'_> {
             } = source
             {
                 if *position == *len {
-                    self.pop_source();
+                    self.end_token_source()?;
                     continue;
                 }
                 let token = tokens[*position as usize];
@@ -252,7 +261,7 @@ impl Engine<'_> {
         if position == span.end {
             index += 1;
             let Some(next) = self.span_for(cursor.argument, index) else {
-                self.pop_source();
+                self.end_token_source()?;
                 return Ok(());
             };
             span = next;
@@ -287,9 +296,15 @@ impl Engine<'_> {
         }
     }
     pub(crate) fn current_source_exhausted(&self) -> bool {
-        match self.document.sources.last() {
-            Some(Source::Inline { position, len, .. }) => position == len,
-            Some(Source::Tokens(c)) => {
+        self.document
+            .sources
+            .last()
+            .is_some_and(|s| self.source_exhausted(s))
+    }
+    pub(crate) fn source_exhausted(&self, source: &Source) -> bool {
+        match source {
+            Source::Inline { position, len, .. } => position == len,
+            Source::Tokens(c) => {
                 c.next == c.end
                     && c.end_position == c.span_end
                     && self.span_for(c.argument, c.span_index + 1).is_none()
@@ -297,10 +312,27 @@ impl Engine<'_> {
             _ => false,
         }
     }
-    pub(crate) fn retire_exhausted(&mut self) {
+    pub(crate) fn retire_exhausted(&mut self) -> Result<()> {
         while self.current_source_exhausted() {
-            self.pop_source();
+            if matches!(
+                self.document.sources.last().map(Source::role),
+                Some(SourceRole::AlignmentV(_))
+            ) {
+                break;
+            }
+            self.end_token_source()?;
         }
+        Ok(())
+    }
+    fn end_token_source(&mut self) -> Result<()> {
+        if let Some(SourceRole::AlignmentU(_)) = self.document.sources.last().map(Source::role) {
+            if self.alignment_reader.state <= 500000 {
+                return Err(Error::Syntax);
+            }
+            self.alignment_reader.state = 0;
+        }
+        self.pop_source();
+        Ok(())
     }
     #[inline]
     pub(crate) fn push_inline(&mut self, tokens: [Token; 2], len: u8, suppress: bool) {
@@ -313,18 +345,24 @@ impl Engine<'_> {
         });
     }
     #[inline]
-    pub(crate) fn back(&mut self, token: Token) {
-        self.push_backed(token, false);
+    pub(crate) fn back(&mut self, token: Token) -> Result<()> {
+        self.push_backed(token, false)
     }
-    pub(crate) fn push_backed(&mut self, token: Token, suppress: bool) {
+    pub(crate) fn push_backed(&mut self, token: Token, suppress: bool) -> Result<()> {
+        if self.alignment_reader.active() {
+            self.retire_exhausted()?;
+            self.undo_alignment_brace(token)?;
+        }
         self.push_inline([token, Token(0)], 1, suppress);
         if let Some(Source::Inline { role, .. }) = self.document.sources.last_mut() {
             *role = SourceRole::BackedUp;
         }
+        Ok(())
     }
-    pub(crate) fn insert_relax(&mut self, original: Token) {
-        self.back(original);
+    pub(crate) fn insert_relax(&mut self, original: Token) -> Result<()> {
+        self.back(original)?;
         self.push_inline([FROZEN_RELAX, Token(0)], 1, false);
+        Ok(())
     }
     pub(crate) fn insert_pair(&mut self, first: Token, second: Token) {
         self.push_inline([first, second], 2, false);

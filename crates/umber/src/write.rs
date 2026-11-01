@@ -23,7 +23,7 @@ impl Engine<'_> {
             self.immediate_write()
         } else {
             // IMMEDIATE's one expanded lookahead consumed suppression already.
-            self.back(read.token);
+            self.back(read.token)?;
             Ok(())
         }
     }
@@ -37,6 +37,7 @@ impl Engine<'_> {
         let tokens = tokens.finish();
         let source_base = self.document.sources.len();
         let old_mode = std::mem::replace(&mut self.document.text.mode, Mode::Write);
+        let old_alignment_state = std::mem::replace(&mut self.alignment_reader.state, 1000000);
         let result = (|| {
             self.check_source_limit()?;
             self.document
@@ -62,6 +63,7 @@ impl Engine<'_> {
             self.pop_source();
         }
         self.document.text.mode = old_mode;
+        self.alignment_reader.state = old_alignment_state;
         let bytes = result?;
         self.document.diagnostics.push(Diagnostic::Write {
             destination: if stream < 0 {

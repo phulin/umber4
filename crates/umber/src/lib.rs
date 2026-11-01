@@ -113,6 +113,7 @@ pub struct Engine<'a> {
     pub(crate) name_spills: Vec<value_metadata::Buffer<u8>>,
     pub(crate) expansion_depth: u16,
     pub(crate) scanner: scanner::Scanner,
+    pub(crate) alignment_reader: alignment_reader::Reader,
     input_resolver: Option<&'a dyn InputResolver>,
     file_lines: std::rc::Rc<value_metadata::Store<u8>>,
     name_in_progress: bool,
@@ -131,7 +132,7 @@ pub struct Engine<'a> {
     quiescent: bool,
 }
 
-/// Every live semantic root belongs here; reusable stores do not.
+/// Restorable document roots; active alignment reader frames are session-owned.
 pub(crate) struct Document<'a> {
     pub sources: Vec<Source>,
     pub bindings: tables::Bindings,
@@ -202,6 +203,7 @@ impl<'a> Engine<'a> {
             name_spills: Vec::new(),
             expansion_depth: 0,
             scanner: scanner::Scanner::Normal,
+            alignment_reader: alignment_reader::Reader::default(),
             input_resolver: None,
             file_lines,
             name_in_progress: false,
@@ -227,6 +229,12 @@ impl<'a> Engine<'a> {
             },
             0,
         );
+        for (token, command) in [
+            (FROZEN_END_TEMPLATE, cmd::END_TEMPLATE),
+            (FROZEN_ENDV, cmd::ENDV),
+        ] {
+            engine.document.bindings[token.id()] = Binding::new(Meaning { command, value: 0 }, 0);
+        }
         for &(command, names) in cmd::PRIMITIVES {
             for (value, name) in names.iter().enumerate() {
                 let id = engine
@@ -234,8 +242,18 @@ impl<'a> Engine<'a> {
                     .expect("primitive names fit the token encoding");
                 engine.document.bindings[id as usize] = Binding::new(
                     Meaning {
-                        command,
-                        value: value as i32,
+                        command: if command == cmd::ALIGN_SPAN {
+                            4
+                        } else {
+                            command
+                        },
+                        value: if command == cmd::ALIGN_SPAN {
+                            256
+                        } else if command == cmd::ALIGN_CR {
+                            257 + value as i32
+                        } else {
+                            value as i32
+                        },
                     },
                     0,
                 );
@@ -316,6 +334,12 @@ impl<'a> Engine<'a> {
             if !read.meaning.expandable() {
                 return Ok(read);
             }
+            if read.meaning.command == cmd::END_TEMPLATE {
+                return Ok(Read {
+                    token: FROZEN_ENDV,
+                    meaning: self.resolve(FROZEN_ENDV),
+                });
+            }
             if read.meaning.is_macro() {
                 self.begin_macro(read.meaning.value as u32)?;
             } else {
@@ -324,6 +348,7 @@ impl<'a> Engine<'a> {
         }
     }
 }
+mod alignment_reader;
 #[cfg(test)]
 mod extended_tests;
 #[cfg(test)]

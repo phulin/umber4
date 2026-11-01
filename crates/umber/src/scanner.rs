@@ -9,6 +9,7 @@ pub(crate) enum Scanner {
     Matching,
     Absorbing,
     Skipping,
+    Aligning,
 }
 
 impl Engine<'_> {
@@ -25,7 +26,8 @@ impl Engine<'_> {
     #[inline]
     pub(crate) fn check_outer(&self, meaning: Meaning) -> Result<()> {
         if self.scanner != Scanner::Normal
-            && (meaning.is_outer_macro() || meaning.command == cmd::END_WRITE)
+            && (meaning.is_outer_macro()
+                || matches!(meaning.command, cmd::END_WRITE | cmd::END_TEMPLATE))
         {
             Err(Error::Outer)
         } else {

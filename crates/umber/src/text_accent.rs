@@ -73,7 +73,7 @@ impl Engine<'_> {
             11 | 12 | cmd::CHAR_GIVEN => Some(read.meaning.value as u8),
             cmd::CHAR => Some(self.scan_index()? as u8),
             _ => {
-                self.back_read(read);
+                self.back_read(read)?;
                 None
             }
         };

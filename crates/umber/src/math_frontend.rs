@@ -69,7 +69,7 @@ impl Engine<'_> {
         if command == 3 {
             match self.document.text.mode {
                 Mode::Vertical | Mode::InternalVertical => {
-                    self.back_read(read);
+                    self.back_read(read)?;
                     self.new_graf(true)?;
                 }
                 Mode::Horizontal | Mode::RestrictedHorizontal => self.enter_inline_math()?,
@@ -101,7 +101,7 @@ impl Engine<'_> {
             }
             cmd::BEGIN => {
                 let atom = self.append_math(Kind::Atom(Atom::new(Class::Ord, Field::Empty)))?;
-                self.back_read(read);
+                self.back_read(read)?;
                 self.scan_math_field(FieldTarget {
                     atom,
                     slot: FieldSlot::Nucleus,
@@ -196,7 +196,7 @@ impl Engine<'_> {
         if lookahead.meaning.command == 3 && self.document.text.mode == Mode::Horizontal {
             return self.enter_display_math();
         }
-        self.back(lookahead.token);
+        self.back(lookahead.token)?;
         self.open_group(GroupKind::MathShift)?;
         let outer = std::mem::replace(
             &mut self.document.text,

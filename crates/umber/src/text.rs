@@ -177,10 +177,10 @@ impl Engine<'_> {
         }
         if read.meaning.command == cmd::UNBOX {
             if read.meaning.value < 2 && self.document.text.mode.is_vertical() {
-                self.back_read(read);
+                self.back_read(read)?;
                 self.new_graf(true)?;
             } else if read.meaning.value >= 2 && self.document.text.mode == Mode::Horizontal {
-                self.head_for_vertical(read);
+                self.head_for_vertical(read)?;
             } else {
                 self.unbox(read.meaning.value)?;
             }
@@ -202,7 +202,7 @@ impl Engine<'_> {
                     | cmd::ACCENT
             )
         {
-            self.back_read(read);
+            self.back_read(read)?;
             self.new_graf(true)?;
             return Ok(true);
         }
@@ -257,7 +257,7 @@ impl Engine<'_> {
                 let next = self.next_expanded()?;
                 self.document.text.cancel_boundary =
                     matches!(next.meaning.command, 11 | 12 | cmd::CHAR_GIVEN | cmd::CHAR);
-                self.back_read(next);
+                self.back_read(next)?;
             }
             cmd::HSKIP => {
                 if self.document.text.mode.is_vertical() {
@@ -302,9 +302,9 @@ impl Engine<'_> {
         }
         Ok(true)
     }
-    pub(crate) fn head_for_vertical(&mut self, read: Read) {
-        self.back_read(read);
-        self.back(self.document.par);
+    pub(crate) fn head_for_vertical(&mut self, read: Read) -> Result<()> {
+        self.back_read(read)?;
+        self.back(self.document.par)
     }
     fn append_italic_correction(&mut self) -> Result<()> {
         if !self.document.text.mode.is_horizontal() {
@@ -330,8 +330,8 @@ impl Engine<'_> {
             kind: KernKind::Explicit,
         })
     }
-    pub(crate) fn back_read(&mut self, read: Read) {
-        self.push_backed(read.token, read.meaning == Meaning::NOEXPAND_RELAX);
+    pub(crate) fn back_read(&mut self, read: Read) -> Result<()> {
+        self.push_backed(read.token, read.meaning == Meaning::NOEXPAND_RELAX)
     }
     pub(crate) fn adjust_space_factor(&mut self, c: u8) {
         let n = self.document.scalars[Target::sfcode(c as usize)].value;

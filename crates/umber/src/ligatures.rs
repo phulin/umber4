@@ -90,7 +90,7 @@ impl Engine<'_> {
                 State::Move => {
                     let Some(item) = scratch.stack.last() else {
                         if let Some(read) = pending {
-                            self.back_read(read);
+                            self.back_read(read)?;
                         }
                         return Ok(());
                     };
@@ -107,7 +107,7 @@ impl Engine<'_> {
                             self.document.nodes.release_node(node, &mut scratch.release);
                         }
                         if let Some(read) = pending {
-                            self.back_read(read);
+                            self.back_read(read)?;
                         }
                         return Ok(());
                     }
@@ -131,7 +131,7 @@ impl Engine<'_> {
                     }
                 }
                 State::Look => {
-                    let literal = if self.at_file_input() {
+                    let literal = if self.at_file_input() && !self.alignment_reader.active() {
                         self.document
                             .file
                             .read_character(self.document.scalars.catcodes())

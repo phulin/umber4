@@ -31,7 +31,7 @@ fn native_immediate_fixture_preserves_all_records_and_destinations() {
 fn immediate_backs_exactly_one_nonextension_token_after_expansion() {
     for token in [Token::SPACE, FROZEN_RELAX] {
         let mut engine = Engine::new(br"\end");
-        engine.back(token);
+        engine.back(token).unwrap();
         engine.extension(IMMEDIATE).unwrap();
         assert_eq!(engine.next_token().unwrap().token, token);
         assert_eq!(engine.next_token().unwrap().meaning.command, cmd::END);

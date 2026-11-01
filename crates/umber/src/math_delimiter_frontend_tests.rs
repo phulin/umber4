@@ -56,7 +56,7 @@ fn delimiter_codes_split_the_low_24_bits_and_accept_only_the_native_operand_kind
             e.execute(read).unwrap();
         }
         let first = e.next_expanded().unwrap();
-        e.back_read(first);
+        e.back_read(first).unwrap();
         assert!(
             matches!(e.scan_math_delimiter(), Err(Error::Syntax)),
             "{operand}"

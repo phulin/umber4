@@ -162,7 +162,7 @@ impl Engine<'_> {
             if read.meaning.command == 3 {
                 Ok(())
             } else {
-                self.back(read.token);
+                self.back(read.token)?;
                 Err(Error::Syntax)
             }
         });
@@ -245,7 +245,7 @@ impl Engine<'_> {
         self.document.text.initial_language = language;
         let read = self.next_expanded()?;
         if read.meaning.command != cmd::SPACE {
-            self.back(read.token);
+            self.back(read.token)?;
         }
         if self.document.text.vertical_mode == Mode::Vertical {
             self.build_page()?;

@@ -259,7 +259,7 @@ impl Engine<'_> {
             loop {
                 if read.token.is_cs() || !matches!(read.meaning.command, 11 | 12) {
                     if read.meaning.command != cmd::SPACE {
-                        self.back(read.token);
+                        self.back(read.token)?;
                     }
                     break;
                 }
