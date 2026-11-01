@@ -33,6 +33,9 @@ attribution for consuming current-line literals through the existing reader oper
 The [character-run font-binding comparison](results/layout-character-font-binding.json)
 retains paired release samples and instruction counts for resolving immutable font
 data once per run while keeping mutable font parameters in document state.
+The [TFM program-entry comparison](results/layout-tfm-program-entry.json) records
+paired release samples and instruction counts for preparing immutable character
+program starts once per registered resource, including its metadata/load cost.
 
 ```bash
 cargo build --release --bin umber --example layout --example layout_allocations

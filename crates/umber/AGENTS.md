@@ -46,7 +46,8 @@ once-initialized chunk handles in `tfm.rs`, retaining the sealed resource set;
 `paragraph_tests.rs` covers ownership/replay and `paragraph_oracle_tests.rs`
 compares packed structures with native INITEX. `ligatures.rs`
 builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
-`tfm_tests.rs` use controlled metrics from `font_test_data.rs`, while the explicitly
+`tfm_tests.rs` use controlled metrics from `font_test_data.rs`;
+`ligature_entry_tests.rs` checks prepared program entries, while the explicitly
 invoked native adapter in `font_oracle_tests.rs` compares real and controlled TFMs;
 `lists.rs` scans raw/expanded lists into their destinations; `convert.rs` builds
 conversion and case-change output; `expand.rs` dispatches expansion;

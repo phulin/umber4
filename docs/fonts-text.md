@@ -53,6 +53,12 @@ a present character can still have zero width. Scaling uses TeX's staged integer
 algorithm, including large-size reduction and negative metrics. Slant is a signed
 unscaled fixed-point number. Fonts have at least seven parameter slots.
 
+Each immutable TFM resource holds one 256-entry table of 16-bit ligature/kern
+program starts, shared by all its scaled fonts. Registration prepares the table
+after validation, following at most one initial restart for each tagged character,
+including absent characters. Boundary program starts bypass this preparation;
+the runtime program search and retained raw TFM bytes remain unchanged.
+
 ## Horizontal construction and handoff
 
 The document contains an external vertical list and a horizontal list, mode,

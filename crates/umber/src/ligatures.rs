@@ -338,19 +338,11 @@ impl Resource {
         let mut i = if let Some(i) = start {
             i
         } else {
-            if left == 256 || (left as usize) < r.bc || left as usize > r.ec {
+            let i = *r.entries.get(left as usize)?;
+            if i == u16::MAX {
                 return None;
             }
-            let info = r.chars[left as usize - r.bc];
-            if info.tag != 1 {
-                return None;
-            }
-            let mut i = info.remainder;
-            let p = r.program[i];
-            if p[0] > 128 {
-                i = 256 * p[2] as usize + p[3] as usize;
-            }
-            i
+            i as usize
         };
         loop {
             let p = r.program[i];
@@ -364,3 +356,7 @@ impl Resource {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "ligature_entry_tests.rs"]
+mod entry_tests;

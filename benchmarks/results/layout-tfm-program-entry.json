@@ -1,0 +1,104 @@
+{
+  "date": "2026-11-01T09:28:36.024712+00:00",
+  "baseline_commit": "b62860bbbf7b6e5883b62ff66cefbf8eb9da6152",
+  "change": "Prepare one immutable 256-entry u16 ligature/kern program-start table per TFM resource; retain runtime search and explicit boundary starts.",
+  "build": "cargo build --release --bin umber; ordinary default features, no extra rustflags",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "cpu": 3,
+  "warmups": 1,
+  "measured_pairs": 15,
+  "order": "One bounded serial alternating-pair pass; Callgrind measured separately.",
+  "scope": "Complete CLI on the existing fixed three 600-paragraph inputs and authentic mixed Gentle source. Short shared-host measurements; no general full-document performance claim.",
+  "measured_candidate": "Isolated prototype. Integration removes only its newly unused Resource.ec field and changes comments/test wiring; no further timing sweep.",
+  "binary_sha256": {
+    "before": "d6be44355382b0f6edbeab53286180d4e9c1ad80545bc5d583301e079bbb102f",
+    "after": "66dd1f78e892e97f90681208c4c3c5f81e26432a4931b72c101a3510cb1a4602"
+  },
+  "font_sha256": {
+    "aer10": "49b937ceb0598bab7dba22fcf3544dd909abb92513bb00399d407dd15c17da64",
+    "aeti10": "243599dca0a4928095620eb211da7313bb697d2a8f94dc9400a2a08f063de09e",
+    "aett10": "a9d121fc0cdd2bb8da196b14d83dab942550822a74bdae00bbece241434c4c42",
+    "lcmss8": "84922bb747d57f8c2c60f34b31c968f6f99febe55ce67d6e2fa2c4417a842d0d",
+    "icmtt8": "f2519b7344c1718113523711494d52dbdf94599ec1c81fd5b588fa2392896a24"
+  },
+  "cases": [
+    {
+      "case": "book",
+      "source_sha256": "0ae5ba39bbb6c865f04a83c856ae506119c7eba02c86f6962847e48eea270052",
+      "cpu_ms": {
+        "before": [51.444, 51.423, 48.997, 49.177, 49.377, 49.75, 51.937, 50.497, 50.732, 49.439, 49.237, 49.793, 48.967, 49.358, 49.068],
+        "after": [49.651, 53.076, 48.767, 47.632, 47.523, 49.436, 55.286, 55.504, 49.902, 47.926, 47.839, 49.897, 48.323, 47.972, 47.959]
+      },
+      "median_cpu_ms": {
+        "before": 49.439,
+        "after": 48.767
+      },
+      "cpu_change_percent": -1.3593
+    },
+    {
+      "case": "narrow",
+      "source_sha256": "7470a9ae018727831ca9e7d4b34d69b9b716cf345de7d54082f6cde58b45f682",
+      "cpu_ms": {
+        "before": [48.746, 52.096, 53.198, 51.993, 50.001, 48.986, 49.021, 48.454, 48.411, 48.257, 49.248, 49.035, 50.13, 49.179, 49.186],
+        "after": [47.67, 53.51, 49.564, 50.089, 49.167, 49.033, 48.473, 48.105, 48.177, 50.092, 50.98, 47.812, 48.565, 47.853, 47.923]
+      },
+      "median_cpu_ms": {
+        "before": 49.179,
+        "after": 48.565
+      },
+      "cpu_change_percent": -1.2485
+    },
+    {
+      "case": "dense",
+      "source_sha256": "fbc52a2b6e02a7309d3b395188a0f36602cbba10081567df34a98bd8f9d982c5",
+      "cpu_ms": {
+        "before": [43.013, 43.262, 44.304, 42.659, 43.245, 44.014, 44.663, 42.976, 42.713, 44.908, 43.34, 44.093, 42.763, 43.001, 42.871],
+        "after": [43.546, 43.467, 43.938, 42.09, 43.273, 43.236, 44.014, 44.029, 42.64, 43.748, 43.09, 42.639, 41.992, 42.073, 41.665]
+      },
+      "median_cpu_ms": {
+        "before": 43.245,
+        "after": 43.236
+      },
+      "cpu_change_percent": -0.0208
+    },
+    {
+      "case": "mixed",
+      "source_sha256": "f81acce09d87250d45ef8b2ff047757575b8a8930683aa033ee8e6aa9ad6872d",
+      "cpu_ms": {
+        "before": [48.552, 48.86, 48.968, 47.795, 48.708, 48.63, 48.463, 47.932, 47.79, 48.592, 47.935, 48.769, 48.459, 49.299, 50.116],
+        "after": [47.863, 46.792, 46.782, 46.369, 48.741, 47.861, 47.207, 46.943, 46.967, 47.116, 46.626, 47.183, 47.957, 47.935, 47.911]
+      },
+      "median_cpu_ms": {
+        "before": 48.592,
+        "after": 47.183
+      },
+      "cpu_change_percent": -2.8997
+    }
+  ],
+  "mixed_instructions": {
+    "before": 324805204,
+    "after": 322316641,
+    "change_percent": -0.7662
+  },
+  "metadata": {
+    "entry_table_bytes_per_resource": 512,
+    "net_resource_header_bytes": 504,
+    "scaled_font_header_change_bytes": 0,
+    "extra_owner_or_allocation": false,
+    "load_work": "Initialize256 sentinels and visit at most256 existing character records after validation; follow at most one restart.",
+    "registration_tfm_self_instructions_three_fonts": {
+      "before": 181028,
+      "after": 189132
+    },
+    "notes": "Resource headers use the existing typed size-class backing; reserved bytes vary with pooled capacity. Raw bytes and persistent CharInfo records are retained unchanged."
+  },
+  "integration": "172 active library tests, native font oracle, four complete-output baseline comparisons, rustfmt, warning-free all-target Clippy, ordinary default-feature release build.",
+  "runtime_source_delta": {"lines": 6, "bytes": 371, "excludes": "test module wiring and tests"},
+  "validation": [
+    "Isolated prototype:171 active unit tests including exhaustive controlled raw-cursor equivalence",
+    "Native font oracle including controlled fonts",
+    "Four complete-output/native-placement comparisons",
+    "Four retained-root checkpoint replays"
+  ]
+}

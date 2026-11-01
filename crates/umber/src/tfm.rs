@@ -30,8 +30,8 @@ pub(crate) struct Resource {
     bytes: Buffer<u8>,
     pub chars: Buffer<CharInfo>,
     pub program: Buffer<[u8; 4]>,
+    pub entries: [u16; 256],
     pub bc: usize,
-    pub ec: usize,
     pub design: Scaled,
     pub boundary: u16,
     pub false_boundary: u16,
@@ -295,6 +295,20 @@ impl Catalog {
         } else {
             boundary
         };
+        let mut entries = [u16::MAX; 256];
+        for (offset, info) in chars.iter().enumerate() {
+            if info.tag == 1 {
+                let mut i = info.remainder;
+                let [skip, _, op, rem] = program[i];
+                if skip > 128 {
+                    i = 256 * op as usize + rem as usize;
+                }
+                // Every tag-1 remainder and restart target was checked above, even
+                // for absent characters. TFM table lengths are at most 32767,
+                // so a valid index cannot equal the u16::MAX sentinel.
+                entries[bc + offset] = i as u16;
+            }
+        }
         let mut saved_name = Buffer::new(&self.bytes);
         saved_name.extend_from_slice(name);
         let mut saved_bytes = Buffer::new(&self.bytes);
@@ -304,8 +318,8 @@ impl Catalog {
             bytes: saved_bytes,
             chars,
             program,
+            entries,
             bc,
-            ec,
             design,
             boundary,
             false_boundary,
