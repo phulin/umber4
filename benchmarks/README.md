@@ -36,6 +36,18 @@ uses the supplied job and compares it with the requested DVI; it does not synthe
 a source-initialized equivalent. Explicit `--tfm`/`--input` remain additional job
 resources. Binary format creation uses the ordinary CLI's `build-format` command.
 
+```bash
+python3 benchmarks/gentle.py --format .tools/formats/plain.ufmt --compare-counts --replay --allocation-adapter target/release/examples/layout_allocations
+```
+
+The [format baseline](results/gentle-format-baseline.json) retains complete
+source/loaded/native output validation, initial and page-progress checkpoint
+replays, allocation stages, artifact size, fresh-process alternating CPU/wall/fault
+samples and separate RSS runs. Empty-job startup includes process and file I/O;
+the prepared adapter's one-shot setup interval measures in-memory decode/startup.
+Native writes DVI/log while Umber retains detached output. These endpoints are
+reported separately and do not treat format loading as source replay.
+
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the
 separate `layout_allocations` executable. Both validate complete replay output,

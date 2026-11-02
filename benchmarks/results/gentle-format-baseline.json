@@ -1,0 +1,1813 @@
+{
+  "revision": "4134c57278e90f5470dd2823ae714bb6fb4cdd7c",
+  "measured_at_utc": "2026-11-02T02:10:17.303107+00:00",
+  "cpu": 3,
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "build": "cargo build --release --bin umber --example layout --example layout_allocations; default features, fat LTO, codegen-units=1",
+  "native_version": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "calendar": [
+    0,
+    1,
+    3,
+    2026
+  ],
+  "format": {
+    "path": "/home/phulin/umber4/.tools/formats/plain.ufmt",
+    "bytes": 232021,
+    "native_format_bytes": 114751,
+    "setup": "\\input plain \\dump\n",
+    "used_tfm_count": 47,
+    "direct_gentle_extra_tfms": 0,
+    "direct_gentle_input_mappings": 0,
+    "resource_policy": "All loaded plain font instances and their exact 47 used TFM resources are embedded; Gentle new sizes use those embedded resources. Loading executes no plain source."
+  },
+  "commands": {
+    "build-plain": [
+      "/home/phulin/umber4/target/release/umber",
+      "build-format",
+      "/home/phulin/umber4/.tools/formats/plain-setup.tex",
+      "-o",
+      "/home/phulin/umber4/.tools/formats/plain.ufmt",
+      "--input",
+      "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+      "--input",
+      "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+      "--tfm",
+      "cmbsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+      "--tfm",
+      "cmbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+      "--tfm",
+      "cmbx5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+      "--tfm",
+      "cmbx6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+      "--tfm",
+      "cmbx7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+      "--tfm",
+      "cmbx8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+      "--tfm",
+      "cmbx9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+      "--tfm",
+      "cmcsc10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+      "--tfm",
+      "cmdunh10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+      "--tfm",
+      "cmex10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+      "--tfm",
+      "cmmi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+      "--tfm",
+      "cmmi5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+      "--tfm",
+      "cmmi6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+      "--tfm",
+      "cmmi7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+      "--tfm",
+      "cmmi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+      "--tfm",
+      "cmmi9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+      "--tfm",
+      "cmmib10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+      "--tfm",
+      "cmr10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+      "--tfm",
+      "cmr5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+      "--tfm",
+      "cmr6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+      "--tfm",
+      "cmr7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+      "--tfm",
+      "cmr8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+      "--tfm",
+      "cmr9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+      "--tfm",
+      "cmsl10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+      "--tfm",
+      "cmsl8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+      "--tfm",
+      "cmsl9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+      "--tfm",
+      "cmsltt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+      "--tfm",
+      "cmss10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+      "--tfm",
+      "cmssbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+      "--tfm",
+      "cmssi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+      "--tfm",
+      "cmssq8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+      "--tfm",
+      "cmssqi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+      "--tfm",
+      "cmsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+      "--tfm",
+      "cmsy5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+      "--tfm",
+      "cmsy6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+      "--tfm",
+      "cmsy7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+      "--tfm",
+      "cmsy8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+      "--tfm",
+      "cmsy9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+      "--tfm",
+      "cmti10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+      "--tfm",
+      "cmti7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+      "--tfm",
+      "cmti8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+      "--tfm",
+      "cmti9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+      "--tfm",
+      "cmtt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+      "--tfm",
+      "cmtt8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+      "--tfm",
+      "cmtt9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+      "--tfm",
+      "cmu10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+      "--tfm",
+      "manfnt=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm",
+      "--calendar",
+      "0,1,3,2026"
+    ],
+    "gentle-format": [
+      "/home/phulin/umber4/target/release/umber",
+      "/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "--format",
+      "/home/phulin/umber4/.tools/formats/plain.ufmt",
+      "--calendar",
+      "0,1,3,2026"
+    ],
+    "empty-format": [
+      "/home/phulin/umber4/target/release/umber",
+      "/home/phulin/umber4/.tools/formats/empty.tex",
+      "--format",
+      "/home/phulin/umber4/.tools/formats/plain.ufmt",
+      "--calendar",
+      "0,1,3,2026"
+    ],
+    "gentle-source": [
+      "/home/phulin/umber4/target/release/umber",
+      "/home/phulin/umber4/.tools/formats/source-gentle.tex",
+      "--input",
+      "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+      "--input",
+      "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+      "--input",
+      "gentle=/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "--tfm",
+      "cmbsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+      "--tfm",
+      "cmbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+      "--tfm",
+      "cmbx5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+      "--tfm",
+      "cmbx6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+      "--tfm",
+      "cmbx7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+      "--tfm",
+      "cmbx8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+      "--tfm",
+      "cmbx9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+      "--tfm",
+      "cmcsc10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+      "--tfm",
+      "cmdunh10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+      "--tfm",
+      "cmex10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+      "--tfm",
+      "cmmi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+      "--tfm",
+      "cmmi5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+      "--tfm",
+      "cmmi6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+      "--tfm",
+      "cmmi7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+      "--tfm",
+      "cmmi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+      "--tfm",
+      "cmmi9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+      "--tfm",
+      "cmmib10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+      "--tfm",
+      "cmr10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+      "--tfm",
+      "cmr5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+      "--tfm",
+      "cmr6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+      "--tfm",
+      "cmr7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+      "--tfm",
+      "cmr8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+      "--tfm",
+      "cmr9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+      "--tfm",
+      "cmsl10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+      "--tfm",
+      "cmsl8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+      "--tfm",
+      "cmsl9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+      "--tfm",
+      "cmsltt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+      "--tfm",
+      "cmss10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+      "--tfm",
+      "cmssbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+      "--tfm",
+      "cmssi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+      "--tfm",
+      "cmssq8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+      "--tfm",
+      "cmssqi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+      "--tfm",
+      "cmsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+      "--tfm",
+      "cmsy5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+      "--tfm",
+      "cmsy6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+      "--tfm",
+      "cmsy7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+      "--tfm",
+      "cmsy8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+      "--tfm",
+      "cmsy9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+      "--tfm",
+      "cmti10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+      "--tfm",
+      "cmti7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+      "--tfm",
+      "cmti8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+      "--tfm",
+      "cmti9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+      "--tfm",
+      "cmtt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+      "--tfm",
+      "cmtt8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+      "--tfm",
+      "cmtt9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+      "--tfm",
+      "cmu10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+      "--tfm",
+      "manfnt=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm",
+      "--calendar",
+      "0,1,3,2026"
+    ],
+    "empty-source": [
+      "/home/phulin/umber4/target/release/umber",
+      "/home/phulin/umber4/.tools/formats/source-empty.tex",
+      "--input",
+      "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+      "--input",
+      "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+      "--tfm",
+      "cmbsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+      "--tfm",
+      "cmbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+      "--tfm",
+      "cmbx5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+      "--tfm",
+      "cmbx6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+      "--tfm",
+      "cmbx7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+      "--tfm",
+      "cmbx8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+      "--tfm",
+      "cmbx9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+      "--tfm",
+      "cmcsc10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+      "--tfm",
+      "cmdunh10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+      "--tfm",
+      "cmex10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+      "--tfm",
+      "cmmi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+      "--tfm",
+      "cmmi5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+      "--tfm",
+      "cmmi6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+      "--tfm",
+      "cmmi7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+      "--tfm",
+      "cmmi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+      "--tfm",
+      "cmmi9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+      "--tfm",
+      "cmmib10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+      "--tfm",
+      "cmr10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+      "--tfm",
+      "cmr5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+      "--tfm",
+      "cmr6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+      "--tfm",
+      "cmr7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+      "--tfm",
+      "cmr8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+      "--tfm",
+      "cmr9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+      "--tfm",
+      "cmsl10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+      "--tfm",
+      "cmsl8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+      "--tfm",
+      "cmsl9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+      "--tfm",
+      "cmsltt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+      "--tfm",
+      "cmss10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+      "--tfm",
+      "cmssbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+      "--tfm",
+      "cmssi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+      "--tfm",
+      "cmssq8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+      "--tfm",
+      "cmssqi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+      "--tfm",
+      "cmsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+      "--tfm",
+      "cmsy5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+      "--tfm",
+      "cmsy6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+      "--tfm",
+      "cmsy7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+      "--tfm",
+      "cmsy8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+      "--tfm",
+      "cmsy9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+      "--tfm",
+      "cmti10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+      "--tfm",
+      "cmti7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+      "--tfm",
+      "cmti8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+      "--tfm",
+      "cmti9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+      "--tfm",
+      "cmtt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+      "--tfm",
+      "cmtt8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+      "--tfm",
+      "cmtt9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+      "--tfm",
+      "cmu10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+      "--tfm",
+      "manfnt=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm",
+      "--calendar",
+      "0,1,3,2026"
+    ],
+    "gentle-native": [
+      "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+      "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+      "-progname=pdftex",
+      "-jobname=gentle",
+      "-output-format=dvi",
+      "-no-shell-escape",
+      "-interaction=nonstopmode",
+      "-halt-on-error",
+      "-output-directory=/home/phulin/umber4/.tools/formats/gentle-native",
+      "/home/phulin/umber4/.tools/corpus/gentle.tex"
+    ],
+    "empty-native": [
+      "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+      "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+      "-progname=pdftex",
+      "-jobname=gentle",
+      "-output-format=dvi",
+      "-no-shell-escape",
+      "-interaction=nonstopmode",
+      "-halt-on-error",
+      "-output-directory=/home/phulin/umber4/.tools/formats/empty-native",
+      "/home/phulin/umber4/.tools/formats/empty.tex"
+    ]
+  },
+  "native_environment": {
+    "LD_LIBRARY_PATH": "/home/phulin/umber4/.tools/pdftex/root/usr/lib/x86_64-linux-gnu",
+    "TEXMFCNF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/web2c",
+    "TEXMF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist",
+    "TEXINPUTS": ".:/home/phulin/umber4/.tools/corpus:/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex//",
+    "TFMFONTS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm//",
+    "TEXFONTMAPS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/map//",
+    "SOURCE_DATE_EPOCH": "1772323200",
+    "FORCE_SOURCE_DATE": "1"
+  },
+  "hashes": {
+    "target/release/umber": "95a168378217606aa9055c2d287510abdd7b40f142d77719e0a63843a240414d",
+    "target/release/examples/layout": "ed39bbe938165c67b7b90ef0dc19edd62ad0e9a56cf0a8189175f196a4f13ee8",
+    "target/release/examples/layout_allocations": "5f8719014e6801ccbe32338df08d659f0034a3270bf589887f1231e521bcb8b4",
+    ".tools/formats/plain.ufmt": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+    ".tools/corpus/gentle.tex": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "native_binary": "bdf084260e5e3ca3b1453a8ec1465efa5c0b23180d3bba7992fdd3ee1aeee45b",
+    "native_format": "1ac04f66addb1c2775009871a52a505d0c15ee6869ddbdd7aec64e705ffa4b65"
+  },
+  "tfm_bundle": [
+    {
+      "name": "cmbsy10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+      "sha256": "b5a0bf8a30db124f56f4e48237b510be6b1a78886da1540f2394ddfaf3186c25"
+    },
+    {
+      "name": "cmbx10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+      "sha256": "ae296e8e41b2b0f73e9a17fdc42c743b9ddcc58d23c30acaa3411206f7824780"
+    },
+    {
+      "name": "cmbx5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+      "sha256": "a746151d8e3a521965bbfae2666e1528374a514375daa7d620e9b89ebbbfb0ae"
+    },
+    {
+      "name": "cmbx6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+      "sha256": "38ded79d7cce07fa28921f37f6b88e67bd86951a3e5af709c219d63454786ce1"
+    },
+    {
+      "name": "cmbx7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+      "sha256": "e7b284f0ee98b7773be9b57ca652b4bb14391370509a424b5b62b06b5cae86e4"
+    },
+    {
+      "name": "cmbx8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+      "sha256": "6dab44c885b7cbf567771d9cfa565f3df34d0e8124132b9b6f9fdc496a1c2eda"
+    },
+    {
+      "name": "cmbx9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+      "sha256": "9fb9cbe254c828bc6bdcc0ca66f81b6cb9b713edf0ef1b7fa67e231920112499"
+    },
+    {
+      "name": "cmcsc10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+      "sha256": "0d691f70f365e55b83096764fe0c65338842d704bd5b979ed0c6882f9e17ce0d"
+    },
+    {
+      "name": "cmdunh10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+      "sha256": "a94093bba5082a6e63fc95dd9bf4d10a8152a2a5f9e3913ab04dd6f60974d843"
+    },
+    {
+      "name": "cmex10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+      "sha256": "0890bccea1dd4d27f001ac30e86c63af35bc803e0557c35aafb1903c8d208e92"
+    },
+    {
+      "name": "cmmi10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+      "sha256": "e442c5487f84df70218ff37f775c87060856f5b6e04c011b6cadbbadfcf46645"
+    },
+    {
+      "name": "cmmi5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+      "sha256": "8839e40838381a0a3c976bdd5becf72afd60bde5a965c3d9b985c3479c6cf75e"
+    },
+    {
+      "name": "cmmi6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+      "sha256": "ab6ecb4aaba9ca1b4259b1d1f64309a785bbaeb09183fd79a066b7764a448a28"
+    },
+    {
+      "name": "cmmi7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+      "sha256": "ce55681703aae565f17286d800ea9780223132589bdbaeda1751b869aba26a38"
+    },
+    {
+      "name": "cmmi8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+      "sha256": "65af8c1e162a952cab8e93c834fcf43ce09b508e6c16e512ebb673cd850b0d41"
+    },
+    {
+      "name": "cmmi9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+      "sha256": "20672649a2f07eef8fe07ccb42eeb731023e48f2e0797ecef57c0887da46c032"
+    },
+    {
+      "name": "cmmib10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+      "sha256": "4465d20955917959c68d0254647e5caba1f38c4516a1fd212eab2da9b8645874"
+    },
+    {
+      "name": "cmr10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+      "sha256": "87f2d8981927644cbecaf3d639e96e348ea4e7be49d8804468bd8ba9ff3f5244"
+    },
+    {
+      "name": "cmr5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+      "sha256": "581be818f67bd11a1792d05e129abe3ea30c5cbdfce3bed8da7c5fb50f5ba95b"
+    },
+    {
+      "name": "cmr6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+      "sha256": "106afa9172f0c00e58b9f5cbc72b302a18aaeeaddf50caca145af9cc0b81afd2"
+    },
+    {
+      "name": "cmr7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+      "sha256": "28f9f4d237bdae4babef4a59d90f17686a09d6f9df0b2c3c23b2ba15f20eee82"
+    },
+    {
+      "name": "cmr8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+      "sha256": "4c5ae243ac0aa254e7ec7f0602cc2a4351e5011ff0cb6dc150a5f6de19585de6"
+    },
+    {
+      "name": "cmr9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+      "sha256": "2ffa73e8446c1d46c3509a0f65ff97d4d09de46f48e1ce578a1004498b67dba9"
+    },
+    {
+      "name": "cmsl10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+      "sha256": "dcbfc25c5aac16dc2b820e089a00aedef20a1af6d8d3c2efa54f6f17a985d33f"
+    },
+    {
+      "name": "cmsl8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+      "sha256": "581080f4ebd96f58b4b6f774ea2882f5e83fef7c932647a7c957f7e8db1f7823"
+    },
+    {
+      "name": "cmsl9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+      "sha256": "bb0f9deb6852caed902cb04bfc8e8333345a37946bd0b6bd56d11848e729d3ca"
+    },
+    {
+      "name": "cmsltt10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+      "sha256": "c093023e8958e30678808a843f4f4248f5ab609f8994182fded845590fe19cc3"
+    },
+    {
+      "name": "cmss10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+      "sha256": "431472f34665b6243a32936215f2e17d1f124cdf8513e86e2bedc4c3de3f980b"
+    },
+    {
+      "name": "cmssbx10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+      "sha256": "59fcefaa9436cb00b1579a549b4a16b38606bb1b6138743d05ea35a74f168f54"
+    },
+    {
+      "name": "cmssi10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+      "sha256": "9faee1d46e86de1eb7a8f7a53522d15fa8f06e75d292d8e6989dfcd252b322c7"
+    },
+    {
+      "name": "cmssq8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+      "sha256": "a813de9f318949969010f4a363b2c3076e5cefa4436e779404453b2c34435504"
+    },
+    {
+      "name": "cmssqi8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+      "sha256": "78673efe5657b8a293e160c0ac88834778cf9a5ed1922a0bfcca3f5562c17f88"
+    },
+    {
+      "name": "cmsy10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+      "sha256": "0ca13d421ac7133271aed7c935099ecf3d1d08ac9e15f81acb34a16564ab8a46"
+    },
+    {
+      "name": "cmsy5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+      "sha256": "6b7dc18cba9ca8996d7b146f1ed78d9227577b26248083310fec227692198ca5"
+    },
+    {
+      "name": "cmsy6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+      "sha256": "137eb9f38f661c66309614066a7b5d63d8969d33aba0c9efee9f844a4ce65b50"
+    },
+    {
+      "name": "cmsy7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+      "sha256": "4f59bbf683e947c807158641621982dc83f55fec042fea7963d8ce9f9da98256"
+    },
+    {
+      "name": "cmsy8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+      "sha256": "84c37f07ca360c41ad0a0fba7387d279d72457c69bdae03653208c683d8de6bc"
+    },
+    {
+      "name": "cmsy9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+      "sha256": "b57c5c42a7991a004ee1b40b340d7bd12cc75ab0a6f7daf7a207827504f91712"
+    },
+    {
+      "name": "cmti10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+      "sha256": "46a66e937f809c4fbe317947b583a14b408aca41ecb835eca3be46391190432a"
+    },
+    {
+      "name": "cmti7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+      "sha256": "78921699d46fd39b25e2e3ea08b96d9c3ad9c858a6ad2cc1aa60204a36ce88f0"
+    },
+    {
+      "name": "cmti8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+      "sha256": "7a212edaa5bbb6898b6196e32a5753811dc3295a18b9bcd9c727c23ce0c21a4e"
+    },
+    {
+      "name": "cmti9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+      "sha256": "bae91797b96e40fbeb97e2ea3184070e7cf707b72422c7c107edf1d1d5a10abb"
+    },
+    {
+      "name": "cmtt10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+      "sha256": "11f3331c958b696fd484fe45c28285622617a2593d7a34511a1d6b279e1578a2"
+    },
+    {
+      "name": "cmtt8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+      "sha256": "62f6142387fe8d4be3ba2d46034e76fd6c3fc1d22ab44663a4eaa3f42b97039e"
+    },
+    {
+      "name": "cmtt9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+      "sha256": "2989dbdeed1533cdeba5dcd0edee59c4509b5c934b3db8847de78d8c94a9966d"
+    },
+    {
+      "name": "cmu10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+      "sha256": "7896645187499d599c330a8cbebc4ba1e21fa88b4ad46a86ef3db53cfa39b6f7"
+    },
+    {
+      "name": "manfnt",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm",
+      "sha256": "74b8999aada95b6c45d8a8846c3e210050383a852322518a109e98a54ac5a4ad"
+    }
+  ],
+  "correctness": {
+    "pages": 97,
+    "glyphs": 121839,
+    "rules": 864,
+    "comparison": "all ordered events match",
+    "bop_counts": true,
+    "source_and_format_output_equal": true,
+    "startup": "format"
+  },
+  "fresh_native_matches_retained_dvi": true,
+  "prepared_replay": {
+    "pages": 97,
+    "clock": "wall",
+    "repeats": 5,
+    "warmups": 1,
+    "iterations": 200,
+    "reference": {
+      "samples": 1,
+      "engine_setup_ns": 1533756,
+      "advance_ns": 43586304,
+      "outcome_ns": 2372
+    },
+    "checkpoints": [
+      {
+        "label": "ready",
+        "requested_pages": 0,
+        "actual_pages": 0
+      },
+      {
+        "label": "early",
+        "requested_pages": 10,
+        "actual_pages": 10
+      },
+      {
+        "label": "middle",
+        "requested_pages": 49,
+        "actual_pages": 49
+      },
+      {
+        "label": "late",
+        "requested_pages": 88,
+        "actual_pages": 88
+      }
+    ],
+    "samples": [
+      {
+        "checkpoint": "ready",
+        "restore_completed_ns": 116685,
+        "stable_restore_ns": 1996.335,
+        "capture_retained_ns": 5229.78,
+        "release_retained_ns": 747.91,
+        "suffix_advance_ns": 41289918,
+        "outcome_ns": 1751,
+        "equality_ns": 6166977,
+        "outcome_release_ns": 1441
+      },
+      {
+        "checkpoint": "ready",
+        "restore_completed_ns": 75713,
+        "stable_restore_ns": 1865.525,
+        "capture_retained_ns": 4637.2,
+        "release_retained_ns": 813.47,
+        "suffix_advance_ns": 39869048,
+        "outcome_ns": 2011,
+        "equality_ns": 6316520,
+        "outcome_release_ns": 1651
+      },
+      {
+        "checkpoint": "ready",
+        "restore_completed_ns": 49840,
+        "stable_restore_ns": 1717.705,
+        "capture_retained_ns": 4679.43,
+        "release_retained_ns": 829.13,
+        "suffix_advance_ns": 39883285,
+        "outcome_ns": 1382,
+        "equality_ns": 6129937,
+        "outcome_release_ns": 1312
+      },
+      {
+        "checkpoint": "ready",
+        "restore_completed_ns": 45398,
+        "stable_restore_ns": 1720.505,
+        "capture_retained_ns": 3928.82,
+        "release_retained_ns": 940.37,
+        "suffix_advance_ns": 41672820,
+        "outcome_ns": 3452,
+        "equality_ns": 6423488,
+        "outcome_release_ns": 1922
+      },
+      {
+        "checkpoint": "ready",
+        "restore_completed_ns": 55235,
+        "stable_restore_ns": 1730.965,
+        "capture_retained_ns": 5157.165,
+        "release_retained_ns": 818.87,
+        "suffix_advance_ns": 41258959,
+        "outcome_ns": 2782,
+        "equality_ns": 6374667,
+        "outcome_release_ns": 1210
+      },
+      {
+        "checkpoint": "early",
+        "restore_completed_ns": 85199,
+        "stable_restore_ns": 2196.845,
+        "capture_retained_ns": 6500.52,
+        "release_retained_ns": 921.355,
+        "suffix_advance_ns": 36810142,
+        "outcome_ns": 2442,
+        "equality_ns": 6106128,
+        "outcome_release_ns": 2342
+      },
+      {
+        "checkpoint": "early",
+        "restore_completed_ns": 36670,
+        "stable_restore_ns": 2031.62,
+        "capture_retained_ns": 4487.97,
+        "release_retained_ns": 1047.455,
+        "suffix_advance_ns": 35408982,
+        "outcome_ns": 1862,
+        "equality_ns": 5897236,
+        "outcome_release_ns": 1531
+      },
+      {
+        "checkpoint": "early",
+        "restore_completed_ns": 32997,
+        "stable_restore_ns": 2011.74,
+        "capture_retained_ns": 3531.295,
+        "release_retained_ns": 920.205,
+        "suffix_advance_ns": 37268713,
+        "outcome_ns": 3563,
+        "equality_ns": 6527363,
+        "outcome_release_ns": 2722
+      },
+      {
+        "checkpoint": "early",
+        "restore_completed_ns": 51863,
+        "stable_restore_ns": 2040.47,
+        "capture_retained_ns": 5573.005,
+        "release_retained_ns": 980.8,
+        "suffix_advance_ns": 36171837,
+        "outcome_ns": 4054,
+        "equality_ns": 6331742,
+        "outcome_release_ns": 2402
+      },
+      {
+        "checkpoint": "early",
+        "restore_completed_ns": 48541,
+        "stable_restore_ns": 2126.44,
+        "capture_retained_ns": 5496.905,
+        "release_retained_ns": 923.905,
+        "suffix_advance_ns": 36066894,
+        "outcome_ns": 2402,
+        "equality_ns": 6281978,
+        "outcome_release_ns": 2622
+      },
+      {
+        "checkpoint": "middle",
+        "restore_completed_ns": 104014,
+        "stable_restore_ns": 2294.625,
+        "capture_retained_ns": 6355.605,
+        "release_retained_ns": 1180.465,
+        "suffix_advance_ns": 19462993,
+        "outcome_ns": 5184,
+        "equality_ns": 6570598,
+        "outcome_release_ns": 3913
+      },
+      {
+        "checkpoint": "middle",
+        "restore_completed_ns": 74092,
+        "stable_restore_ns": 2031.61,
+        "capture_retained_ns": 5954.375,
+        "release_retained_ns": 1151.59,
+        "suffix_advance_ns": 18692410,
+        "outcome_ns": 3473,
+        "equality_ns": 6317820,
+        "outcome_release_ns": 1992
+      },
+      {
+        "checkpoint": "middle",
+        "restore_completed_ns": 38581,
+        "stable_restore_ns": 2014.5,
+        "capture_retained_ns": 4932.285,
+        "release_retained_ns": 917.15,
+        "suffix_advance_ns": 18228340,
+        "outcome_ns": 26893,
+        "equality_ns": 6545197,
+        "outcome_release_ns": 3664
+      },
+      {
+        "checkpoint": "middle",
+        "restore_completed_ns": 55915,
+        "stable_restore_ns": 2117.59,
+        "capture_retained_ns": 5537.28,
+        "release_retained_ns": 969.04,
+        "suffix_advance_ns": 18416394,
+        "outcome_ns": 5625,
+        "equality_ns": 6699183,
+        "outcome_release_ns": 4243
+      },
+      {
+        "checkpoint": "middle",
+        "restore_completed_ns": 58167,
+        "stable_restore_ns": 2028.51,
+        "capture_retained_ns": 5915.84,
+        "release_retained_ns": 967.295,
+        "suffix_advance_ns": 18540385,
+        "outcome_ns": 2582,
+        "equality_ns": 6255910,
+        "outcome_release_ns": 2502
+      },
+      {
+        "checkpoint": "late",
+        "restore_completed_ns": 19066,
+        "stable_restore_ns": 2467.52,
+        "capture_retained_ns": 3334.025,
+        "release_retained_ns": 938.72,
+        "suffix_advance_ns": 2864195,
+        "outcome_ns": 3523,
+        "equality_ns": 6099855,
+        "outcome_release_ns": 2551
+      },
+      {
+        "checkpoint": "late",
+        "restore_completed_ns": 30835,
+        "stable_restore_ns": 2286.375,
+        "capture_retained_ns": 5131.395,
+        "release_retained_ns": 1153.84,
+        "suffix_advance_ns": 3028969,
+        "outcome_ns": 2802,
+        "equality_ns": 6049477,
+        "outcome_release_ns": 2692
+      },
+      {
+        "checkpoint": "late",
+        "restore_completed_ns": 22739,
+        "stable_restore_ns": 2131.4,
+        "capture_retained_ns": 3706.785,
+        "release_retained_ns": 1087.685,
+        "suffix_advance_ns": 3344257,
+        "outcome_ns": 2813,
+        "equality_ns": 6242490,
+        "outcome_release_ns": 2772
+      },
+      {
+        "checkpoint": "late",
+        "restore_completed_ns": 25871,
+        "stable_restore_ns": 2164.925,
+        "capture_retained_ns": 4427.925,
+        "release_retained_ns": 1160.345,
+        "suffix_advance_ns": 3199168,
+        "outcome_ns": 2642,
+        "equality_ns": 6164076,
+        "outcome_release_ns": 3312
+      },
+      {
+        "checkpoint": "late",
+        "restore_completed_ns": 35889,
+        "stable_restore_ns": 2551.445,
+        "capture_retained_ns": 6012.92,
+        "release_retained_ns": 1198.63,
+        "suffix_advance_ns": 3687558,
+        "outcome_ns": 6144,
+        "equality_ns": 6696451,
+        "outcome_release_ns": 4634
+      }
+    ],
+    "validation": "complete output and retained prefixes/results equal"
+  },
+  "prepared_allocations": {
+    "stages": [
+      {
+        "stage": "begin",
+        "calls": 0,
+        "requested_bytes": 0,
+        "live_bytes": 0,
+        "peak_bytes": 0
+      },
+      {
+        "stage": "prepared_with_reference_and_prefixes",
+        "calls": 70530,
+        "requested_bytes": 16812196,
+        "live_bytes": 12472277,
+        "peak_bytes": 12764537
+      },
+      {
+        "stage": "completed_state_restored_to_late",
+        "calls": 70530,
+        "requested_bytes": 16812196,
+        "live_bytes": 12454149,
+        "peak_bytes": 12764537
+      },
+      {
+        "stage": "captures_retained",
+        "calls": 70711,
+        "requested_bytes": 17356612,
+        "live_bytes": 12970741,
+        "peak_bytes": 12970741
+      },
+      {
+        "stage": "captures_released",
+        "calls": 70711,
+        "requested_bytes": 17356612,
+        "live_bytes": 12970741,
+        "peak_bytes": 12970741
+      },
+      {
+        "stage": "stable_restores",
+        "calls": 70711,
+        "requested_bytes": 17356612,
+        "live_bytes": 12970741,
+        "peak_bytes": 12970741
+      },
+      {
+        "stage": "suffix_advanced",
+        "calls": 70715,
+        "requested_bytes": 17374764,
+        "live_bytes": 12988869,
+        "peak_bytes": 12988869
+      },
+      {
+        "stage": "suffix_outcome_acquired",
+        "calls": 70727,
+        "requested_bytes": 17375797,
+        "live_bytes": 12989614,
+        "peak_bytes": 12989614
+      },
+      {
+        "stage": "suffix_equality_checked",
+        "calls": 70727,
+        "requested_bytes": 17375797,
+        "live_bytes": 12989614,
+        "peak_bytes": 12989614
+      },
+      {
+        "stage": "suffix_outcome_released",
+        "calls": 70727,
+        "requested_bytes": 17375797,
+        "live_bytes": 12988869,
+        "peak_bytes": 12989614
+      },
+      {
+        "stage": "replay_1_with_transient_outcomes",
+        "calls": 70743,
+        "requested_bytes": 17394982,
+        "live_bytes": 12988869,
+        "peak_bytes": 12989614
+      },
+      {
+        "stage": "replay_5_with_transient_outcomes",
+        "calls": 70823,
+        "requested_bytes": 17490907,
+        "live_bytes": 12988869,
+        "peak_bytes": 12989614
+      },
+      {
+        "stage": "replay_20_with_transient_outcomes",
+        "calls": 71143,
+        "requested_bytes": 17874607,
+        "live_bytes": 12988869,
+        "peak_bytes": 12989614
+      },
+      {
+        "stage": "three_suffix_outcomes_retained",
+        "calls": 71191,
+        "requested_bytes": 17932162,
+        "live_bytes": 13027296,
+        "peak_bytes": 13027296
+      },
+      {
+        "stage": "retained_suffixes_checked",
+        "calls": 71191,
+        "requested_bytes": 17932162,
+        "live_bytes": 13027296,
+        "peak_bytes": 13027296
+      },
+      {
+        "stage": "retained_suffixes_released",
+        "calls": 71191,
+        "requested_bytes": 17932162,
+        "live_bytes": 12988869,
+        "peak_bytes": 13027296
+      },
+      {
+        "stage": "released_results_replay_advanced",
+        "calls": 71195,
+        "requested_bytes": 17950314,
+        "live_bytes": 12988869,
+        "peak_bytes": 13027296
+      },
+      {
+        "stage": "released_results_replay_checked",
+        "calls": 71207,
+        "requested_bytes": 17951347,
+        "live_bytes": 12988869,
+        "peak_bytes": 13027296
+      },
+      {
+        "stage": "engine_released",
+        "calls": 71207,
+        "requested_bytes": 17951347,
+        "live_bytes": 12711701,
+        "peak_bytes": 13027296
+      },
+      {
+        "stage": "all_engine_owners_released",
+        "calls": 71228,
+        "requested_bytes": 17953043,
+        "live_bytes": 0,
+        "peak_bytes": 13027296
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "whole_gentle_source_vs_own_format",
+      "warmups_per_endpoint": 1,
+      "retained_pairs": 7,
+      "order": [
+        [
+          "gentle-source",
+          "gentle-format"
+        ],
+        [
+          "gentle-format",
+          "gentle-source"
+        ],
+        [
+          "gentle-source",
+          "gentle-format"
+        ],
+        [
+          "gentle-format",
+          "gentle-source"
+        ],
+        [
+          "gentle-source",
+          "gentle-format"
+        ],
+        [
+          "gentle-format",
+          "gentle-source"
+        ],
+        [
+          "gentle-source",
+          "gentle-format"
+        ]
+      ],
+      "samples": {
+        "gentle-source": [
+          {
+            "wall_seconds": 0.050306254,
+            "cpu_seconds": 0.049946,
+            "user_cpu_seconds": 0.042954,
+            "system_cpu_seconds": 0.006992,
+            "minor_page_faults": 1080
+          },
+          {
+            "wall_seconds": 0.049133628,
+            "cpu_seconds": 0.04885,
+            "user_cpu_seconds": 0.043878,
+            "system_cpu_seconds": 0.004972,
+            "minor_page_faults": 1081
+          },
+          {
+            "wall_seconds": 0.04992366,
+            "cpu_seconds": 0.049553,
+            "user_cpu_seconds": 0.045508,
+            "system_cpu_seconds": 0.004045,
+            "minor_page_faults": 1081
+          },
+          {
+            "wall_seconds": 0.049396706,
+            "cpu_seconds": 0.049097999999999996,
+            "user_cpu_seconds": 0.04509,
+            "system_cpu_seconds": 0.004007999999999999,
+            "minor_page_faults": 1081
+          },
+          {
+            "wall_seconds": 0.050320246,
+            "cpu_seconds": 0.049922999999999995,
+            "user_cpu_seconds": 0.04593,
+            "system_cpu_seconds": 0.003993,
+            "minor_page_faults": 1081
+          },
+          {
+            "wall_seconds": 0.050192498,
+            "cpu_seconds": 0.049838999999999994,
+            "user_cpu_seconds": 0.043858999999999995,
+            "system_cpu_seconds": 0.00598,
+            "minor_page_faults": 1079
+          },
+          {
+            "wall_seconds": 0.048896341,
+            "cpu_seconds": 0.048635,
+            "user_cpu_seconds": 0.044664999999999996,
+            "system_cpu_seconds": 0.00397,
+            "minor_page_faults": 1081
+          }
+        ],
+        "gentle-format": [
+          {
+            "wall_seconds": 0.047243298,
+            "cpu_seconds": 0.046952999999999995,
+            "user_cpu_seconds": 0.041957999999999995,
+            "system_cpu_seconds": 0.0049949999999999994,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.04658882,
+            "cpu_seconds": 0.046357,
+            "user_cpu_seconds": 0.044385,
+            "system_cpu_seconds": 0.001972,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.046509576,
+            "cpu_seconds": 0.046249,
+            "user_cpu_seconds": 0.044239,
+            "system_cpu_seconds": 0.00201,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.046220491,
+            "cpu_seconds": 0.04599399999999999,
+            "user_cpu_seconds": 0.040995,
+            "system_cpu_seconds": 0.004999,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.047785346,
+            "cpu_seconds": 0.047448,
+            "user_cpu_seconds": 0.041517,
+            "system_cpu_seconds": 0.005931,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.047549347,
+            "cpu_seconds": 0.047198,
+            "user_cpu_seconds": 0.043182,
+            "system_cpu_seconds": 0.004016,
+            "minor_page_faults": 1119
+          },
+          {
+            "wall_seconds": 0.046062037,
+            "cpu_seconds": 0.045876,
+            "user_cpu_seconds": 0.041887,
+            "system_cpu_seconds": 0.0039889999999999995,
+            "minor_page_faults": 1116
+          }
+        ]
+      },
+      "median": {
+        "gentle-source": {
+          "wall_seconds": 0.04992366,
+          "cpu_seconds": 0.049553,
+          "user_cpu_seconds": 0.044664999999999996,
+          "system_cpu_seconds": 0.004045,
+          "minor_page_faults": 1081
+        },
+        "gentle-format": {
+          "wall_seconds": 0.04658882,
+          "cpu_seconds": 0.046357,
+          "user_cpu_seconds": 0.041957999999999995,
+          "system_cpu_seconds": 0.004016,
+          "minor_page_faults": 1118
+        }
+      },
+      "left_cpu_over_right_cpu": 1.068943201673965,
+      "benefit": {
+        "baseline": "gentle-source",
+        "candidate": "gentle-format",
+        "median_cpu_reduction_percent": 6.449659960042778,
+        "median_cpu_speedup": 1.068943201673965
+      }
+    },
+    {
+      "name": "whole_gentle_own_vs_native_format",
+      "warmups_per_endpoint": 1,
+      "retained_pairs": 7,
+      "order": [
+        [
+          "gentle-format",
+          "gentle-native"
+        ],
+        [
+          "gentle-native",
+          "gentle-format"
+        ],
+        [
+          "gentle-format",
+          "gentle-native"
+        ],
+        [
+          "gentle-native",
+          "gentle-format"
+        ],
+        [
+          "gentle-format",
+          "gentle-native"
+        ],
+        [
+          "gentle-native",
+          "gentle-format"
+        ],
+        [
+          "gentle-format",
+          "gentle-native"
+        ]
+      ],
+      "samples": {
+        "gentle-format": [
+          {
+            "wall_seconds": 0.047796449,
+            "cpu_seconds": 0.047521,
+            "user_cpu_seconds": 0.045499,
+            "system_cpu_seconds": 0.002022,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.049686574,
+            "cpu_seconds": 0.049351,
+            "user_cpu_seconds": 0.04244,
+            "system_cpu_seconds": 0.006911,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.047511697,
+            "cpu_seconds": 0.04718,
+            "user_cpu_seconds": 0.041157,
+            "system_cpu_seconds": 0.006023,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.047197797,
+            "cpu_seconds": 0.046928,
+            "user_cpu_seconds": 0.043933,
+            "system_cpu_seconds": 0.002995,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.048056412,
+            "cpu_seconds": 0.047737999999999996,
+            "user_cpu_seconds": 0.041770999999999996,
+            "system_cpu_seconds": 0.005967,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.047693603,
+            "cpu_seconds": 0.047332,
+            "user_cpu_seconds": 0.044310999999999996,
+            "system_cpu_seconds": 0.003021,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.047056064,
+            "cpu_seconds": 0.046756,
+            "user_cpu_seconds": 0.041782,
+            "system_cpu_seconds": 0.004974,
+            "minor_page_faults": 1117
+          }
+        ],
+        "gentle-native": [
+          {
+            "wall_seconds": 0.056604588,
+            "cpu_seconds": 0.056261,
+            "user_cpu_seconds": 0.041191,
+            "system_cpu_seconds": 0.01507,
+            "minor_page_faults": 3403
+          },
+          {
+            "wall_seconds": 0.057477875,
+            "cpu_seconds": 0.057074999999999994,
+            "user_cpu_seconds": 0.039092999999999996,
+            "system_cpu_seconds": 0.017981999999999998,
+            "minor_page_faults": 3402
+          },
+          {
+            "wall_seconds": 0.058234059,
+            "cpu_seconds": 0.057852999999999995,
+            "user_cpu_seconds": 0.039899,
+            "system_cpu_seconds": 0.017953999999999998,
+            "minor_page_faults": 3401
+          },
+          {
+            "wall_seconds": 0.059298445,
+            "cpu_seconds": 0.058906,
+            "user_cpu_seconds": 0.036941,
+            "system_cpu_seconds": 0.021965,
+            "minor_page_faults": 3402
+          },
+          {
+            "wall_seconds": 0.066177532,
+            "cpu_seconds": 0.065755,
+            "user_cpu_seconds": 0.042488,
+            "system_cpu_seconds": 0.023267,
+            "minor_page_faults": 3404
+          },
+          {
+            "wall_seconds": 0.058891909,
+            "cpu_seconds": 0.058381999999999996,
+            "user_cpu_seconds": 0.040565,
+            "system_cpu_seconds": 0.017817,
+            "minor_page_faults": 3402
+          },
+          {
+            "wall_seconds": 0.056752415,
+            "cpu_seconds": 0.056374,
+            "user_cpu_seconds": 0.041539,
+            "system_cpu_seconds": 0.014835,
+            "minor_page_faults": 3404
+          }
+        ]
+      },
+      "median": {
+        "gentle-format": {
+          "wall_seconds": 0.047693603,
+          "cpu_seconds": 0.047332,
+          "user_cpu_seconds": 0.04244,
+          "system_cpu_seconds": 0.004974,
+          "minor_page_faults": 1117
+        },
+        "gentle-native": {
+          "wall_seconds": 0.058234059,
+          "cpu_seconds": 0.057852999999999995,
+          "user_cpu_seconds": 0.040565,
+          "system_cpu_seconds": 0.017953999999999998,
+          "minor_page_faults": 3402
+        }
+      },
+      "left_cpu_over_right_cpu": 0.8181425336629043,
+      "benefit": {
+        "baseline": "gentle-native",
+        "candidate": "gentle-format",
+        "median_cpu_reduction_percent": 18.18574663370957,
+        "median_cpu_speedup": 1.2222809093213893
+      }
+    },
+    {
+      "name": "empty_job_source_vs_own_format",
+      "warmups_per_endpoint": 1,
+      "retained_pairs": 7,
+      "order": [
+        [
+          "empty-source",
+          "empty-format"
+        ],
+        [
+          "empty-format",
+          "empty-source"
+        ],
+        [
+          "empty-source",
+          "empty-format"
+        ],
+        [
+          "empty-format",
+          "empty-source"
+        ],
+        [
+          "empty-source",
+          "empty-format"
+        ],
+        [
+          "empty-format",
+          "empty-source"
+        ],
+        [
+          "empty-source",
+          "empty-format"
+        ]
+      ],
+      "samples": {
+        "empty-source": [
+          {
+            "wall_seconds": 0.005113185,
+            "cpu_seconds": 0.00498,
+            "user_cpu_seconds": 0.001992,
+            "system_cpu_seconds": 0.0029879999999999998,
+            "minor_page_faults": 346
+          },
+          {
+            "wall_seconds": 0.005252259,
+            "cpu_seconds": 0.0051199999999999996,
+            "user_cpu_seconds": 0.004096,
+            "system_cpu_seconds": 0.001024,
+            "minor_page_faults": 345
+          },
+          {
+            "wall_seconds": 0.005227938,
+            "cpu_seconds": 0.005072,
+            "user_cpu_seconds": 0.0030429999999999997,
+            "system_cpu_seconds": 0.002029,
+            "minor_page_faults": 345
+          },
+          {
+            "wall_seconds": 0.005202588,
+            "cpu_seconds": 0.005025,
+            "user_cpu_seconds": 0.00201,
+            "system_cpu_seconds": 0.003015,
+            "minor_page_faults": 344
+          },
+          {
+            "wall_seconds": 0.005204169,
+            "cpu_seconds": 0.0050609999999999995,
+            "user_cpu_seconds": 0.0030369999999999998,
+            "system_cpu_seconds": 0.0020239999999999998,
+            "minor_page_faults": 346
+          },
+          {
+            "wall_seconds": 0.005380313,
+            "cpu_seconds": 0.005227,
+            "user_cpu_seconds": 0.004182,
+            "system_cpu_seconds": 0.001045,
+            "minor_page_faults": 345
+          },
+          {
+            "wall_seconds": 0.005409197,
+            "cpu_seconds": 0.005259,
+            "user_cpu_seconds": 0.0008759999999999999,
+            "system_cpu_seconds": 0.004383,
+            "minor_page_faults": 345
+          }
+        ],
+        "empty-format": [
+          {
+            "wall_seconds": 0.002960053,
+            "cpu_seconds": 0.00282,
+            "user_cpu_seconds": 0.00094,
+            "system_cpu_seconds": 0.00188,
+            "minor_page_faults": 384
+          },
+          {
+            "wall_seconds": 0.002779966,
+            "cpu_seconds": 0.002668,
+            "user_cpu_seconds": 0.0008889999999999999,
+            "system_cpu_seconds": 0.001779,
+            "minor_page_faults": 384
+          },
+          {
+            "wall_seconds": 0.002928627,
+            "cpu_seconds": 0.0028139999999999997,
+            "user_cpu_seconds": 0.0009379999999999999,
+            "system_cpu_seconds": 0.0018759999999999998,
+            "minor_page_faults": 382
+          },
+          {
+            "wall_seconds": 0.002794598,
+            "cpu_seconds": 0.002683,
+            "user_cpu_seconds": 0.0,
+            "system_cpu_seconds": 0.002683,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.003694404,
+            "cpu_seconds": 0.003508,
+            "user_cpu_seconds": 0.000877,
+            "system_cpu_seconds": 0.002631,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.003472181,
+            "cpu_seconds": 0.0033079999999999997,
+            "user_cpu_seconds": 0.0008269999999999999,
+            "system_cpu_seconds": 0.0024809999999999997,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.002953307,
+            "cpu_seconds": 0.002785,
+            "user_cpu_seconds": 0.001857,
+            "system_cpu_seconds": 0.000928,
+            "minor_page_faults": 382
+          }
+        ]
+      },
+      "median": {
+        "empty-source": {
+          "wall_seconds": 0.005227938,
+          "cpu_seconds": 0.005072,
+          "user_cpu_seconds": 0.0030369999999999998,
+          "system_cpu_seconds": 0.002029,
+          "minor_page_faults": 345
+        },
+        "empty-format": {
+          "wall_seconds": 0.002953307,
+          "cpu_seconds": 0.0028139999999999997,
+          "user_cpu_seconds": 0.0008889999999999999,
+          "system_cpu_seconds": 0.00188,
+          "minor_page_faults": 383
+        }
+      },
+      "left_cpu_over_right_cpu": 1.8024164889836534,
+      "benefit": {
+        "baseline": "empty-source",
+        "candidate": "empty-format",
+        "median_cpu_reduction_percent": 44.51892744479496,
+        "median_cpu_speedup": 1.8024164889836534
+      }
+    },
+    {
+      "name": "empty_job_own_vs_native_format",
+      "warmups_per_endpoint": 1,
+      "retained_pairs": 7,
+      "order": [
+        [
+          "empty-format",
+          "empty-native"
+        ],
+        [
+          "empty-native",
+          "empty-format"
+        ],
+        [
+          "empty-format",
+          "empty-native"
+        ],
+        [
+          "empty-native",
+          "empty-format"
+        ],
+        [
+          "empty-format",
+          "empty-native"
+        ],
+        [
+          "empty-native",
+          "empty-format"
+        ],
+        [
+          "empty-format",
+          "empty-native"
+        ]
+      ],
+      "samples": {
+        "empty-format": [
+          {
+            "wall_seconds": 0.003354815,
+            "cpu_seconds": 0.003166,
+            "user_cpu_seconds": 0.001055,
+            "system_cpu_seconds": 0.002111,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.003435463,
+            "cpu_seconds": 0.003227,
+            "user_cpu_seconds": 0.003227,
+            "system_cpu_seconds": 0.0,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.002803284,
+            "cpu_seconds": 0.002688,
+            "user_cpu_seconds": 0.001792,
+            "system_cpu_seconds": 0.000896,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.003394338,
+            "cpu_seconds": 0.0031979999999999995,
+            "user_cpu_seconds": 0.0021319999999999998,
+            "system_cpu_seconds": 0.0010659999999999999,
+            "minor_page_faults": 382
+          },
+          {
+            "wall_seconds": 0.002798261,
+            "cpu_seconds": 0.002683,
+            "user_cpu_seconds": 0.0,
+            "system_cpu_seconds": 0.002683,
+            "minor_page_faults": 383
+          },
+          {
+            "wall_seconds": 0.004092611,
+            "cpu_seconds": 0.00381,
+            "user_cpu_seconds": 0.002858,
+            "system_cpu_seconds": 0.0009519999999999999,
+            "minor_page_faults": 381
+          },
+          {
+            "wall_seconds": 0.002848942,
+            "cpu_seconds": 0.002718,
+            "user_cpu_seconds": 0.000906,
+            "system_cpu_seconds": 0.001812,
+            "minor_page_faults": 384
+          }
+        ],
+        "empty-native": [
+          {
+            "wall_seconds": 0.017424471,
+            "cpu_seconds": 0.017176999999999998,
+            "user_cpu_seconds": 0.004771,
+            "system_cpu_seconds": 0.012405999999999999,
+            "minor_page_faults": 3294
+          },
+          {
+            "wall_seconds": 0.017555689,
+            "cpu_seconds": 0.017234,
+            "user_cpu_seconds": 0.007096,
+            "system_cpu_seconds": 0.010138,
+            "minor_page_faults": 3294
+          },
+          {
+            "wall_seconds": 0.017452635,
+            "cpu_seconds": 0.017182,
+            "user_cpu_seconds": 0.006064,
+            "system_cpu_seconds": 0.011118,
+            "minor_page_faults": 3290
+          },
+          {
+            "wall_seconds": 0.017867564,
+            "cpu_seconds": 0.017549,
+            "user_cpu_seconds": 0.007226,
+            "system_cpu_seconds": 0.010322999999999999,
+            "minor_page_faults": 3294
+          },
+          {
+            "wall_seconds": 0.017659482,
+            "cpu_seconds": 0.017374,
+            "user_cpu_seconds": 0.005796,
+            "system_cpu_seconds": 0.011578,
+            "minor_page_faults": 3293
+          },
+          {
+            "wall_seconds": 0.01875437,
+            "cpu_seconds": 0.018348999999999997,
+            "user_cpu_seconds": 0.007136,
+            "system_cpu_seconds": 0.011212999999999999,
+            "minor_page_faults": 3293
+          },
+          {
+            "wall_seconds": 0.017731662,
+            "cpu_seconds": 0.017457,
+            "user_cpu_seconds": 0.004849,
+            "system_cpu_seconds": 0.012608,
+            "minor_page_faults": 3294
+          }
+        ]
+      },
+      "median": {
+        "empty-format": {
+          "wall_seconds": 0.003354815,
+          "cpu_seconds": 0.003166,
+          "user_cpu_seconds": 0.001792,
+          "system_cpu_seconds": 0.0010659999999999999,
+          "minor_page_faults": 383
+        },
+        "empty-native": {
+          "wall_seconds": 0.017659482,
+          "cpu_seconds": 0.017374,
+          "user_cpu_seconds": 0.006064,
+          "system_cpu_seconds": 0.011212999999999999,
+          "minor_page_faults": 3294
+        }
+      },
+      "left_cpu_over_right_cpu": 0.18222631518360768,
+      "benefit": {
+        "baseline": "empty-native",
+        "candidate": "empty-format",
+        "median_cpu_reduction_percent": 81.77736848163923,
+        "median_cpu_speedup": 5.487681617182565
+      }
+    }
+  ],
+  "rss": {
+    "gentle-source": {
+      "samples_kib": [
+        6400,
+        6400,
+        6400
+      ],
+      "median_kib": 6400
+    },
+    "gentle-format": {
+      "samples_kib": [
+        6524,
+        6524,
+        6400
+      ],
+      "median_kib": 6524
+    },
+    "gentle-native": {
+      "samples_kib": [
+        17820,
+        17824,
+        17820
+      ],
+      "median_kib": 17820
+    },
+    "empty-source": {
+      "samples_kib": [
+        3712,
+        3840,
+        3712
+      ],
+      "median_kib": 3712
+    },
+    "empty-format": {
+      "samples_kib": [
+        3712,
+        3780,
+        3712
+      ],
+      "median_kib": 3712
+    },
+    "empty-native": {
+      "samples_kib": [
+        17436,
+        17312,
+        17312
+      ],
+      "median_kib": 17312
+    }
+  },
+  "endpoints": {
+    "whole_process": "Fresh process: executable startup, host file reads, source bootstrap or binary decode, full document, output and teardown. Umber retains detached pages; native writes DVI/log. SOURCE_DATE_EPOCH fixes native date; explicitcalendar fixes Umber. No Callgrind/instrumentation or concurrent builds.",
+    "empty_job": "Same startup paths ending immediately with end. Includes process/I/O/bootstrap/decode/teardown, not a pure decoder microbenchmark. Source empty job parses unchanged plain; own/native format jobs load their artifacts.",
+    "prepared": "Existing adapter: host bundle/image read before timers; reference.engine_setup_ns is one in-memory decode+startup sample. READY is before everyjob, then10/49/88-page checkpoints. Capture/restore/replay samples are separate from fresh process timings.",
+    "rss": "Independent GNU time -f %M fresh runs, KiB Linux peakRSS, three samples, separate from CPU samples. Prepared allocation accounting retains independent reference/output/checkpoints; not cold single-engineRSS.",
+    "sampling": "One warmup per endpoint per case, seven alternating serial pairs pinnedCPU3, warm filesystem caches; short shared-host measurements, no cold-cache/general performance claim.",
+    "native_resources": "Existing native format plus normal immutable TeX Live lookup paths; Gentle reads cmr10/cmbx10 for new sizes. Umber uses embedded raw TFMs and receives zero extra mappings. Both use the same original resource bytes."
+  },
+  "measurement_driver": {
+    "path": "/home/phulin/umber4/.tools/formats/measure.py",
+    "sha256": "045fa3e0654f397786bc0223a1c1a7ec902b61f9c0cac229dfd96107cc2f307d",
+    "uses": "existing benchmarks/layout.py child/rss and benchmarks/gentle.py DVI helpers"
+  },
+  "validation_command": [
+    "taskset",
+    "-c",
+    "3",
+    "python3",
+    "benchmarks/gentle.py",
+    "--assets-root",
+    ".",
+    "--adapter",
+    "target/release/examples/layout",
+    "--format",
+    ".tools/formats/plain.ufmt",
+    "--compare-counts",
+    "--replay",
+    "--allocation-adapter",
+    "target/release/examples/layout_allocations"
+  ],
+  "inputs": {
+    "gentle": {
+      "path": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f"
+    },
+    "plain": {
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+      "sha256": "7c1223b880fa513542a616b86c4fa02d5ee703839427951982d7e311fd9049b2"
+    },
+    "hyphen": {
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+      "sha256": "2c18acdc04c1a066aeb1759905e7ca449f0616c314b5ed6aebe55b9d4a89b8d4"
+    },
+    "source_wrappers": {
+      "source-gentle.tex": "\\input plain \\input gentle \\end\n",
+      "source-empty.tex": "\\input plain \\end\n",
+      "empty.tex": "\\end\n"
+    }
+  },
+  "native_binary_matches_prior_clean_hash": true,
+  "allocation_summary": {
+    "transient_replay_live_bytes": 12988869,
+    "transient_replay_counts": [
+      1,
+      5,
+      20
+    ],
+    "plateau": true,
+    "all_engine_owners_released_live_bytes": 0
+  }
+}

@@ -136,3 +136,23 @@ execution, with no inserted diagnostic sentinel. Comparisons across source and
 format startup compare page counts and positioned output; plain initialization
 diagnostics deliberately do not belong to the fresh loaded job. Replay equality
 within either startup path still includes complete diagnostics and retained output.
+
+### Prepared plain and Gentle
+
+The local `.tools/formats/` directory holds `plain-setup.tex`, the exact
+`build-plain-args.json` argument vector, and `plain.ufmt`. Setup contains only
+`\input plain \dump`. Its input bundle supplies unchanged plain and hyphen files
+and the 47 TFM resources named by the retained plain-format recorder. The image
+embeds those resources, all loaded font instances, compiled hyphenation and live
+plain boxes. Gentle's additional sizes use embedded cmr10/cmbx10 bytes; its format
+job needs no input or TFM mappings.
+
+```bash
+python3 -c 'import json, subprocess; subprocess.run(json.load(open(".tools/formats/build-plain-args.json")), check=True)'
+target/release/umber .tools/corpus/gentle.tex --format .tools/formats/plain.ufmt --calendar 0,1,3,2026
+```
+
+The explicit calendar gives a reproducible job date. Omitting it uses the portable
+1970 default, independently of the calendar used while building the image. The
+normal CLI retains detached output until teardown; use `layout document-inspect`
+or the Gentle comparison script to inspect every published page/event.
