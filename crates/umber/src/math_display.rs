@@ -232,6 +232,72 @@ impl Engine<'_> {
         work.release(self);
         result
     }
+    pub(crate) fn finish_display_alignment(
+        &mut self,
+        mut body: List,
+        depth: Scaled,
+        trailing_rule: Option<nodes::NodeId>,
+    ) -> Result<()> {
+        let result = (|| {
+            let first = self.do_assignments()?;
+            if first.meaning.command != 3 {
+                self.back(first.token)?;
+                return Err(Error::Syntax);
+            }
+            let second = self.next_expanded()?;
+            if second.meaning.command != 3 {
+                self.back(second.token)?;
+                return Err(Error::Syntax);
+            }
+            let frame = self.document.math_frames.last().ok_or(Error::Group)?;
+            if self.current_group() != Some(GroupKind::MathShift)
+                || self.document.level != frame.level
+                || !matches!(frame.context, Context::Display { number: None, .. })
+                || !frame.list.is_empty()
+                || frame.incomplete.is_some()
+            {
+                return Err(Error::Group);
+            }
+            self.document.math_frames.pop();
+            self.document.text.mode = self.document.text.vertical_mode;
+            self.display_node(nodes::Kind::Penalty(
+                self.document.scalars[Target::PRE_DISPLAY].value,
+            ))?;
+            self.display_skip(crate::layout_values::GlueParam::AboveDisplay)?;
+            self.document
+                .nodes
+                .splice(&mut self.document.text.vertical, std::mem::take(&mut body));
+            let below = self.document.layout_values.glues
+                [crate::layout_values::GlueParam::BelowDisplay.index()]
+            .value;
+            for kind in [
+                nodes::Kind::Penalty(self.document.scalars[Target::POST_DISPLAY].value),
+                nodes::Kind::Glue {
+                    spec: below,
+                    subtype: nodes::GlueKind::Normal,
+                },
+            ] {
+                let node = self.document.nodes.alloc(kind)?;
+                if let Some(wrapper) = trailing_rule {
+                    // fin_align keeps its old tail at the rule child after
+                    // wrapping. Preserve these post-pack appends until external
+                    // page work resets the contribution append position.
+                    let mut child = std::mem::take(&mut self.document.nodes.box_mut(wrapper).list);
+                    self.document.nodes.append(&mut child, node);
+                    self.document.nodes.box_mut(wrapper).list = child;
+                } else {
+                    self.document
+                        .nodes
+                        .append(&mut self.document.text.vertical, node);
+                }
+            }
+            self.document.text.prev_depth = depth;
+            self.close_group(GroupKind::MathShift)?;
+            self.resume_display()
+        })();
+        self.document.nodes.release(body, &mut self.page_release);
+        result
+    }
     fn resume_display(&mut self) -> Result<()> {
         self.document.text.prev_graf = self.document.text.prev_graf.wrapping_add(3);
         self.document.text.mode = Mode::Horizontal;

@@ -40,14 +40,14 @@ impl Engine<'_> {
         work.formula = Some(self.hpack(contents, PackSpec::To(Scaled(width)))?);
         Ok(())
     }
-    fn display_node(&mut self, kind: nodes::Kind) -> Result<()> {
+    pub(super) fn display_node(&mut self, kind: nodes::Kind) -> Result<()> {
         let node = self.document.nodes.alloc(kind)?;
         self.document
             .nodes
             .append(&mut self.document.text.vertical, node);
         Ok(())
     }
-    fn display_skip(&mut self, parameter: GlueParam) -> Result<()> {
+    pub(super) fn display_skip(&mut self, parameter: GlueParam) -> Result<()> {
         let spec = self.document.layout_values.glues[parameter.index()].value;
         self.display_node(nodes::Kind::Glue {
             spec,

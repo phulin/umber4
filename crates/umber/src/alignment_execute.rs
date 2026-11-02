@@ -2,8 +2,8 @@
 use crate::{
     Engine, Error, Result,
     execute::GroupKind,
-    layout_values::GlueParam,
-    numeric::Glue,
+    layout_values::{DimenParam, GlueParam},
+    numeric::{Glue, Scaled},
     packing::PackSpec,
     scanner::Scanner,
     text::{Mode, TextState},
@@ -42,8 +42,9 @@ impl Engine<'_> {
         match read.meaning.command {
             cmd::HALIGN => match self.document.text.mode {
                 Mode::Horizontal => self.head_for_vertical(read)?,
-                Mode::Vertical | Mode::InternalVertical => self.begin_halign()?,
-                Mode::DisplayMath => return Err(Error::Unsupported),
+                Mode::Vertical | Mode::InternalVertical | Mode::DisplayMath => {
+                    self.begin_halign()?
+                }
                 _ => return Err(Error::Syntax),
             },
             cmd::ENDV if self.document.text.mode.is_math() => return Err(Error::Syntax),
@@ -58,6 +59,12 @@ impl Engine<'_> {
         Ok(true)
     }
     fn begin_halign(&mut self) -> Result<()> {
+        if self.document.text.mode == Mode::DisplayMath {
+            let frame = self.document.math_frames.last().ok_or(Error::Group)?;
+            if !frame.list.is_empty() || frame.incomplete.is_some() {
+                return Err(Error::Syntax);
+            }
+        }
         let depth = self.document.alignment_frames.len();
         if self.alignment_execution_pool.len() == depth {
             self.alignment_execution_pool.push(None);
@@ -272,18 +279,39 @@ impl Engine<'_> {
         self.put_alignment_body(body)?;
         self.close_group(GroupKind::Align)?;
         self.close_group(GroupKind::Align)?;
-        let spec = self.document.alignment_frames.last().unwrap().spec;
-        self.document.text.vertical = self.finish_alignment_layout(spec)?;
+        let frame = self.document.alignment_frames.last().unwrap();
+        let spec = frame.spec;
+        let internal = frame.outer.vertical_mode == Mode::InternalVertical;
+        let offset = if frame.outer.mode == Mode::DisplayMath {
+            self.document.layout_values.dimens[DimenParam::DisplayIndent.index()].value
+        } else {
+            Scaled::ZERO
+        };
+        let (body, trailing_rule) = if frame.outer.mode == Mode::DisplayMath {
+            self.finish_alignment_layout_shifted(spec, offset)?
+        } else {
+            (self.finish_alignment_layout(spec)?, None)
+        };
+        self.document.text.vertical = body;
+        if internal && trailing_rule.is_some() {
+            // Native retains a semantic append position inside this wrapper
+            // beyond display closure. Internal continuation needs a different
+            // list representation; keep the completed forest rooted on error.
+            return Err(Error::Unsupported);
+        }
         self.end_alignment_reader()?;
         let frame = self.document.alignment_frames.pop().unwrap();
         let depth = self.document.text.prev_depth;
         let body = std::mem::take(&mut self.document.text.vertical);
         self.document.text = frame.outer;
+        self.recycle_alignment_execution(frame.columns);
+        if self.document.text.mode == Mode::DisplayMath {
+            return self.finish_display_alignment(body, depth, trailing_rule);
+        }
         self.document.text.prev_depth = depth;
         self.document
             .nodes
             .splice(&mut self.document.text.vertical, body);
-        self.recycle_alignment_execution(frame.columns);
         if self.document.text.mode == Mode::Vertical {
             self.build_page()?;
         }

@@ -198,8 +198,8 @@ by before/after math nodes; the enclosing space factor becomes 1000. Automatic
 math penalties are enabled only for an enclosing unrestricted paragraph.
 
 Closers validate the current semantic group before restoring bindings or moving
-owners. Active math frames exclude checkpoint handoff. Direct display alignments
-and vertical alignments remain unsupported.
+owners. Active math frames exclude checkpoint handoff. Vertical alignments remain
+unsupported.
 
 Keep the distinction between a math character's stored family/code and the
 font/size selected when conversion uses it. Math font bindings and parameters
@@ -375,8 +375,34 @@ natural packing extracts migrating material. Fitting uses operation-local glue
 totals and consuming repacking; centering, number squeeze/separate-line placement,
 short skips, penalties, baseline glue, and adjustment order follow native TeX.
 Layout reads live bindings before unsave. The existing packing diagnostic and
-automatic overfull-rule limitations remain; alignment and directional displays
-are not admitted.
+automatic overfull-rule limitations remain; directional displays are not admitted.
+
+A direct direction-zero `\halign` may occupy an otherwise empty display math
+list, including no incomplete fraction. It retains the empty display frame and
+parent vertical root while ordinary alignment construction runs. After both
+Align groups restore bindings, finalization samples display indent: unset rows
+receive that shift, and top-level rules resolve running dimensions and acquire a
+shifted natural horizontal wrapper when the indent is nonzero. Existing noalign
+boxes retain their shifts. The prototype, spans, and cells use the ordinary
+alignment backend without math conversion.
+
+After reader completion and restoration of DisplayMath mode, trailing assignments
+execute with setbox forbidden. The first nonassignment and the next expanded token
+must both be math shifts, still observed in display math mode. No whole-formula
+font validation, number fitting, or short skips run on this path; equation numbers
+in plain alignment macros are ordinary columns. A completed body has one affine
+owner across trailing scans and is released on failure. After successful closers,
+live normal display penalties/skips enclose the already baselined body and its
+final depth transfers to the parent. MathShift restoration and ordinary display
+continuation then use the shared resume path.
+
+If a nonzero-indent alignment ends in a top-level rule, native finalization leaves
+the post-display penalty and below skip inside that rule's already packed wrapper.
+External displays preserve these appends before page work resets the contribution
+append position. The corresponding internal-vertical case is explicitly
+unsupported: native continuation keeps appending inside that wrapper, beyond the
+single-chain ownership represented by ordinary vertical lists. Internal displays
+with zero indent or with another node following the final rule remain admitted.
 
 Resume restores the group, advances the parent's line count by three, and starts
 an unindented horizontal continuation with fresh language/minima and space factor
@@ -476,8 +502,9 @@ special reads; write expansion isolates its temporary alignment counter.
 Ordinary `\halign` execution uses two Align save levels and typed execution
 frames. External/internal vertical entry creates an internal vertical body with
 the inherited previous depth; unrestricted horizontal entry replays after
-paragraph completion. Restricted horizontal and negative math entry fail, while
-direct display alignment, `\valign`, and directional alignment remain unsupported.
+paragraph completion. Empty positive display-math entry uses the same backend;
+restricted horizontal and negative math entry fail. `\valign` and directional
+alignment remain unsupported.
 Preamble tokens build one owned immutable value; columns borrow U/V ranges and
 capture tabskip values. Only `\span` single expansion and the special tabskip
 assignment are executed during copying. That assignment uses positive globaldefs

@@ -29,6 +29,8 @@ one immutable value. `alignment_execute_tests.rs` and
 `alignment_execute_oracle_tests.rs` check execution, native geometry, and DVI;
 `alignment_execute_ownership_tests.rs` checks partial forests, pending sources,
 capacity, auxiliary state and checkpoint reuse.
+`alignment_display_tests.rs` checks direct display alignment scanning, native
+layout, post-pack rule appends, the internal terminal-rule boundary, and restore.
 `define.rs` builds macro definitions; `macros.rs` builds invocation packets and
 captures ranges; `delimit.rs` scans grouped and delimited arguments; `scan.rs` scans
 integers and primitive operands; `expression.rs` evaluates integer expressions;

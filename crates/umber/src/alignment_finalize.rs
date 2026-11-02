@@ -108,12 +108,13 @@ impl Engine<'_> {
         row: NodeId,
         prototype: Prototype,
         cell_index: &mut usize,
+        offset: Scaled,
     ) -> Result<()> {
         let data = self.document.nodes.unset_mut(row);
         let (height, depth, first) = (data.height, data.depth, data.list.head());
         data.width = prototype.width;
         data.glue_set = prototype.glue;
-        data.shift = Scaled::ZERO;
+        data.shift = offset;
         self.document.nodes.finish_unset(row);
         let mut node = self.document.nodes.get(first).next;
         let mut column = 0;
@@ -188,6 +189,16 @@ impl Engine<'_> {
         Ok(())
     }
     pub(crate) fn finish_alignment_layout(&mut self, spec: PackSpec) -> Result<List> {
+        self.finish_alignment_layout_shifted(spec, Scaled::ZERO)
+            .map(|(body, _)| body)
+    }
+    // The optional ID borrows the completed body's terminal rule wrapper.
+    // Native display post-material appends inside that already packed box.
+    pub(crate) fn finish_alignment_layout_shifted(
+        &mut self,
+        spec: PackSpec,
+        offset: Scaled,
+    ) -> Result<(List, Option<NodeId>)> {
         let frame = self
             .document
             .alignment_layouts
@@ -199,10 +210,12 @@ impl Engine<'_> {
         frame.buffers.resolve_columns();
         let prototype = frame.buffers.prototype(frame.leading, spec);
         let mut node = frame.body.head();
+        let mut previous = NodeId::NULL;
+        let mut trailing_rule = None;
         let mut cells = 0;
         while !node.is_null() {
             if matches!(self.document.nodes.get(node).kind, Kind::Unset(_)) {
-                self.finish_alignment_row(node, prototype, &mut cells)?;
+                self.finish_alignment_row(node, prototype, &mut cells, offset)?;
             } else if let Kind::Rule {
                 width,
                 height,
@@ -218,7 +231,16 @@ impl Engine<'_> {
                 if depth.0 == RUNNING {
                     *depth = Scaled::ZERO;
                 }
+                if offset != Scaled::ZERO {
+                    let was_tail =
+                        self.document.alignment_layouts.last().unwrap().body.tail() == node;
+                    node = self.shift_alignment_rule(previous, offset)?;
+                    if was_tail {
+                        trailing_rule = Some(node);
+                    }
+                }
             }
+            previous = node;
             node = self.document.nodes.get(node).next;
         }
         if cells
@@ -236,6 +258,36 @@ impl Engine<'_> {
         let mut frame = self.document.alignment_layouts.pop().unwrap();
         let body = std::mem::take(&mut frame.body);
         self.recycle_layout(frame);
-        Ok(body)
+        Ok((body, trailing_rule))
+    }
+    fn shift_alignment_rule(&mut self, previous: NodeId, offset: Scaled) -> Result<NodeId> {
+        let mut body =
+            std::mem::take(&mut self.document.alignment_layouts.last_mut().unwrap().body);
+        let rule = self
+            .document
+            .nodes
+            .remove_after(&mut body, previous)
+            .unwrap();
+        self.document.alignment_layouts.last_mut().unwrap().body = body;
+        // Packing consumes the detached rule even if allocating its header fails.
+        let mut contents = List::default();
+        self.document.nodes.append(&mut contents, rule);
+        let wrapped = self.hpack(contents, PackSpec::Natural)?;
+        let id = wrapped.id();
+        self.document.nodes.box_mut(id).shift = offset;
+        let mut body =
+            std::mem::take(&mut self.document.alignment_layouts.last_mut().unwrap().body);
+        let mut prefix = List::default();
+        self.document.nodes.append(&mut prefix, wrapped);
+        if previous.is_null() {
+            self.document.nodes.splice(&mut prefix, body);
+            body = prefix;
+        } else {
+            self.document
+                .nodes
+                .insert_after(&mut body, previous, prefix);
+        }
+        self.document.alignment_layouts.last_mut().unwrap().body = body;
+        Ok(id)
     }
 }

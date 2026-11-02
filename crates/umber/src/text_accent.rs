@@ -4,7 +4,7 @@ use crate::{
     nodes::{DetachedNode, KernKind, Kind, List},
     numeric::Scaled,
     packing::PackSpec,
-    token::{Read, cmd},
+    token::cmd,
 };
 
 #[derive(Default)]
@@ -68,7 +68,7 @@ impl Engine<'_> {
         self.document.nodes.append(&mut work.accent, node);
         let x = self.font_parameter(font as usize, 5).0;
         let s = f64::from(self.font_parameter(font as usize, 1).0) / 65536.0;
-        let read = self.accent_base()?;
+        let read = self.do_assignments()?;
         let base_character = match read.meaning.command {
             11 | 12 | cmd::CHAR_GIVEN => Some(read.meaning.value as u8),
             cmd::CHAR => Some(self.scan_index()? as u8),
@@ -133,25 +133,6 @@ impl Engine<'_> {
         );
         self.document.text.space_factor = 1000;
         Ok(())
-    }
-    fn accent_base(&mut self) -> Result<Read> {
-        loop {
-            let read = self.next_expanded()?;
-            let command = read.meaning.command;
-            if matches!(command, cmd::SPACE | cmd::RELAX) {
-                continue;
-            }
-            if cmd::is_assignment(command)
-                || matches!(
-                    command,
-                    cmd::GLOBAL | cmd::LONG | cmd::OUTER | cmd::PROTECTED
-                )
-            {
-                self.execute_with_set_box_permission(read, false)?;
-            } else {
-                return Ok(read);
-            }
-        }
     }
 }
 

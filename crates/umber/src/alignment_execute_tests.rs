@@ -97,8 +97,8 @@ fn malformed_preambles_closers_and_modes_preserve_cursor_and_owners() {
             cmd::MESSAGE,
         ),
         (
-            r"\catcode36=3\noindent$$\halign\message{UNREAD}",
-            Error::Unsupported,
+            r"\catcode36=3\noindent$$a\halign\message{UNREAD}",
+            Error::Syntax,
             cmd::MESSAGE,
         ),
         (r"\valign\message{UNREAD}", Error::Unsupported, cmd::MESSAGE),
@@ -116,3 +116,6 @@ fn malformed_preambles_closers_and_modes_preserve_cursor_and_owners() {
         assert_eq!(e.document.nodes.live_count(), 0);
     }
 }
+
+#[path = "alignment_display_tests.rs"]
+mod display;

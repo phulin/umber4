@@ -147,4 +147,32 @@ fn upstream_gentle_table_plain_tabs_and_math_alignment_templates() {
     ] {
         oracle.compare_fonts(&fonts, &settings, body);
     }
+    settings.push_str(
+        r"\def\dt@ptrue{\let\ifdt@p\iftrue}\def\dt@pfalse{\let\ifdt@p\iffalse}
+\dimendef\normallineskiplimit=13\normallineskiplimit=0pt
+\countdef\interdisplaylinepenalty=20\interdisplaylinepenalty=100
+\skipdef\centering=5\centering=0pt plus1000pt minus1000pt
+\abovedisplayskip=6pt\belowdisplayskip=7pt\abovedisplayshortskip=1pt\belowdisplayshortskip=2pt ",
+    );
+    let start = plain.find(r"\def\displ@y").unwrap();
+    let end = plain[start..]
+        .find("% Definitions related to output")
+        .unwrap()
+        + start;
+    settings.push_str(&plain[start..end]);
+    for name in [r"\def\llap", r"\def\rlap"] {
+        let start = plain.find(name).unwrap();
+        settings.push_str(plain[start..].lines().next().unwrap());
+        settings.push('\n');
+    }
+    for body in [
+        r"\noindent$$\displaylines{a+b=c+d\cr x=y+z\cr}$$ab\par",
+        r"\noindent$$\eqalignno{a+b&=c+d&(1)\cr x&=y+z\cr}$$ab\par",
+        r"\noindent$$\displayindent=-3pt\leqalignno{a+b&=c+d&(1)\cr x&=y+z&(2)\cr}$$ab\par",
+    ] {
+        oracle.compare_fonts(&fonts, &settings, body);
+    }
+    let start = gentle.find(r"$$\eqalignno{").unwrap();
+    let end = gentle[start..].find("}$$").unwrap() + start + 3;
+    oracle.compare_fonts(&fonts, &settings, &gentle[start..end]);
 }

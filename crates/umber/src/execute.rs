@@ -49,6 +49,25 @@ impl Save {
 }
 
 impl Engine<'_> {
+    pub(crate) fn do_assignments(&mut self) -> Result<Read> {
+        loop {
+            let read = self.next_expanded()?;
+            let command = read.meaning.command;
+            if matches!(command, cmd::SPACE | cmd::RELAX) {
+                continue;
+            }
+            if cmd::is_assignment(command)
+                || matches!(
+                    command,
+                    cmd::GLOBAL | cmd::LONG | cmd::OUTER | cmd::PROTECTED
+                )
+            {
+                self.execute_with_set_box_permission(read, false)?;
+            } else {
+                return Ok(read);
+            }
+        }
+    }
     pub(crate) fn execute(&mut self, read: Read) -> Result<()> {
         self.execute_with_set_box_permission(read, true)
     }
