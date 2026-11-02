@@ -1,0 +1,863 @@
+{
+  "measured_at_utc": "2026-11-02T19:19:08.759133+00:00",
+  "base_revision": "6fa04058e1c2cd9ca80cb7b41392a62bbc82270e",
+  "candidate_revision": "e4ee20e8f14b2f06eccc77068e977a9c5c9473e7",
+  "candidate_runtime_source_sha256": {
+    "crates/umber/src/page_output.rs": "f336e9d29e9339b617f516ef246faaaaa6603cc50f543257cf6975545307ac19"
+  },
+  "build": "cargo build --release --bin umber --example layout --example layout_allocations; default features; workspace fat LTO/codegen-units=1/debug=1",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu": 3,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "inputs": {
+    "gentle": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "gentle_sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "format": "/tmp/umber-lowering-frame/plain.ufmt",
+    "format_sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "input_mappings": 0,
+    "tfm_mappings": 0
+  },
+  "change": "Work::List is popped into a local Frame and walks until nonempty child/repeat descent or list end. Only nonempty parent continuations are suspended. Repeat advances/requeues before child descent. Work/Frame representations, glyph/font checks, cumulative glue and leader origins stay unchanged; source root remains sole owner until existing whole-tree release on success/failure.",
+  "timing_endpoint": "Whole loaded-format CLI process: image read/decode, unchanged Gentle, retained detached output, diagnostic writes and teardown. No DVI/JSON serialization. Warm host file caches, pinned CPU 3, one warmup per binary and 21 serial alternating pairs, existing layout.py child CPU/wall/user/system/fault helpers; 3 separate GNU-time RSS samples. No builds, validation or profiling during ordinary samples.",
+  "timing": {
+    "cpu": 3,
+    "warmups_per_endpoint": 1,
+    "retained_pairs": 21,
+    "commands": {
+      "before": [
+        "/tmp/umber-lowering-frame/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-lowering-frame/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "after": [
+        "/tmp/umber-lowering-frame/umber-after",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-lowering-frame/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "orders": [
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ]
+    ],
+    "samples": {
+      "before": [
+        {
+          "wall_seconds": 0.046175723,
+          "cpu_seconds": 0.045856,
+          "user_cpu_seconds": 0.039873,
+          "system_cpu_seconds": 0.005983,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.051285958,
+          "cpu_seconds": 0.050942999999999995,
+          "user_cpu_seconds": 0.045949,
+          "system_cpu_seconds": 0.004994,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047714302,
+          "cpu_seconds": 0.047258999999999995,
+          "user_cpu_seconds": 0.045248,
+          "system_cpu_seconds": 0.0020109999999999998,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046506814,
+          "cpu_seconds": 0.046097,
+          "user_cpu_seconds": 0.041087,
+          "system_cpu_seconds": 0.00501,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.051674791,
+          "cpu_seconds": 0.051325,
+          "user_cpu_seconds": 0.045287,
+          "system_cpu_seconds": 0.006038,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046253787,
+          "cpu_seconds": 0.045905999999999995,
+          "user_cpu_seconds": 0.039918999999999996,
+          "system_cpu_seconds": 0.005987,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046665006,
+          "cpu_seconds": 0.046325,
+          "user_cpu_seconds": 0.039425999999999996,
+          "system_cpu_seconds": 0.006899,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.044751988,
+          "cpu_seconds": 0.044542,
+          "user_cpu_seconds": 0.042563,
+          "system_cpu_seconds": 0.001979,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046530973,
+          "cpu_seconds": 0.046258999999999995,
+          "user_cpu_seconds": 0.041231,
+          "system_cpu_seconds": 0.0050279999999999995,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047222491,
+          "cpu_seconds": 0.046835999999999996,
+          "user_cpu_seconds": 0.040857,
+          "system_cpu_seconds": 0.005979,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045482826,
+          "cpu_seconds": 0.045193,
+          "user_cpu_seconds": 0.041263999999999995,
+          "system_cpu_seconds": 0.003929,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.047846006,
+          "cpu_seconds": 0.047396999999999995,
+          "user_cpu_seconds": 0.03933,
+          "system_cpu_seconds": 0.008067,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045605123,
+          "cpu_seconds": 0.045238,
+          "user_cpu_seconds": 0.039207,
+          "system_cpu_seconds": 0.006031,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047532662,
+          "cpu_seconds": 0.047224999999999996,
+          "user_cpu_seconds": 0.040338,
+          "system_cpu_seconds": 0.006887,
+          "minor_page_faults": 1120
+        },
+        {
+          "wall_seconds": 0.045980554,
+          "cpu_seconds": 0.045651,
+          "user_cpu_seconds": 0.042674,
+          "system_cpu_seconds": 0.002977,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047730975,
+          "cpu_seconds": 0.047382999999999995,
+          "user_cpu_seconds": 0.045367,
+          "system_cpu_seconds": 0.002016,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.045061415,
+          "cpu_seconds": 0.044774999999999995,
+          "user_cpu_seconds": 0.039799999999999995,
+          "system_cpu_seconds": 0.004974999999999999,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.045594462,
+          "cpu_seconds": 0.045319,
+          "user_cpu_seconds": 0.041291,
+          "system_cpu_seconds": 0.0040279999999999995,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044525173,
+          "cpu_seconds": 0.04432,
+          "user_cpu_seconds": 0.040381,
+          "system_cpu_seconds": 0.003939,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045250245,
+          "cpu_seconds": 0.044969,
+          "user_cpu_seconds": 0.039973,
+          "system_cpu_seconds": 0.004996,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045261393,
+          "cpu_seconds": 0.045009999999999994,
+          "user_cpu_seconds": 0.039008999999999995,
+          "system_cpu_seconds": 0.006000999999999999,
+          "minor_page_faults": 1118
+        }
+      ],
+      "after": [
+        {
+          "wall_seconds": 0.044656408,
+          "cpu_seconds": 0.044377,
+          "user_cpu_seconds": 0.039445,
+          "system_cpu_seconds": 0.004932,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.044821843,
+          "cpu_seconds": 0.044545999999999995,
+          "user_cpu_seconds": 0.040587,
+          "system_cpu_seconds": 0.003959,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.045188272,
+          "cpu_seconds": 0.044843,
+          "user_cpu_seconds": 0.039861,
+          "system_cpu_seconds": 0.0049819999999999994,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046713393,
+          "cpu_seconds": 0.046342999999999995,
+          "user_cpu_seconds": 0.042399,
+          "system_cpu_seconds": 0.003944,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.046525997,
+          "cpu_seconds": 0.046085999999999995,
+          "user_cpu_seconds": 0.039071999999999996,
+          "system_cpu_seconds": 0.007013999999999999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045897288,
+          "cpu_seconds": 0.045512,
+          "user_cpu_seconds": 0.039444,
+          "system_cpu_seconds": 0.006068,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.04496301,
+          "cpu_seconds": 0.044694,
+          "user_cpu_seconds": 0.038735,
+          "system_cpu_seconds": 0.005959,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.04458026,
+          "cpu_seconds": 0.044377999999999994,
+          "user_cpu_seconds": 0.040431999999999996,
+          "system_cpu_seconds": 0.003946,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.04468585,
+          "cpu_seconds": 0.044398,
+          "user_cpu_seconds": 0.041371,
+          "system_cpu_seconds": 0.0030269999999999997,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045094738,
+          "cpu_seconds": 0.044785,
+          "user_cpu_seconds": 0.039809,
+          "system_cpu_seconds": 0.0049759999999999995,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045603421,
+          "cpu_seconds": 0.045267999999999996,
+          "user_cpu_seconds": 0.042251,
+          "system_cpu_seconds": 0.0030169999999999997,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045304487,
+          "cpu_seconds": 0.044955,
+          "user_cpu_seconds": 0.040956,
+          "system_cpu_seconds": 0.003999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045161783,
+          "cpu_seconds": 0.044864999999999995,
+          "user_cpu_seconds": 0.039934,
+          "system_cpu_seconds": 0.004931,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044306123,
+          "cpu_seconds": 0.044038999999999995,
+          "user_cpu_seconds": 0.041037,
+          "system_cpu_seconds": 0.003002,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.04601479,
+          "cpu_seconds": 0.045668,
+          "user_cpu_seconds": 0.041697,
+          "system_cpu_seconds": 0.003971,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.045029833,
+          "cpu_seconds": 0.044678999999999996,
+          "user_cpu_seconds": 0.039602,
+          "system_cpu_seconds": 0.005077,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045431843,
+          "cpu_seconds": 0.045182,
+          "user_cpu_seconds": 0.041166,
+          "system_cpu_seconds": 0.004016,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.045811405,
+          "cpu_seconds": 0.045516999999999995,
+          "user_cpu_seconds": 0.040459999999999996,
+          "system_cpu_seconds": 0.005057,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.044277683,
+          "cpu_seconds": 0.044069,
+          "user_cpu_seconds": 0.041065,
+          "system_cpu_seconds": 0.0030039999999999997,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045863778,
+          "cpu_seconds": 0.045488,
+          "user_cpu_seconds": 0.040434,
+          "system_cpu_seconds": 0.0050539999999999995,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.04420551,
+          "cpu_seconds": 0.043962,
+          "user_cpu_seconds": 0.041964,
+          "system_cpu_seconds": 0.0019979999999999998,
+          "minor_page_faults": 1117
+        }
+      ]
+    },
+    "summary": {
+      "before": {
+        "wall_seconds": {
+          "median": 0.046253787,
+          "minimum": 0.044525173,
+          "maximum": 0.051674791
+        },
+        "cpu_seconds": {
+          "median": 0.045905999999999995,
+          "minimum": 0.04432,
+          "maximum": 0.051325
+        },
+        "user_cpu_seconds": {
+          "median": 0.040857,
+          "minimum": 0.039008999999999995,
+          "maximum": 0.045949
+        },
+        "system_cpu_seconds": {
+          "median": 0.00501,
+          "minimum": 0.001979,
+          "maximum": 0.008067
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1115,
+          "maximum": 1120
+        }
+      },
+      "after": {
+        "wall_seconds": {
+          "median": 0.045161783,
+          "minimum": 0.04420551,
+          "maximum": 0.046713393
+        },
+        "cpu_seconds": {
+          "median": 0.044843,
+          "minimum": 0.043962,
+          "maximum": 0.046342999999999995
+        },
+        "user_cpu_seconds": {
+          "median": 0.040459999999999996,
+          "minimum": 0.038735,
+          "maximum": 0.042399
+        },
+        "system_cpu_seconds": {
+          "median": 0.004016,
+          "minimum": 0.0019979999999999998,
+          "maximum": 0.007013999999999999
+        },
+        "minor_page_faults": {
+          "median": 1117,
+          "minimum": 1115,
+          "maximum": 1119
+        }
+      }
+    },
+    "rss_kib": {
+      "before": [
+        6400,
+        6400,
+        6400
+      ],
+      "after": [
+        6524,
+        6400,
+        6400
+      ]
+    },
+    "after_over_before_cpu_pairs": [
+      0.967746859734822,
+      0.8744282825903461,
+      0.9488774624939166,
+      1.0053365728789292,
+      0.8979249878226984,
+      0.9914172439332549,
+      0.9647922288181328,
+      0.996318081810426,
+      0.9597699907045116,
+      0.9562088991374157,
+      1.001659549045206,
+      0.9484777517564404,
+      0.9917547194836198,
+      0.9325357331921651,
+      1.0003723905281374,
+      0.9429331194732288,
+      1.0090898939140147,
+      1.0043690284428164,
+      0.9943366425992779,
+      1.0115412839956415,
+      0.9767162852699401
+    ],
+    "median_pair_ratio": 0.9767162852699401,
+    "candidate_faster_pairs": 15
+  },
+  "instruction_profiles": {
+    "tool": "Valgrind/Callgrind3.22.0; default release; separate from ordinary timings; Ir only",
+    "scope": "Whole CLI totals; function self counts aggregate inline-file entries and sum to program total. Incoming/outgoing inclusive costs overlap other regions; do not add them. Instruction shares are not CPU shares.",
+    "variants": {
+      "before": {
+        "instructions": 265391207,
+        "functions": [
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19353072,
+            "self_percent": 7.292280787584646,
+            "inclusive_ir": 19353072,
+            "calls": 806378
+          },
+          {
+            "name": "<umber::Engine>::publish_page",
+            "self_ir": 18127048,
+            "self_percent": 6.830312203975922,
+            "inclusive_ir": 37494558,
+            "calls": 97
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.374921159313315,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.0036440544166182567,
+            "inclusive_ir": 9671,
+            "calls": 509
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::page_output::Work>>::grow",
+            "self_ir": 786,
+            "self_percent": 0.0002961665568671233,
+            "inclusive_ir": 3178,
+            "calls": 3
+          }
+        ],
+        "publish_outgoing": [
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "calls": 97,
+            "inclusive_ir": 12413247
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "calls": 199600,
+            "inclusive_ir": 4790400
+          },
+          {
+            "name": "round",
+            "calls": 37914,
+            "inclusive_ir": 758280
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::output::OutputItem>>::grow",
+            "calls": 669,
+            "inclusive_ir": 554402
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::output::PackedBox>>::grow",
+            "calls": 563,
+            "inclusive_ir": 399525
+          },
+          {
+            "name": "<umber::output::Pages>::push",
+            "calls": 97,
+            "inclusive_ir": 146130
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<u8>>::grow",
+            "calls": 924,
+            "inclusive_ir": 145637
+          },
+          {
+            "name": "<umber::page_output::Frame>::rule",
+            "calls": 1142,
+            "inclusive_ir": 70192
+          },
+          {
+            "name": "__memcpy_avx_unaligned_erms",
+            "calls": 388,
+            "inclusive_ir": 58976
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::tables::Page<umber::tables::Entry>>>::grow",
+            "calls": 156,
+            "inclusive_ir": 19686
+          },
+          {
+            "name": "core::ptr::drop_glue::<umber::value_metadata::Buffer<umber::page_output::Work>>",
+            "calls": 291,
+            "inclusive_ir": 5238
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::page_output::Work>>::grow",
+            "calls": 3,
+            "inclusive_ir": 3178
+          },
+          {
+            "name": "core::ptr::drop_glue::<umber::value_metadata::Buffer<umber::tfm::FontResource>>",
+            "calls": 97,
+            "inclusive_ir": 2619
+          }
+        ]
+      },
+      "after": {
+        "instructions": 263322769,
+        "functions": [
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19353072,
+            "self_percent": 7.349562695810783,
+            "inclusive_ir": 19353072,
+            "calls": 806378
+          },
+          {
+            "name": "<umber::Engine>::publish_page",
+            "self_ir": 15713566,
+            "self_percent": 5.967416361173082,
+            "inclusive_ir": 35426134,
+            "calls": 97
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.4014316475610205,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.0036726789850823724,
+            "inclusive_ir": 9671,
+            "calls": 509
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::page_output::Work>>::grow",
+            "self_ir": 786,
+            "self_percent": 0.00029849298751677644,
+            "inclusive_ir": 3178,
+            "calls": 3
+          }
+        ],
+        "publish_outgoing": [
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "calls": 97,
+            "inclusive_ir": 12413247
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "calls": 199600,
+            "inclusive_ir": 4790400
+          },
+          {
+            "name": "round",
+            "calls": 37914,
+            "inclusive_ir": 758280
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::output::OutputItem>>::grow",
+            "calls": 669,
+            "inclusive_ir": 554402
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::output::PackedBox>>::grow",
+            "calls": 563,
+            "inclusive_ir": 399525
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::page_output::Work>>::push",
+            "calls": 12794,
+            "inclusive_ir": 347341
+          },
+          {
+            "name": "<umber::output::Pages>::push",
+            "calls": 97,
+            "inclusive_ir": 146126
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<u8>>::grow",
+            "calls": 924,
+            "inclusive_ir": 145637
+          },
+          {
+            "name": "<umber::page_output::Frame>::rule",
+            "calls": 1142,
+            "inclusive_ir": 70192
+          },
+          {
+            "name": "__memcpy_avx_unaligned_erms",
+            "calls": 388,
+            "inclusive_ir": 58588
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::tables::Page<umber::tables::Entry>>>::grow",
+            "calls": 156,
+            "inclusive_ir": 19686
+          },
+          {
+            "name": "core::ptr::drop_glue::<umber::value_metadata::Buffer<umber::page_output::Work>>",
+            "calls": 291,
+            "inclusive_ir": 5238
+          },
+          {
+            "name": "core::ptr::drop_glue::<umber::value_metadata::Buffer<umber::tfm::FontResource>>",
+            "calls": 97,
+            "inclusive_ir": 2619
+          },
+          {
+            "name": "<umber::value_metadata::Buffer<umber::page_output::Work>>::grow",
+            "calls": 1,
+            "inclusive_ir": 1287
+          }
+        ]
+      }
+    },
+    "after_over_before_ir": 0.9922060793822759,
+    "delta_ir": -2068438,
+    "assembly": {
+      "before": "/tmp/umber-lowering-frame/before-publish.asm",
+      "after": "/tmp/umber-lowering-frame/after-publish.asm",
+      "mechanism": "Before ordinary-node backedge reprojects scratch Work via 72-byte stride and Repeat-tag dispatch (8fcc9); after it reads local Frame.next and calls NodeStore::get directly (8fe0f..8fe32). Scratch dispatch now occurs only at traversal transitions. Source node lookups and reclamation counts are unchanged."
+    }
+  },
+  "output_gates": {
+    "before": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "startup": "format",
+      "replay_validation": "complete output and retained prefixes/results equal",
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ]
+    },
+    "after": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "startup": "format",
+      "replay_validation": "complete output and retained prefixes/results equal",
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ]
+    }
+  },
+  "validation": {
+    "ordinary": "cargo test --workspace --all-targets --all-features:476 library passed, 45 ignored; 3 CLI tests passed. Two new cases cover suspended-parent+Repeat local error/COW repair/replay with empty-box run separation and 4096 terminal-child records.",
+    "native": "Clean pdfTeX 1.40.25 packing, leader axes/glue/origins, actual plain dotfill/hrulefill, output routines, and page absolute-placement suites all pass. Before+after full Gentle native/source/format ordered output 97 pages/121839 glyphs/864 rules and BOP counters exact.",
+    "checks": "rustfmt, strict all-target/all-feature Clippy, Wasm and git diff --check pass.",
+    "miri": "Focused local-frame error case with suspended repeat+parent, whole-root cleanup, retained COW checkpoint and repaired repeated output passes."
+  },
+  "interpretation": {
+    "cpu": "Median paired after/before 0.976716 (~2.3% lower); 15/21 after runs faster. Endpoint CPU medians 45.906 ms before and 44.843 ms after, ranges 44.320..51.325 and 43.962..46.343 ms overlap. A modest shared-host cohort, not a broad speedup guarantee. No extra rounds selected to improve the result.",
+    "instructions": "265391207->263322769Ir (-0.7794%); publish_page self18127048->15713566. NodeStore::get and release costs/calls are unchanged. This corroborates less general traversal bookkeeping, not cheaper metrics or reclamation. No conversion from Ir to CPU time.",
+    "memory": "RSS before [6400,6400,6400]KiB; after [6524,6400,6400]KiB. No memory-improvement claim.",
+    "decision": "Retained for simpler local active-frame control flow plus reduced whole-process instruction work and a modest paired CPU trend. No consuming traversal, chunk cache, new kind, unsafe code or second tuning bundled."
+  },
+  "reproduction": {
+    "timing_driver": "/tmp/umber-lowering-frame/measure.py",
+    "profile_parser": "/tmp/umber-lowering-frame/parse-profile.py",
+    "profile_commands": [
+      "/tmp/umber-lowering-frame/before-profile-command.json",
+      "/tmp/umber-lowering-frame/after-profile-command.json"
+    ],
+    "temporary_artifact_sha256": {
+      "/tmp/umber-lowering-frame/umber-before": "df66864fe94e217b7830a5dbbbac32ed811928ecd2a78c835283c0f2f6830ba9",
+      "/tmp/umber-lowering-frame/umber-after": "4f3b41834b13af1bc34fb3a8dbe16152e66eb17ea3fb3fde52d319a35bc63210",
+      "/tmp/umber-lowering-frame/layout-before": "61134ef1da6ab925367f8d9dc4ea069ad078102652c52085c6eb697610a5324d",
+      "/tmp/umber-lowering-frame/layout-after": "9a015eef1d09cae35304c308efa49f1af1632cd6944e802946422f372e073200",
+      "/tmp/umber-lowering-frame/measure.py": "8a194bac6d958f031cf4c32b7967ca16a00c525d4720638f887960538bdd066a",
+      "/tmp/umber-lowering-frame/parse-profile.py": "669daa8aa5046c08adfffe4b188116cb339f63c661baa2f9cf46a8c749afda64",
+      "/tmp/umber-lowering-frame/before.callgrind": "7c31751f1b12d045a8e9f50d83b62f2466c0a04fca49ed70bc1d594dcf6b523f",
+      "/tmp/umber-lowering-frame/after.callgrind": "6edd033bcf92312bfc03b4ffb375f6fb304d8e94dbb72f5057048fd5c840348f",
+      "/tmp/umber-lowering-frame/before-publish.asm": "ca9c928685f1050ed0c0a0ee91ba314636c6ddcd43814e91a9754cc3378b7602",
+      "/tmp/umber-lowering-frame/after-publish.asm": "b16f20dcc0bb1bfa270f2bb30ac6d09fdd9f32c0917f810cef111fb231677ece",
+      "/tmp/umber-lowering-frame/before-gate.json": "d73ed9daaed6dcfd6e903a45d3b85f820bc2be7512bafb48dcc43cd90ca3584f",
+      "/tmp/umber-lowering-frame/after-gate.json": "23a1c3bea631ce1daba868e695851b7cc222f7f55f257ad397cd6a22939dcb5e"
+    }
+  }
+}
