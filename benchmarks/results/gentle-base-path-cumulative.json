@@ -1,0 +1,1334 @@
+{
+  "measured_at_utc": "2026-11-02T19:59:00.380896+00:00",
+  "baseline_revision": "c73abfcc538030ccebcfa2235d81cab34060c722",
+  "immediate_revision": "e0f3e2c6370b8184735f1134e2a12dc5582d169d",
+  "final_revision": "e8959979e69d76761c5c13bbaa7ea82ac5a3cd2e",
+  "baseline_provenance": {
+    "source_artifact": "/tmp/umber-metric-borrow/umber-before",
+    "verified_against": "benchmarks/results/gentle-metric-borrow.json reproduction.temporary_artifact_sha256",
+    "sha256": "cd324975d9bb47c381e142ef858de91427d2100b0fdece852f42a18b99d3683f",
+    "rebuild": false
+  },
+  "cumulative_runtime_changes": [
+    "Borrow immutable Metrics records during layout traversal (6fa0405).",
+    "Walk general active page-lowering frames locally (e4ee20e).",
+    "Resolve live font parameters once per space (1ba606d).",
+    "Skip alignment meaning resolution in nonzero reader state (e0f3e2c).",
+    "Return from insertion commit when existing classes are empty (e895997)."
+  ],
+  "final_change": "Only the existing page.classes.is_empty() early return at commit_insertions entry. No state flag, cache, nonempty-class shortcut or fire_up reordering.",
+  "final_runtime_source_sha256": {
+    "crates/umber/src/page_insertions.rs": "6d10f7b23e91c0743d2c0ba76612037ceae78114978d0a02748ca7f8755a2ccd"
+  },
+  "build": "cargo build --release --bin umber --example layout --example layout_allocations; default features; workspace fat LTO/codegen-units=1/debug=1",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu": 3,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "inputs": {
+    "gentle": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "gentle_sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "umber_format": "/tmp/umber-base-path-cumulative/plain.ufmt",
+    "umber_format_sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+    "native_format": "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+    "native_format_sha256": "1ac04f66addb1c2775009871a52a505d0c15ee6869ddbdd7aec64e705ffa4b65",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "umber_input_mappings": 0,
+    "umber_tfm_mappings": 0
+  },
+  "native": {
+    "version": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+    "binary_sha256": "bdf084260e5e3ca3b1453a8ec1465efa5c0b23180d3bba7992fdd3ee1aeee45b",
+    "environment": {
+      "LD_LIBRARY_PATH": "/home/phulin/umber4/.tools/pdftex/root/usr/lib/x86_64-linux-gnu",
+      "TEXMFCNF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/web2c",
+      "TEXMF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist",
+      "TEXINPUTS": ".:/home/phulin/umber4/.tools/corpus:/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex//",
+      "TFMFONTS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm//",
+      "TEXFONTMAPS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/map//",
+      "SOURCE_DATE_EPOCH": "1772323200",
+      "FORCE_SOURCE_DATE": "1"
+    },
+    "last_output_dvi_sha256": "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+    "last_output_validation": "Final native-command DVI decoded independently from raw TFM resources equals retained reference on all97 pages, ordered events and BOP counts. Native stdout is checked against its warmup for each timed process."
+  },
+  "timing_endpoint": "Whole loaded-format processes with warm host caches and fixed calendar/search environment. Both Umber executables read/decode the same self-contained image, execute unchanged Gentle, retain detached pages/fonts, write diagnostics and tear down. Native pdfTeX1.40.25 reads its precompiled plain format and writes DVI/log output. This is an explicitly different output endpoint, not equal serializer work or a generic TeX-engine speed claim.",
+  "measurement_protocol": "Exactly one cohort: one warmup per endpoint,21 serial triples on CPU3. Three blocks of all six endpoint permutations plus three cyclic rotations balance positions; no concurrent builds/tests/profiles, no timing retries. CPU/user/system/wall/fault samples use existing benchmarks/layout.py child(). Three separate GNU-time RSS samples per endpoint follow ordinary timings. Instruction profiles run afterward, separately.",
+  "timing": {
+    "cpu": 3,
+    "warmups_per_endpoint": 1,
+    "retained_triples": 21,
+    "commands": {
+      "baseline": [
+        "/tmp/umber-base-path-cumulative/umber-baseline",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "final": [
+        "/tmp/umber-base-path-cumulative/umber-final",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "native": [
+        "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+        "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+        "-progname=pdftex",
+        "-jobname=gentle",
+        "-output-format=dvi",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-output-directory=/tmp/umber-base-path-cumulative/native",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex"
+      ]
+    },
+    "native_environment": {
+      "LD_LIBRARY_PATH": "/home/phulin/umber4/.tools/pdftex/root/usr/lib/x86_64-linux-gnu",
+      "TEXMFCNF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/web2c",
+      "TEXMF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist",
+      "TEXINPUTS": ".:/home/phulin/umber4/.tools/corpus:/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex//",
+      "TFMFONTS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm//",
+      "TEXFONTMAPS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/map//",
+      "SOURCE_DATE_EPOCH": "1772323200",
+      "FORCE_SOURCE_DATE": "1"
+    },
+    "orders": [
+      [
+        "baseline",
+        "final",
+        "native"
+      ],
+      [
+        "baseline",
+        "native",
+        "final"
+      ],
+      [
+        "final",
+        "baseline",
+        "native"
+      ],
+      [
+        "final",
+        "native",
+        "baseline"
+      ],
+      [
+        "native",
+        "baseline",
+        "final"
+      ],
+      [
+        "native",
+        "final",
+        "baseline"
+      ],
+      [
+        "native",
+        "final",
+        "baseline"
+      ],
+      [
+        "native",
+        "baseline",
+        "final"
+      ],
+      [
+        "final",
+        "native",
+        "baseline"
+      ],
+      [
+        "final",
+        "baseline",
+        "native"
+      ],
+      [
+        "baseline",
+        "native",
+        "final"
+      ],
+      [
+        "baseline",
+        "final",
+        "native"
+      ],
+      [
+        "baseline",
+        "final",
+        "native"
+      ],
+      [
+        "baseline",
+        "native",
+        "final"
+      ],
+      [
+        "final",
+        "baseline",
+        "native"
+      ],
+      [
+        "final",
+        "native",
+        "baseline"
+      ],
+      [
+        "native",
+        "baseline",
+        "final"
+      ],
+      [
+        "native",
+        "final",
+        "baseline"
+      ],
+      [
+        "baseline",
+        "final",
+        "native"
+      ],
+      [
+        "final",
+        "native",
+        "baseline"
+      ],
+      [
+        "native",
+        "baseline",
+        "final"
+      ]
+    ],
+    "samples": {
+      "baseline": [
+        {
+          "wall_seconds": 0.049072624,
+          "cpu_seconds": 0.048715,
+          "user_cpu_seconds": 0.042748,
+          "system_cpu_seconds": 0.005967,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047705736,
+          "cpu_seconds": 0.047361999999999994,
+          "user_cpu_seconds": 0.043408999999999996,
+          "system_cpu_seconds": 0.003953,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.045911281,
+          "cpu_seconds": 0.045582,
+          "user_cpu_seconds": 0.037655,
+          "system_cpu_seconds": 0.007927,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046482027,
+          "cpu_seconds": 0.046216999999999994,
+          "user_cpu_seconds": 0.042283999999999995,
+          "system_cpu_seconds": 0.003933,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.046335227,
+          "cpu_seconds": 0.045991000000000004,
+          "user_cpu_seconds": 0.041992,
+          "system_cpu_seconds": 0.003999,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046405075,
+          "cpu_seconds": 0.046100999999999996,
+          "user_cpu_seconds": 0.042093,
+          "system_cpu_seconds": 0.004007999999999999,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.045265678,
+          "cpu_seconds": 0.045047,
+          "user_cpu_seconds": 0.039186,
+          "system_cpu_seconds": 0.005861,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046982787,
+          "cpu_seconds": 0.046629,
+          "user_cpu_seconds": 0.036708,
+          "system_cpu_seconds": 0.009921,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046137855,
+          "cpu_seconds": 0.045795,
+          "user_cpu_seconds": 0.040818,
+          "system_cpu_seconds": 0.004977,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.046056764,
+          "cpu_seconds": 0.045793,
+          "user_cpu_seconds": 0.04181,
+          "system_cpu_seconds": 0.0039829999999999996,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046580409,
+          "cpu_seconds": 0.046252999999999996,
+          "user_cpu_seconds": 0.041221999999999995,
+          "system_cpu_seconds": 0.005031,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.045047883,
+          "cpu_seconds": 0.044799,
+          "user_cpu_seconds": 0.039821999999999996,
+          "system_cpu_seconds": 0.004977,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.04691165,
+          "cpu_seconds": 0.046516,
+          "user_cpu_seconds": 0.039438,
+          "system_cpu_seconds": 0.007078,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046274018,
+          "cpu_seconds": 0.045992,
+          "user_cpu_seconds": 0.041992999999999996,
+          "system_cpu_seconds": 0.003999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046963996,
+          "cpu_seconds": 0.046689999999999995,
+          "user_cpu_seconds": 0.042717,
+          "system_cpu_seconds": 0.003973,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045308244,
+          "cpu_seconds": 0.044990999999999996,
+          "user_cpu_seconds": 0.036993,
+          "system_cpu_seconds": 0.007998,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045993781,
+          "cpu_seconds": 0.045613,
+          "user_cpu_seconds": 0.041559,
+          "system_cpu_seconds": 0.0040539999999999994,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045403664,
+          "cpu_seconds": 0.045162,
+          "user_cpu_seconds": 0.041235,
+          "system_cpu_seconds": 0.003927,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047365631,
+          "cpu_seconds": 0.047064,
+          "user_cpu_seconds": 0.043059,
+          "system_cpu_seconds": 0.004005,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046702411,
+          "cpu_seconds": 0.046447999999999996,
+          "user_cpu_seconds": 0.041398,
+          "system_cpu_seconds": 0.00505,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.049383976,
+          "cpu_seconds": 0.04903,
+          "user_cpu_seconds": 0.044025999999999996,
+          "system_cpu_seconds": 0.005004,
+          "minor_page_faults": 1118
+        }
+      ],
+      "final": [
+        {
+          "wall_seconds": 0.045661296,
+          "cpu_seconds": 0.045274,
+          "user_cpu_seconds": 0.042255,
+          "system_cpu_seconds": 0.003019,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.044826481,
+          "cpu_seconds": 0.044562,
+          "user_cpu_seconds": 0.040601,
+          "system_cpu_seconds": 0.003961,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046713303,
+          "cpu_seconds": 0.046441,
+          "user_cpu_seconds": 0.040513,
+          "system_cpu_seconds": 0.005928,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.049455832,
+          "cpu_seconds": 0.049083,
+          "user_cpu_seconds": 0.043073,
+          "system_cpu_seconds": 0.00601,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045223264,
+          "cpu_seconds": 0.044879999999999996,
+          "user_cpu_seconds": 0.039892,
+          "system_cpu_seconds": 0.004987999999999999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045047842,
+          "cpu_seconds": 0.04475099999999999,
+          "user_cpu_seconds": 0.039778999999999995,
+          "system_cpu_seconds": 0.004972,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046282013,
+          "cpu_seconds": 0.045989,
+          "user_cpu_seconds": 0.04299,
+          "system_cpu_seconds": 0.002999,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.04521573,
+          "cpu_seconds": 0.044911,
+          "user_cpu_seconds": 0.037925,
+          "system_cpu_seconds": 0.006986,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045744638,
+          "cpu_seconds": 0.045427999999999996,
+          "user_cpu_seconds": 0.042466,
+          "system_cpu_seconds": 0.002962,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.047379592,
+          "cpu_seconds": 0.047012,
+          "user_cpu_seconds": 0.042011,
+          "system_cpu_seconds": 0.005000999999999999,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.045651988,
+          "cpu_seconds": 0.045336,
+          "user_cpu_seconds": 0.039423,
+          "system_cpu_seconds": 0.005913,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.057301389,
+          "cpu_seconds": 0.057005,
+          "user_cpu_seconds": 0.050005,
+          "system_cpu_seconds": 0.006999999999999999,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.044601097,
+          "cpu_seconds": 0.044314,
+          "user_cpu_seconds": 0.043307,
+          "system_cpu_seconds": 0.0010069999999999999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044326581,
+          "cpu_seconds": 0.044068,
+          "user_cpu_seconds": 0.040062,
+          "system_cpu_seconds": 0.004006,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.043631955,
+          "cpu_seconds": 0.043446,
+          "user_cpu_seconds": 0.038509,
+          "system_cpu_seconds": 0.0049369999999999995,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.044658929,
+          "cpu_seconds": 0.044397,
+          "user_cpu_seconds": 0.04137,
+          "system_cpu_seconds": 0.0030269999999999997,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047966402,
+          "cpu_seconds": 0.047636,
+          "user_cpu_seconds": 0.044659,
+          "system_cpu_seconds": 0.002977,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.044260067,
+          "cpu_seconds": 0.043996999999999994,
+          "user_cpu_seconds": 0.037998,
+          "system_cpu_seconds": 0.005999,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.04538607,
+          "cpu_seconds": 0.045071,
+          "user_cpu_seconds": 0.042067,
+          "system_cpu_seconds": 0.0030039999999999997,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.0476732,
+          "cpu_seconds": 0.047363,
+          "user_cpu_seconds": 0.041443,
+          "system_cpu_seconds": 0.00592,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046897608,
+          "cpu_seconds": 0.046618,
+          "user_cpu_seconds": 0.044592,
+          "system_cpu_seconds": 0.002026,
+          "minor_page_faults": 1119
+        }
+      ],
+      "native": [
+        {
+          "wall_seconds": 0.058181214,
+          "cpu_seconds": 0.057747999999999994,
+          "user_cpu_seconds": 0.040822,
+          "system_cpu_seconds": 0.016926,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.057586219,
+          "cpu_seconds": 0.05714999999999999,
+          "user_cpu_seconds": 0.037443,
+          "system_cpu_seconds": 0.019707,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.060486358,
+          "cpu_seconds": 0.06003699999999999,
+          "user_cpu_seconds": 0.038947999999999997,
+          "system_cpu_seconds": 0.021089,
+          "minor_page_faults": 3401
+        },
+        {
+          "wall_seconds": 0.057425077,
+          "cpu_seconds": 0.057061999999999995,
+          "user_cpu_seconds": 0.03704,
+          "system_cpu_seconds": 0.020021999999999998,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.059120218,
+          "cpu_seconds": 0.058707999999999996,
+          "user_cpu_seconds": 0.040797,
+          "system_cpu_seconds": 0.017911,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.058865743,
+          "cpu_seconds": 0.058457999999999996,
+          "user_cpu_seconds": 0.038623,
+          "system_cpu_seconds": 0.019835,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.058626177,
+          "cpu_seconds": 0.058220999999999995,
+          "user_cpu_seconds": 0.039472,
+          "system_cpu_seconds": 0.018749,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.057646934,
+          "cpu_seconds": 0.05728799999999999,
+          "user_cpu_seconds": 0.042207999999999996,
+          "system_cpu_seconds": 0.01508,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.059497033,
+          "cpu_seconds": 0.05902399999999999,
+          "user_cpu_seconds": 0.039015999999999995,
+          "system_cpu_seconds": 0.020007999999999998,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.056456074,
+          "cpu_seconds": 0.05610999999999999,
+          "user_cpu_seconds": 0.036414999999999996,
+          "system_cpu_seconds": 0.019695,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.058099037,
+          "cpu_seconds": 0.057698,
+          "user_cpu_seconds": 0.037801999999999995,
+          "system_cpu_seconds": 0.019896,
+          "minor_page_faults": 3401
+        },
+        {
+          "wall_seconds": 0.06166811,
+          "cpu_seconds": 0.06118099999999999,
+          "user_cpu_seconds": 0.040118999999999995,
+          "system_cpu_seconds": 0.021061999999999997,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.056802967,
+          "cpu_seconds": 0.05645699999999999,
+          "user_cpu_seconds": 0.037301999999999995,
+          "system_cpu_seconds": 0.019155,
+          "minor_page_faults": 3405
+        },
+        {
+          "wall_seconds": 0.058461705,
+          "cpu_seconds": 0.058098,
+          "user_cpu_seconds": 0.043079,
+          "system_cpu_seconds": 0.015019,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.057253706,
+          "cpu_seconds": 0.05684399999999999,
+          "user_cpu_seconds": 0.039890999999999996,
+          "system_cpu_seconds": 0.016953,
+          "minor_page_faults": 3403
+        },
+        {
+          "wall_seconds": 0.057801345,
+          "cpu_seconds": 0.057423999999999996,
+          "user_cpu_seconds": 0.038283,
+          "system_cpu_seconds": 0.019141,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.057335371,
+          "cpu_seconds": 0.056954,
+          "user_cpu_seconds": 0.035981,
+          "system_cpu_seconds": 0.020973,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.056803405,
+          "cpu_seconds": 0.056402999999999995,
+          "user_cpu_seconds": 0.037602,
+          "system_cpu_seconds": 0.018801,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.057698131,
+          "cpu_seconds": 0.057318999999999995,
+          "user_cpu_seconds": 0.037554,
+          "system_cpu_seconds": 0.019764999999999998,
+          "minor_page_faults": 3404
+        },
+        {
+          "wall_seconds": 0.056616016,
+          "cpu_seconds": 0.056270999999999995,
+          "user_cpu_seconds": 0.038183999999999996,
+          "system_cpu_seconds": 0.018087,
+          "minor_page_faults": 3402
+        },
+        {
+          "wall_seconds": 0.059149059,
+          "cpu_seconds": 0.058740999999999995,
+          "user_cpu_seconds": 0.038828999999999995,
+          "system_cpu_seconds": 0.019912,
+          "minor_page_faults": 3401
+        }
+      ]
+    },
+    "summary": {
+      "baseline": {
+        "wall_seconds": {
+          "median": 0.046405075,
+          "minimum": 0.045047883,
+          "maximum": 0.049383976
+        },
+        "cpu_seconds": {
+          "median": 0.046100999999999996,
+          "minimum": 0.044799,
+          "maximum": 0.04903
+        },
+        "user_cpu_seconds": {
+          "median": 0.041559,
+          "minimum": 0.036708,
+          "maximum": 0.044025999999999996
+        },
+        "system_cpu_seconds": {
+          "median": 0.004977,
+          "minimum": 0.003927,
+          "maximum": 0.009921
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1115,
+          "maximum": 1119
+        }
+      },
+      "final": {
+        "wall_seconds": {
+          "median": 0.045651988,
+          "minimum": 0.043631955,
+          "maximum": 0.057301389
+        },
+        "cpu_seconds": {
+          "median": 0.045274,
+          "minimum": 0.043446,
+          "maximum": 0.057005
+        },
+        "user_cpu_seconds": {
+          "median": 0.041443,
+          "minimum": 0.037925,
+          "maximum": 0.050005
+        },
+        "system_cpu_seconds": {
+          "median": 0.0049369999999999995,
+          "minimum": 0.0010069999999999999,
+          "maximum": 0.006999999999999999
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1116,
+          "maximum": 1119
+        }
+      },
+      "native": {
+        "wall_seconds": {
+          "median": 0.057801345,
+          "minimum": 0.056456074,
+          "maximum": 0.06166811
+        },
+        "cpu_seconds": {
+          "median": 0.057423999999999996,
+          "minimum": 0.05610999999999999,
+          "maximum": 0.06118099999999999
+        },
+        "user_cpu_seconds": {
+          "median": 0.038623,
+          "minimum": 0.035981,
+          "maximum": 0.043079
+        },
+        "system_cpu_seconds": {
+          "median": 0.019695,
+          "minimum": 0.015019,
+          "maximum": 0.021089
+        },
+        "minor_page_faults": {
+          "median": 3402,
+          "minimum": 3401,
+          "maximum": 3405
+        }
+      }
+    },
+    "paired_cpu_ratios": {
+      "final_over_baseline": {
+        "samples": [
+          0.929364672072257,
+          0.9408808749630506,
+          1.0188451581764733,
+          1.0620118138347363,
+          0.9758430997369049,
+          0.9707164703585605,
+          1.0209114924412281,
+          0.9631559758948295,
+          0.9919860246751827,
+          1.0266197890507283,
+          0.9801742589669861,
+          1.2724614388714035,
+          0.9526614498237165,
+          0.9581666376761176,
+          0.930520454058685,
+          0.9867973594718944,
+          1.0443513910507969,
+          0.9742039767946502,
+          0.9576534081251062,
+          1.0196994488460216,
+          0.9508056292066083
+        ],
+        "median": 0.9758430997369049,
+        "minimum": 0.929364672072257,
+        "maximum": 1.2724614388714035,
+        "numerator_faster": 14
+      },
+      "baseline_over_native": {
+        "samples": [
+          0.8435789984068713,
+          0.8287314085739282,
+          0.7592318070523177,
+          0.8099435701517648,
+          0.7833855692580228,
+          0.7886174689520682,
+          0.7737242575702925,
+          0.8139400921658987,
+          0.7758708322038494,
+          0.8161290322580647,
+          0.8016395715622725,
+          0.7322371324430788,
+          0.8239190888640914,
+          0.7916279389996214,
+          0.8213707691225107,
+          0.7834877403176372,
+          0.8008743898584824,
+          0.800702090314345,
+          0.8210889931785272,
+          0.825434060173091,
+          0.8346810575237058
+        ],
+        "median": 0.8016395715622725,
+        "minimum": 0.7322371324430788,
+        "maximum": 0.8435789984068713,
+        "numerator_faster": 21
+      },
+      "final_over_native": {
+        "samples": [
+          0.783992519221445,
+          0.779737532808399,
+          0.7735396505488283,
+          0.8601696400406577,
+          0.7644614021939088,
+          0.7655239659242532,
+          0.7899039865340686,
+          0.7839512637899736,
+          0.7696530224993223,
+          0.8378542149349493,
+          0.7857464730146626,
+          0.9317435151435904,
+          0.7849159537347008,
+          0.758511480601742,
+          0.7643023010344101,
+          0.7731436333240458,
+          0.8363942831056642,
+          0.7800471606120242,
+          0.7863186726914287,
+          0.8416946562172346,
+          0.7936194480856642
+        ],
+        "median": 0.783992519221445,
+        "minimum": 0.758511480601742,
+        "maximum": 0.9317435151435904,
+        "numerator_faster": 21
+      }
+    },
+    "rss_kib": {
+      "baseline": [
+        6400,
+        6400,
+        6520
+      ],
+      "final": [
+        6400,
+        6400,
+        6400
+      ],
+      "native": [
+        17820,
+        17820,
+        17824
+      ]
+    }
+  },
+  "instruction_profiles": {
+    "tool": "Valgrind/Callgrind3.22.0, default release, Ir only, three separate Umber processes using the same loaded command/input/image/calendar. No CPU samples during profiling.",
+    "scope": "Whole process totals; physical function self counts aggregate inline-file entries and sum to program total. Inclusive regions overlap and must not be added. Instruction counts are not CPU time.",
+    "variants": {
+      "baseline": {
+        "instructions": 266529545,
+        "functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "self_ir": 26585562,
+            "self_percent": 9.974714810697629,
+            "inclusive_ir": 60716696,
+            "calls": 28055
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19353072,
+            "self_percent": 7.261135721370027,
+            "inclusive_ir": 19353072,
+            "calls": 806378
+          },
+          {
+            "name": "<umber::Engine>::fetch_raw::<true>",
+            "self_ir": 18407671,
+            "self_percent": 6.906427953418823,
+            "inclusive_ir": 22437087,
+            "calls": 269372
+          },
+          {
+            "name": "<umber::Engine>::publish_page",
+            "self_ir": 18127048,
+            "self_percent": 6.801140188792203,
+            "inclusive_ir": 37494556,
+            "calls": 97
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15281292,
+            "self_percent": 5.73343266691128,
+            "inclusive_ir": 15281292,
+            "calls": 587742
+          },
+          {
+            "name": "<umber::Engine>::finish_paragraph",
+            "self_ir": 10325319,
+            "self_percent": 3.873986653149466,
+            "inclusive_ir": 52447079,
+            "calls": 1088
+          },
+          {
+            "name": "<umber::line_search::Search>::try_break",
+            "self_ir": 10095108,
+            "self_percent": 3.7876131143359735,
+            "inclusive_ir": 10270250,
+            "calls": 26012
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.360506993699329,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_with_limit",
+            "self_ir": 8418217,
+            "self_percent": 3.158455472544329,
+            "inclusive_ir": 20172690,
+            "calls": 179111
+          },
+          {
+            "name": "<umber::Engine>::alignment_token",
+            "self_ir": 8379000,
+            "self_percent": 3.1437415315439043,
+            "inclusive_ir": 8531646,
+            "calls": 286093
+          },
+          {
+            "name": "<umber::Engine>::advance",
+            "self_ir": 7812977,
+            "self_percent": 2.9313737056805467,
+            "inclusive_ir": 259356371,
+            "calls": 1
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "self_percent": 2.8248575594124095,
+            "inclusive_ir": 7563015,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.003628490792643645,
+            "inclusive_ir": 9671,
+            "calls": 509
+          }
+        ]
+      },
+      "immediate": {
+        "instructions": 260674225,
+        "functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "self_ir": 26585562,
+            "self_percent": 10.198768980707625,
+            "inclusive_ir": 60692157,
+            "calls": 28055
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19353072,
+            "self_percent": 7.424236899524685,
+            "inclusive_ir": 19353072,
+            "calls": 806378
+          },
+          {
+            "name": "<umber::Engine>::fetch_raw::<true>",
+            "self_ir": 18407671,
+            "self_percent": 7.061561610090142,
+            "inclusive_ir": 22437087,
+            "calls": 269372
+          },
+          {
+            "name": "<umber::Engine>::publish_page",
+            "self_ir": 15713566,
+            "self_percent": 6.028047460388537,
+            "inclusive_ir": 35426132,
+            "calls": 97
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15281292,
+            "self_percent": 5.862218253454095,
+            "inclusive_ir": 15281292,
+            "calls": 587742
+          },
+          {
+            "name": "<umber::Engine>::finish_paragraph",
+            "self_ir": 10220522,
+            "self_percent": 3.920802680050166,
+            "inclusive_ir": 51415333,
+            "calls": 1088
+          },
+          {
+            "name": "<umber::line_search::Search>::try_break",
+            "self_ir": 10095108,
+            "self_percent": 3.872691287372198,
+            "inclusive_ir": 10270250,
+            "calls": 26012
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.4359914180237805,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_with_limit",
+            "self_ir": 8418217,
+            "self_percent": 3.229401372536928,
+            "inclusive_ir": 20172690,
+            "calls": 179111
+          },
+          {
+            "name": "<umber::Engine>::advance",
+            "self_ir": 7812977,
+            "self_percent": 2.997218846627433,
+            "inclusive_ir": 253500950,
+            "calls": 1
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "self_percent": 2.888310111979809,
+            "inclusive_ir": 7563015,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::Engine>::hpack_inner",
+            "self_ir": 6851099,
+            "self_percent": 2.6282226407309737,
+            "inclusive_ir": 15738765,
+            "calls": 8193
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.0037099947261759387,
+            "inclusive_ir": 9671,
+            "calls": 509
+          }
+        ]
+      },
+      "final": {
+        "instructions": 260237216,
+        "functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "self_ir": 26585562,
+            "self_percent": 10.215895485140758,
+            "inclusive_ir": 60692157,
+            "calls": 28055
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19030464,
+            "self_percent": 7.31273731425101,
+            "inclusive_ir": 19030464,
+            "calls": 792936
+          },
+          {
+            "name": "<umber::Engine>::fetch_raw::<true>",
+            "self_ir": 18407671,
+            "self_percent": 7.073419890873717,
+            "inclusive_ir": 22437087,
+            "calls": 269372
+          },
+          {
+            "name": "<umber::Engine>::publish_page",
+            "self_ir": 15713566,
+            "self_percent": 6.038170190077656,
+            "inclusive_ir": 35426132,
+            "calls": 97
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15281292,
+            "self_percent": 5.872062510843953,
+            "inclusive_ir": 15281292,
+            "calls": 587742
+          },
+          {
+            "name": "<umber::Engine>::finish_paragraph",
+            "self_ir": 10220522,
+            "self_percent": 3.927386773150847,
+            "inclusive_ir": 51415145,
+            "calls": 1088
+          },
+          {
+            "name": "<umber::line_search::Search>::try_break",
+            "self_ir": 10095108,
+            "self_percent": 3.8791945883712495,
+            "inclusive_ir": 10270250,
+            "calls": 26012
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.441761381277611,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_with_limit",
+            "self_ir": 8418217,
+            "self_percent": 3.2348244149676115,
+            "inclusive_ir": 20172690,
+            "calls": 179111
+          },
+          {
+            "name": "<umber::Engine>::advance",
+            "self_ir": 7812977,
+            "self_percent": 3.002251991506088,
+            "inclusive_ir": 253064014,
+            "calls": 1
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "self_percent": 2.893160369499188,
+            "inclusive_ir": 7563015,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::Engine>::hpack_inner",
+            "self_ir": 6851099,
+            "self_percent": 2.6326361407124796,
+            "inclusive_ir": 15738765,
+            "calls": 8193
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.003716224815439157,
+            "inclusive_ir": 9671,
+            "calls": 509
+          }
+        ]
+      }
+    },
+    "guard_final_over_immediate_ir": 0.9983235434957177,
+    "guard_delta_ir": -437009,
+    "cumulative_final_over_baseline_ir": 0.976391626676885,
+    "cumulative_delta_ir": -6292329
+  },
+  "output_gates": {
+    "baseline": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "startup": "format",
+      "replay_validation": "complete output and retained prefixes/results equal",
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ]
+    },
+    "final": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "startup": "format",
+      "replay_validation": "complete output and retained prefixes/results equal",
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ]
+    }
+  },
+  "validation": {
+    "targeted": "8 insertion tests,17 page tests,11 output-routine tests pass; native insertion boxes/messages/placements suite passes, including holding, selected breaks, class preparation, failure and replay cases.",
+    "checks": "rustfmt, strict all-target/all-feature Clippy, Wasm, release CLI/examples and git diff --check pass. Existing-state early return introduces no new lifetime path; no new Miri run.",
+    "invariant": "Every Insertion entering current has first passed consider_insertion. Classes are paired with current in snapshots and clear only after commit/current transfer. An earlier selected break can leave classes without insertion nodes, so nonempty state never short-circuits. Formats contain no live page state."
+  },
+  "interpretation": {
+    "cumulative_cpu": "Baseline median46.101ms (44.799..49.030), final45.274ms (43.446..57.005), native57.424ms (56.110..61.181). Median paired final/baseline0.975843 with14/21 final processes faster. Ranges overlap and one final outlier reaches57.005ms; this is a modest noisy cumulative trend, not an individual guard CPU measurement or a broad speedup guarantee.",
+    "native_ratios": "Median paired baseline/native0.801640 and final/native0.783993; all21 Umber processes per endpoint use less CPU than their native triple. Interpret only under the documented detached-output versus DVI endpoints and explicit asset-search environment.",
+    "instructions": "Guard:260674225->260237216Ir (-437009,-0.16765%); NodeStore::get calls806378->792936, removing13442 reads/322608Ir. Cumulative c73abfcc->final:266529545->260237216Ir (-6292329,-2.36084%). No individual guard timing study was run.",
+    "memory": "RSS baseline[6400,6400,6520]KiB, final[6400,6400,6400]KiB, native[17820,17820,17824]KiB. No memory-improvement claim for the cumulative changes."
+  },
+  "reproduction": {
+    "work": "/tmp/umber-base-path-cumulative",
+    "timing_driver": "/tmp/umber-base-path-cumulative/measure.py",
+    "timing_driver_sha256": "dae900d83a58cab5309e68067c14e4992bd25065bb3f2265366f95f616f66028",
+    "existing_measurement_helper_sha256": "ed42332d0f2eb618131d2b5e2158712092f40c8098b35a1c25f20ffe23bc9487",
+    "commands": {
+      "baseline": [
+        "/tmp/umber-base-path-cumulative/umber-baseline",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "immediate": [
+        "/tmp/umber-base-path-cumulative/umber-immediate",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "final": [
+        "/tmp/umber-base-path-cumulative/umber-final",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "native": [
+        "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+        "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+        "-progname=pdftex",
+        "-jobname=gentle",
+        "-output-format=dvi",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-output-directory=/tmp/umber-base-path-cumulative/native",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex"
+      ]
+    },
+    "profile_commands": [
+      [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-base-path-cumulative/baseline.callgrind",
+        "--log-file=/tmp/umber-base-path-cumulative/baseline-callgrind.stderr",
+        "/tmp/umber-base-path-cumulative/umber-baseline",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-base-path-cumulative/immediate.callgrind",
+        "--log-file=/tmp/umber-base-path-cumulative/immediate-callgrind.stderr",
+        "/tmp/umber-base-path-cumulative/umber-immediate",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-base-path-cumulative/final.callgrind",
+        "--log-file=/tmp/umber-base-path-cumulative/final-callgrind.stderr",
+        "/tmp/umber-base-path-cumulative/umber-final",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-base-path-cumulative/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    ],
+    "binary_sha256": {
+      "baseline": "cd324975d9bb47c381e142ef858de91427d2100b0fdece852f42a18b99d3683f",
+      "immediate": "56f69cbd0dcc21a381eacc6685e159783f280359357a3a3ee4b5c5e68e15b10e",
+      "final": "8e886a680398c83a5ed35e0e69020bfbc78c3cd2c975eee8538e6c19bdf96fe4"
+    },
+    "artifact_sha256": {
+      "/tmp/umber-base-path-cumulative/triples.json": "bf33f36605203c078e19a30df5cdc90003ddf8a24daf01f5726b669981b4d175",
+      "/tmp/umber-base-path-cumulative/baseline.callgrind": "99419808e81014f52ed5a619036782993f1d28fd320972a579a05a895d72dc2c",
+      "/tmp/umber-base-path-cumulative/immediate.callgrind": "3c752e917e1e8b3fbc4488d4838ffe8424d12ca29cef70f71eb635621889e3ef",
+      "/tmp/umber-base-path-cumulative/final.callgrind": "a06f853bea245b0493e36678d4486d6537ef69a507f74e5b01cd570cda5a2156",
+      "/tmp/umber-base-path-cumulative/baseline-gate.json": "69b0e994f91db4fb353682ff31602bdef8b30007adbc861c05485ce4e82f7a46",
+      "/tmp/umber-base-path-cumulative/final-gate.json": "07f5d199403d0ae3bdee4717e3fdfd80b8c86362b036ca7a49dd2cb2ab91b4d3"
+    }
+  }
+}
