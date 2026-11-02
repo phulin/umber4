@@ -1,159 +1,83 @@
-# Bootstrap and Umber format files
+# Portable Umber formats
 
-Umber builds formats through initialization TeX, exports its own `.fmt` files,
-and reads those files into a reusable initial semantic state. The same format
-encoding serves native and Wasm. Document checkpoints remain in memory at the
-boundary in [checkpoints.md](checkpoints.md).
+An Umber format is initial semantic state for a fresh job. Loading performs no TeX
+tokenization or expansion. Source-bound in-memory checkpoints are a separate
+representation and cannot serve as format files.
 
-## 1. Bootstrap through the same interpreter
+## Semantic boundary
 
-Create the profile's primitive identities, initial meanings, character tables,
-default parameters, null font, and other initial values through compact bootstrap
-tables. Primitive IDs have canonical reserved roles within each session; their
-initial meanings are values in the format/document state.
+The format foundation retains ordered names, meanings, immutable macro/token
+Values, integer and character-code tables, dimensions, glue, mu glue, paragraph
+shape, and token parameters including output and everyjob. Distinct Values stay
+distinct; aliases share one Value. Validated token ranges reconstruct macro
+delimiter/KMP metadata directly in the existing pooled destination buffers.
 
-Initialization mode executes format-building TeX with the same expansion,
-assignment, grouping, and layout code as ordinary documents. It enables the
-specified initialization-only operations, notably loading hyphenation patterns.
-The extended-mode flag and pdfTeX profile behavior remain explicit initial state.
+The foundation admits canonical nullfont state, empty hyphenation data, and void
+box registers. Nonempty dependent state returns Unsupported; it is never reset
+or silently dropped. Reserved subsystem sections allow complete codecs for fonts
+and TFM resources, hyphenation patterns/exceptions, and live box-register forests.
 
-At `\dump`, retain the semantic values upstream's format operation would write,
-apply its dump-time normalizations, and export them in Umber's encoding. Capture
-those values before later termination-only changes. For example, the written
-`\tracingstats` value precedes cleanup's reset, while e-TeX's pre-dump enhancement
-resets belong to the exported state. The completed stores can also become an
-in-memory format baseline directly.
+`Engine::encode_format` requires a quiescent external-vertical boundary, closed
+groups/conditionals, no pending afterassignment, no construction/output frames,
+and no contribution/page/output material. Assignment levels are all global.
+File cursors are excluded. Exhausted token-source wrappers do not prevent capture;
+live token continuations do. Initialization `\dump` requires the same semantic
+boundary and discards setup input continuations before ending initialization.
 
-Resource acquisition for setup precedes the document's initialization restart
-root. A pending request returns to the host; the format build restarts from
-bootstrap with the newly supplied resources. Reuse the setup environment and
-ordered answer history, rewinding its consumption cursor. Drop abandoned mutable
-state, diagnostics, and generated output with the temporary stores; session
-interning and acquired resources remain available. Reading an exported format
-makes this rebuilding unnecessary for ordinary startup.
+## Wire contract
 
-TeX's INITEX initialization, `store_fmt_file`, and `load_fmt_file` define what
-belongs in a format and what startup initializes separately. Use the
-[TeX format source](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.web) and
-[pdfTeX format extensions](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/pdftexdir/pdftex.web)
-as semantic references. Umber's file layout belongs to Umber.
+All numbers are little endian and fixed width. The header is eight bytes
+`UMBERFMT`, u32 schema version 1, u32 portable-engine profile 1, and u64 total
+byte length. Eight sections follow in fixed order, each with a u32 kind and u64
+payload length: names (1), fonts/resources (2), Values (3), meanings/token
+parameters (4), scalars (5), layout bindings (6), hyphenation (7), boxes (8).
+Unknown versions/profiles, reordered sections, trailing bytes, and inconsistent
+lengths are invalid. Counts/IDs are u32; scalar words are i32.
 
-## 2. Retained semantic data
+Names preserve ordered IDs; single-character, active, and private frozen
+identities have reserved IDs. Values use dense file IDs relocated once into
+pooled headers and token chunks. No pointer, Rust layout/padding, usize, Rc count,
+chunk handle, hash bucket, free list, or KMP failure array appears in the image.
 
-A format retains meanings, parameters and registers, immutable definitions,
-retained node values, loaded font state, hyphenation data, and the selected
-profile's flags. Stored font metrics come from the artifact, even if a later TFM
-file differs. Hyphenation includes its saved character-code data and exceptions.
-Mutable font alias groups retain the relationships in
-[paragraphs.md](paragraphs.md), independently of the immutable metrics baseline.
+Dependent sections use tag 0 for their supported empty/canonical state. Tag 1 is
+reserved for a complete codec and returns Unsupported until implemented. The
+font codec retains loaded font identities, mutable parameters, and exact raw TFM
+bytes once per used resource; existing checked parsing/scaling can rebuild derived
+metrics. Hyphenation uses logical trie operations and exceptions. Box data must
+form disjoint acyclic ordinary forests; transient Free/Unset nodes are inadmissible.
 
-Preserve the PDF subset upstream stores: object/payload tables, image metadata,
-pending forms, allocation counters and last identities, and ToUnicode data.
-Pending forms keep their owned boxes and matching node references. Per-document
-startup then applies the specified emission/output resets while retaining these
-format-owned values.
+Images are limited to 64 MiB and individual counts to 1,048,576. Counts must also
+fit remaining section bytes and interpreter ID domains. The decoder validates
+length arithmetic, command-specific operands, token/name/font references, macro
+signatures/parameter references, table bounds and glue-order tags before publishing
+owners. Invalid data returns Format, budget exhaustion returns Capacity, and
+unsupported dependent state returns Unsupported. Loading constructs a temporary
+fresh Engine and publishes it only on success; a failed load mutates no live job.
 
-Freeze completed definition segments and resource baselines in place for an
-in-memory cache. Retain useful token ranges directly, including shared bodies.
-Release setup scratch and wholly unreferenced segments where practical. Export
-writes the retained semantic data; overwritten setup history need not become a
-permanent part of the file.
+## Startup and resources
 
-A completed in-memory baseline owns an immutable name-ID prefix. Each new session
-adopts that prefix unchanged and appends new names to its own extension. Shared
-baseline tokens therefore use the same IDs in every adopting session; loading a
-new baseline starts fresh roots rather than mixing unrelated ID namespaces.
+`Engine::from_format` accepts image bytes and new source bytes. A resource-aware
+constructor also accepts named input, a resolver and upfront extra TFMs. The image
+buffer is needed only during decoding; resulting stores own all semantic bytes.
 
-Each document gets independent mutable roots over the baseline, using the
-per-type storage in [storage.md](storage.md). Small tables can copy eagerly;
-larger table/node chunks become writable on mutation. Immutable definitions and
-resources keep their cached owners. New document definitions own their immutable
-storage and can retain compatible format spans directly. Assignments leave the
-baseline and other documents independent.
+Embedded and extra TFMs register before scaled handles exist. Same normalized
+names refer to exact immutable resource bytes. Registered but never loaded host
+resources are not format semantics and are omitted; a new job supplies them as
+extras. Every loaded font persists, even without a live selector meaning. Same
+names with byte-identical contents deduplicate; differing bytes return Resource.
+Embedded bytes remain authoritative at every size under the immutable-bundle
+contract. Native changed-same-name-TFM lookup for a new size is not implemented.
 
-## 3. An owned, portable encoding
+Input, diagnostics, output, page/text auxiliaries, scratch, completion state and
+session identity are fresh. Scalar mag persists, but run-local prepared_mag resets.
+Hyphenation is frozen at format startup, as native dump/load finalizes its trie;
+exceptions remain assignable. Calendar defaults reset after image fields to
+00:00 on January 1, 1970; the host can set_calendar before execution. Saved everyjob
+is queued exactly once before new input. Startup checkpoints retain that queued
+source, so restoring them replays the same startup.
+The first physical input line is prepared with the restored endline policy before
+everyjob executes; category-code tokenization still happens on demand.
 
-Use a versioned header and an explicit engine/profile identifier. Encode counts,
-tags, scalar values, and references with fixed-width fields and a specified byte
-order. The writer and reader share these semantic record definitions. Supported
-versions can track the engine's schema; a format from an unsupported version is
-regenerated from its TeX sources.
-
-File-local identities describe ordinary names, active characters, single-character
-control sequences, frozen commands, and permanent font selectors. Ordinary names
-resolve into the baseline name directory when loading. Private commands map by their
-reserved role; permanent selectors map by font identity, independently of their
-printable spelling. A token captured from `\the\font` must keep selecting its
-original font after the named selector changes.
-
-Internal references between definitions, token sequences, fonts, nodes, and PDF
-objects use file-local IDs. TeX-visible object/image/form numbers and allocation
-counters retain their values: those numbers may already appear in registers or
-macro text. Remapping internal handles leaves those values intact.
-
-Preserve alias relationships: shared definition headers stay shared, and distinct
-headers stay distinct even when their bodies compare equal. Distinct font
-descriptors can share parameter, tag, or code-table groups; encode those groups'
-identities separately. Node links and backend references use the same object
-mapping, including pending form boxes. Encode shared token payloads once, with
-sequence spans naming the payload, offset, and length.
-
-The writer can enumerate retained objects and stream their records and immutable
-ranges directly to the output builder. The reader resolves IDs and initializes
-records in their final stores. Rewrite token identities directly into destination
-chunks while decoding; remapping is a one-time startup cost. Encoded counts size
-file-ID maps and object stores; meanings install at the mapped baseline IDs, with
-undefined gaps remaining lazy. Use compact fixups where forward references need
-them. An intermediate tree of decoded objects adds no value here.
-
-Check versions, counts, tags, numeric limits, and reference validity before
-publishing the completed baseline. This encoding is initial semantic data;
-Rust calls, document input cursors, and scheduler state have no file representation.
-
-## 4. Document startup
-
-Apply upstream's post-format startup initialization in its actual order. Stored
-values and the new run's environment are distinct: input, job/output names,
-date/time, output state, and runtime-only fields follow their profile's startup
-rules. A source-built baseline and its exported/read-back equivalent start
-documents identically.
-
-The document gets an initialization restart root before reading its first source
-tokens. That root is the fallback for an edit or missing resource before the first
-eligible checkpoint. Later checkpoints and rollback use the same live stores and
-outer loop as [execution.md](execution.md).
-
-## 5. Cache identity and ownership
-
-Cache a loaded baseline by the Umber format resource's version and selected
-profile. Cache a source-built baseline by its setup inputs and resource
-observations, including versions, lookup/existence outcomes, EOF, and queried
-metadata. Export can retain build provenance for regeneration, while the loaded
-artifact defines its stored semantics. Fonts and other resources still needed by
-a document retain their own resource identities and validation.
-
-Before selecting a document restart, revalidate the chosen baseline's dependencies.
-A changed format artifact or source-build input requires loading or rebuilding
-the baseline, dropping its old document checkpoints, and creating a new
-initialization root. Ordinary document edits can reuse the same baseline.
-
-Modest format storage can have cache/process lifetime. Larger or multiple formats
-can use shared owners and ordinary cache eviction. The session interner remains
-append-only across restores and releases at session teardown. Cache entries must
-not retain a dead session's name extension. Baseline-owned names remain available
-with their shared token data. Restored meanings beyond their table remain undefined.
-
-## 6. Useful comparisons
-
-Build plain TeX and real pdfLaTeX formats from source. Export and reload each in a
-fresh process and after unrelated sessions, then compare document behavior
-against the source-built baseline and upstream INITEX/format loading. Include
-private commands, captured font selectors, shared definitions, mutable font
-aliases, hyphenation, saved boxes, and pending PDF forms.
-
-Start two documents from one cache and mutate definitions, font settings,
-exceptions, and saved boxes in one. Their independent behavior checks ownership.
-Measure source construction, export, cold format read, and per-document startup
-separately from full execution. Compare cold Umber format loading with native
-pdfTeX format loading, and report warm cache reuse separately. Format preparation
-and setup retries are distinct from in-memory document checkpointing.
+The CLI build/load workflow and complete dependent codecs are outside the
+foundation API. Their integration must compare freshly loaded plain against
+source initialization and native output, including unchanged Gentle.

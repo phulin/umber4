@@ -130,6 +130,9 @@ impl Bindings {
     pub fn replace_owner(&mut self, id: usize, owner: Option<Owner>) -> Option<Owner> {
         std::mem::replace(&mut self.0[id].owner, owner)
     }
+    pub fn owner(&self, id: usize) -> Option<&Owner> {
+        self.0[id].owner.as_ref()
+    }
     #[cfg(test)]
     pub fn owners(&self) -> impl Iterator<Item = &Owner> {
         self.0.iter().filter_map(|e| e.owner.as_ref())

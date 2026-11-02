@@ -185,7 +185,7 @@ pub(crate) mod cmd {
         IFFALSE = 75 => [b"iffalse"] conditional;
         ELSE = 76 => [b"else"] expandable;
         FI = 77 => [b"fi"] expandable;
-        END = 34 => [b"end"];
+        END = 34 => [b"end", b"dump"];
         PAR = 35 => [b"par"];
         TOKS = 36 => [b"toks"] assignment;
         TOKS_DEF = 41 => [b"toksdef"] assignment;
@@ -233,7 +233,7 @@ pub(crate) mod cmd {
         CONTROL_SPACE = 110 => [b" "];
         HSKIP = 111 => [b"hskip", b"hfil", b"hfill", b"hss", b"hfilneg"];
         KERN = 112 => [b"kern"];
-        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox", b"everymath", b"everydisplay", b"everycr"] assignment;
+        TOKS_PARAM = 113 => [b"everypar", b"everyhbox", b"output", b"everyvbox", b"everymath", b"everydisplay", b"everycr", b"everyjob"] assignment;
         PAR_SHAPE = 114 => [b"parshape"] assignment;
         PENALTY = 115 => [b"penalty"];
         VSKIP = 116 => [b"vskip", b"vfil", b"vfill", b"vss", b"vfilneg"];
@@ -520,6 +520,10 @@ pub(crate) struct Definition {
 }
 impl Definition {
     pub fn clear(&mut self) {
+        self.prefix_end = 0;
+        self.body = ArenaRange::default();
+        self.long = false;
+        self.uses_parameters = false;
         self.arity = Arity::Zero;
         self.parameters.clear();
         self.failure.clear();

@@ -209,6 +209,16 @@ impl Catalog {
             .push(resource);
         Ok(())
     }
+    pub(crate) fn register_format_resource(&mut self, name: &[u8], bytes: &[u8]) -> Result<()> {
+        if let Some(index) = self.find(name) {
+            return if self.resources[index].bytes.as_ref() == bytes {
+                Ok(())
+            } else {
+                Err(Error::Resource)
+            };
+        }
+        self.register(name, bytes)
+    }
     fn parse(&self, name: &[u8], bytes: &[u8]) -> Result<Resource> {
         let bad = Error::Font;
         if bytes.len() < 24 {

@@ -136,6 +136,11 @@ impl<'a> Engine<'a> {
                 if !self.document.conditions.is_empty() {
                     return Err(Error::Conditional);
                 }
+                if read.meaning.value == 1 {
+                    self.finish_format_build()?;
+                    self.quiescent = true;
+                    return Ok(Progress::Complete);
+                }
                 if !self.end_pages(read)? {
                     self.quiescent = true;
                     commands = commands.saturating_add(1);

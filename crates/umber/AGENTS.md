@@ -4,6 +4,12 @@ Read the root guidance. `src/lib.rs` separates the session stores from restorabl
 document state;
 `checkpoint.rs` owns the non-consuming outer driver and explicit snapshot roots,
 with replay and ownership tests in `checkpoint_tests.rs`;
+`format.rs` captures and loads pointer-free initial semantic state through the
+checked `format_wire.rs` codec; `format_values.rs`, `format_tables.rs`,
+`format_validate.rs` and `scalar_format.rs` own packed Values, tables and validation.
+`font_format.rs`, `hyphenation_format.rs` and `box_format.rs` supply explicit
+canonical/empty subsystem codecs; `format_tests.rs` checks roundtrip, malformed
+images, new-job startup and ownership across checkpoints.
 `tables.rs` supplies pooled COW table pages with ownership tests in
 `tables_tests.rs`; `messages.rs` retains immutable chronological diagnostic prefixes with tests
 in `messages_tests.rs`;

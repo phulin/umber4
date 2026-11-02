@@ -1,4 +1,6 @@
 use crate::token::{Integer, cmd};
+#[path = "scalar_format.rs"]
+pub(crate) mod format;
 
 const REGISTERS: usize = 256;
 const CAT_BASE: usize = REGISTERS;

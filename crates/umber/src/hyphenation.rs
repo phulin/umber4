@@ -1,6 +1,8 @@
 //! Document-owned hyphenation tables; snapshots retain two semantic roots.
 use crate::{Error, Result, tables::Table};
 use std::rc::Rc;
+#[path = "hyphenation_format.rs"]
+pub(crate) mod format;
 
 #[derive(Clone, Copy, Default)]
 struct TrieNode {

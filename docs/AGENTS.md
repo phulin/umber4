@@ -39,8 +39,8 @@ Keep implementation histories, before/after reports, and validation logs out of
 - `output.md` records detached page publication and ordinary leader traversal, and develops ordered backend
   shipout, document state,
   DVI/PDF resources, and direct serialization.
-- `formats.md` develops bootstrap, Umber format export/read, shared semantic
-  baselines, and document startup.
+- `formats.md` contracts pointer-free format foundations, checked semantic
+  export/read, fresh document startup, and the remaining dependent codecs.
 - `performance.md` describes native/Wasm hot paths, current layout measurement
   scope, allocation methodology, comparable upstream runs, and compatibility checks.
 - `mvp.md` defines the first executable expansion/register slice, supported

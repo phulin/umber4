@@ -10,6 +10,8 @@ use crate::{
     text::{Mode, TextState},
     token::*,
 };
+#[path = "box_format.rs"]
+pub(crate) mod format;
 #[path = "insertions.rs"]
 mod insertions;
 #[path = "box_transfer.rs"]

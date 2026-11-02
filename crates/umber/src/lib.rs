@@ -14,6 +14,7 @@ mod execute;
 mod expand;
 mod expression;
 mod fonts;
+mod format;
 mod hyphenation;
 mod hyphenation_render;
 mod hyphenation_scan;
@@ -82,6 +83,7 @@ pub enum Error {
     Checkpoint,
     Font,
     Resource,
+    Format,
 }
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

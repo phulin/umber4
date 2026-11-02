@@ -7,6 +7,8 @@ use crate::{
     tfm::{Catalog, Metrics, ScaledFont, ratio},
     token::*,
 };
+#[path = "font_format.rs"]
+pub(crate) mod format;
 #[derive(Clone, Copy, Default)]
 pub(crate) struct Font {
     pub scaled: Option<usize>,
