@@ -56,7 +56,7 @@ pub(crate) fn find_breaks(
             disc_width: 0,
         };
         let mut p = engine.document.text.horizontal.head();
-        let mut previous = p;
+        let mut previous_permits_glue_break = false;
         let mut metrics =
             crate::fonts::MetricReader::new(&engine.document.fonts, &engine.font_catalog);
         let mut language = engine.document.text.initial_language;
@@ -65,37 +65,22 @@ pub(crate) fn find_breaks(
             search.point = p;
             let node = engine.document.nodes.get(p);
             let mut next = node.next;
-            match &node.kind {
+            previous_permits_glue_break = match &node.kind {
                 Kind::Character { font, character }
                 | Kind::Ligature {
                     font, character, ..
                 } => {
                     let width = metrics.get(*font, *character).ok_or(Error::Font)?.width.0;
                     search.width[0] = search.width[0].wrapping_add(width);
+                    true
                 }
                 Kind::Box(_) | Kind::Rule { .. } => {
-                    search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?)
+                    search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?);
+                    true
                 }
                 Kind::Glue { .. } | Kind::Leader(_) => {
                     let spec = engine.document.nodes.glue(&node.kind).unwrap().0;
-                    let before = &engine.document.nodes.get(previous).kind;
-                    if auto_breaking
-                        && matches!(
-                            before,
-                            Kind::Character { .. }
-                                | Kind::Ligature { .. }
-                                | Kind::Insertion(_)
-                                | Kind::Adjustment(_)
-                                | Kind::Language(_)
-                                | Kind::Box(_)
-                                | Kind::Rule { .. }
-                                | Kind::Discretionary { .. }
-                                | Kind::Kern {
-                                    kind: KernKind::Normal | KernKind::Accent,
-                                    ..
-                                }
-                        )
-                    {
+                    if auto_breaking && previous_permits_glue_break {
                         search.try_break(engine, 0, false)?;
                     }
                     add_glue(&mut search.width, spec, 1);
@@ -115,9 +100,11 @@ pub(crate) fn find_breaks(
                         )?;
                         next = engine.document.nodes.get(p).next;
                     }
+                    false
                 }
                 Kind::Kern { width, kind } => {
-                    if *kind == KernKind::Explicit
+                    let explicit = *kind == KernKind::Explicit;
+                    if explicit
                         && auto_breaking
                         && !node.next.is_null()
                         && engine.document.nodes.get(node.next).kind.is_glue()
@@ -125,6 +112,7 @@ pub(crate) fn find_breaks(
                         search.try_break(engine, 0, false)?;
                     }
                     search.width[0] = search.width[0].wrapping_add(width.0);
+                    !explicit
                 }
                 Kind::MathBoundary { width, after } => {
                     auto_breaking = *after;
@@ -135,8 +123,12 @@ pub(crate) fn find_breaks(
                         search.try_break(engine, 0, false)?;
                     }
                     search.width[0] = search.width[0].wrapping_add(width.0);
+                    false
                 }
-                Kind::Penalty(penalty) => search.try_break(engine, *penalty, false)?,
+                Kind::Penalty(penalty) => {
+                    search.try_break(engine, *penalty, false)?;
+                    false
+                }
                 Kind::Discretionary {
                     pre, replace_count, ..
                 } => {
@@ -159,22 +151,21 @@ pub(crate) fn find_breaks(
                         true,
                     )?;
                     search.width[0] = search.width[0].wrapping_sub(width);
-                    let mut next = node.next;
                     for _ in 0..*replace_count {
                         let node = engine.document.nodes.get(next);
                         search.width[0] = search.width[0].wrapping_add(engine.node_width(node)?);
                         next = node.next;
                     }
-                    previous = p;
-                    p = next;
-                    continue;
+                    true
                 }
-                Kind::Insertion(_) | Kind::Adjustment(_) => {}
-                Kind::Language(new) => language = *new,
+                Kind::Insertion(_) | Kind::Adjustment(_) => true,
+                Kind::Language(new) => {
+                    language = *new;
+                    true
+                }
                 Kind::Unset(_) => return Err(Error::Unsupported),
                 Kind::Free => unreachable!(),
-            }
-            previous = p;
+            };
             p = next;
         }
         if p.is_null() {
