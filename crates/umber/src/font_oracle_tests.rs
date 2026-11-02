@@ -88,7 +88,7 @@ fn shape(e: &Engine<'_>) -> Vec<String> {
                 }
                 lines.push(s);
             }
-            Kind::Discretionary { .. } => {} // hbox oracle suppresses explicit-hyphen discs
+            Kind::Discretionary { .. } | Kind::Penalty(_) => {} // non-glyph break nodes
             other => panic!("unexpected test node: {other:?}"),
         }
         p = n.next;
@@ -212,6 +212,11 @@ fn upstream_font_metrics_and_horizontal_nodes() {
     oracle.compare_metrics(&bytes);
     oracle.compare_shape(&bytes, "fi ffi AV a-b");
     for body in [
+        r"\hskip3pt a\the\lastskip",
+        r"\kern3pt a\the\lastkern",
+        r"\penalty7 a\the\lastpenalty",
+        r"\hskip3pt f\romannumeral0 i\the\lastskip",
+        r"fi\noexpand\undefined",
         r"\sfcode`\.=3000 a. A. ",
         r"\spacefactor=2000\spaceskip=5pt plus 3pt minus 2pt\fontdimen7\f=1pt\ ",
         r"\xspaceskip=9pt\spacefactor=2000\kern0pt{} ",
@@ -221,6 +226,7 @@ fn upstream_font_metrics_and_horizontal_nodes() {
     for op in [0, 1, 2, 3, 5, 6, 7, 11] {
         let bytes = tfm(&[[128, b'b', op, b'c']], &[(b'a', 1, 0)]);
         oracle.compare_shape(&bytes, "ab");
+        oracle.compare_shape(&bytes, r"\hskip3pt a\romannumeral0 b\the\lastskip");
     }
     let bytes = tfm(
         &[

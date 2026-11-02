@@ -123,6 +123,13 @@ terminate a paragraph.
 
 Character runs use the selected font, look ahead through expansion and `\char`,
 and preserve a noncharacter lookahead in pending input without executing it.
+An accepted original character joins the real horizontal list before expansion
+reads the next token, so tail quantities observe it. The cursor retains only a
+nonowning prefix marker for the current component suffix. Ordinary wrapping
+leaves that suffix in place. Forming a ligature first allocates its empty header,
+then transfers the suffix into its components and publishes the header without
+another fallible step. A lookahead or header-allocation error leaves accepted
+originals in the horizontal root; cleanup releases unconsumed detached candidates.
 Each non-nullfont run retains one immutable font-resource handle and borrows its
 scaled descriptor and source TFM for existence, ligature-program, boundary, and
 kern access across input expansion. Each program search borrows its raw instruction

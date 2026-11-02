@@ -184,7 +184,10 @@ compares packed structures with native INITEX; `math_boundary_tests.rs` and
 hyphenation suppression, scoped math-surround state, and detached output.
 `font_state_tests.rs` covers frozen
 font identifiers, family bindings, and scoped replay against native TeX. `ligatures.rs`
-builds TFM ligatures/kerns with component ownership; `font_text_tests.rs` and
+builds TFM ligatures/kerns in the live horizontal list, transferring a component
+suffix only when a ligature header is formed; `ligature_construction_tests.rs`
+checks lookahead visibility, allocation failure, version ownership and replay.
+`font_text_tests.rs` and
 `tfm_tests.rs` use controlled metrics from `font_test_data.rs`;
 `ligature_entry_tests.rs` checks prepared program entries, while the explicitly
 invoked native adapter in `font_oracle_tests.rs` compares real and controlled TFMs;

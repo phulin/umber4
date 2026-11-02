@@ -1,0 +1,804 @@
+{
+  "measured_at_utc": "2026-11-02T15:17:00.425414+00:00",
+  "base_revision": "f8adc1fd015694c1c3ad7b56966b8e0a2a42ffbf",
+  "candidate_runtime_source_sha256": {
+    "crates/umber/src/ligatures.rs": "642b5bcc71d21fbc8ea513641d217073c68a26505842838f1b8830550a374bbc"
+  },
+  "build": "cargo build --release --bin umber --example layout --example layout_allocations; default features, workspace fat LTO/codegen-units=1/debug=1; saved before/final binaries",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu": 3,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "inputs": {
+    "gentle": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "gentle_sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "format": "/tmp/umber-ligature-general/plain.ufmt",
+    "format_sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+    "format_origin": ".tools/formats/plain.ufmt",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "input_mappings": 0,
+    "tfm_mappings": 0
+  },
+  "semantic_change": "One general TFM shaper appends accepted originals to the live horizontal list before expanded lookahead. A nonowning cur_q marker identifies the component suffix. Ordinary wrap transfers nothing; actual ligature packing allocates an empty header before transferring that suffix. Shared Move/Consume performs one Item pop while preserving the distinct left/marker updates. No ordinary-character fast path or second shaper.",
+  "correctness_probe": {
+    "source": "\\shipout\\hbox{\\tenrm\\hskip3pt a\\the\\lastskip}\\end",
+    "before_glyphs": "a3.0pt",
+    "native_and_final_glyphs": "a0.0pt",
+    "native_version": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+    "retained_native_output": "/tmp/umber-ligature-general/tail-native.txt",
+    "retained_before_inspection": "/tmp/umber-ligature-general/tail-umber.json",
+    "reference": "retained tex.web20131\u201320318: accepted originals join tail before get_next/x_token",
+    "retained_final_inspection": "/tmp/umber-ligature-general/tail-final.json"
+  },
+  "timing_endpoint": "Whole loaded-format CLI process: startup/image read/decode, unchanged Gentle execution, retained detached output, diagnostics and teardown. No DVI or JSON serialization. Host file caches warm; CPU pinned3; one warmup per binary and21 serial alternating pairs; existing layout.py child() CPU/wall/user/system/fault helpers; separate3 GNU-time RSS samples. No builds or profiles during ordinary samples.",
+  "timing": {
+    "cpu": 3,
+    "warmups_per_endpoint": 1,
+    "retained_pairs": 21,
+    "commands": {
+      "before": [
+        "/tmp/umber-ligature-general/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-ligature-general/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "final": [
+        "/tmp/umber-ligature-general/umber-final",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-ligature-general/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "orders": [
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ],
+      [
+        "final",
+        "before"
+      ],
+      [
+        "before",
+        "final"
+      ]
+    ],
+    "samples": {
+      "before": [
+        {
+          "wall_seconds": 0.050282412,
+          "cpu_seconds": 0.049961,
+          "user_cpu_seconds": 0.043966,
+          "system_cpu_seconds": 0.0059949999999999995,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047715057,
+          "cpu_seconds": 0.047298,
+          "user_cpu_seconds": 0.044279,
+          "system_cpu_seconds": 0.003019,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.049462701,
+          "cpu_seconds": 0.049046,
+          "user_cpu_seconds": 0.045043,
+          "system_cpu_seconds": 0.004003,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.048340884,
+          "cpu_seconds": 0.048001999999999996,
+          "user_cpu_seconds": 0.040001999999999996,
+          "system_cpu_seconds": 0.008,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.048719384,
+          "cpu_seconds": 0.048362999999999996,
+          "user_cpu_seconds": 0.044414999999999996,
+          "system_cpu_seconds": 0.003948,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.048076761,
+          "cpu_seconds": 0.047751999999999996,
+          "user_cpu_seconds": 0.043769999999999996,
+          "system_cpu_seconds": 0.003981999999999999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.047061107,
+          "cpu_seconds": 0.046830000000000004,
+          "user_cpu_seconds": 0.042845,
+          "system_cpu_seconds": 0.003985,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047085436,
+          "cpu_seconds": 0.046875,
+          "user_cpu_seconds": 0.039894,
+          "system_cpu_seconds": 0.006980999999999999,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.049744492,
+          "cpu_seconds": 0.049478,
+          "user_cpu_seconds": 0.039583,
+          "system_cpu_seconds": 0.009895,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.048465837,
+          "cpu_seconds": 0.048109,
+          "user_cpu_seconds": 0.040091,
+          "system_cpu_seconds": 0.008017999999999999,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.048204524,
+          "cpu_seconds": 0.047895999999999994,
+          "user_cpu_seconds": 0.041908999999999995,
+          "system_cpu_seconds": 0.005987,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.048040068,
+          "cpu_seconds": 0.047712,
+          "user_cpu_seconds": 0.043736,
+          "system_cpu_seconds": 0.0039759999999999995,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047635359,
+          "cpu_seconds": 0.047337,
+          "user_cpu_seconds": 0.04142,
+          "system_cpu_seconds": 0.0059169999999999995,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047915336,
+          "cpu_seconds": 0.047608,
+          "user_cpu_seconds": 0.041657,
+          "system_cpu_seconds": 0.005951,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047378147,
+          "cpu_seconds": 0.04708999999999999,
+          "user_cpu_seconds": 0.043082999999999996,
+          "system_cpu_seconds": 0.004007,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.050716432,
+          "cpu_seconds": 0.05039999999999999,
+          "user_cpu_seconds": 0.046446999999999995,
+          "system_cpu_seconds": 0.003953,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.047910042,
+          "cpu_seconds": 0.047618999999999995,
+          "user_cpu_seconds": 0.040674999999999996,
+          "system_cpu_seconds": 0.006944,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.048055641,
+          "cpu_seconds": 0.047772999999999996,
+          "user_cpu_seconds": 0.041802,
+          "system_cpu_seconds": 0.005971,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.048525277,
+          "cpu_seconds": 0.04823,
+          "user_cpu_seconds": 0.043308,
+          "system_cpu_seconds": 0.004922,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.049167129,
+          "cpu_seconds": 0.048777999999999995,
+          "user_cpu_seconds": 0.043796999999999996,
+          "system_cpu_seconds": 0.004981,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.050773665,
+          "cpu_seconds": 0.050349,
+          "user_cpu_seconds": 0.045308,
+          "system_cpu_seconds": 0.0050409999999999995,
+          "minor_page_faults": 1116
+        }
+      ],
+      "final": [
+        {
+          "wall_seconds": 0.048300714,
+          "cpu_seconds": 0.047993999999999995,
+          "user_cpu_seconds": 0.042995,
+          "system_cpu_seconds": 0.004999,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.050904711,
+          "cpu_seconds": 0.050520999999999996,
+          "user_cpu_seconds": 0.04648,
+          "system_cpu_seconds": 0.0040409999999999995,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047141532,
+          "cpu_seconds": 0.046751,
+          "user_cpu_seconds": 0.045757,
+          "system_cpu_seconds": 0.0009939999999999999,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.047422053,
+          "cpu_seconds": 0.047048,
+          "user_cpu_seconds": 0.043044,
+          "system_cpu_seconds": 0.004004,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.054717778,
+          "cpu_seconds": 0.054354999999999994,
+          "user_cpu_seconds": 0.048426,
+          "system_cpu_seconds": 0.005928999999999999,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.062611882,
+          "cpu_seconds": 0.06224099999999999,
+          "user_cpu_seconds": 0.056311999999999994,
+          "system_cpu_seconds": 0.005928999999999999,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.045716383,
+          "cpu_seconds": 0.045495,
+          "user_cpu_seconds": 0.040437,
+          "system_cpu_seconds": 0.005058,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046137184,
+          "cpu_seconds": 0.045887,
+          "user_cpu_seconds": 0.042893,
+          "system_cpu_seconds": 0.0029939999999999997,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.0470264,
+          "cpu_seconds": 0.046715999999999994,
+          "user_cpu_seconds": 0.039758999999999996,
+          "system_cpu_seconds": 0.006957,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.049686298,
+          "cpu_seconds": 0.049381999999999995,
+          "user_cpu_seconds": 0.046419999999999996,
+          "system_cpu_seconds": 0.002962,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.048550086,
+          "cpu_seconds": 0.048181,
+          "user_cpu_seconds": 0.042282,
+          "system_cpu_seconds": 0.005899,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.049654462,
+          "cpu_seconds": 0.04926099999999999,
+          "user_cpu_seconds": 0.046244999999999994,
+          "system_cpu_seconds": 0.003016,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.055193567,
+          "cpu_seconds": 0.054845,
+          "user_cpu_seconds": 0.048861999999999996,
+          "system_cpu_seconds": 0.005983,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047032257,
+          "cpu_seconds": 0.046624,
+          "user_cpu_seconds": 0.043584,
+          "system_cpu_seconds": 0.0030399999999999997,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.046735322,
+          "cpu_seconds": 0.046411999999999995,
+          "user_cpu_seconds": 0.041367999999999995,
+          "system_cpu_seconds": 0.005044,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047363905,
+          "cpu_seconds": 0.047045,
+          "user_cpu_seconds": 0.040039,
+          "system_cpu_seconds": 0.007006,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.047965321,
+          "cpu_seconds": 0.047633999999999996,
+          "user_cpu_seconds": 0.044656999999999995,
+          "system_cpu_seconds": 0.002977,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047481964,
+          "cpu_seconds": 0.047062,
+          "user_cpu_seconds": 0.042154,
+          "system_cpu_seconds": 0.004908,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.048195874,
+          "cpu_seconds": 0.047881,
+          "user_cpu_seconds": 0.04389,
+          "system_cpu_seconds": 0.003991,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047327786,
+          "cpu_seconds": 0.046944999999999994,
+          "user_cpu_seconds": 0.042949999999999995,
+          "system_cpu_seconds": 0.003994999999999999,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045764058,
+          "cpu_seconds": 0.045399999999999996,
+          "user_cpu_seconds": 0.043382,
+          "system_cpu_seconds": 0.002018,
+          "minor_page_faults": 1119
+        }
+      ]
+    },
+    "summary": {
+      "before": {
+        "wall_seconds": {
+          "median": 0.048204524,
+          "minimum": 0.047061107,
+          "maximum": 0.050773665
+        },
+        "cpu_seconds": {
+          "median": 0.047895999999999994,
+          "minimum": 0.046830000000000004,
+          "maximum": 0.05039999999999999
+        },
+        "user_cpu_seconds": {
+          "median": 0.043082999999999996,
+          "minimum": 0.039583,
+          "maximum": 0.046446999999999995
+        },
+        "system_cpu_seconds": {
+          "median": 0.0050409999999999995,
+          "minimum": 0.003019,
+          "maximum": 0.009895
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1116,
+          "maximum": 1119
+        }
+      },
+      "final": {
+        "wall_seconds": {
+          "median": 0.047481964,
+          "minimum": 0.045716383,
+          "maximum": 0.062611882
+        },
+        "cpu_seconds": {
+          "median": 0.047062,
+          "minimum": 0.045399999999999996,
+          "maximum": 0.06224099999999999
+        },
+        "user_cpu_seconds": {
+          "median": 0.043382,
+          "minimum": 0.039758999999999996,
+          "maximum": 0.056311999999999994
+        },
+        "system_cpu_seconds": {
+          "median": 0.0040409999999999995,
+          "minimum": 0.0009939999999999999,
+          "maximum": 0.007006
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1115,
+          "maximum": 1119
+        }
+      }
+    },
+    "rss_kib": {
+      "before": [
+        6400,
+        6400,
+        6400
+      ],
+      "final": [
+        6400,
+        6400,
+        6400
+      ]
+    },
+    "after_over_before_cpu_pairs": [
+      0.9606292908468604,
+      1.0681424161698168,
+      0.9532071932471557,
+      0.9801258280904963,
+      1.1238963670574613,
+      1.3034218462053944,
+      0.9714926329276105,
+      0.9789226666666666,
+      0.9441772100731637,
+      1.0264607453906753,
+      1.0059503925171205,
+      1.0324656270959087,
+      1.1586074318186619,
+      0.9793312048395227,
+      0.9856020386493948,
+      0.9334325396825397,
+      1.0003150003150003,
+      0.9851171163627992,
+      0.9927638399336512,
+      0.9624215835007585,
+      0.9017060914814594
+    ],
+    "median_pair_ratio": 0.9851171163627992,
+    "candidate_faster_pairs": 13
+  },
+  "instruction_profiles": {
+    "tool": "Valgrind/Callgrind3.22.0, default release, separate from ordinary timing; Ir only",
+    "scope": "Whole loaded-format CLI. Physical function self counts aggregate all inlined file entries; parser verifies self sum equals program total. Inclusive entries are incoming call-arc costs and overlap other regions; do not sum them. Instruction shares are not CPU shares.",
+    "variants": {
+      "before": {
+        "instructions": 278285088,
+        "functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "self_ir": 35537850,
+            "self_percent": 12.770303380395287,
+            "inclusive_ir": 72472132,
+            "calls": 28055
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19338792,
+            "self_percent": 6.949273544977013,
+            "inclusive_ir": 19338792,
+            "calls": 805783
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15234804,
+            "self_percent": 5.474531211675992,
+            "inclusive_ir": 15234804,
+            "calls": 585954
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 10022839,
+            "self_percent": 3.601644296513653,
+            "inclusive_ir": 14971552,
+            "calls": 49607
+          },
+          {
+            "name": "<umber::Engine>::wrap_ligature",
+            "self_ir": 7918974,
+            "self_percent": 2.8456336115286205,
+            "inclusive_ir": 11006834,
+            "calls": 116236
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "self_percent": 2.7055276494010343,
+            "inclusive_ir": 7563015,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.0034752131598226347,
+            "inclusive_ir": 9671,
+            "calls": 509
+          }
+        ]
+      },
+      "live_suffix": {
+        "instructions": 278079823,
+        "functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "self_ir": 38135669,
+            "self_percent": 13.713928823954983,
+            "inclusive_ir": 72266803,
+            "calls": 28055
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19353072,
+            "self_percent": 6.959538376863826,
+            "inclusive_ir": 19353072,
+            "calls": 806378
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15281292,
+            "self_percent": 5.495289746354593,
+            "inclusive_ir": 15281292,
+            "calls": 587742
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.2209255254021074,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "self_percent": 2.7075247383194716,
+            "inclusive_ir": 7563015,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::Engine>::wrap_ligature",
+            "self_ir": 6095169,
+            "self_percent": 2.191877473972644,
+            "inclusive_ir": 6272682,
+            "calls": 116236
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.0034777783931486464,
+            "inclusive_ir": 9671,
+            "calls": 509
+          }
+        ]
+      },
+      "final": {
+        "instructions": 266529703,
+        "functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "self_ir": 26585562,
+            "self_percent": 9.974708897642076,
+            "inclusive_ir": 60716696,
+            "calls": 28055
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19353072,
+            "self_percent": 7.261131416936295,
+            "inclusive_ir": 19353072,
+            "calls": 806378
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15281292,
+            "self_percent": 5.733429268106752,
+            "inclusive_ir": 15281292,
+            "calls": 587742
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 8956744,
+            "self_percent": 3.360505001575753,
+            "inclusive_ir": 13905198,
+            "calls": 21552
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "self_percent": 2.8248558848242142,
+            "inclusive_ir": 7563015,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::Engine>::wrap_ligature",
+            "self_ir": 6095169,
+            "self_percent": 2.286862939249964,
+            "inclusive_ir": 6272682,
+            "calls": 116236
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "self_percent": 0.0036284886416580744,
+            "inclusive_ir": 9671,
+            "calls": 509
+          }
+        ]
+      }
+    },
+    "final_over_before_ir": 0.9577577617094596,
+    "assembly": {
+      "live_suffix_character_run_bytes": 5504,
+      "final_character_run_bytes": 4756,
+      "original_character_run_bytes": 5076,
+      "observed": "The separate Move arm loaded the last Item character, returned through dispatch, then Consume popped/read that Item. Shared dispatch reads it once and conditionally preserves the substituted-left/prefix entry; source inspection and emitted instructions agree."
+    },
+    "node_access_note": "The necessary tail link write moves from ordinary Wrap to Consume. It is not removed. Full-document writable calls rise585954\u2192587742 and get805783\u2192806378 from actual ligature suffix packing; no claim of generic node-access reduction."
+  },
+  "interpretation": {
+    "cpu": "Final paired CPU ratio median0.985117 (~1.5% lower), with13/21 final runs faster. Endpoint medians47.896ms before and47.062ms final; ranges overlap and one final outlier reaches62.241ms. This is a modest noisy shared-host result, not a broad speedup guarantee.",
+    "instructions": "278285088\u2192266529703 Ir (-4.224%). The live-suffix-only variant had278079823 Ir and no clear CPU improvement; combining the redundant Move/Consume dispatch produced the measured instruction reduction. Instruction counts are not converted to CPU time.",
+    "memory": "Final independent peak RSS is6400KiB for both binaries in all3 samples. No memory-improvement claim.",
+    "retention": "Retained for native tail-query correctness, simpler destination ownership, and reduced general-cursor work; no specialized glyph path was added."
+  },
+  "output_gate": {
+    "pages": 97,
+    "glyphs": 121839,
+    "rules": 864,
+    "comparison": "all ordered events match",
+    "bop_counts": true,
+    "source_and_format_output_equal": true,
+    "startup": "format"
+  },
+  "replay_validation": "complete output and retained prefixes/results equal",
+  "replay_checkpoints": [
+    {
+      "label": "ready",
+      "requested_pages": 0,
+      "actual_pages": 0
+    },
+    {
+      "label": "early",
+      "requested_pages": 10,
+      "actual_pages": 10
+    },
+    {
+      "label": "middle",
+      "requested_pages": 49,
+      "actual_pages": 49
+    },
+    {
+      "label": "late",
+      "requested_pages": 88,
+      "actual_pages": 88
+    }
+  ],
+  "validation": {
+    "portable": "474 all-feature library tests,3 CLI tests and1 doctest; seven new cursor tests cover visible tail quantities, lookahead failure/error restore, header rejection, all allocation cuts, retained node versions, op7/11 discretionary exclusion, language components and replay.",
+    "native": "Clean pdfTeX1.40.25: controlled/CM font metrics and all supported ligature opcodes, added lastskip/lastkern/lastpenalty/empty-expansion/noexpand probes, automatic hyphenation node and page-placement adapters; full Gentle native97pages/121839glyphs/864rules/BOP counts exact and source/format outputs equal.",
+    "checks": "rustfmt, strict all-target/all-feature Clippy, Wasm and git diff --check pass",
+    "miri": "All seven focused construction cases pass under Miri, including every allocation cutpoint, retained COW versions, accepted-suffix errors, header rejection and restore/reuse."
+  },
+  "reproduction": {
+    "timing_driver": "/tmp/umber-ligature-general/measure-final.py",
+    "timing_driver_note": "Retained reproduction of the recorded Python-stdin loop, using existing helpers; writes repeated-paired.json rather than overwriting the original final-paired.json. No further timing run performed.",
+    "profile_parser": "/tmp/umber-ligature-general/profile.py",
+    "profile_command_jsons": [
+      "/tmp/umber-ligature-general/before-profile-command.json",
+      "/tmp/umber-ligature-general/suffix-profile-command.json",
+      "/tmp/umber-ligature-general/final-profile-command.json"
+    ],
+    "temporary_artifact_sha256": {
+      "/tmp/umber-ligature-general/umber-before": "95a168378217606aa9055c2d287510abdd7b40f142d77719e0a63843a240414d",
+      "/tmp/umber-ligature-general/umber-after": "82d1e55ba5dfbf449f43d2965f0d5006a0e3e9d299ef3364bb5a690dad2a1529",
+      "/tmp/umber-ligature-general/umber-final": "cd324975d9bb47c381e142ef858de91427d2100b0fdece852f42a18b99d3683f",
+      "/tmp/umber-ligature-general/layout-before": "ed39bbe938165c67b7b90ef0dc19edd62ad0e9a56cf0a8189175f196a4f13ee8",
+      "/tmp/umber-ligature-general/layout-final": "7efdf5dc771ed9fbd4e5ad1adab033c2747697579f9d22ae6005a9084c79bd75",
+      "/tmp/umber-ligature-general/plain.ufmt": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+      "/tmp/umber-ligature-general/before-argv.json": "243af40f8b6d39f010a593134e658dd4c49f7c423a2dc7811607d8f523898526",
+      "/tmp/umber-ligature-general/before-gate-command.json": "7a67ff81c8d348e55452836b4461476ad1f281562743826a7cb84f3649622437",
+      "/tmp/umber-ligature-general/before-gate.json": "7546c5efc57a66e56744dce7eff6a3b8ebde34b3a61981308a380733ffe7b5cf",
+      "/tmp/umber-ligature-general/final-gate-command.json": "2e5d18b083ad777fde21edf90016b98f5b94e8d7a7af269611d6a504b5f2ec22",
+      "/tmp/umber-ligature-general/final-gate.json": "67f752e1dff15a0a7abfdf4e6c8bdb800ba15ac89a87ac09df235c2887166dbd",
+      "/tmp/umber-ligature-general/before-profile-command.json": "dedaba9359ae862b053760487245c232342b7e54d52823849085f2d83c9ac3c6",
+      "/tmp/umber-ligature-general/suffix-profile-command.json": "f073438833a93a83e72fb5fc08c2a0a8b92893830ab87bfbfa4b06a86c1e7e5c",
+      "/tmp/umber-ligature-general/final-profile-command.json": "674d6b18da84f599a2737ed869b8d8a5acb137f786c5bf3fb7aa49551cb30c9f",
+      "/tmp/umber-ligature-general/before.callgrind": "4420022a5b73f2215cb8a42601e8895310ad82b26045a6549e91ef1cd9574c7d",
+      "/tmp/umber-ligature-general/suffix.callgrind": "175a378894c174049ff5338cb523809d7ccbd00839084539a198d16cc8b07543",
+      "/tmp/umber-ligature-general/final.callgrind": "dd6d5d2dd79dd0a4e3ef678150540fa9ced579e929ed9190572e684bd915a5c3",
+      "/tmp/umber-ligature-general/suffix.asm": "ca705fbcea7b04d4666bc70e68b80f3617d476f4bfe634b96bf84c0995ff6b07",
+      "/tmp/umber-ligature-general/final.asm": "da94847abc1930e991cc08ad3d155c9853fa5688a743f91fd2e1a58cf8e22237",
+      "/tmp/umber-ligature-general/profile.py": "669daa8aa5046c08adfffe4b188116cb339f63c661baa2f9cf46a8c749afda64",
+      "/tmp/umber-ligature-general/measure-final.py": "a54202f54b6608d762ea3ba4089fc85dc836b07087a367ee09cb0457a31a9ad0",
+      "/tmp/umber-ligature-general/baseline.json": "0c5cf34b9473aac464c14dcd2fa71cab07af2b37e1da33f633e97ea40e46f21c",
+      "/tmp/umber-ligature-general/paired.json": "d4697ac416f523682012d2ff8b7f76f082d3b28c5e21583b44b3d08b98fc056f",
+      "/tmp/umber-ligature-general/final-paired.json": "e48dc9543980c1150b66a767a0b536de5614b5ad4bfe99f5951b6c71bbe2c73e",
+      "/tmp/umber-ligature-general/tail-final.json": "bbb8476fc3b62a6712d0ee5b3ba9850457634f4a7c9f834667090454c44d76e2",
+      "/tmp/umber-ligature-general/all-tests.log": "8e8a5db9a382f79601e3abcfbe745f5ef4cb11076786bdc4997df08768f44a7e",
+      "/tmp/umber-ligature-general/clippy.log": "4c54c4f381fb1be07294c23079e57e49bab9875d3cc8eb8aa00d7d1a66783347",
+      "/tmp/umber-ligature-general/wasm.log": "b478780fb99881940862df1023dc993eee853c9fe4e4a42b319821ca633aacdf",
+      "/tmp/umber-ligature-general/miri.log": "75b4263f68cbf7e7cf4cd34c4eef6389f288479af15a9e9414a2f2758ed952fb",
+      "/tmp/umber-ligature-general/native-final.log": "31b6b534cd91f0961a081f56a9e19dc93b18e0f1d783d543b0860d4a355ba8f2",
+      "/tmp/umber-ligature-general/construction-tests.log": "ee0be168a58422cd49911b0e718f003852f9d430f5ab756825689dc0f566d465"
+    }
+  }
+}

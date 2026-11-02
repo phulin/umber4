@@ -48,6 +48,11 @@ the prepared adapter's one-shot setup interval measures in-memory decode/startup
 Native writes DVI/log while Umber retains detached output. These endpoints are
 reported separately and do not treat format loading as source replay.
 
+The [general text-cursor result](results/gentle-ligature-cursor.json) compares
+saved release binaries on loaded-format Gentle. It separates paired CPU/RSS
+samples from instruction profiles, checks native tail-query visibility and full
+output/replay, and records the limits of the modest measured CPU difference.
+
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the
 separate `layout_allocations` executable. Both validate complete replay output,

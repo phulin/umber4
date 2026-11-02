@@ -2,7 +2,7 @@
 use crate::nodes::KernKind;
 use crate::{
     Engine, Result,
-    nodes::{DetachedNode, Kind, List, ReleaseScratch},
+    nodes::{DetachedNode, Kind, List, NodeId, ReleaseScratch},
     tfm::Resource,
     token::*,
 };
@@ -27,11 +27,7 @@ enum State {
 impl Engine<'_> {
     pub(crate) fn character_run(&mut self, first: u8) -> Result<()> {
         let mut scratch = std::mem::take(&mut self.ligatures);
-        let mut components = List::default();
-        let result = self.character_run_inner(first, &mut scratch, &mut components);
-        self.document
-            .nodes
-            .release(components, &mut scratch.release);
+        let result = self.character_run_inner(first, &mut scratch);
         for item in scratch.stack.drain(..) {
             if let Some(node) = item.original {
                 self.document.nodes.release_node(node, &mut scratch.release);
@@ -40,12 +36,7 @@ impl Engine<'_> {
         self.ligatures = scratch;
         result
     }
-    fn character_run_inner(
-        &mut self,
-        first: u8,
-        scratch: &mut Scratch,
-        components: &mut List,
-    ) -> Result<()> {
+    fn character_run_inner(&mut self, first: u8, scratch: &mut Scratch) -> Result<()> {
         let font = self.document.fonts.current.value as u32;
         self.adjust_space_factor(first);
         self.fix_language()?;
@@ -65,6 +56,7 @@ impl Engine<'_> {
         } else {
             boundary_label
         };
+        let mut prefix = self.document.text.horizontal.tail();
         let node = self.document.nodes.alloc(Kind::Character {
             font,
             character: first,
@@ -87,18 +79,17 @@ impl Engine<'_> {
         };
         loop {
             match state {
-                State::Move => {
-                    let Some(item) = scratch.stack.last() else {
+                State::Move | State::Consume => {
+                    let Some(item) = scratch.stack.pop() else {
                         if let Some(read) = pending {
                             self.back_read(read)?;
                         }
                         return Ok(());
                     };
-                    left = item.character;
-                    state = State::Consume;
-                }
-                State::Consume => {
-                    let item = scratch.stack.pop().unwrap();
+                    if matches!(state, State::Move) {
+                        prefix = self.document.text.horizontal.tail();
+                        left = item.character;
+                    }
                     // Boundary substitution changes left, not the original's range gate.
                     if !item.pseudo
                         && (!r.in_character_range(item.character) || !metrics.exists(left as u8))
@@ -113,7 +104,9 @@ impl Engine<'_> {
                     }
                     let original = item.original.is_some();
                     if let Some(node) = item.original {
-                        self.document.nodes.append(components, node);
+                        self.document
+                            .nodes
+                            .append(&mut self.document.text.horizontal, node);
                     }
                     if item.pseudo {
                         ligature = true;
@@ -185,7 +178,7 @@ impl Engine<'_> {
                     self.wrap_ligature(
                         font,
                         left,
-                        components,
+                        prefix,
                         &mut ligature,
                         &mut left_hit,
                         &mut right_hit,
@@ -203,7 +196,7 @@ impl Engine<'_> {
                         self.wrap_ligature(
                             font,
                             left,
-                            components,
+                            prefix,
                             &mut ligature,
                             &mut left_hit,
                             &mut right_hit,
@@ -253,12 +246,13 @@ impl Engine<'_> {
                             self.wrap_ligature(
                                 font,
                                 left,
-                                components,
+                                prefix,
                                 &mut ligature,
                                 &mut left_hit,
                                 &mut right_hit,
                                 false,
                             )?;
+                            prefix = self.document.text.horizontal.tail();
                             left = rem as u16;
                             ligature = true;
                         }
@@ -290,7 +284,7 @@ impl Engine<'_> {
         &mut self,
         font: u32,
         left: u16,
-        components: &mut List,
+        prefix: NodeId,
         ligature: &mut bool,
         left_hit: &mut bool,
         right_hit: &mut bool,
@@ -300,32 +294,40 @@ impl Engine<'_> {
             return Ok(());
         }
         let hyphen = self.document.fonts.descriptors[font as usize].hyphen;
-        let disc = if components.is_empty() {
+        let disc = if prefix == self.document.text.horizontal.tail() {
             false
         } else if !*ligature {
             // An unchanged left character owns exactly its original component.
             i32::from(left) == hyphen
         } else {
-            matches!(self.document.nodes.get(components.tail()).kind,Kind::Character{character,..} if i32::from(character)==hyphen)
+            matches!(self.document.nodes.get(self.document.text.horizontal.tail()).kind,Kind::Character{character,..} if i32::from(character)==hyphen)
         };
         if *ligature {
-            self.append_horizontal(Kind::ligature(
+            // Rejection must leave the accepted original suffix root-owned.
+            let header = self.document.nodes.alloc(Kind::ligature(
                 font,
                 left as u8,
-                std::mem::take(components),
+                List::default(),
                 *left_hit,
                 *right_hit && at_boundary,
             ))?;
+            let suffix = self
+                .document
+                .nodes
+                .split_after(&mut self.document.text.horizontal, prefix);
+            let Kind::Ligature { components, .. } = self.document.nodes.kind_mut(header.id())
+            else {
+                unreachable!("new ligature header");
+            };
+            *components = suffix;
+            self.document
+                .nodes
+                .append(&mut self.document.text.horizontal, header);
             *ligature = false;
             *left_hit = false;
             if at_boundary {
                 *right_hit = false;
             }
-        } else {
-            self.document.nodes.splice(
-                &mut self.document.text.horizontal,
-                std::mem::take(components),
-            );
         }
         if disc && self.document.text.mode == crate::text::Mode::Horizontal {
             self.append_horizontal(Kind::discretionary(List::default(), List::default(), 0))?;
@@ -371,3 +373,7 @@ impl Resource {
 #[cfg(test)]
 #[path = "ligature_entry_tests.rs"]
 mod entry_tests;
+
+#[cfg(test)]
+#[path = "ligature_construction_tests.rs"]
+mod construction_tests;
