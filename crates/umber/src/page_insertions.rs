@@ -127,6 +127,9 @@ impl Engine<'_> {
         Ok(())
     }
     pub(super) fn commit_insertions(&mut self) -> Result<()> {
+        if self.document.page.classes.is_empty() {
+            return Ok(());
+        }
         if self.document.scalars[Target::HOLDING_INSERTS].value > 0 {
             return Ok(());
         }
