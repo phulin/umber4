@@ -612,5 +612,166 @@
         }
       ]
     }
+  },
+  "allocation_attribution": {
+    "method": "Separate read-only GDB run of the same default-feature release allocation adapter. Stage-gated libc malloc/realloc stacks attribute allocator calls. Only allocation-call and requested-byte counts are evidence from these runs; GDB elapsed times, live bytes and peak bytes are excluded. No engine or harness source changes.",
+    "binary": {
+      "path": "/home/phulin/umber4/target/agent-worktrees/slot-1/target/release/examples/layout_allocations",
+      "sha256": "b4d163160ecd72a6431e4fb980ea512b301ecd2c1a159a54e580440a2f73e183"
+    },
+    "reproduction": {
+      "cwd": "/home/phulin/umber4/target/agent-worktrees/slot-1",
+      "gdb_command_prefix": [
+        "gdb",
+        "-nx",
+        "-batch",
+        "-ex",
+        "set pagination off",
+        "-ex",
+        "set debuginfod enabled off",
+        "-ex",
+        "set language c++",
+        "-ex",
+        "source SCRIPT",
+        "--args"
+      ],
+      "late": {
+        "script": "/tmp/umber-gentle-allocation-stacks.py",
+        "inferior_argv_json": "/tmp/umber-gentle-replay-validation-vz61s37s/allocation-command.json",
+        "gate": "Enable malloc/realloc breakpoints at stable_restores; disable at suffix_advanced."
+      },
+      "ready": {
+        "count_script": "/tmp/umber-gentle-ready-counts.py",
+        "stack_script": "/tmp/umber-gentle-ready-stacks.py",
+        "inferior_argv_json": "/tmp/umber-gentle-ready-counts-command.json",
+        "gate": "Enable the existing counted allocator only during document::complete; read CALLS and REQUESTED at entry/return. In document-replay mode calls 7/8/9 are READY warmup plus two samples, after validation; stack aggregation is restricted to call 8. The allocator ACTIVE flag is changed by GDB; no engine state is changed. Ignore all timings and live/peak counters from this diagnostic run."
+      },
+      "temporary_artifact_sha256": {
+        "/tmp/umber-gentle-allocation-stacks.py": "8522eecce6e6e2a0464492318ba0443b2e1cf853a46509ba8cdf3fd094756326",
+        "/tmp/umber-gentle-allocation-stacks.txt": "6f3f7bf7ce7a6455923bb312363cfa6de772dba9cf66ec5ba72587a95362b261",
+        "/tmp/umber-gentle-ready-counts.py": "67f6c25c6dab41bce2dc0abc4583c1d533239632830356af96cf1264d36722dd",
+        "/tmp/umber-gentle-ready-counts.txt": "04c8240535cf24819792deb922a73d30e5e0a82c6567a3d8e44788a19add5b9c",
+        "/tmp/umber-gentle-ready-stacks.py": "812e8afb2c93a304f82f5f56abab0d1a65fb5779b8352f1ac84105d1cf7654bc",
+        "/tmp/umber-gentle-ready-stacks.txt": "7b79ae6d7a8feb64a1d40f987cbfb55c1b021414ad1307a8164aa92655c606c0",
+        "/tmp/umber-gentle-ready-counts-command.json": "b115c58ab608d65ee2d2ab01fe172a597a639f418b206adbdbbab71a55242110",
+        "/tmp/umber-gentle-replay-validation-vz61s37s/allocation-command.json": "86e618975d65ba62789c61143b73f67f070377a8db6687d0407cd949d719cf44"
+      }
+    },
+    "late_advance": {
+      "checkpoint": "late",
+      "actual_pages": 88,
+      "calls": 4,
+      "requested_bytes": 18152,
+      "components": [
+        {
+          "calls": 1,
+          "requested_bytes": 18096,
+          "allocation": "Rc<output::Chunk>",
+          "stack": [
+            "output::Pages::push",
+            "Engine::publish_page",
+            "Engine::finish_box_group"
+          ],
+          "lifetime": "Immutable published-page history: one chunk holds up to 16 page headers and links the retained prefix. Restoring the saved partial tail requires a new branch because that tail already contains later initialized headers. The chunk remains alive until its last Pages/checkpoint/Outcome owner drops; these chunk headers are not pooled."
+        },
+        {
+          "calls": 3,
+          "requested_bytes": 56,
+          "request_sizes": [
+            8,
+            16,
+            32
+          ],
+          "allocation": "One owned immediate-write byte vector, grown geometrically",
+          "stack": [
+            "Engine::immediate_write",
+            "Engine::print_token",
+            "Engine::print_byte",
+            "Vec<u8>::push"
+          ],
+          "lifetime": "The vector becomes Diagnostic::Write bytes, retained by shared diagnostic history until its last owner releases it. It is result data, not reusable scan scratch. Prior 8/16-byte capacities are replaced by growth to 32 bytes."
+        }
+      ]
+    },
+    "ready_advance": {
+      "checkpoint": "ready",
+      "actual_pages": 0,
+      "final_pages": 97,
+      "observations": 3,
+      "sample_calls": [
+        35,
+        35,
+        35
+      ],
+      "sample_requested_bytes": [
+        145576,
+        145576,
+        145576
+      ],
+      "calls": 35,
+      "requested_bytes": 145576,
+      "components": [
+        {
+          "calls": 7,
+          "requested_bytes": 126672,
+          "bytes_per_call": 18096,
+          "allocation": "Seven 16-header immutable output chunks",
+          "stack": [
+            "output::Pages::push",
+            "Engine::publish_page"
+          ],
+          "lifetime": "97 published pages from an empty prefix require seven chunks. Each chunk remains shared through retained result roots; dropping the last history owner releases it. No page-header chunk pool."
+        },
+        {
+          "calls": 25,
+          "requested_bytes": 400,
+          "size_histogram": [
+            {
+              "bytes": 8,
+              "calls": 10
+            },
+            {
+              "bytes": 16,
+              "calls": 10
+            },
+            {
+              "bytes": 32,
+              "calls": 5
+            }
+          ],
+          "allocation": "Growth of ten owned immediate-write byte vectors",
+          "stack": [
+            "Engine::immediate_write",
+            "Engine::print_token",
+            "Engine::print_byte"
+          ],
+          "lifetime": "Actual diagnostic payloads retained in immutable history; all three repeated advances produce the same growth counts. This is interpreter execution, separate from Outcome diagnostic copying."
+        },
+        {
+          "calls": 3,
+          "requested_bytes": 18504,
+          "bytes_per_call": 6168,
+          "allocation": "Three 256-cell node backing chunks",
+          "stack": [
+            "nodes::Pool::take",
+            "NodeStore::allocation_page",
+            "NodeStore::alloc_with_limit"
+          ],
+          "callers": [
+            {
+              "count": 2,
+              "caller": "hyphenation_render::reconstitution::Reconstituter::character -> rebuild -> after_glue -> line_break::find_breaks"
+            },
+            {
+              "count": 1,
+              "caller": "Engine::character_run_inner"
+            }
+          ],
+          "lifetime": "Mutable nodes use pooled backing chunks. An empty uniquely owned Page returns its reset chunk to the shared free cache; the cache keeps at most 16 chunks and drops excess. These calls are empty-cache backing allocations via allocation_page, not NodeStore::writable COW clones or per-word heap allocations."
+        }
+      ]
+    },
+    "outcome_separation": "Existing late Outcome acquisition remains a separate 54 calls / 4462 requested bytes for owned diagnostic snapshots; it is excluded from suffix advance. Equality remains allocation-free. This investigation does not change that host-facing representation.",
+    "interpretation": "No engine optimization is justified by these bounded allocation counts. Page histories and diagnostic vectors have retained immutable ownership lifetimes; node storage already uses a bounded free cache. Reuse changes would need measured practical benefit, and no CPU benefit is inferred from allocation counts."
   }
 }
