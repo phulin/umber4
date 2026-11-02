@@ -156,6 +156,29 @@ fn lexical_braces_and_effective_terminator_aliases_follow_different_rules() {
 }
 
 #[test]
+fn nonzero_alignment_state_keeps_wrapper_outer_checks_and_noexpand_suppression() {
+    for wrapper in 0..3 {
+        for suppress in [false, true] {
+            let source = format!(r"{BOOT}\outer\def\out{{}}\relax \noexpand\out");
+            let mut e = setup(source.as_bytes());
+            e.begin_alignment_reader().unwrap();
+            let noexpand = e.next_token().unwrap();
+            if suppress {
+                e.expand(noexpand).unwrap();
+            }
+            let result = e.with_scanner(Scanner::Matching, |e| match wrapper {
+                0 => e.next_raw().map(|_| ()),
+                1 => e.next_token().map(|_| ()),
+                _ => e.next_lookup_meaning().map(|_| ()),
+            });
+            assert_eq!(result, if suppress { Ok(()) } else { Err(Error::Outer) });
+            assert_eq!(e.alignment_reader.state, -1000000);
+            assert_eq!(e.scanner, Scanner::Normal);
+        }
+    }
+}
+
+#[test]
 fn frozen_markers_are_outer_before_expansion_and_provenance_is_not_a_stack_truncation() {
     for scanner in [
         Scanner::Matching,

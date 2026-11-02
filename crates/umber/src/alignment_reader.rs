@@ -61,8 +61,11 @@ impl Engine<'_> {
             return Ok(false);
         }
         self.alignment_brace(raw.token, 1)?;
+        if self.alignment_reader.state != 0 {
+            return Ok(false);
+        }
         let meaning = self.raw_meaning(raw)?;
-        if self.alignment_reader.state != 0 || !matches!(meaning.command, 4 | cmd::ALIGN_CR) {
+        if !matches!(meaning.command, 4 | cmd::ALIGN_CR) {
             return Ok(false);
         }
         if self.scanner == Scanner::Aligning {

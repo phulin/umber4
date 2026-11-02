@@ -58,6 +58,10 @@ whole-document timings show no demonstrated CPU gain.
 The [font-spacing result](results/gentle-font-spacing.json) measures operation-local
 descriptor reuse and native spacing selection. It reduces instructions but
 likewise shows no demonstrated CPU improvement in the paired sample.
+The [alignment-hook result](results/gentle-alignment-hook.json) records an early
+return before meaning resolution when alignment state is nonzero. Native output
+and replay remain exact; instructions fall while paired CPU samples show no
+demonstrated improvement.
 The [local lowering-frame result](results/gentle-lowering-frame.json) records
 less general traversal bookkeeping, separate instruction evidence, and a modest
 paired CPU trend with overlapping sample ranges.
