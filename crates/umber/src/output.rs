@@ -230,9 +230,8 @@ impl Runs {
     }
     pub(crate) fn glyph(&mut self, page: &mut Page, font: u32, character: u8, x: i32, y: i32) {
         page.count_placement();
-        if self.pending.is_some_and(|run| run.0 != font) {
-            self.finish(page);
-        }
+        // The lowering caller owns all font and movement boundaries.
+        debug_assert!(self.pending.is_none_or(|run| run.0 == font));
         self.pending
             .get_or_insert((font, x, y, page.glyphs.len() as u32));
         page.glyphs.push(character);
