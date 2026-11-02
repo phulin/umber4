@@ -13,9 +13,34 @@ distinct; aliases share one Value. Validated token ranges reconstruct macro
 delimiter/KMP metadata directly in the existing pooled destination buffers.
 
 Loaded font identities, mutable parameters and exact used TFM resources persist,
-as do compiled hyphenation patterns and exceptions. Void box registers are
-supported; live box-register forests return Unsupported and are never reset or
-silently dropped.
+as do compiled hyphenation patterns, exceptions, and all live ordinary
+box-register forests. Unsupported state is never reset or silently dropped.
+
+### Box-register forests
+
+The box section uses marker 0 for entirely void registers and marker 1 for a
+complete ordinary forest. The latter records occupied register indices, a bounded
+node count, and dependency-ordered nodes: every successor and owned child refers
+to an earlier file ID. Roots are singleton ordinary boxes. All current ordinary
+node kinds persist, including ligature components, discretionary branches,
+insertions, adjustments, language nodes, and affine box/rule leader templates.
+Free and unfinished Unset nodes are invalid. An inactive rightskip leader keeps
+its template owner. Signed scalar words and running-rule dimensions persist;
+glue-setting ratios must be finite and enum/boolean fields use checked tags.
+
+Encoding borrows existing pooled nodes through an indexed iterative postorder.
+Decoding installs records directly into fresh node/payload pools, using one bulk
+file-ID map of unconsumed owned chains. Each incoming reference consumes one map
+entry. Forward, cyclic, shared, orphan, nonsingleton or nonbox register roots are
+invalid, as are malformed ligature/discretionary child structures or font/glyph
+references. Partial failure releases the remaining disjoint roots iteratively.
+Rendered glyphs require metrics; original ligature-component characters retain
+their provenance codes even when those codes have no glyph metrics. Discretionary
+replacement counts retain the full quarterword range with checked successors;
+the automatic-hyphenation limit of 127 is a producer policy.
+The node store and register roots publish together only after section validation;
+register assignment levels restart globally. Page, contribution, output, free-slot
+and allocation-history state have no box-section representation.
 
 `Engine::encode_format` requires a quiescent external-vertical boundary, closed
 groups/conditionals, no pending afterassignment, no construction/output frames,
@@ -39,9 +64,8 @@ identities have reserved IDs. Values use dense file IDs relocated once into
 pooled headers and token chunks. No pointer, Rust layout/padding, usize, Rc count,
 chunk handle, hash bucket, free list, or KMP failure array appears in the image.
 
-Dependent sections use tag 0 for their supported empty/canonical state. Fonts and
-hyphenation use tag 1 for complete records; the box section reserves tag 1 and
-returns Unsupported. The font codec retains loaded font identities, mutable
+Dependent sections use tag 0 for their supported empty/canonical state and tag 1
+for complete font, hyphenation, and box records. The font codec retains loaded font identities, mutable
 parameters, and exact raw TFM bytes once per used resource; existing checked
 parsing/scaling rebuilds derived metrics. Hyphenation uses logical trie nodes,
 sparse operations and language-qualified exceptions, with checked tree structure,
@@ -95,8 +119,8 @@ image. Setup normally ends with `\dump`; `\input plain \dump` uses the ordinary
 interpreter. `--input NAME=PATH` and `--tfm NAME=PATH` supply immutable setup assets.
 The completed image is written to a new sibling temporary file and renamed only
 after the full write succeeds. Failed initialization/encoding or publication
-leaves an existing artifact intact. Live box registers still require the box
-codec, so plain's strutbox is outside the current export subset.
+leaves an existing artifact intact. Plain's strutbox and other ordinary live box
+registers persist through the complete box codec.
 
 `umber DOCUMENT.tex --format plain.ufmt` loads that image before reading the new
 document. The original `umber DOCUMENT.tex` invocation remains available.

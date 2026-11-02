@@ -81,7 +81,7 @@ fn startup_hook_calendar_magnification_and_checkpoints_belong_to_the_new_job() {
 }
 
 #[test]
-fn dump_abandons_invocation_sources_but_rejects_semantic_work_and_dependent_state() {
+fn dump_abandons_invocation_sources_but_rejects_unfinished_semantic_work() {
     let source = format!(r"{BOOT}\def\done#1{{\dump#1\undefined}}\done{{retained}}");
     let mut e = Engine::new(source.as_bytes());
     e.advance(usize::MAX).unwrap();
@@ -97,12 +97,17 @@ fn dump_abandons_invocation_sources_but_rejects_semantic_work_and_dependent_stat
         let mut e = Engine::new(source.as_bytes());
         assert_eq!(e.advance(usize::MAX), Err(error));
     }
-    {
-        let body = r"\setbox0=\hbox{\kern1pt}";
+    for body in [
+        r"\patterns{a1b}",
+        r"\hyphenation{a-b}",
+        r"\fontdimen1\nullfont=2pt",
+        r"\setbox0=\hbox{\kern1pt}",
+    ] {
         let source = format!(r"{BOOT}{body}\end");
         let mut e = Engine::new(source.as_bytes());
         e.advance(usize::MAX).unwrap();
-        assert_eq!(e.encode_format(), Err(Error::Unsupported), "{body}");
+        let image = e.encode_format().unwrap();
+        assert!(Engine::from_format(&image, b"").is_ok(), "{body}");
     }
     let source = format!(r"{BOOT}\font\f=test\end");
     let mut e = Engine::new(source.as_bytes());

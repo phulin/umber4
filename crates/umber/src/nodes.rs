@@ -16,6 +16,8 @@ mod insertion_slots;
 #[path = "node_leaders.rs"]
 mod leader_slots;
 pub(crate) use leader_slots::{LeaderData, LeaderId};
+#[path = "node_format.rs"]
+pub(crate) mod format;
 #[path = "node_snapshot.rs"]
 mod snapshot;
 #[path = "node_transfer.rs"]

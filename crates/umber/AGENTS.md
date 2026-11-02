@@ -11,8 +11,12 @@ checked `format_wire.rs` codec; `format_values.rs`, `format_tables.rs`,
 `hyphenation_format.rs` checks compiled trie/operation records and rebuilds
 exception buckets. Their separate `font_format_tests.rs` and
 `hyphenation_format_tests.rs` check fresh images, references, failure cleanup and
-checkpoint independence. `box_format.rs` supplies an explicit empty subsystem
-codec; `format_tests.rs` checks roundtrip, malformed
+checkpoint independence. `box_format.rs` persists all live ordinary box-register forests.
+`node_format.rs`, `node_format_write.rs`, `node_format_read.rs` and
+`node_format_fields.rs` own indexed traversal, direct pooled reconstruction and
+field/forest validation, with roundtrip/ownership coverage in `box_format_tests.rs`
+and malformed-input coverage in `box_format_invalid_tests.rs`.
+`format_tests.rs` checks roundtrip, malformed
 images, new-job startup and ownership across checkpoints.
 `tables.rs` supplies pooled COW table pages with ownership tests in
 `tables_tests.rs`; `messages.rs` retains immutable chronological diagnostic prefixes with tests
