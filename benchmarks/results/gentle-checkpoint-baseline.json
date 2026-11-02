@@ -1,0 +1,616 @@
+{
+  "measured_at_utc": "2026-11-02T00:29:29.622955+00:00",
+  "engine_revision": "f5be382fcdbcb7fdd9e618a6287655dc62be2432",
+  "harness_revision": "34fc76446f49652d0dc7b6d0c92344d2c27584ae",
+  "build": "cargo build -p umber --release --example layout --example layout_allocations; default features; workspace fat LTO/codegen-units=1",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu": 3,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "command": [
+    "taskset",
+    "-c",
+    "3",
+    "python3",
+    "benchmarks/gentle.py",
+    "--assets-root",
+    "/home/phulin/umber4",
+    "--adapter",
+    "target/release/examples/layout",
+    "--replay",
+    "--allocation-adapter",
+    "target/release/examples/layout_allocations",
+    "--compare-counts"
+  ],
+  "hashes": {
+    "benchmarks/gentle.py": "369aed216171569bc56f4b9b647807dfac6975186f5bc23516a1148b47e67613",
+    "crates/umber/examples/layout.rs": "3e29cf1d28dff6d2f78d0cd3b283c1715c3715695a7cae238b20dfd7ad32af11",
+    "crates/umber/examples/layout_allocations.rs": "220ee3900cf126bd6c0baefd19a6600b87d770d98f5171433a08e2c61cca6182",
+    "crates/umber/examples/layout_support/mod.rs": "fd0ae0476b7ea3692aa4b0d0d34f7ba48eb6fa4878a1da2f52f60775ede495ec",
+    "crates/umber/examples/layout_support/document.rs": "2f2e23bb5f784ddbff7489dc0b5d8453a2676492437b4d3f7c9d4d4dec604da9",
+    "crates/umber/examples/layout_support/document_replay.rs": "beb57a71423654e02caea5a071ee21f54a9de9c64275cc7ca293090501d32076"
+  },
+  "binary_hashes": {
+    "layout": "8036b8cc5fbb1b2053012ad5bf4c98fec22df4df2cfb980dcba30a8688d4df99",
+    "layout_allocations": "b4d163160ecd72a6431e4fb980ea512b301ecd2c1a159a54e580440a2f73e183"
+  },
+  "inputs": {
+    "wrapper": "\\input plain \\message{UMBER:DOCUMENT:READY:END} \\input gentle \\end\n",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "source_date_epoch": 1772323200,
+    "gentle_sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "plain_sha256": "7c1223b880fa513542a616b86c4fa02d5ee703839427951982d7e311fd9049b2",
+    "hyphen_sha256": "2c18acdc04c1a066aeb1759905e7ca449f0616c314b5ed6aebe55b9d4a89b8d4",
+    "tfms": {
+      "cmbsy10": "b5a0bf8a30db124f56f4e48237b510be6b1a78886da1540f2394ddfaf3186c25",
+      "cmbx10": "ae296e8e41b2b0f73e9a17fdc42c743b9ddcc58d23c30acaa3411206f7824780",
+      "cmbx5": "a746151d8e3a521965bbfae2666e1528374a514375daa7d620e9b89ebbbfb0ae",
+      "cmbx6": "38ded79d7cce07fa28921f37f6b88e67bd86951a3e5af709c219d63454786ce1",
+      "cmbx7": "e7b284f0ee98b7773be9b57ca652b4bb14391370509a424b5b62b06b5cae86e4",
+      "cmbx8": "6dab44c885b7cbf567771d9cfa565f3df34d0e8124132b9b6f9fdc496a1c2eda",
+      "cmbx9": "9fb9cbe254c828bc6bdcc0ca66f81b6cb9b713edf0ef1b7fa67e231920112499",
+      "cmcsc10": "0d691f70f365e55b83096764fe0c65338842d704bd5b979ed0c6882f9e17ce0d",
+      "cmdunh10": "a94093bba5082a6e63fc95dd9bf4d10a8152a2a5f9e3913ab04dd6f60974d843",
+      "cmex10": "0890bccea1dd4d27f001ac30e86c63af35bc803e0557c35aafb1903c8d208e92",
+      "cmmi10": "e442c5487f84df70218ff37f775c87060856f5b6e04c011b6cadbbadfcf46645",
+      "cmmi5": "8839e40838381a0a3c976bdd5becf72afd60bde5a965c3d9b985c3479c6cf75e",
+      "cmmi6": "ab6ecb4aaba9ca1b4259b1d1f64309a785bbaeb09183fd79a066b7764a448a28",
+      "cmmi7": "ce55681703aae565f17286d800ea9780223132589bdbaeda1751b869aba26a38",
+      "cmmi8": "65af8c1e162a952cab8e93c834fcf43ce09b508e6c16e512ebb673cd850b0d41",
+      "cmmi9": "20672649a2f07eef8fe07ccb42eeb731023e48f2e0797ecef57c0887da46c032",
+      "cmmib10": "4465d20955917959c68d0254647e5caba1f38c4516a1fd212eab2da9b8645874",
+      "cmr10": "87f2d8981927644cbecaf3d639e96e348ea4e7be49d8804468bd8ba9ff3f5244",
+      "cmr5": "581be818f67bd11a1792d05e129abe3ea30c5cbdfce3bed8da7c5fb50f5ba95b",
+      "cmr6": "106afa9172f0c00e58b9f5cbc72b302a18aaeeaddf50caca145af9cc0b81afd2",
+      "cmr7": "28f9f4d237bdae4babef4a59d90f17686a09d6f9df0b2c3c23b2ba15f20eee82",
+      "cmr8": "4c5ae243ac0aa254e7ec7f0602cc2a4351e5011ff0cb6dc150a5f6de19585de6",
+      "cmr9": "2ffa73e8446c1d46c3509a0f65ff97d4d09de46f48e1ce578a1004498b67dba9",
+      "cmsl10": "dcbfc25c5aac16dc2b820e089a00aedef20a1af6d8d3c2efa54f6f17a985d33f",
+      "cmsl8": "581080f4ebd96f58b4b6f774ea2882f5e83fef7c932647a7c957f7e8db1f7823",
+      "cmsl9": "bb0f9deb6852caed902cb04bfc8e8333345a37946bd0b6bd56d11848e729d3ca",
+      "cmsltt10": "c093023e8958e30678808a843f4f4248f5ab609f8994182fded845590fe19cc3",
+      "cmss10": "431472f34665b6243a32936215f2e17d1f124cdf8513e86e2bedc4c3de3f980b",
+      "cmssbx10": "59fcefaa9436cb00b1579a549b4a16b38606bb1b6138743d05ea35a74f168f54",
+      "cmssi10": "9faee1d46e86de1eb7a8f7a53522d15fa8f06e75d292d8e6989dfcd252b322c7",
+      "cmssq8": "a813de9f318949969010f4a363b2c3076e5cefa4436e779404453b2c34435504",
+      "cmssqi8": "78673efe5657b8a293e160c0ac88834778cf9a5ed1922a0bfcca3f5562c17f88",
+      "cmsy10": "0ca13d421ac7133271aed7c935099ecf3d1d08ac9e15f81acb34a16564ab8a46",
+      "cmsy5": "6b7dc18cba9ca8996d7b146f1ed78d9227577b26248083310fec227692198ca5",
+      "cmsy6": "137eb9f38f661c66309614066a7b5d63d8969d33aba0c9efee9f844a4ce65b50",
+      "cmsy7": "4f59bbf683e947c807158641621982dc83f55fec042fea7963d8ce9f9da98256",
+      "cmsy8": "84c37f07ca360c41ad0a0fba7387d279d72457c69bdae03653208c683d8de6bc",
+      "cmsy9": "b57c5c42a7991a004ee1b40b340d7bd12cc75ab0a6f7daf7a207827504f91712",
+      "cmti10": "46a66e937f809c4fbe317947b583a14b408aca41ecb835eca3be46391190432a",
+      "cmti7": "78921699d46fd39b25e2e3ea08b96d9c3ad9c858a6ad2cc1aa60204a36ce88f0",
+      "cmti8": "7a212edaa5bbb6898b6196e32a5753811dc3295a18b9bcd9c727c23ce0c21a4e",
+      "cmti9": "bae91797b96e40fbeb97e2ea3184070e7cf707b72422c7c107edf1d1d5a10abb",
+      "cmtt10": "11f3331c958b696fd484fe45c28285622617a2593d7a34511a1d6b279e1578a2",
+      "cmtt8": "62f6142387fe8d4be3ba2d46034e76fd6c3fc1d22ab44663a4eaa3f42b97039e",
+      "cmtt9": "2989dbdeed1533cdeba5dcd0edee59c4509b5c934b3db8847de78d8c94a9966d",
+      "cmu10": "7896645187499d599c330a8cbebc4ba1e21fa88b4ad46a86ef3db53cfa39b6f7",
+      "manfnt": "74b8999aada95b6c45d8a8846c3e210050383a852322518a109e98a54ac5a4ad"
+    }
+  },
+  "native_reference": {
+    "version": "clean pdfTeX 1.40.25",
+    "dvi_sha256": "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+    "source": "retained gentle-native-pdftex14025-tl2026 run/gentle.dvi; TFM union from format/gentle-plain.fls and run/gentle.fls"
+  },
+  "endpoint_scopes": {
+    "reference": "One fresh-engine wall sample: engine setup includes registration of already loaded 47 TFM resources; advance includes unchanged plain+Gentle wrapper execution; outcome is separate. Host I/O and JSON excluded. Not a total CLI/native startup comparison.",
+    "samples": "Wall nanoseconds; five samples after one explicit warmup per checkpoint, following separate correctness preparation. First restore abandons completed state; stable restore repeats 200 times; capture retains 200 snapshots then release drops them. Per-operation batch averages reported.",
+    "suffix_advance": "Only advance to completion from the saved boundary; excludes restore, Outcome acquisition/release and equality scans.",
+    "equality": "Complete result plus all retained prefix scans. Initial completed-result retention/drop validation precedes timers.",
+    "allocations": "Separate instrumented executable, requested bytes/calls and live requested bytes, not RSS/allocator usable size. Host bundles and pre-reserved helper/stage Vec backings excluded; all contained semantic owners counted.",
+    "allocation_preparation": "Independent reference output/resources retained alongside replay engine and selected checkpoint prefixes; includes discovery/validation high-water work, not a cold single-engine footprint. Capturing 200 snapshots raises retained metadata capacity.",
+    "allocation_replays": "Explicit stages measure late page 88 to 97 only, after all four checkpoints validate. Repeated transient intervals include restore, advance, Outcome acquisition, full/prefix equality and result release. READY/early allocation intervals are not separately exposed.",
+    "allocation_attribution": "Outcome acquisition deep-copies public Diagnostic Vec/byte payloads; Pages cloning only retains a root+endpoint. The four advance allocations are not partitioned here into required suffix-output ownership versus reusable engine bookkeeping."
+  },
+  "medians_ns": [
+    {
+      "label": "ready",
+      "requested_pages": 0,
+      "actual_pages": 0,
+      "restore_completed_ns": 63632,
+      "stable_restore_ns": 2014.205,
+      "capture_retained_ns": 5353.64,
+      "release_retained_ns": 867.81,
+      "suffix_advance_ns": 41915279,
+      "outcome_ns": 15182,
+      "equality_ns": 6767511,
+      "outcome_release_ns": 5273
+    },
+    {
+      "label": "early",
+      "requested_pages": 10,
+      "actual_pages": 10,
+      "restore_completed_ns": 41734,
+      "stable_restore_ns": 2392.815,
+      "capture_retained_ns": 4879.155,
+      "release_retained_ns": 1075.58,
+      "suffix_advance_ns": 38081694,
+      "outcome_ns": 9399,
+      "equality_ns": 6403511,
+      "outcome_release_ns": 4324
+    },
+    {
+      "label": "middle",
+      "requested_pages": 49,
+      "actual_pages": 49,
+      "restore_completed_ns": 29284,
+      "stable_restore_ns": 2284.715,
+      "capture_retained_ns": 3977.91,
+      "release_retained_ns": 994.12,
+      "suffix_advance_ns": 18506408,
+      "outcome_ns": 6716,
+      "equality_ns": 6079105,
+      "outcome_release_ns": 3782
+    },
+    {
+      "label": "late",
+      "requested_pages": 88,
+      "actual_pages": 88,
+      "restore_completed_ns": 17354,
+      "stable_restore_ns": 2572.105,
+      "capture_retained_ns": 3007.125,
+      "release_retained_ns": 1120.72,
+      "suffix_advance_ns": 2772794,
+      "outcome_ns": 6036,
+      "equality_ns": 6047459,
+      "outcome_release_ns": 3863
+    }
+  ],
+  "late_transient_allocation_deltas": [
+    {
+      "replays": 1,
+      "calls": 58,
+      "requested_bytes": 22614,
+      "calls_per_replay": 58.0,
+      "requested_bytes_per_replay": 22614.0,
+      "live_bytes": 13104662
+    },
+    {
+      "replays": 5,
+      "calls": 290,
+      "requested_bytes": 113070,
+      "calls_per_replay": 58.0,
+      "requested_bytes_per_replay": 22614.0,
+      "live_bytes": 13104662
+    },
+    {
+      "replays": 20,
+      "calls": 1160,
+      "requested_bytes": 452280,
+      "calls_per_replay": 58.0,
+      "requested_bytes_per_replay": 22614.0,
+      "live_bytes": 13104662
+    }
+  ],
+  "initial_late_suffix": {
+    "advance_calls": 4,
+    "advance_requested_bytes": 18152,
+    "outcome_calls": 54,
+    "outcome_requested_bytes": 4462,
+    "equality_calls": 0
+  },
+  "validation": {
+    "native_output": "97 pages, 121839 ordered glyphs, 864 rules, resource-name bytes/scaled sizes/coordinates/order and all BOP counters exact",
+    "replay": "READY 0/early 10/middle 49/late 88, full counts/diagnostics/pages/boxes/placements/font bytes equal; old prefixes/completed results survive subsequent replay and result drops",
+    "lifetimes": "1/5/20 late transient phases have equal live bytes; retained three suffix Outcomes release back to that level; all engine/checkpoint/reference/result owners released to zero",
+    "additional": "Small mixed-font native source; missing/late READY and zero-page rejection; legacy 600-paragraph replay/allocation modes pass"
+  },
+  "raw": {
+    "pages": 97,
+    "glyphs": 121839,
+    "rules": 864,
+    "comparison": "all ordered events match",
+    "bop_counts": true,
+    "prepared_replay": {
+      "pages": 97,
+      "clock": "wall",
+      "repeats": 5,
+      "warmups": 1,
+      "iterations": 200,
+      "reference": {
+        "samples": 1,
+        "engine_setup_ns": 486890,
+        "advance_ns": 48005935,
+        "outcome_ns": 6685
+      },
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ],
+      "samples": [
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 63632,
+          "stable_restore_ns": 1954.805,
+          "capture_retained_ns": 5353.64,
+          "release_retained_ns": 797.7,
+          "suffix_advance_ns": 41334887,
+          "outcome_ns": 21507,
+          "equality_ns": 6756773,
+          "outcome_release_ns": 8827
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 97770,
+          "stable_restore_ns": 2103.275,
+          "capture_retained_ns": 5880.63,
+          "release_retained_ns": 903.54,
+          "suffix_advance_ns": 42943941,
+          "outcome_ns": 17024,
+          "equality_ns": 6847807,
+          "outcome_release_ns": 6144
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 67166,
+          "stable_restore_ns": 2123.34,
+          "capture_retained_ns": 5630.72,
+          "release_retained_ns": 826.375,
+          "suffix_advance_ns": 42479249,
+          "outcome_ns": 11410,
+          "equality_ns": 6328200,
+          "outcome_release_ns": 5184
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 48548,
+          "stable_restore_ns": 1980.775,
+          "capture_retained_ns": 5254.755,
+          "release_retained_ns": 867.81,
+          "suffix_advance_ns": 41589431,
+          "outcome_ns": 10600,
+          "equality_ns": 6767511,
+          "outcome_release_ns": 4463
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 57888,
+          "stable_restore_ns": 2014.205,
+          "capture_retained_ns": 5335.025,
+          "release_retained_ns": 935.865,
+          "suffix_advance_ns": 41915279,
+          "outcome_ns": 15182,
+          "equality_ns": 6830302,
+          "outcome_release_ns": 5273
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 66384,
+          "stable_restore_ns": 2278.165,
+          "capture_retained_ns": 4879.155,
+          "release_retained_ns": 1134.88,
+          "suffix_advance_ns": 37431461,
+          "outcome_ns": 7576,
+          "equality_ns": 6058743,
+          "outcome_release_ns": 3814
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 38791,
+          "stable_restore_ns": 2392.815,
+          "capture_retained_ns": 4540.475,
+          "release_retained_ns": 1039.105,
+          "suffix_advance_ns": 36771639,
+          "outcome_ns": 10158,
+          "equality_ns": 6403511,
+          "outcome_release_ns": 3904
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 38992,
+          "stable_restore_ns": 2352.725,
+          "capture_retained_ns": 4519.11,
+          "release_retained_ns": 1075.58,
+          "suffix_advance_ns": 39522986,
+          "outcome_ns": 9399,
+          "equality_ns": 6947049,
+          "outcome_release_ns": 4444
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 44306,
+          "stable_restore_ns": 2730.09,
+          "capture_retained_ns": 6012.785,
+          "release_retained_ns": 1172.41,
+          "suffix_advance_ns": 39940001,
+          "outcome_ns": 8236,
+          "equality_ns": 6292290,
+          "outcome_release_ns": 4324
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 41734,
+          "stable_restore_ns": 2455.97,
+          "capture_retained_ns": 4961.82,
+          "release_retained_ns": 1002.125,
+          "suffix_advance_ns": 38081694,
+          "outcome_ns": 11210,
+          "equality_ns": 6617417,
+          "outcome_release_ns": 4324
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 36500,
+          "stable_restore_ns": 2406.675,
+          "capture_retained_ns": 5022.625,
+          "release_retained_ns": 994.12,
+          "suffix_advance_ns": 18540027,
+          "outcome_ns": 8066,
+          "equality_ns": 6062833,
+          "outcome_release_ns": 3732
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 29785,
+          "stable_restore_ns": 2511.805,
+          "capture_retained_ns": 3977.91,
+          "release_retained_ns": 1102.705,
+          "suffix_advance_ns": 18861469,
+          "outcome_ns": 7046,
+          "equality_ns": 6161684,
+          "outcome_release_ns": 3782
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 29284,
+          "stable_restore_ns": 2271.865,
+          "capture_retained_ns": 3803.52,
+          "release_retained_ns": 986.01,
+          "suffix_advance_ns": 18370286,
+          "outcome_ns": 6716,
+          "equality_ns": 6079105,
+          "outcome_release_ns": 3973
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 26782,
+          "stable_restore_ns": 2284.715,
+          "capture_retained_ns": 4002.58,
+          "release_retained_ns": 1034.55,
+          "suffix_advance_ns": 18506408,
+          "outcome_ns": 5904,
+          "equality_ns": 5834841,
+          "outcome_release_ns": 3683
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 25451,
+          "stable_restore_ns": 2278.92,
+          "capture_retained_ns": 3254.625,
+          "release_retained_ns": 964.145,
+          "suffix_advance_ns": 18063465,
+          "outcome_ns": 6525,
+          "equality_ns": 6734093,
+          "outcome_release_ns": 4505
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 27544,
+          "stable_restore_ns": 3024.775,
+          "capture_retained_ns": 4411.12,
+          "release_retained_ns": 1216.655,
+          "suffix_advance_ns": 3388269,
+          "outcome_ns": 8086,
+          "equality_ns": 7066616,
+          "outcome_release_ns": 5344
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 24741,
+          "stable_restore_ns": 2962.475,
+          "capture_retained_ns": 4046.52,
+          "release_retained_ns": 1090.895,
+          "suffix_advance_ns": 2772794,
+          "outcome_ns": 7406,
+          "equality_ns": 6306112,
+          "outcome_release_ns": 3643
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 17304,
+          "stable_restore_ns": 2462.56,
+          "capture_retained_ns": 2874.555,
+          "release_retained_ns": 1023.695,
+          "suffix_advance_ns": 3034709,
+          "outcome_ns": 5724,
+          "equality_ns": 5902531,
+          "outcome_release_ns": 3863
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 16093,
+          "stable_restore_ns": 2553.84,
+          "capture_retained_ns": 2888.175,
+          "release_retained_ns": 1164.605,
+          "suffix_advance_ns": 2731390,
+          "outcome_ns": 6036,
+          "equality_ns": 6047459,
+          "outcome_release_ns": 3404
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 17354,
+          "stable_restore_ns": 2572.105,
+          "capture_retained_ns": 3007.125,
+          "release_retained_ns": 1120.72,
+          "suffix_advance_ns": 2654797,
+          "outcome_ns": 5336,
+          "equality_ns": 5947788,
+          "outcome_release_ns": 4033
+        }
+      ],
+      "validation": "complete output and retained prefixes/results equal"
+    },
+    "prepared_allocations": {
+      "stages": [
+        {
+          "stage": "begin",
+          "calls": 0,
+          "requested_bytes": 0,
+          "live_bytes": 0,
+          "peak_bytes": 0
+        },
+        {
+          "stage": "prepared_with_reference_and_prefixes",
+          "calls": 408609,
+          "requested_bytes": 47622710,
+          "live_bytes": 12496774,
+          "peak_bytes": 12798014
+        },
+        {
+          "stage": "completed_state_restored_to_late",
+          "calls": 408609,
+          "requested_bytes": 47622710,
+          "live_bytes": 12478646,
+          "peak_bytes": 12798014
+        },
+        {
+          "stage": "captures_retained",
+          "calls": 408824,
+          "requested_bytes": 48263702,
+          "live_bytes": 13086534,
+          "peak_bytes": 13086534
+        },
+        {
+          "stage": "captures_released",
+          "calls": 408824,
+          "requested_bytes": 48263702,
+          "live_bytes": 13086534,
+          "peak_bytes": 13086534
+        },
+        {
+          "stage": "stable_restores",
+          "calls": 408824,
+          "requested_bytes": 48263702,
+          "live_bytes": 13086534,
+          "peak_bytes": 13086534
+        },
+        {
+          "stage": "suffix_advanced",
+          "calls": 408828,
+          "requested_bytes": 48281854,
+          "live_bytes": 13104662,
+          "peak_bytes": 13104662
+        },
+        {
+          "stage": "suffix_outcome_acquired",
+          "calls": 408882,
+          "requested_bytes": 48286316,
+          "live_bytes": 13107588,
+          "peak_bytes": 13107588
+        },
+        {
+          "stage": "suffix_equality_checked",
+          "calls": 408882,
+          "requested_bytes": 48286316,
+          "live_bytes": 13107588,
+          "peak_bytes": 13107588
+        },
+        {
+          "stage": "suffix_outcome_released",
+          "calls": 408882,
+          "requested_bytes": 48286316,
+          "live_bytes": 13104662,
+          "peak_bytes": 13107588
+        },
+        {
+          "stage": "replay_1_with_transient_outcomes",
+          "calls": 408940,
+          "requested_bytes": 48308930,
+          "live_bytes": 13104662,
+          "peak_bytes": 13107588
+        },
+        {
+          "stage": "replay_5_with_transient_outcomes",
+          "calls": 409230,
+          "requested_bytes": 48422000,
+          "live_bytes": 13104662,
+          "peak_bytes": 13107588
+        },
+        {
+          "stage": "replay_20_with_transient_outcomes",
+          "calls": 410390,
+          "requested_bytes": 48874280,
+          "live_bytes": 13104662,
+          "peak_bytes": 13107588
+        },
+        {
+          "stage": "three_suffix_outcomes_retained",
+          "calls": 410564,
+          "requested_bytes": 48942122,
+          "live_bytes": 13149632,
+          "peak_bytes": 13149632
+        },
+        {
+          "stage": "retained_suffixes_checked",
+          "calls": 410564,
+          "requested_bytes": 48942122,
+          "live_bytes": 13149632,
+          "peak_bytes": 13149632
+        },
+        {
+          "stage": "retained_suffixes_released",
+          "calls": 410564,
+          "requested_bytes": 48942122,
+          "live_bytes": 13104662,
+          "peak_bytes": 13149632
+        },
+        {
+          "stage": "released_results_replay_advanced",
+          "calls": 410568,
+          "requested_bytes": 48960274,
+          "live_bytes": 13104662,
+          "peak_bytes": 13149632
+        },
+        {
+          "stage": "released_results_replay_checked",
+          "calls": 410622,
+          "requested_bytes": 48964736,
+          "live_bytes": 13104662,
+          "peak_bytes": 13149632
+        },
+        {
+          "stage": "engine_released",
+          "calls": 410622,
+          "requested_bytes": 48964736,
+          "live_bytes": 12825286,
+          "peak_bytes": 13149632
+        },
+        {
+          "stage": "all_engine_owners_released",
+          "calls": 410644,
+          "requested_bytes": 48966496,
+          "live_bytes": 0,
+          "peak_bytes": 13149632
+        }
+      ]
+    }
+  }
+}

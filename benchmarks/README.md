@@ -61,6 +61,8 @@ replay stages include transient Outcome acquisition, equality, and release.
 The last stage follows release
 of the engine, checkpoints, reference, and all retained results. Allocation mode
 emits only its stage JSON and never supplies ordinary timing samples.
+The [prepared Gentle baseline](results/gentle-checkpoint-baseline.json) retains
+release samples, allocation stages, input/tool hashes, and endpoint limitations.
 
 `layout.py` measures three prose documents with real TFM fonts, line/page
 construction, and checkpoint replay. It checks all native DVI glyph coordinates
