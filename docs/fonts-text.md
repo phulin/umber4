@@ -37,7 +37,11 @@ detached-result access share the same immutable metric lookup.
 Paragraph measurement and horizontal packing borrow font tables and the scaled
 catalog immutably for each traversal. A local reader retains the last font ID
 and resolved descriptor; resolution remains lazy in node visit order, and every
-glyph lookup checks character existence. The reader adds no checkpoint state.
+glyph lookup checks character existence. It returns a reference to the immutable
+metric record, valid for the source catalog's borrow rather than the reader's
+next lookup. Consumers read the fields they need without copying the complete
+record. Owned metric APIs remain available for operations that retain scalar
+values across mutation. The reader adds no checkpoint state.
 
 Document state owns loaded-font order and IDs, source resource names, sizes,
 mutable font parameters, hyphen/skew characters, and font identifier names.

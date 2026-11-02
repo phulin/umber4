@@ -52,6 +52,9 @@ The [general text-cursor result](results/gentle-ligature-cursor.json) compares
 saved release binaries on loaded-format Gentle. It separates paired CPU/RSS
 samples from instruction profiles, checks native tail-query visibility and full
 output/replay, and records the limits of the modest measured CPU difference.
+The [borrowed-metric result](results/gentle-metric-borrow.json) records a small
+metric-representation refactor: full-record copies disappear, while paired
+whole-document timings show no demonstrated CPU gain.
 
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the

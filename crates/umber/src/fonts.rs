@@ -40,7 +40,7 @@ impl<'a> MetricReader<'a> {
             last: None,
         }
     }
-    pub(crate) fn get(&mut self, font: u32, character: u8) -> Option<Metrics> {
+    pub(crate) fn get(&mut self, font: u32, character: u8) -> Option<&'a Metrics> {
         let metrics = match self.last {
             Some((id, metrics)) if id == font => metrics,
             _ => {
@@ -53,7 +53,7 @@ impl<'a> MetricReader<'a> {
                 metrics
             }
         };
-        metrics.metrics(character)
+        metrics.metrics_ref(character)
     }
 }
 impl Default for Fonts {

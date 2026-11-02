@@ -52,17 +52,24 @@ fn discretionaries(e: &Engine<'_>) -> usize {
 fn borrowed_metrics_switch_fonts_and_check_each_character() {
     let mut e = engine(br"\font\a=test\font\b=test at12pt\end");
     build(&mut e);
-    let mut metrics = crate::fonts::MetricReader::new(&e.document.fonts, &e.font_catalog);
-    assert_eq!(metrics.get(1, b'a').unwrap().width, Scaled(491520));
-    // A cached font must still reject absent and out-of-range characters.
-    assert!(metrics.get(1, 0).is_none());
-    assert!(metrics.get(1, 200).is_none());
-    assert_eq!(metrics.get(1, b'A').unwrap().width, Scaled(163840));
-    assert_eq!(metrics.get(2, b'a').unwrap().width, Scaled(589824));
-    assert_eq!(metrics.get(1, b'a').unwrap().width, Scaled(491520));
-    assert!(metrics.get(0, b'a').is_none());
-    assert!(metrics.get(u32::MAX, b'a').is_none());
-    assert_eq!(metrics.get(2, b'A').unwrap().width, Scaled(196608));
+    let (first, last) = {
+        let mut metrics = crate::fonts::MetricReader::new(&e.document.fonts, &e.font_catalog);
+        let first = metrics.get(1, b'a').unwrap();
+        assert_eq!(first.width, Scaled(491520));
+        // A cached font must still reject absent and out-of-range characters.
+        assert!(metrics.get(1, 0).is_none());
+        assert!(metrics.get(1, 200).is_none());
+        assert_eq!(metrics.get(1, b'A').unwrap().width, Scaled(163840));
+        assert_eq!(metrics.get(2, b'a').unwrap().width, Scaled(589824));
+        assert_eq!(metrics.get(1, b'a').unwrap().width, Scaled(491520));
+        assert!(metrics.get(0, b'a').is_none());
+        assert!(metrics.get(u32::MAX, b'a').is_none());
+        assert_eq!(metrics.get(2, b'A').unwrap().width, Scaled(196608));
+        (first, metrics.get(2, b'A').unwrap())
+    };
+    // Records borrow their source storage, independently of the cache/reader.
+    assert_eq!(first.width, Scaled(491520));
+    assert_eq!(last.width, Scaled(196608));
 }
 #[test]
 fn italic_correction_uses_tail_glyph_font_and_retains_zero_explicit_kerns() {

@@ -109,8 +109,11 @@ impl ScaledFont {
         self.present[character as usize / 64] & (1u64 << (character % 64)) != 0
     }
     pub fn metrics(&self, character: u8) -> Option<Metrics> {
+        self.metrics_ref(character).copied()
+    }
+    pub fn metrics_ref(&self, character: u8) -> Option<&Metrics> {
         self.exists(character)
-            .then(|| self.metrics[character as usize - self.first])
+            .then(|| &self.metrics[character as usize - self.first])
     }
     pub fn metric_fields(&self, character: u8) -> Option<Metrics> {
         self.metrics
