@@ -78,6 +78,11 @@ pairs faster), with a separate 23.94% instruction reduction. Executable text gro
 31.31% and RSS increases by 284–412 KiB. It establishes no held-out result or
 default build-policy change; [usage](../docs/performance.md#optional-default-feature-pgo)
 keeps generated profiles and binaries in ignored checkout-local targets.
+The [current Gentle/CHOMP comparison](results/gentle-chomp-pgo.json) rebuilds PGO
+after page/job magnification validation, still training only on Gentle. Held-out
+CHOMP matches native geometry, magnification and replay; paired CLI CPU is 7.43%
+lower, versus 13.84% on Gentle. Separate prepared replay samples consume retained
+output and report suffix wall time, with no generic TeX-wide claim.
 
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the

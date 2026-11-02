@@ -49,6 +49,8 @@ and the corresponding [e-TeX extensions](https://github.com/TeX-Live/texlive-sou
 
 ## 1. The execution loop
 
+List-tail removal primitives `\unskip`, `\unkern`, and `\unpenalty` are unsupported.
+
 ### Horizontal boxes
 
 Executed `\hbox` accepts natural size, `to`, and signed `spread` specifications.

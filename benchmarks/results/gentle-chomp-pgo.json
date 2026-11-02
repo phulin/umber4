@@ -1,0 +1,3667 @@
+{
+  "measured_at_utc": "2026-11-02T21:46:25.545971+00:00",
+  "revision": "8473e767a18c5788bba8dfa6895757461728ad36",
+  "kind": "Current default-feature PGO trained only on Gentle; Gentle in-sample and genuinely held-out CHOMP evaluation. No runtime/harness/default-policy changes.",
+  "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+  "profdata_tool": "/home/phulin/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "cpu": 3,
+  "build": {
+    "baseline": "Current standard cargo build --release -p umber --bin umber --example layout confirmed fresh at8473e76; saved exact artifacts before instrumentation. Standard target/release remains unchanged.",
+    "release_profile": "Default features, normal release fat LTO/codegen-units=1/debug=1. Only profile-generate/use compiler flags differ. No native-profile/CPU/custom inline/alignment flags.",
+    "instrumented": {
+      "argv": [
+        "cargo",
+        "build",
+        "--release",
+        "-p",
+        "umber",
+        "--bin",
+        "umber",
+        "--example",
+        "layout"
+      ],
+      "env": {
+        "CARGO_TARGET_DIR": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/generate",
+        "CARGO_ENCODED_RUSTFLAGS": "-C\u001fprofile-generate=/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw"
+      }
+    },
+    "optimized": {
+      "argv": [
+        "cargo",
+        "build",
+        "--release",
+        "-p",
+        "umber",
+        "--bin",
+        "umber",
+        "--example",
+        "layout"
+      ],
+      "env": {
+        "CARGO_TARGET_DIR": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/use",
+        "CARGO_ENCODED_RUSTFLAGS": "-C\u001fprofile-use=/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/gentle.profdata"
+      }
+    },
+    "cargo_fingerprints": {
+      "generate": {
+        "features": "[]",
+        "rustflags": [
+          "-C",
+          "profile-generate=/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw"
+        ],
+        "profile": 2146796760421268657
+      },
+      "use": {
+        "features": "[]",
+        "rustflags": [
+          "-C",
+          "profile-use=/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/gentle.profdata"
+        ],
+        "profile": 2146796760421268657
+      }
+    },
+    "cache": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102",
+    "diagnostics": "Build and merge logs contain no warnings/errors/hash mismatches. No custom missing-function warning flag was enabled."
+  },
+  "training": {
+    "scope": "Only unchanged Gentle own-format CLI plus existing real source/format/native/replay helper, repeats1/iterations1. No CHOMP or AMS executes in the instrumented training binaries. Training includes plain/hyphen source initialization and repeated Gentle suffixes. Incidental training/validation timing fields are discarded.",
+    "commands": {
+      "LLVM_PROFILE_FILE": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/%m-%p.profraw",
+      "commands": [
+        [
+          "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/generate/release/umber",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        [
+          "python3",
+          "benchmarks/gentle.py",
+          "--assets-root",
+          "/home/phulin/umber4",
+          "--adapter",
+          "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/generate/release/examples/layout",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--compare-counts",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      ]
+    },
+    "merge_command": [
+      "/home/phulin/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+      "merge",
+      "-o",
+      "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/gentle.profdata",
+      "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/179382425411308647_0-690906.profraw",
+      "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/179382425411308647_0-690907.profraw",
+      "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/179382425411308647_0-690908.profraw",
+      "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/7344736213827025244_0-690875.profraw"
+    ],
+    "raw_profiles": [
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/179382425411308647_0-690906.profraw",
+        "bytes": 343496,
+        "sha256": "a477a306d33f7b32e5361f9aa8a8e62a218800258b4f49b2e8796230f35079fe"
+      },
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/179382425411308647_0-690907.profraw",
+        "bytes": 343816,
+        "sha256": "ffa6610c9c55fa0846e25155bbd61602fcce891af7188919f6539f60db50e54e"
+      },
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/179382425411308647_0-690908.profraw",
+        "bytes": 343432,
+        "sha256": "ef4be9953df2cb6c4bd36f0889f427d36a4310b783387ce76ce6dd6f97b0650d"
+      },
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/raw/7344736213827025244_0-690875.profraw",
+        "bytes": 327136,
+        "sha256": "5cae522ce4f653f073dc0ee97ccaa7aa11cbe1853224dc9a9327349159053bfe"
+      }
+    ],
+    "merged_profile": {
+      "path": "/home/phulin/umber4/target/pgo-general/gentle-mag-20261102/gentle.profdata",
+      "bytes": 546384,
+      "sha256": "38c341ad28d3ff22cd34734687d6e25288d990ddf23e5e271e8a639c973e659b"
+    },
+    "IR_summary": "Instrumentation level: IR  entry_first = 0  instrument_loop_entries = 0\nTotal functions: 1516\nMaximum function count: 16632801\nMaximum internal block count: 11189543\nTotal number of blocks: 30892\nTotal count: 394020577\n",
+    "coverage": {
+      "IR_records": 1516,
+      "records_with_positive_stored_counters": 1048,
+      "records_with_all_zero_stored_counters": 468,
+      "stored_counters": 30892,
+      "positive_stored_counters": 8294,
+      "limit": "Stored IR counters do not establish complete semantic feature coverage."
+    }
+  },
+  "inputs": {
+    "format": {
+      "path": "/tmp/umber-pgo-cross-document/plain.ufmt",
+      "bytes": 232021,
+      "sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+      "embedded_TFM_resources": 47
+    },
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "gentle": {
+      "path": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f"
+    },
+    "chomp": {
+      "url": "https://sites.math.rutgers.edu/~zeilberg/mamarim/mamarimTeX/chomp.tex",
+      "author_page": "https://sites.math.rutgers.edu/~zeilberg/mamarim/mamarimhtml/chomp.html",
+      "source_bytes": 30861,
+      "source_lines": 725,
+      "source_sha256": "442078121d56122d058ea5e30764f49f60b684d68b0e36e71a8f85d534dbe09e",
+      "native_command": [
+        "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+        "-progname=pdftex",
+        "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+        "-jobname=chomp",
+        "-output-format=dvi",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-recorder",
+        "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex"
+      ],
+      "native_environment": {
+        "LD_LIBRARY_PATH": "/home/phulin/umber4/.tools/pdftex/root/usr/lib/x86_64-linux-gnu",
+        "TEXMFCNF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/web2c",
+        "TEXMF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist",
+        "TEXINPUTS": ".:/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex//",
+        "TFMFONTS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm//",
+        "TEXFONTMAPS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/map//",
+        "SOURCE_DATE_EPOCH": "1772323200",
+        "FORCE_SOURCE_DATE": "1"
+      },
+      "native_output": {
+        "pages": 10,
+        "glyphs": 22684,
+        "rules": 2,
+        "dvi_bytes": 41148,
+        "dvi_sha256": "1d7020e6d252ffe9ee3cc0b16a9d30b35660f29b5447e2ad20b1d1f8b3d95c58"
+      },
+      "native_dvi_units": [
+        25400000,
+        473628672,
+        1095
+      ],
+      "extra_tfms": {}
+    },
+    "heldout_source_path": "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+    "heldout_retrieval_http_date": "Mon, 02 Nov 2026 21:20:05 GMT",
+    "heldout_probe_sha256": "d00bae9b19477db86fa93edb2a1a9fa86a3e139b005f591d0ce8cb2dcee62339",
+    "heldout_native_parser": "Current generic DVI parser validates actual magnification in pre/postamble; no mag1000 parser override or source/DVI edit.",
+    "timed_extra_input_mappings": 0,
+    "timed_extra_TFM_mappings": 0
+  },
+  "correctness": {
+    "commands": {
+      "before": {
+        "gentle": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-pgo-cross-document/layout-before",
+          "--compare-counts",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-format": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-pgo-cross-document/layout-before",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-source": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-pgo-cross-document/layout-before",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/source-chomp.tex",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--input",
+          "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+          "--input",
+          "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+          "--input",
+          "chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      },
+      "after": {
+        "gentle": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-pgo-cross-document/layout-after",
+          "--compare-counts",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-format": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-pgo-cross-document/layout-after",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-source": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-pgo-cross-document/layout-after",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/source-chomp.tex",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--input",
+          "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+          "--input",
+          "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+          "--input",
+          "chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      }
+    },
+    "results": {
+      "before": {
+        "gentle": {
+          "pages": 97,
+          "magnification": 1000,
+          "glyphs": 121839,
+          "rules": 864,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": true,
+          "replay": {
+            "pages": 97,
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          "artifact": "/tmp/umber-pgo-cross-document/before-gentle-gate.json",
+          "sha256": "a2eeb1e71072efe2e9177b321683f0813955a500ebc10c6f1ae488bce3d106b1"
+        },
+        "chomp-format": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": null,
+          "replay": {
+            "pages": 10,
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          "artifact": "/tmp/umber-pgo-cross-document/before-chomp-format-gate.json",
+          "sha256": "060bc183be34dd13b8553c1cf9de226c4da672858ade020189ab1bca0e810078"
+        },
+        "chomp-source": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "source",
+          "source_and_format_output_equal": null,
+          "replay": {
+            "pages": 10,
+            "checkpoints": [
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          "artifact": "/tmp/umber-pgo-cross-document/before-chomp-source-gate.json",
+          "sha256": "39e732b31a0e674a31ff6932f9a43035d7f9a4de0f43405b1e479e8363c53746"
+        },
+        "chomp_source_and_format_output_equal": true
+      },
+      "after": {
+        "gentle": {
+          "pages": 97,
+          "magnification": 1000,
+          "glyphs": 121839,
+          "rules": 864,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": true,
+          "replay": {
+            "pages": 97,
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          "artifact": "/tmp/umber-pgo-cross-document/after-gentle-gate.json",
+          "sha256": "c2287e1a0b2817fa995378c1c976cd830b29d6e2988e1ee954a91513875f6e27"
+        },
+        "chomp-format": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": null,
+          "replay": {
+            "pages": 10,
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          "artifact": "/tmp/umber-pgo-cross-document/after-chomp-format-gate.json",
+          "sha256": "63bda336f4f33a18fed33b6fc787ecc4e0eb7031f1d9285fbae7ed61247760a6"
+        },
+        "chomp-source": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "source",
+          "source_and_format_output_equal": null,
+          "replay": {
+            "pages": 10,
+            "checkpoints": [
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          "artifact": "/tmp/umber-pgo-cross-document/after-chomp-source-gate.json",
+          "sha256": "d1a2cd12192b0309552012edacf6c8ed1e3177df6357c175dfe4c622df05dc3e"
+        },
+        "chomp_source_and_format_output_equal": true
+      }
+    },
+    "scope": "Fresh standard and fresh current PGO each match all ordered glyph/font/size/raw-position/rule events, magnification and native BOP counts. Magnification preserves the exact physical global scale: Gentle1000 and CHOMP1095. Source and loaded-format paths both equal the same independent native reference. Loaded READY and page-progress replays plus sourceCHOMP page-progress replay validate retained prefixes/completed results. Older PGO metadata is not used."
+  },
+  "cli_endpoint": "Whole loaded-format CLI includes process/image decode, unchanged document, detached output retention, diagnostics and teardown; excludes DVI/JSON serialization. One quiet cohort per case, CPU3, one warmup per endpoint,21 alternating serial baseline/use pairs. layout.py child measures wall/wait4 CPU/faults; separate3 GNU-time children measure RSS. No concurrent builds/profiles/checks.",
+  "cli_measurements": {
+    "gentle": {
+      "commands": {
+        "before": [
+          "/tmp/umber-pgo-cross-document/umber-before",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        "after": [
+          "/tmp/umber-pgo-cross-document/umber-after",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ]
+      },
+      "warmups_per_endpoint": 1,
+      "pairs": 21,
+      "orders": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.049085939,
+            "cpu_seconds": 0.048743,
+            "user_cpu_seconds": 0.045759,
+            "system_cpu_seconds": 0.0029839999999999997,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.046268211,
+            "cpu_seconds": 0.045931999999999994,
+            "user_cpu_seconds": 0.041937999999999996,
+            "system_cpu_seconds": 0.003994,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.048536572,
+            "cpu_seconds": 0.048155,
+            "user_cpu_seconds": 0.039126,
+            "system_cpu_seconds": 0.009028999999999999,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.047154988,
+            "cpu_seconds": 0.046807999999999995,
+            "user_cpu_seconds": 0.043755999999999996,
+            "system_cpu_seconds": 0.003052,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045886828,
+            "cpu_seconds": 0.045551999999999995,
+            "user_cpu_seconds": 0.041590999999999996,
+            "system_cpu_seconds": 0.003961,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.045716932,
+            "cpu_seconds": 0.04542499999999999,
+            "user_cpu_seconds": 0.040369999999999996,
+            "system_cpu_seconds": 0.005055,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.04496256,
+            "cpu_seconds": 0.044690999999999995,
+            "user_cpu_seconds": 0.040715999999999995,
+            "system_cpu_seconds": 0.003975,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.044522453,
+            "cpu_seconds": 0.044305,
+            "user_cpu_seconds": 0.041308,
+            "system_cpu_seconds": 0.0029969999999999997,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.044785935,
+            "cpu_seconds": 0.04455,
+            "user_cpu_seconds": 0.041513,
+            "system_cpu_seconds": 0.0030369999999999998,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.046174296,
+            "cpu_seconds": 0.04588299999999999,
+            "user_cpu_seconds": 0.040895999999999995,
+            "system_cpu_seconds": 0.004987,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.053948914,
+            "cpu_seconds": 0.053613,
+            "user_cpu_seconds": 0.048617,
+            "system_cpu_seconds": 0.004996,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.05520044,
+            "cpu_seconds": 0.05482,
+            "user_cpu_seconds": 0.049837,
+            "system_cpu_seconds": 0.004983,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.047947026,
+            "cpu_seconds": 0.047513,
+            "user_cpu_seconds": 0.041446,
+            "system_cpu_seconds": 0.0060669999999999995,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.044335449,
+            "cpu_seconds": 0.044102999999999996,
+            "user_cpu_seconds": 0.040094,
+            "system_cpu_seconds": 0.0040089999999999995,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.046972645,
+            "cpu_seconds": 0.04672,
+            "user_cpu_seconds": 0.039762,
+            "system_cpu_seconds": 0.006958,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.045249227,
+            "cpu_seconds": 0.044961,
+            "user_cpu_seconds": 0.039966,
+            "system_cpu_seconds": 0.0049949999999999994,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.045622858,
+            "cpu_seconds": 0.04532099999999999,
+            "user_cpu_seconds": 0.041292999999999996,
+            "system_cpu_seconds": 0.0040279999999999995,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.044375132,
+            "cpu_seconds": 0.044162999999999994,
+            "user_cpu_seconds": 0.040149,
+            "system_cpu_seconds": 0.004014,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.044576268,
+            "cpu_seconds": 0.044327,
+            "user_cpu_seconds": 0.040387,
+            "system_cpu_seconds": 0.00394,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045560371,
+            "cpu_seconds": 0.045222,
+            "user_cpu_seconds": 0.040198,
+            "system_cpu_seconds": 0.005024,
+            "minor_page_faults": 1114
+          },
+          {
+            "wall_seconds": 0.046647811,
+            "cpu_seconds": 0.046313,
+            "user_cpu_seconds": 0.039416,
+            "system_cpu_seconds": 0.0068969999999999995,
+            "minor_page_faults": 1119
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.040401865,
+            "cpu_seconds": 0.040031,
+            "user_cpu_seconds": 0.035025,
+            "system_cpu_seconds": 0.005006,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.040856664,
+            "cpu_seconds": 0.04057,
+            "user_cpu_seconds": 0.033644,
+            "system_cpu_seconds": 0.006926,
+            "minor_page_faults": 1128
+          },
+          {
+            "wall_seconds": 0.04064639,
+            "cpu_seconds": 0.040306,
+            "user_cpu_seconds": 0.036295,
+            "system_cpu_seconds": 0.004011,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.039868805,
+            "cpu_seconds": 0.039631,
+            "user_cpu_seconds": 0.035667,
+            "system_cpu_seconds": 0.003964,
+            "minor_page_faults": 1126
+          },
+          {
+            "wall_seconds": 0.039859595,
+            "cpu_seconds": 0.039511,
+            "user_cpu_seconds": 0.036548,
+            "system_cpu_seconds": 0.002963,
+            "minor_page_faults": 1128
+          },
+          {
+            "wall_seconds": 0.040160692,
+            "cpu_seconds": 0.039855999999999996,
+            "user_cpu_seconds": 0.035869,
+            "system_cpu_seconds": 0.003987,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.038842531,
+            "cpu_seconds": 0.038508,
+            "user_cpu_seconds": 0.034455,
+            "system_cpu_seconds": 0.004053,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.03826386,
+            "cpu_seconds": 0.037996,
+            "user_cpu_seconds": 0.034997,
+            "system_cpu_seconds": 0.002999,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.040758729,
+            "cpu_seconds": 0.040442,
+            "user_cpu_seconds": 0.034371,
+            "system_cpu_seconds": 0.006071,
+            "minor_page_faults": 1126
+          },
+          {
+            "wall_seconds": 0.040041093,
+            "cpu_seconds": 0.03964,
+            "user_cpu_seconds": 0.034685,
+            "system_cpu_seconds": 0.004955,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.045909514,
+            "cpu_seconds": 0.045517,
+            "user_cpu_seconds": 0.041469,
+            "system_cpu_seconds": 0.0040479999999999995,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.045145123,
+            "cpu_seconds": 0.044797,
+            "user_cpu_seconds": 0.042806,
+            "system_cpu_seconds": 0.0019909999999999997,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.03979042,
+            "cpu_seconds": 0.039432,
+            "user_cpu_seconds": 0.033366,
+            "system_cpu_seconds": 0.006065999999999999,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.041627053,
+            "cpu_seconds": 0.041334,
+            "user_cpu_seconds": 0.037294,
+            "system_cpu_seconds": 0.00404,
+            "minor_page_faults": 1126
+          },
+          {
+            "wall_seconds": 0.039338767,
+            "cpu_seconds": 0.039016999999999996,
+            "user_cpu_seconds": 0.034015,
+            "system_cpu_seconds": 0.0050019999999999995,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.042053593,
+            "cpu_seconds": 0.041756,
+            "user_cpu_seconds": 0.03778,
+            "system_cpu_seconds": 0.0039759999999999995,
+            "minor_page_faults": 1126
+          },
+          {
+            "wall_seconds": 0.038713296,
+            "cpu_seconds": 0.038436,
+            "user_cpu_seconds": 0.035401999999999996,
+            "system_cpu_seconds": 0.003034,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.038285906,
+            "cpu_seconds": 0.038053,
+            "user_cpu_seconds": 0.033046,
+            "system_cpu_seconds": 0.005007,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.03886516,
+            "cpu_seconds": 0.038605,
+            "user_cpu_seconds": 0.030698,
+            "system_cpu_seconds": 0.007906999999999999,
+            "minor_page_faults": 1126
+          },
+          {
+            "wall_seconds": 0.039275667,
+            "cpu_seconds": 0.038995,
+            "user_cpu_seconds": 0.033996,
+            "system_cpu_seconds": 0.004999,
+            "minor_page_faults": 1127
+          },
+          {
+            "wall_seconds": 0.041402108,
+            "cpu_seconds": 0.040998,
+            "user_cpu_seconds": 0.033999,
+            "system_cpu_seconds": 0.006999,
+            "minor_page_faults": 1127
+          }
+        ]
+      },
+      "summary": {
+        "before": {
+          "wall_seconds": {
+            "median": 0.045886828,
+            "minimum": 0.044335449,
+            "maximum": 0.05520044
+          },
+          "cpu_seconds": {
+            "median": 0.045551999999999995,
+            "minimum": 0.044102999999999996,
+            "maximum": 0.05482
+          },
+          "user_cpu_seconds": {
+            "median": 0.040895999999999995,
+            "minimum": 0.039126,
+            "maximum": 0.049837
+          },
+          "system_cpu_seconds": {
+            "median": 0.0040279999999999995,
+            "minimum": 0.0029839999999999997,
+            "maximum": 0.009028999999999999
+          },
+          "minor_page_faults": {
+            "median": 1117,
+            "minimum": 1114,
+            "maximum": 1119
+          }
+        },
+        "after": {
+          "wall_seconds": {
+            "median": 0.040041093,
+            "minimum": 0.03826386,
+            "maximum": 0.045909514
+          },
+          "cpu_seconds": {
+            "median": 0.03964,
+            "minimum": 0.037996,
+            "maximum": 0.045517
+          },
+          "user_cpu_seconds": {
+            "median": 0.034997,
+            "minimum": 0.030698,
+            "maximum": 0.042806
+          },
+          "system_cpu_seconds": {
+            "median": 0.004053,
+            "minimum": 0.0019909999999999997,
+            "maximum": 0.007906999999999999
+          },
+          "minor_page_faults": {
+            "median": 1127,
+            "minimum": 1126,
+            "maximum": 1128
+          }
+        }
+      },
+      "rss_kib": {
+        "before": [
+          6400,
+          6400,
+          6400
+        ],
+        "after": [
+          6812,
+          6684,
+          6684
+        ]
+      },
+      "paired_cpu_after_before": [
+        0.8212666434154647,
+        0.8832622137072196,
+        0.8370055030630256,
+        0.8466715091437362,
+        0.8673823322795926,
+        0.8774023115024766,
+        0.8616499966436196,
+        0.8576007222661101,
+        0.9077890011223344,
+        0.8639365342283636,
+        0.848991848991849,
+        0.81716526815031,
+        0.8299202323574602,
+        0.9372151554316034,
+        0.8351241438356164,
+        0.9287159983096461,
+        0.848083669821937,
+        0.8616488916060956,
+        0.870913889954204,
+        0.862301534651276,
+        0.8852374063437911
+      ],
+      "median_paired_cpu_ratio": 0.8616499966436196,
+      "after_faster_pairs": 21
+    },
+    "chomp": {
+      "commands": {
+        "before": [
+          "/tmp/umber-pgo-cross-document/umber-before",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        "after": [
+          "/tmp/umber-pgo-cross-document/umber-after",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ]
+      },
+      "warmups_per_endpoint": 1,
+      "pairs": 21,
+      "orders": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.010622026,
+            "cpu_seconds": 0.010355999999999999,
+            "user_cpu_seconds": 0.007248999999999999,
+            "system_cpu_seconds": 0.003107,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.011971305,
+            "cpu_seconds": 0.011722,
+            "user_cpu_seconds": 0.0068379999999999995,
+            "system_cpu_seconds": 0.0048839999999999995,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.011051487,
+            "cpu_seconds": 0.010817,
+            "user_cpu_seconds": 0.008851,
+            "system_cpu_seconds": 0.001966,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010524271,
+            "cpu_seconds": 0.010297,
+            "user_cpu_seconds": 0.00514,
+            "system_cpu_seconds": 0.005157,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010534655,
+            "cpu_seconds": 0.010318,
+            "user_cpu_seconds": 0.008255,
+            "system_cpu_seconds": 0.0020629999999999997,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.011070184,
+            "cpu_seconds": 0.010921,
+            "user_cpu_seconds": 0.008936,
+            "system_cpu_seconds": 0.001985,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.010624178,
+            "cpu_seconds": 0.010395,
+            "user_cpu_seconds": 0.006614999999999999,
+            "system_cpu_seconds": 0.00378,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010751423,
+            "cpu_seconds": 0.010544,
+            "user_cpu_seconds": 0.00671,
+            "system_cpu_seconds": 0.0038339999999999997,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.011486565,
+            "cpu_seconds": 0.011208,
+            "user_cpu_seconds": 0.0065379999999999995,
+            "system_cpu_seconds": 0.00467,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010343398,
+            "cpu_seconds": 0.010127999999999998,
+            "user_cpu_seconds": 0.007365999999999999,
+            "system_cpu_seconds": 0.0027619999999999997,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.011171196,
+            "cpu_seconds": 0.010883,
+            "user_cpu_seconds": 0.007915,
+            "system_cpu_seconds": 0.0029679999999999997,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.012386171,
+            "cpu_seconds": 0.011073,
+            "user_cpu_seconds": 0.00906,
+            "system_cpu_seconds": 0.002013,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010323541,
+            "cpu_seconds": 0.010105,
+            "user_cpu_seconds": 0.0070739999999999996,
+            "system_cpu_seconds": 0.003031,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009671439,
+            "cpu_seconds": 0.009496,
+            "user_cpu_seconds": 0.009496,
+            "system_cpu_seconds": 0.0,
+            "minor_page_faults": 546
+          },
+          {
+            "wall_seconds": 0.009801994,
+            "cpu_seconds": 0.009649,
+            "user_cpu_seconds": 0.0075049999999999995,
+            "system_cpu_seconds": 0.002144,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.009419221,
+            "cpu_seconds": 0.009321,
+            "user_cpu_seconds": 0.0072499999999999995,
+            "system_cpu_seconds": 0.002071,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009749483,
+            "cpu_seconds": 0.009621,
+            "user_cpu_seconds": 0.007697,
+            "system_cpu_seconds": 0.001924,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.010055412,
+            "cpu_seconds": 0.009888,
+            "user_cpu_seconds": 0.007911,
+            "system_cpu_seconds": 0.001977,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010303535,
+            "cpu_seconds": 0.0101,
+            "user_cpu_seconds": 0.009089999999999999,
+            "system_cpu_seconds": 0.00101,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.017051792,
+            "cpu_seconds": 0.012779,
+            "user_cpu_seconds": 0.00983,
+            "system_cpu_seconds": 0.002949,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.021763899,
+            "cpu_seconds": 0.013710999999999997,
+            "user_cpu_seconds": 0.009793999999999999,
+            "system_cpu_seconds": 0.0039169999999999995,
+            "minor_page_faults": 549
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.009615783,
+            "cpu_seconds": 0.009427999999999999,
+            "user_cpu_seconds": 0.0066,
+            "system_cpu_seconds": 0.002828,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.010012508,
+            "cpu_seconds": 0.009811,
+            "user_cpu_seconds": 0.006868,
+            "system_cpu_seconds": 0.002943,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.010860683,
+            "cpu_seconds": 0.010641999999999999,
+            "user_cpu_seconds": 0.006771999999999999,
+            "system_cpu_seconds": 0.0038699999999999997,
+            "minor_page_faults": 558
+          },
+          {
+            "wall_seconds": 0.011302925,
+            "cpu_seconds": 0.011033000000000001,
+            "user_cpu_seconds": 0.009027,
+            "system_cpu_seconds": 0.002006,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.009497457,
+            "cpu_seconds": 0.009343,
+            "user_cpu_seconds": 0.00654,
+            "system_cpu_seconds": 0.002803,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.009163763,
+            "cpu_seconds": 0.009019,
+            "user_cpu_seconds": 0.008017,
+            "system_cpu_seconds": 0.0010019999999999999,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.009720478,
+            "cpu_seconds": 0.009538,
+            "user_cpu_seconds": 0.006677,
+            "system_cpu_seconds": 0.002861,
+            "minor_page_faults": 560
+          },
+          {
+            "wall_seconds": 0.009304978,
+            "cpu_seconds": 0.009145,
+            "user_cpu_seconds": 0.006097,
+            "system_cpu_seconds": 0.003048,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.010713351,
+            "cpu_seconds": 0.010459,
+            "user_cpu_seconds": 0.007607,
+            "system_cpu_seconds": 0.002852,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.010322883,
+            "cpu_seconds": 0.010076,
+            "user_cpu_seconds": 0.006046,
+            "system_cpu_seconds": 0.00403,
+            "minor_page_faults": 560
+          },
+          {
+            "wall_seconds": 0.010991559,
+            "cpu_seconds": 0.010737,
+            "user_cpu_seconds": 0.007809,
+            "system_cpu_seconds": 0.002928,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.010560247,
+            "cpu_seconds": 0.010277999999999999,
+            "user_cpu_seconds": 0.007475,
+            "system_cpu_seconds": 0.002803,
+            "minor_page_faults": 558
+          },
+          {
+            "wall_seconds": 0.009471224,
+            "cpu_seconds": 0.009316,
+            "user_cpu_seconds": 0.004658,
+            "system_cpu_seconds": 0.004658,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.010002098,
+            "cpu_seconds": 0.009841999999999998,
+            "user_cpu_seconds": 0.007873999999999999,
+            "system_cpu_seconds": 0.0019679999999999997,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.009132955,
+            "cpu_seconds": 0.008976,
+            "user_cpu_seconds": 0.006978,
+            "system_cpu_seconds": 0.0019979999999999998,
+            "minor_page_faults": 560
+          },
+          {
+            "wall_seconds": 0.008871924,
+            "cpu_seconds": 0.008744,
+            "user_cpu_seconds": 0.006801,
+            "system_cpu_seconds": 0.0019429999999999998,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.009298133,
+            "cpu_seconds": 0.00913,
+            "user_cpu_seconds": 0.005072,
+            "system_cpu_seconds": 0.004058,
+            "minor_page_faults": 558
+          },
+          {
+            "wall_seconds": 0.009068485,
+            "cpu_seconds": 0.008919999999999999,
+            "user_cpu_seconds": 0.006938,
+            "system_cpu_seconds": 0.001982,
+            "minor_page_faults": 559
+          },
+          {
+            "wall_seconds": 0.009517463,
+            "cpu_seconds": 0.009349999999999999,
+            "user_cpu_seconds": 0.0046749999999999995,
+            "system_cpu_seconds": 0.0046749999999999995,
+            "minor_page_faults": 558
+          },
+          {
+            "wall_seconds": 0.009057986,
+            "cpu_seconds": 0.008913,
+            "user_cpu_seconds": 0.003961,
+            "system_cpu_seconds": 0.004952,
+            "minor_page_faults": 560
+          },
+          {
+            "wall_seconds": 0.023318938,
+            "cpu_seconds": 0.012562,
+            "user_cpu_seconds": 0.006281,
+            "system_cpu_seconds": 0.006281,
+            "minor_page_faults": 558
+          }
+        ]
+      },
+      "summary": {
+        "before": {
+          "wall_seconds": {
+            "median": 0.010622026,
+            "minimum": 0.009419221,
+            "maximum": 0.021763899
+          },
+          "cpu_seconds": {
+            "median": 0.010355999999999999,
+            "minimum": 0.009321,
+            "maximum": 0.013710999999999997
+          },
+          "user_cpu_seconds": {
+            "median": 0.007697,
+            "minimum": 0.00514,
+            "maximum": 0.00983
+          },
+          "system_cpu_seconds": {
+            "median": 0.0027619999999999997,
+            "minimum": 0.0,
+            "maximum": 0.005157
+          },
+          "minor_page_faults": {
+            "median": 549,
+            "minimum": 546,
+            "maximum": 550
+          }
+        },
+        "after": {
+          "wall_seconds": {
+            "median": 0.009615783,
+            "minimum": 0.008871924,
+            "maximum": 0.023318938
+          },
+          "cpu_seconds": {
+            "median": 0.009427999999999999,
+            "minimum": 0.008744,
+            "maximum": 0.012562
+          },
+          "user_cpu_seconds": {
+            "median": 0.006771999999999999,
+            "minimum": 0.003961,
+            "maximum": 0.009027
+          },
+          "system_cpu_seconds": {
+            "median": 0.002861,
+            "minimum": 0.0010019999999999999,
+            "maximum": 0.006281
+          },
+          "minor_page_faults": {
+            "median": 559,
+            "minimum": 558,
+            "maximum": 560
+          }
+        }
+      },
+      "rss_kib": {
+        "before": [
+          4192,
+          4196,
+          4192
+        ],
+        "after": [
+          4596,
+          4472,
+          4472
+        ]
+      },
+      "paired_cpu_after_before": [
+        0.91039011201236,
+        0.8369732127623273,
+        0.9838217620412313,
+        1.0714771292609497,
+        0.9055049428183757,
+        0.8258401245307205,
+        0.9175565175565176,
+        0.8673179059180577,
+        0.9331727337615989,
+        0.9948657187993682,
+        0.9865845814573188,
+        0.9282037388241668,
+        0.9219198416625433,
+        1.036436394271272,
+        0.9302518395688673,
+        0.9380967707327541,
+        0.9489658039704812,
+        0.9021035598705501,
+        0.9257425742574257,
+        0.6974724156819783,
+        0.9161986725986436
+      ],
+      "median_paired_cpu_ratio": 0.9257425742574257,
+      "after_faster_pairs": 19
+    }
+  },
+  "prepared_replay_endpoint": "Separate5 alternating invocation pairs per case, internal repeats1/iterations200 and existing per-point warmup. Reported suffix_advance_ns is WALL only, not CPU. Restore/capture happen before the timer; Outcome acquisition/equality/drop happen after. The ordinary existing helper validates actual retained output, including independent reference/old prefixes/results, so output stores remain live. Whole helper process resources are not attributed to suffix CPU.",
+  "prepared_replay_measurements": {
+    "gentle": {
+      "commands": {
+        "before": [
+          "/tmp/umber-pgo-cross-document/layout-before",
+          "document-replay",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026",
+          "--repeats",
+          "1",
+          "--iterations",
+          "200"
+        ],
+        "after": [
+          "/tmp/umber-pgo-cross-document/layout-after",
+          "document-replay",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026",
+          "--repeats",
+          "1",
+          "--iterations",
+          "200"
+        ]
+      },
+      "invocation_pairs": 5,
+      "orders": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "raw": {
+        "before": [
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 2226622,
+              "advance_ns": 44196995,
+              "outcome_ns": 2252
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 168569,
+                "stable_restore_ns": 2142.35,
+                "capture_retained_ns": 3940.025,
+                "release_retained_ns": 1005.225,
+                "suffix_advance_ns": 44490016,
+                "outcome_ns": 14765,
+                "equality_ns": 6184649,
+                "outcome_release_ns": 1772
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 120318,
+                "stable_restore_ns": 2283.565,
+                "capture_retained_ns": 5418.94,
+                "release_retained_ns": 1152.095,
+                "suffix_advance_ns": 40522157,
+                "outcome_ns": 6084,
+                "equality_ns": 7339349,
+                "outcome_release_ns": 3693
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 69146,
+                "stable_restore_ns": 2184.79,
+                "capture_retained_ns": 5174.735,
+                "release_retained_ns": 1182.025,
+                "suffix_advance_ns": 20007091,
+                "outcome_ns": 4333,
+                "equality_ns": 6589785,
+                "outcome_release_ns": 2072
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 18916,
+                "stable_restore_ns": 2242.535,
+                "capture_retained_ns": 3166.34,
+                "release_retained_ns": 983.51,
+                "suffix_advance_ns": 2722289,
+                "outcome_ns": 1751,
+                "equality_ns": 6054167,
+                "outcome_release_ns": 1601
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1564941,
+              "advance_ns": 42343037,
+              "outcome_ns": 2652
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 83418,
+                "stable_restore_ns": 1719.855,
+                "capture_retained_ns": 4378.53,
+                "release_retained_ns": 704.23,
+                "suffix_advance_ns": 37693098,
+                "outcome_ns": 2672,
+                "equality_ns": 6133592,
+                "outcome_release_ns": 1851
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 90384,
+                "stable_restore_ns": 2250.795,
+                "capture_retained_ns": 6668.91,
+                "release_retained_ns": 952.335,
+                "suffix_advance_ns": 36699841,
+                "outcome_ns": 3244,
+                "equality_ns": 6871115,
+                "outcome_release_ns": 1541
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 39492,
+                "stable_restore_ns": 2369.135,
+                "capture_retained_ns": 5417.39,
+                "release_retained_ns": 1047.46,
+                "suffix_advance_ns": 18837857,
+                "outcome_ns": 2702,
+                "equality_ns": 6975991,
+                "outcome_release_ns": 1361
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 26973,
+                "stable_restore_ns": 2592.025,
+                "capture_retained_ns": 5161.825,
+                "release_retained_ns": 1422.37,
+                "suffix_advance_ns": 2895441,
+                "outcome_ns": 1842,
+                "equality_ns": 6122502,
+                "outcome_release_ns": 2002
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1485476,
+              "advance_ns": 41688747,
+              "outcome_ns": 3103
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 97700,
+                "stable_restore_ns": 1993.035,
+                "capture_retained_ns": 4844.565,
+                "release_retained_ns": 728.195,
+                "suffix_advance_ns": 42281195,
+                "outcome_ns": 4094,
+                "equality_ns": 7517924,
+                "outcome_release_ns": 3384
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 101974,
+                "stable_restore_ns": 2272.76,
+                "capture_retained_ns": 5712.38,
+                "release_retained_ns": 1008.83,
+                "suffix_advance_ns": 37598273,
+                "outcome_ns": 4815,
+                "equality_ns": 7565504,
+                "outcome_release_ns": 2482
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 48260,
+                "stable_restore_ns": 2137.3,
+                "capture_retained_ns": 5813.06,
+                "release_retained_ns": 1065.675,
+                "suffix_advance_ns": 19144113,
+                "outcome_ns": 4675,
+                "equality_ns": 7006965,
+                "outcome_release_ns": 3524
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 65124,
+                "stable_restore_ns": 2649.32,
+                "capture_retained_ns": 5394.415,
+                "release_retained_ns": 1220.65,
+                "suffix_advance_ns": 3501267,
+                "outcome_ns": 3743,
+                "equality_ns": 6898150,
+                "outcome_release_ns": 4655
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1478701,
+              "advance_ns": 43670434,
+              "outcome_ns": 3743
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 130707,
+                "stable_restore_ns": 1932.98,
+                "capture_retained_ns": 4983.185,
+                "release_retained_ns": 737.505,
+                "suffix_advance_ns": 38496167,
+                "outcome_ns": 4424,
+                "equality_ns": 6339201,
+                "outcome_release_ns": 2191
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 77813,
+                "stable_restore_ns": 2129.095,
+                "capture_retained_ns": 5231.585,
+                "release_retained_ns": 1095.04,
+                "suffix_advance_ns": 34572556,
+                "outcome_ns": 3132,
+                "equality_ns": 5999871,
+                "outcome_release_ns": 2423
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 39613,
+                "stable_restore_ns": 2120.99,
+                "capture_retained_ns": 4406.805,
+                "release_retained_ns": 923.805,
+                "suffix_advance_ns": 17427328,
+                "outcome_ns": 2863,
+                "equality_ns": 5941525,
+                "outcome_release_ns": 1811
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 19156,
+                "stable_restore_ns": 2250.095,
+                "capture_retained_ns": 3356.445,
+                "release_retained_ns": 1034.295,
+                "suffix_advance_ns": 2602100,
+                "outcome_ns": 2361,
+                "equality_ns": 5980617,
+                "outcome_release_ns": 2122
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1553112,
+              "advance_ns": 40513510,
+              "outcome_ns": 2252
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 108738,
+                "stable_restore_ns": 1742.33,
+                "capture_retained_ns": 4268.835,
+                "release_retained_ns": 713.48,
+                "suffix_advance_ns": 39806116,
+                "outcome_ns": 3833,
+                "equality_ns": 6594010,
+                "outcome_release_ns": 2142
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 68626,
+                "stable_restore_ns": 2215.865,
+                "capture_retained_ns": 4774.505,
+                "release_retained_ns": 936.725,
+                "suffix_advance_ns": 34426142,
+                "outcome_ns": 3693,
+                "equality_ns": 5957797,
+                "outcome_release_ns": 2453
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 53334,
+                "stable_restore_ns": 2113.825,
+                "capture_retained_ns": 4547.525,
+                "release_retained_ns": 893.835,
+                "suffix_advance_ns": 17492111,
+                "outcome_ns": 3262,
+                "equality_ns": 6004486,
+                "outcome_release_ns": 2231
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 43115,
+                "stable_restore_ns": 2139.055,
+                "capture_retained_ns": 4820.25,
+                "release_retained_ns": 1392.59,
+                "suffix_advance_ns": 2688060,
+                "outcome_ns": 2371,
+                "equality_ns": 6255501,
+                "outcome_release_ns": 3073
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          }
+        ],
+        "after": [
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1480703,
+              "advance_ns": 35842013,
+              "outcome_ns": 2401
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 90664,
+                "stable_restore_ns": 1881.785,
+                "capture_retained_ns": 3829.24,
+                "release_retained_ns": 701.725,
+                "suffix_advance_ns": 34353642,
+                "outcome_ns": 4114,
+                "equality_ns": 4192944,
+                "outcome_release_ns": 1861
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 61710,
+                "stable_restore_ns": 2228.27,
+                "capture_retained_ns": 4400.855,
+                "release_retained_ns": 838.385,
+                "suffix_advance_ns": 29791739,
+                "outcome_ns": 2942,
+                "equality_ns": 4059653,
+                "outcome_release_ns": 3193
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 36730,
+                "stable_restore_ns": 2340.115,
+                "capture_retained_ns": 4917.425,
+                "release_retained_ns": 974.35,
+                "suffix_advance_ns": 14612775,
+                "outcome_ns": 3293,
+                "equality_ns": 4149987,
+                "outcome_release_ns": 3083
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 20577,
+                "stable_restore_ns": 2266.255,
+                "capture_retained_ns": 3610.76,
+                "release_retained_ns": 896.175,
+                "suffix_advance_ns": 2194108,
+                "outcome_ns": 2782,
+                "equality_ns": 3771999,
+                "outcome_release_ns": 1061
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1553242,
+              "advance_ns": 34860572,
+              "outcome_ns": 2292
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 95858,
+                "stable_restore_ns": 1831.2,
+                "capture_retained_ns": 3662.545,
+                "release_retained_ns": 673.155,
+                "suffix_advance_ns": 32296603,
+                "outcome_ns": 2401,
+                "equality_ns": 4286149,
+                "outcome_release_ns": 1592
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 47240,
+                "stable_restore_ns": 2261.605,
+                "capture_retained_ns": 3604.55,
+                "release_retained_ns": 955.68,
+                "suffix_advance_ns": 28399842,
+                "outcome_ns": 2071,
+                "equality_ns": 3973573,
+                "outcome_release_ns": 1301
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 20997,
+                "stable_restore_ns": 2246.685,
+                "capture_retained_ns": 2735.095,
+                "release_retained_ns": 862.01,
+                "suffix_advance_ns": 13684103,
+                "outcome_ns": 2362,
+                "equality_ns": 3820358,
+                "outcome_release_ns": 1372
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 14622,
+                "stable_restore_ns": 2292.675,
+                "capture_retained_ns": 2754.41,
+                "release_retained_ns": 898.285,
+                "suffix_advance_ns": 2011877,
+                "outcome_ns": 1602,
+                "equality_ns": 3833709,
+                "outcome_release_ns": 1111
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1666316,
+              "advance_ns": 44351703,
+              "outcome_ns": 2662
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 155037,
+                "stable_restore_ns": 2130.345,
+                "capture_retained_ns": 4809.94,
+                "release_retained_ns": 799.305,
+                "suffix_advance_ns": 39952450,
+                "outcome_ns": 3933,
+                "equality_ns": 5197125,
+                "outcome_release_ns": 5665
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 93176,
+                "stable_restore_ns": 2294.135,
+                "capture_retained_ns": 4680.18,
+                "release_retained_ns": 885.28,
+                "suffix_advance_ns": 28170374,
+                "outcome_ns": 3263,
+                "equality_ns": 3938545,
+                "outcome_release_ns": 1702
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 40554,
+                "stable_restore_ns": 2280.22,
+                "capture_retained_ns": 4711.705,
+                "release_retained_ns": 929.015,
+                "suffix_advance_ns": 14008929,
+                "outcome_ns": 3162,
+                "equality_ns": 4039177,
+                "outcome_release_ns": 3002
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 24840,
+                "stable_restore_ns": 2340.37,
+                "capture_retained_ns": 4393.905,
+                "release_retained_ns": 981.6,
+                "suffix_advance_ns": 2025157,
+                "outcome_ns": 1751,
+                "equality_ns": 3764493,
+                "outcome_release_ns": 1611
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1562540,
+              "advance_ns": 34684847,
+              "outcome_ns": 2522
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 172652,
+                "stable_restore_ns": 2762.115,
+                "capture_retained_ns": 6651.845,
+                "release_retained_ns": 979.75,
+                "suffix_advance_ns": 49906701,
+                "outcome_ns": 4743,
+                "equality_ns": 7669930,
+                "outcome_release_ns": 2872
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 65775,
+                "stable_restore_ns": 2297.925,
+                "capture_retained_ns": 5676.295,
+                "release_retained_ns": 929.415,
+                "suffix_advance_ns": 31776482,
+                "outcome_ns": 5185,
+                "equality_ns": 4685601,
+                "outcome_release_ns": 3963
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 40353,
+                "stable_restore_ns": 2235.675,
+                "capture_retained_ns": 4916.12,
+                "release_retained_ns": 929.66,
+                "suffix_advance_ns": 16397066,
+                "outcome_ns": 4655,
+                "equality_ns": 5129339,
+                "outcome_release_ns": 4804
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 44376,
+                "stable_restore_ns": 2405.17,
+                "capture_retained_ns": 4656.86,
+                "release_retained_ns": 1079.435,
+                "suffix_advance_ns": 2112529,
+                "outcome_ns": 2082,
+                "equality_ns": 3813542,
+                "outcome_release_ns": 1571
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 97,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1423175,
+              "advance_ns": 37690955,
+              "outcome_ns": 3082
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 10,
+                "actual_pages": 10
+              },
+              {
+                "label": "middle",
+                "requested_pages": 49,
+                "actual_pages": 49
+              },
+              {
+                "label": "late",
+                "requested_pages": 88,
+                "actual_pages": 88
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 116915,
+                "stable_restore_ns": 1899.76,
+                "capture_retained_ns": 4239.87,
+                "release_retained_ns": 746.56,
+                "suffix_advance_ns": 31649632,
+                "outcome_ns": 3363,
+                "equality_ns": 4055390,
+                "outcome_release_ns": 2321
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 66094,
+                "stable_restore_ns": 2216.715,
+                "capture_retained_ns": 4401.755,
+                "release_retained_ns": 862.655,
+                "suffix_advance_ns": 27776411,
+                "outcome_ns": 3743,
+                "equality_ns": 3976216,
+                "outcome_release_ns": 2813
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 39572,
+                "stable_restore_ns": 2121.34,
+                "capture_retained_ns": 4331.895,
+                "release_retained_ns": 861.75,
+                "suffix_advance_ns": 14514653,
+                "outcome_ns": 3224,
+                "equality_ns": 4020892,
+                "outcome_release_ns": 2562
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 25540,
+                "stable_restore_ns": 2274.76,
+                "capture_retained_ns": 4364.775,
+                "release_retained_ns": 938.77,
+                "suffix_advance_ns": 2147428,
+                "outcome_ns": 2482,
+                "equality_ns": 4128972,
+                "outcome_release_ns": 4573
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          }
+        ]
+      },
+      "summary": {
+        "ready": {
+          "actual_pages": 0,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 39806116,
+              "minimum": 37693098,
+              "maximum": 44490016
+            },
+            "after": {
+              "median": 34353642,
+              "minimum": 31649632,
+              "maximum": 49906701
+            }
+          },
+          "paired_after_before": [
+            0.7721651976928936,
+            0.8568306855541563,
+            0.9449224412886155,
+            1.2964070163141177,
+            0.7950947035375167
+          ],
+          "median_pair_ratio": 0.8568306855541563,
+          "after_faster_pairs": 4
+        },
+        "early": {
+          "actual_pages": 10,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 36699841,
+              "minimum": 34426142,
+              "maximum": 40522157
+            },
+            "after": {
+              "median": 28399842,
+              "minimum": 27776411,
+              "maximum": 31776482
+            }
+          },
+          "paired_after_before": [
+            0.7351962779276533,
+            0.7738410092839367,
+            0.7492464879969354,
+            0.9191244639245071,
+            0.8068406561502012
+          ],
+          "median_pair_ratio": 0.7738410092839367,
+          "after_faster_pairs": 5
+        },
+        "middle": {
+          "actual_pages": 49,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 18837857,
+              "minimum": 17427328,
+              "maximum": 20007091
+            },
+            "after": {
+              "median": 14514653,
+              "minimum": 13684103,
+              "maximum": 16397066
+            }
+          },
+          "paired_after_before": [
+            0.7303797938440926,
+            0.7264150587829603,
+            0.7317617170354145,
+            0.9408823888550213,
+            0.8297828089474164
+          ],
+          "median_pair_ratio": 0.7317617170354145,
+          "after_faster_pairs": 5
+        },
+        "late": {
+          "actual_pages": 88,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 2722289,
+              "minimum": 2602100,
+              "maximum": 3501267
+            },
+            "after": {
+              "median": 2112529,
+              "minimum": 2011877,
+              "maximum": 2194108
+            }
+          },
+          "paired_after_before": [
+            0.8059790859824214,
+            0.6948430308198302,
+            0.5784069024156112,
+            0.8118554244648553,
+            0.7988765131730691
+          ],
+          "median_pair_ratio": 0.7988765131730691,
+          "after_faster_pairs": 5
+        }
+      }
+    },
+    "chomp": {
+      "commands": {
+        "before": [
+          "/tmp/umber-pgo-cross-document/layout-before",
+          "document-replay",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026",
+          "--repeats",
+          "1",
+          "--iterations",
+          "200"
+        ],
+        "after": [
+          "/tmp/umber-pgo-cross-document/layout-after",
+          "document-replay",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026",
+          "--repeats",
+          "1",
+          "--iterations",
+          "200"
+        ]
+      },
+      "invocation_pairs": 5,
+      "orders": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "raw": {
+        "before": [
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1542903,
+              "advance_ns": 6625049,
+              "outcome_ns": 0
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 18955,
+                "stable_restore_ns": 1804.675,
+                "capture_retained_ns": 3030.485,
+                "release_retained_ns": 689.815,
+                "suffix_advance_ns": 6024982,
+                "outcome_ns": 811,
+                "equality_ns": 964519,
+                "outcome_release_ns": 500
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 14561,
+                "stable_restore_ns": 2080.105,
+                "capture_retained_ns": 4331.3,
+                "release_retained_ns": 881.325,
+                "suffix_advance_ns": 5946818,
+                "outcome_ns": 1731,
+                "equality_ns": 1011328,
+                "outcome_release_ns": 560
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 34669,
+                "stable_restore_ns": 1979.92,
+                "capture_retained_ns": 2692.655,
+                "release_retained_ns": 869.97,
+                "suffix_advance_ns": 3022344,
+                "outcome_ns": 590,
+                "equality_ns": 974278,
+                "outcome_release_ns": 440
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 9908,
+                "stable_restore_ns": 1978.12,
+                "capture_retained_ns": 2455.81,
+                "release_retained_ns": 764.17,
+                "suffix_advance_ns": 523260,
+                "outcome_ns": 550,
+                "equality_ns": 945634,
+                "outcome_release_ns": 381
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1452398,
+              "advance_ns": 6607880,
+              "outcome_ns": 1070
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 20577,
+                "stable_restore_ns": 1774.255,
+                "capture_retained_ns": 3806.865,
+                "release_retained_ns": 697.82,
+                "suffix_advance_ns": 5994178,
+                "outcome_ns": 991,
+                "equality_ns": 966102,
+                "outcome_release_ns": 440
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 12161,
+                "stable_restore_ns": 1884.44,
+                "capture_retained_ns": 2943.96,
+                "release_retained_ns": 884.92,
+                "suffix_advance_ns": 5232567,
+                "outcome_ns": 820,
+                "equality_ns": 966482,
+                "outcome_release_ns": 430
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 34297,
+                "stable_restore_ns": 2103.375,
+                "capture_retained_ns": 2958.225,
+                "release_retained_ns": 783.89,
+                "suffix_advance_ns": 3107755,
+                "outcome_ns": 720,
+                "equality_ns": 955193,
+                "outcome_release_ns": 440
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 8947,
+                "stable_restore_ns": 2016.355,
+                "capture_retained_ns": 2686.495,
+                "release_retained_ns": 899.39,
+                "suffix_advance_ns": 518865,
+                "outcome_ns": 820,
+                "equality_ns": 1051500,
+                "outcome_release_ns": 511
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1485837,
+              "advance_ns": 6581789,
+              "outcome_ns": 1070
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 19977,
+                "stable_restore_ns": 1877.135,
+                "capture_retained_ns": 3228.1,
+                "release_retained_ns": 688.215,
+                "suffix_advance_ns": 5927032,
+                "outcome_ns": 1071,
+                "equality_ns": 1040150,
+                "outcome_release_ns": 552
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 15873,
+                "stable_restore_ns": 1931.93,
+                "capture_retained_ns": 3327.97,
+                "release_retained_ns": 876.665,
+                "suffix_advance_ns": 5341203,
+                "outcome_ns": 1040,
+                "equality_ns": 1017243,
+                "outcome_release_ns": 540
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 39862,
+                "stable_restore_ns": 1871.13,
+                "capture_retained_ns": 3258.72,
+                "release_retained_ns": 778.885,
+                "suffix_advance_ns": 3129942,
+                "outcome_ns": 940,
+                "equality_ns": 1009828,
+                "outcome_release_ns": 491
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 12229,
+                "stable_restore_ns": 1920.125,
+                "capture_retained_ns": 2924.445,
+                "release_retained_ns": 810.02,
+                "suffix_advance_ns": 570836,
+                "outcome_ns": 710,
+                "equality_ns": 1039752,
+                "outcome_release_ns": 471
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1551620,
+              "advance_ns": 6898057,
+              "outcome_ns": 1231
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 20487,
+                "stable_restore_ns": 1749.335,
+                "capture_retained_ns": 4085.045,
+                "release_retained_ns": 773.835,
+                "suffix_advance_ns": 6452571,
+                "outcome_ns": 1632,
+                "equality_ns": 1146859,
+                "outcome_release_ns": 711
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 38130,
+                "stable_restore_ns": 2291.675,
+                "capture_retained_ns": 6120.76,
+                "release_retained_ns": 941.77,
+                "suffix_advance_ns": 7122411,
+                "outcome_ns": 1761,
+                "equality_ns": 1352977,
+                "outcome_release_ns": 641
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 75450,
+                "stable_restore_ns": 2383.605,
+                "capture_retained_ns": 4882.195,
+                "release_retained_ns": 956.085,
+                "suffix_advance_ns": 3930417,
+                "outcome_ns": 1281,
+                "equality_ns": 1029433,
+                "outcome_release_ns": 410
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 14052,
+                "stable_restore_ns": 2058.93,
+                "capture_retained_ns": 2766.865,
+                "release_retained_ns": 823.225,
+                "suffix_advance_ns": 600392,
+                "outcome_ns": 971,
+                "equality_ns": 1236963,
+                "outcome_release_ns": 651
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1562909,
+              "advance_ns": 7237976,
+              "outcome_ns": 1061
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 21047,
+                "stable_restore_ns": 1991.23,
+                "capture_retained_ns": 3471.895,
+                "release_retained_ns": 788.645,
+                "suffix_advance_ns": 7158290,
+                "outcome_ns": 1051,
+                "equality_ns": 1052382,
+                "outcome_release_ns": 600
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 19577,
+                "stable_restore_ns": 1940.635,
+                "capture_retained_ns": 4434.93,
+                "release_retained_ns": 804.115,
+                "suffix_advance_ns": 5348960,
+                "outcome_ns": 1221,
+                "equality_ns": 1048127,
+                "outcome_release_ns": 520
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 48309,
+                "stable_restore_ns": 2259.195,
+                "capture_retained_ns": 3553.66,
+                "release_retained_ns": 918.955,
+                "suffix_advance_ns": 3633926,
+                "outcome_ns": 1111,
+                "equality_ns": 1245239,
+                "outcome_release_ns": 580
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 7646,
+                "stable_restore_ns": 2049.48,
+                "capture_retained_ns": 2710.52,
+                "release_retained_ns": 826.125,
+                "suffix_advance_ns": 582247,
+                "outcome_ns": 701,
+                "equality_ns": 1100851,
+                "outcome_release_ns": 541
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          }
+        ],
+        "after": [
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1431650,
+              "advance_ns": 6766561,
+              "outcome_ns": 329
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 19146,
+                "stable_restore_ns": 2000.285,
+                "capture_retained_ns": 3374.465,
+                "release_retained_ns": 663.24,
+                "suffix_advance_ns": 5237319,
+                "outcome_ns": 660,
+                "equality_ns": 606156,
+                "outcome_release_ns": 410
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 54274,
+                "stable_restore_ns": 1993.485,
+                "capture_retained_ns": 2981.14,
+                "release_retained_ns": 758.27,
+                "suffix_advance_ns": 4696435,
+                "outcome_ns": 611,
+                "equality_ns": 612981,
+                "outcome_release_ns": 510
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 27702,
+                "stable_restore_ns": 2079.45,
+                "capture_retained_ns": 2682.9,
+                "release_retained_ns": 743.51,
+                "suffix_advance_ns": 2763713,
+                "outcome_ns": 671,
+                "equality_ns": 630144,
+                "outcome_release_ns": 411
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 7546,
+                "stable_restore_ns": 2047.275,
+                "capture_retained_ns": 2778.475,
+                "release_retained_ns": 820.275,
+                "suffix_advance_ns": 460358,
+                "outcome_ns": 631,
+                "equality_ns": 643347,
+                "outcome_release_ns": 400
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1385034,
+              "advance_ns": 6013792,
+              "outcome_ns": 871
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 13142,
+                "stable_restore_ns": 1832.7,
+                "capture_retained_ns": 2906.83,
+                "release_retained_ns": 658.49,
+                "suffix_advance_ns": 5159502,
+                "outcome_ns": 621,
+                "equality_ns": 690896,
+                "outcome_release_ns": 531
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 9038,
+                "stable_restore_ns": 2052.125,
+                "capture_retained_ns": 2363.935,
+                "release_retained_ns": 765.525,
+                "suffix_advance_ns": 4752622,
+                "outcome_ns": 660,
+                "equality_ns": 635701,
+                "outcome_release_ns": 420
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 31525,
+                "stable_restore_ns": 2089.56,
+                "capture_retained_ns": 3226.29,
+                "release_retained_ns": 783.245,
+                "suffix_advance_ns": 2791476,
+                "outcome_ns": 551,
+                "equality_ns": 629536,
+                "outcome_release_ns": 430
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 5694,
+                "stable_restore_ns": 1943.745,
+                "capture_retained_ns": 2262.605,
+                "release_retained_ns": 905.79,
+                "suffix_advance_ns": 451510,
+                "outcome_ns": 460,
+                "equality_ns": 643307,
+                "outcome_release_ns": 410
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1465209,
+              "advance_ns": 6173094,
+              "outcome_ns": 960
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 18034,
+                "stable_restore_ns": 1855.02,
+                "capture_retained_ns": 3508.53,
+                "release_retained_ns": 666.895,
+                "suffix_advance_ns": 5428634,
+                "outcome_ns": 710,
+                "equality_ns": 666766,
+                "outcome_release_ns": 680
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 11288,
+                "stable_restore_ns": 2073.26,
+                "capture_retained_ns": 3024.875,
+                "release_retained_ns": 739.255,
+                "suffix_advance_ns": 4733335,
+                "outcome_ns": 941,
+                "equality_ns": 651513,
+                "outcome_release_ns": 551
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 49281,
+                "stable_restore_ns": 1957.705,
+                "capture_retained_ns": 2973.33,
+                "release_retained_ns": 744.405,
+                "suffix_advance_ns": 2779466,
+                "outcome_ns": 570,
+                "equality_ns": 631498,
+                "outcome_release_ns": 450
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 6085,
+                "stable_restore_ns": 2057.635,
+                "capture_retained_ns": 2370.04,
+                "release_retained_ns": 799.255,
+                "suffix_advance_ns": 474769,
+                "outcome_ns": 530,
+                "equality_ns": 600471,
+                "outcome_release_ns": 410
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1403880,
+              "advance_ns": 6061563,
+              "outcome_ns": 791
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 16294,
+                "stable_restore_ns": 1915.915,
+                "capture_retained_ns": 3194.265,
+                "release_retained_ns": 676.255,
+                "suffix_advance_ns": 5233044,
+                "outcome_ns": 640,
+                "equality_ns": 646338,
+                "outcome_release_ns": 401
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 19096,
+                "stable_restore_ns": 2023.56,
+                "capture_retained_ns": 3521.735,
+                "release_retained_ns": 744.86,
+                "suffix_advance_ns": 4700148,
+                "outcome_ns": 520,
+                "equality_ns": 622631,
+                "outcome_release_ns": 470
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 25641,
+                "stable_restore_ns": 2029.065,
+                "capture_retained_ns": 2312.75,
+                "release_retained_ns": 1380.53,
+                "suffix_advance_ns": 2777783,
+                "outcome_ns": 761,
+                "equality_ns": 621919,
+                "outcome_release_ns": 400
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 5825,
+                "stable_restore_ns": 1972.015,
+                "capture_retained_ns": 2254.345,
+                "release_retained_ns": 798.65,
+                "suffix_advance_ns": 456245,
+                "outcome_ns": 470,
+                "equality_ns": 594187,
+                "outcome_release_ns": 400
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          },
+          {
+            "pages": 10,
+            "clock": "wall",
+            "repeats": 1,
+            "warmups": 1,
+            "iterations": 200,
+            "reference": {
+              "samples": 1,
+              "engine_setup_ns": 1609657,
+              "advance_ns": 6586583,
+              "outcome_ns": 1201
+            },
+            "checkpoints": [
+              {
+                "label": "ready",
+                "requested_pages": 0,
+                "actual_pages": 0
+              },
+              {
+                "label": "early",
+                "requested_pages": 1,
+                "actual_pages": 1
+              },
+              {
+                "label": "middle",
+                "requested_pages": 5,
+                "actual_pages": 5
+              },
+              {
+                "label": "late",
+                "requested_pages": 9,
+                "actual_pages": 9
+              }
+            ],
+            "samples": [
+              {
+                "checkpoint": "ready",
+                "restore_completed_ns": 17435,
+                "stable_restore_ns": 1935.54,
+                "capture_retained_ns": 4140.99,
+                "release_retained_ns": 812.365,
+                "suffix_advance_ns": 6323928,
+                "outcome_ns": 1270,
+                "equality_ns": 713984,
+                "outcome_release_ns": 441
+              },
+              {
+                "checkpoint": "early",
+                "restore_completed_ns": 14043,
+                "stable_restore_ns": 1943.545,
+                "capture_retained_ns": 3539.95,
+                "release_retained_ns": 781.335,
+                "suffix_advance_ns": 4784138,
+                "outcome_ns": 701,
+                "equality_ns": 634629,
+                "outcome_release_ns": 420
+              },
+              {
+                "checkpoint": "middle",
+                "restore_completed_ns": 32125,
+                "stable_restore_ns": 2061.09,
+                "capture_retained_ns": 2697.81,
+                "release_retained_ns": 757.92,
+                "suffix_advance_ns": 2825544,
+                "outcome_ns": 650,
+                "equality_ns": 657578,
+                "outcome_release_ns": 530
+              },
+              {
+                "checkpoint": "late",
+                "restore_completed_ns": 6885,
+                "stable_restore_ns": 2053.78,
+                "capture_retained_ns": 2528.02,
+                "release_retained_ns": 838.935,
+                "suffix_advance_ns": 500299,
+                "outcome_ns": 591,
+                "equality_ns": 637762,
+                "outcome_release_ns": 420
+              }
+            ],
+            "validation": "complete output and retained prefixes/results equal"
+          }
+        ]
+      },
+      "summary": {
+        "ready": {
+          "actual_pages": 0,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 6024982,
+              "minimum": 5927032,
+              "maximum": 7158290
+            },
+            "after": {
+              "median": 5237319,
+              "minimum": 5159502,
+              "maximum": 6323928
+            }
+          },
+          "paired_after_before": [
+            0.8692671612960835,
+            0.860752216567476,
+            0.9159110327057455,
+            0.8110013822397305,
+            0.8834411570361078
+          ],
+          "median_pair_ratio": 0.8692671612960835,
+          "after_faster_pairs": 5
+        },
+        "early": {
+          "actual_pages": 1,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 5348960,
+              "minimum": 5232567,
+              "maximum": 7122411
+            },
+            "after": {
+              "median": 4733335,
+              "minimum": 4696435,
+              "maximum": 4784138
+            }
+          },
+          "paired_after_before": [
+            0.7897391512570252,
+            0.908277333094827,
+            0.8861926798138922,
+            0.659909685077146,
+            0.8944052675660316
+          ],
+          "median_pair_ratio": 0.8861926798138922,
+          "after_faster_pairs": 5
+        },
+        "middle": {
+          "actual_pages": 5,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 3129942,
+              "minimum": 3022344,
+              "maximum": 3930417
+            },
+            "after": {
+              "median": 2779466,
+              "minimum": 2763713,
+              "maximum": 2825544
+            }
+          },
+          "paired_after_before": [
+            0.9144270142644252,
+            0.8982291075068659,
+            0.8880247621201927,
+            0.7067400227507666,
+            0.7775458278456964
+          ],
+          "median_pair_ratio": 0.8880247621201927,
+          "after_faster_pairs": 5
+        },
+        "late": {
+          "actual_pages": 9,
+          "suffix_wall_ns": {
+            "before": {
+              "median": 570836,
+              "minimum": 518865,
+              "maximum": 600392
+            },
+            "after": {
+              "median": 460358,
+              "minimum": 451510,
+              "maximum": 500299
+            }
+          },
+          "paired_after_before": [
+            0.8797882505828842,
+            0.8701878137858595,
+            0.8317082314359991,
+            0.7599118575863769,
+            0.8592556080151551
+          ],
+          "median_pair_ratio": 0.8592556080151551,
+          "after_faster_pairs": 5
+        }
+      }
+    }
+  },
+  "code_size": {
+    "size_output": "   text\t   data\t    bss\t    dec\t    hex\tfilename\n1086176\t  36464\t   1672\t1124312\t 1127d8\t/tmp/umber-pgo-cross-document/umber-before\n1426324\t  36728\t   1216\t1464268\t 1657cc\t/tmp/umber-pgo-cross-document/umber-after\n",
+    "baseline_text_bytes": 1086176,
+    "PGO_text_bytes": 1426324,
+    "text_growth_percent": 31.316103467578003
+  },
+  "standard_CHOMP_instruction_diagnostic": {
+    "revision": "8473e767a18c5788bba8dfa6895757461728ad36",
+    "command": [
+      "taskset",
+      "-c",
+      "3",
+      "valgrind",
+      "--tool=callgrind",
+      "--collect-jumps=yes",
+      "--callgrind-out-file=/tmp/umber-pgo-cross-document/chomp-standard.callgrind",
+      "--log-file=/tmp/umber-pgo-cross-document/chomp-standard-callgrind.stderr",
+      "/tmp/umber-pgo-cross-document/umber-before",
+      "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+      "--format",
+      "/tmp/umber-pgo-cross-document/plain.ufmt",
+      "--calendar",
+      "0,1,3,2026"
+    ],
+    "total_ir": 45702459,
+    "selected_regions": [
+      {
+        "name": "<umber::Engine>::character_run",
+        "self_ir": 4670155,
+        "self_percent": 10.218607712114572,
+        "inclusive_ir": 10168561,
+        "calls": 4523
+      },
+      {
+        "name": "<umber::Engine>::finish_paragraph",
+        "self_ir": 2190439,
+        "self_percent": 4.792825261327843,
+        "inclusive_ir": 11637565,
+        "calls": 98
+      },
+      {
+        "name": "<umber::line_search::Search>::try_break",
+        "self_ir": 2658752,
+        "self_percent": 5.817525048269284,
+        "inclusive_ir": 2709779,
+        "calls": 5444
+      },
+      {
+        "name": "<umber::Engine>::publish_page",
+        "self_ir": 2162020,
+        "self_percent": 4.730642611593393,
+        "inclusive_ir": 5523654,
+        "calls": 10
+      },
+      {
+        "name": "<umber::Engine>::fetch_raw::<true>",
+        "self_ir": 1524160,
+        "self_percent": 3.33496278613805,
+        "inclusive_ir": 1882024,
+        "calls": 22552
+      },
+      {
+        "name": "<umber::tfm::Catalog>::scaled",
+        "self_ir": 1714535,
+        "self_percent": 3.7515158648246913,
+        "inclusive_ir": 1755789,
+        "calls": 50
+      },
+      {
+        "name": "<umber::Engine>::convert_math",
+        "self_ir": 53962,
+        "self_percent": 0.11807242144235609,
+        "inclusive_ir": 3186577,
+        "calls": 391
+      },
+      {
+        "name": "<umber::math::converting::Conversion>::run",
+        "self_ir": 1638854,
+        "self_percent": 3.5859208363383686,
+        "inclusive_ir": 3084096,
+        "calls": 391
+      },
+      {
+        "name": "<umber::Engine>::finish_math_shift",
+        "self_ir": 63913,
+        "self_percent": 0.13984586693683157,
+        "inclusive_ir": 3520383,
+        "calls": 391
+      }
+    ],
+    "artifact": "/tmp/umber-pgo-cross-document/chomp-standard.callgrind",
+    "sha256": "3fe6acc925da795362b06cf02a76ee7a03c60030b736ad3df9c908b7f7ef3a89",
+    "scope": "One separate whole standard-release CHOMP process. Instruction shares are not CPU shares; inclusive rows overlap and include shared callees. No current Gentle or PGO instruction run was added.",
+    "finding": "The held-out case includes denser math/paragraph work: math conversion3.187M inclusive Ir over391calls and paragraph completion11.638M over98calls, with5444 break attempts. Scaled-font construction also contributes1.756M over50calls including format decode. This identifies a workload mix, not proven redundant work or a new runtime optimization."
+  },
+  "interpretation": {
+    "CLI": "Median paired CPU profile-use/standard ratios: Gentle0.861650 (21/21 faster) and held-outCHOMP0.925743 (19/21 faster), about13.84%/7.43% lower. Endpoint CPU medians45.552\u219239.640ms and10.356\u21929.428ms; wall medians45.887\u219240.041ms and10.622\u21929.616ms.",
+    "prepared": "Suffix wall paired ratios improve at every checkpoint in this small5pair cohort. Gentle READY has4/5 faster pairs; every other checkpoint/case has5/5. These observations remain separate from whole-CLI CPU and setup costs.",
+    "tradeoffs": "Executable text increases31.316%. Separate median RSS increases6400\u21926684KiB forGentle and4192\u21924472KiB forCHOMP. No memory-saving claim.",
+    "limits": "One training document and one genuinely held-out document support a narrow cross-document observation, not a generic TeX-wide benefit. Both are plain-format documents using the same47 embedded TFM resources. AMS support remains outside this experiment. Older d6484d4 results/profile files are preserved as older-revision evidence, not current metadata validation."
+  },
+  "provenance": {
+    "binary_sha256": {
+      "/tmp/umber-pgo-cross-document/umber-before": "f356f730f8c91b089d7ca5bf9411e1b9e62a8c461e135ae6dacc0bafea5a4ddb",
+      "/tmp/umber-pgo-cross-document/umber-after": "c981423ef7e3ad081fe6314a2ea789dbb479392d7541a713c898940a2efa9b44",
+      "/tmp/umber-pgo-cross-document/layout-before": "0ade28dfcb45b64252149a4fcc7169f2dd736ea59ab15347733f061bdbf46ed7",
+      "/tmp/umber-pgo-cross-document/layout-after": "ad7b6b316dd3410c1c7cd2207078840b06e2df7da10fa30a2d98dd8729d177b5"
+    },
+    "native_binary_sha256": "bdf084260e5e3ca3b1453a8ec1465efa5c0b23180d3bba7992fdd3ee1aeee45b",
+    "native_format_sha256": "1ac04f66addb1c2775009871a52a505d0c15ee6869ddbdd7aec64e705ffa4b65",
+    "helper_sha256": {
+      "/home/phulin/umber4/benchmarks/gentle.py": "a5cff98d24524d593eca575226d938d846de2bf4ba5524e3e3f57109754dc936",
+      "/home/phulin/umber4/benchmarks/layout.py": "ed42332d0f2eb618131d2b5e2158712092f40c8098b35a1c25f20ffe23bc9487",
+      "/home/phulin/umber4/crates/umber/examples/layout_support/document_replay.rs": "d50b3273e5fa754077d43a79c043128ffcdf8dd9d290f04b3e21d3f9ea004d68",
+      "/home/phulin/umber4/crates/umber/examples/layout_support/document.rs": "0c77d4ba0f71c4760a8178d51869d76f4e32eaa84fbe06551b72e620403ddfe9"
+    },
+    "scratch": "/tmp/umber-pgo-cross-document",
+    "timing_driver_command": [
+      "python3",
+      "/tmp/umber-pgo-cross-document/measure.py"
+    ],
+    "timing_driver_sha256": "89397e913bfe35a2106fbbf4d78279add75bf270105a137d53969612a692f710",
+    "training_driver_command": [
+      "python3",
+      "/tmp/umber-pgo-cross-document/train.py"
+    ],
+    "training_driver_sha256": "c36875fc8fb1d5d9aa24e7a7b9415b333eba3332d30d36a9e00c015ea8804231",
+    "gate_driver_command": [
+      "python3",
+      "/tmp/umber-pgo-cross-document/gates.py"
+    ],
+    "gate_driver_sha256": "b209321e6a803897c3666f3c046bad58eaa909271bb891d431d2082cc468ba41",
+    "validation": "JSON/arithmetic/hash/flags checks and diff check. No runtime changes, so already-passing Rust/fmt/Clippy/Wasm checks at8473e76 are not repeated. Compiled profiles/binaries are ignored checkout-local artifacts."
+  }
+}
