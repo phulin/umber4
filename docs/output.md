@@ -13,7 +13,7 @@ and `get` expose immutable `Page` records. `Pages::iter` builds a temporary
 directory of borrowed chunk references in an iterator-owned `Vec` for forward
 document traversal. Each page owns packed box records (including parent indices
 and glue settings), ordered glyph-run/rule records and
-glyph bytes, count registers, output penalty, and an immutable font-resource table.
+glyph bytes, count registers, output penalty, frozen magnification, and an immutable font-resource table.
 `Page::items` exposes compact ordered records; run ranges index `Page::glyphs`.
 `Page::placements` yields owned absolute `Placement` values through a forward,
 exact-size iterator; its construction and iteration allocate no storage.
@@ -25,9 +25,14 @@ that need an owned position array can collect the iterator explicitly. Repeated
 scans repeat the font-width reads and coordinate additions; no scan cache is
 retained.
 
-Coordinates and dimensions use scaled points. Coordinates include the restored
+Coordinates, dimensions, and font metrics use unmagnified TeX scaled points. Coordinates include the restored
 horizontal and vertical page offsets before any backend's implicit one-inch
 origin; dimensions remain intrinsic to each box or rule.
+`Page::magnification` retains the validated integer factor prepared by the first
+accepted shipout or an earlier true-unit scan. Renderers apply this factor divided
+by 1000 exactly once to geometry, fonts, and offsets, then add the fixed physical
+one-inch DVI origin. The origin itself is not magnified. Host media size is
+unspecified by these detached records.
 Glyph and box y coordinates denote baselines, while rules use top-left corners.
 Font indices are page-local. `FontResource` exposes source name, exact retained TFM
 bytes, design/scaled size, and immutable glyph metrics, independent of the engine.
@@ -58,8 +63,12 @@ Shipout samples the current `\outputpenalty`, count registers, and offsets,
 including assignments made inside an output routine. It consumes any nonvoid
 horizontal or vertical box and resets dead cycles even on huge-box rejection.
 Void shipout has no effect. Huge boxes are consumed and return `Overflow`;
-incompatible magnification returns `Number`. The first accepted page prepares magnification, paired with the existing
-restored first-use state. No raw node or document-font identity crosses the result
+incompatible magnification returns `Number`. Huge-box rejection precedes this
+preparation. The first accepted page validates magnification in 1 through 32768
+and freezes it, paired with the existing restored first-use state. Later pages
+retain that prepared factor, even if the current integer register changes; they
+do not revalidate the register during publication. Void shipout prepares nothing.
+No raw node or document-font identity crosses the result
 boundary. Both output and font header chunks have sixteen slots; held partial
 output chunks may pin a bounded invisible suffix, and held font chunks pin the
 registered source-resource set. Full backend operations below remain proposals.

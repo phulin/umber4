@@ -3,7 +3,7 @@
 `gentle.py` compares full-document detached output with an existing native DVI.
 `layout document-inspect`
 accepts a wrapper, immutable `--input NAME=PATH` and `--tfm NAME=PATH` bundles,
-and an optional `--calendar MINUTES,DAY,MONTH,YEAR`. Its JSON records page counts,
+and an optional `--calendar MINUTES,DAY,MONTH,YEAR`. Its JSON records frozen integer magnification, page counts,
 page-local font names as byte arrays and scaled sizes, and ordered glyph/rule
 events. Existing single-font prose modes retain their interfaces.
 
@@ -21,6 +21,10 @@ recorders, and sets the calendar from `SOURCE_DATE_EPOCH=1772323200` (UTC).
 Comparison expands page-local font indices to resource-name bytes and size,
 then checks every ordered glyph and positive rule rectangle, reporting the first
 mismatch; `--compare-counts` additionally checks the ten native BOP counters.
+Magnification must match the native DVI's matching preamble/postamble metadata.
+Coordinates, dimensions, and font sizes remain in unmagnified TeX scaled points;
+renderers apply magnification divided by 1000 exactly once before adding the
+fixed physical one-inch origin. Host media size is not specified.
 The independent DVI reader scales advances directly from raw TFM bytes at each
 DVI font size, including TeX's integer size reduction. Unknown specials fail;
 only exact payloads explicitly declared with `--nonvisual-special HEX` are ignored.

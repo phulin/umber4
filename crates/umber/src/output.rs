@@ -65,6 +65,7 @@ pub enum OutputItem {
 pub struct Page {
     pub counts: [i32; 256],
     pub output_penalty: i32,
+    magnification: i32,
     boxes: Buffer<PackedBox>,
     items: Buffer<OutputItem>,
     glyphs: Buffer<u8>,
@@ -72,6 +73,11 @@ pub struct Page {
     fonts: Buffer<FontResource>,
 }
 impl Page {
+    /// Frozen validated factor; raw geometry and font sizes are unmagnified.
+    /// Renderers scale by this value / 1000 before adding the one-inch origin.
+    pub fn magnification(&self) -> i32 {
+        self.magnification
+    }
     pub fn boxes(&self) -> &[PackedBox] {
         &self.boxes
     }
@@ -95,10 +101,17 @@ impl Page {
     pub fn fonts(&self) -> &[FontResource] {
         &self.fonts
     }
-    pub(crate) fn new(pools: &Pools, counts: [i32; 256], output_penalty: i32) -> Self {
+    pub(crate) fn new(
+        pools: &Pools,
+        counts: [i32; 256],
+        output_penalty: i32,
+        magnification: i32,
+    ) -> Self {
+        debug_assert!((1..=32768).contains(&magnification));
         Self {
             counts,
             output_penalty,
+            magnification,
             boxes: Buffer::new(&pools.boxes),
             items: Buffer::new(&pools.items),
             glyphs: Buffer::new(&pools.glyphs),

@@ -148,6 +148,10 @@ impl Engine<'_> {
             &self.output_pools,
             self.document.scalars.counts().map(|i| i.value),
             penalty,
+            self.document
+                .layout_values
+                .prepared_mag
+                .expect("published page magnification"),
         );
         let result = self.lower_page(node.id(), &mut page, &mut scratch);
         scratch.frames.clear();

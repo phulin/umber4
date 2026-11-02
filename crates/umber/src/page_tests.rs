@@ -426,6 +426,7 @@ fn first_accepted_page_freezes_mag_but_huge_rejection_does_not() {
     let mut e = Engine::new(br"\mag=1200\hrule width1pt\penalty-10000\mag=1300\dimen0=1truept\end");
     assert_eq!(e.advance(99), Err(Error::Number));
     assert_eq!(e.document.layout_values.prepared_mag, Some(1200));
+    assert_eq!(e.outcome().pages.get(0).unwrap().magnification(), 1200);
     let mut e = Engine::new(br"\mag=1200\end");
     complete(&mut e);
     assert_eq!(e.document.layout_values.prepared_mag, None);
@@ -441,6 +442,22 @@ fn first_accepted_page_freezes_mag_but_huge_rejection_does_not() {
     assert_eq!(e.publish_page(huge), Err(Error::Overflow));
     assert!(e.outcome().pages.is_empty());
     assert_eq!(e.document.layout_values.prepared_mag, None);
+    // Huge and void boxes do not reach the invalid-magnification check.
+    let mut e = Engine::new(
+        br"\catcode123=1\catcode125=2\mag=0\shipout\box0\shipout\hbox to16383pt{\kern1pt}\end",
+    );
+    // Use the offset to put this box beyond the accepted shipout width.
+    e.document.layout_values.dimens[crate::layout_values::DimenParam::HOffset.index()].value =
+        Scaled(65536);
+    assert_eq!(e.advance(usize::MAX), Err(Error::Overflow));
+    assert!(e.outcome().pages.is_empty());
+    assert_eq!(e.document.layout_values.prepared_mag, None);
+    let mut e = Engine::new(br"\mag=0\shipout\box0\end");
+    complete(&mut e);
+    assert!(e.document.layout_values.prepared_mag.is_none());
+    let small = e.document.nodes.alloc_box(BoxData::default()).unwrap();
+    assert_eq!(e.publish_page(small), Err(Error::Number));
+    assert!(e.outcome().pages.is_empty());
 }
 
 #[test]

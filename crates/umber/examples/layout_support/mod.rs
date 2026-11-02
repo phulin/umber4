@@ -16,6 +16,7 @@ fn equal(a: &Outcome, b: &Outcome) {
     }
 }
 fn equal_page(a: &umber::Page, b: &umber::Page) {
+    assert_eq!(a.magnification(), b.magnification());
     assert_eq!(a.counts, b.counts);
     assert_eq!(a.output_penalty, b.output_penalty);
     assert_eq!(a.boxes(), b.boxes());

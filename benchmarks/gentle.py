@@ -9,7 +9,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXMF = Path("/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist")
-UNITS = (25400000, 473628672, 1000)
+UNITS = (25400000, 473628672)
 
 
 class Reader:
@@ -48,15 +48,16 @@ def postamble_fonts(data):
     if reader.take() != 248:
         raise ValueError("invalid DVI postamble pointer")
     reader.take(4)  # last BOP
-    if tuple(reader.take(4) for _ in range(3)) != UNITS:
-        raise ValueError("comparison requires standard scaled-point DVI units and mag1000")
+    units = tuple(reader.take(4) for _ in range(3))
+    if units[:2] != UNITS or not 1 <= units[2] <= 32768:
+        raise ValueError("comparison requires standard scaled-point DVI units and valid magnification")
     reader.bytes(10)  # maximum height/width and stack depth
     page_count = reader.take(2)
     fonts = {}
     while True:
         opcode = reader.take()
         if opcode == 249:
-            return fonts, page_count
+            return fonts, page_count, units[2]
         if not 243 <= opcode <= 246:
             raise ValueError(f"invalid postamble opcode {opcode}")
         number, definition = font_definition(reader, opcode)
@@ -102,7 +103,7 @@ def scaled_widths(data, size, checksum):
 
 def dvi_pages(data, tfms, nonvisual_specials=()):
     """Read ordered glyph baselines/rule top-lefts; never use Umber metrics."""
-    fonts, page_count = postamble_fonts(data)
+    fonts, page_count, magnification = postamble_fonts(data)
     widths = {}
     for number, (name, size, checksum, _) in fonts.items():
         if name not in tfms:
@@ -111,8 +112,8 @@ def dvi_pages(data, tfms, nonvisual_specials=()):
     reader = Reader(data)
     if reader.take() != 247 or reader.take() != 2:
         raise ValueError("expected DVI2 preamble")
-    if tuple(reader.take(4) for _ in range(3)) != UNITS:
-        raise ValueError("comparison requires standard scaled-point DVI units and mag1000")
+    if tuple(reader.take(4) for _ in range(3)) != (*UNITS, magnification):
+        raise ValueError("DVI preamble/postamble units or magnification mismatch")
     reader.bytes(reader.take())
     pages, stack, pos, font, page = [], [], [0] * 6, None, None
     while True:
@@ -143,7 +144,7 @@ def dvi_pages(data, tfms, nonvisual_specials=()):
             counts = [reader.take(4, True) for _ in range(10)]
             reader.take(4, True)
             pos, stack = [0] * 6, []
-            page = {"counts": counts, "events": []}
+            page = {"magnification": magnification, "counts": counts, "events": []}
             pages.append(page)
         elif opcode == 140:
             if page is None or stack:
@@ -194,6 +195,8 @@ def compare(inspection, native, counts=False):
     if len(pages) != len(native):
         raise ValueError(f"page count: Umber {len(pages)}, native {len(native)}")
     for number, (page, reference) in enumerate(zip(pages, native), 1):
+        if page["magnification"] != reference["magnification"]:
+            raise ValueError(f"page {number} magnification: Umber {page['magnification']}, native {reference['magnification']}")
         if counts and page["counts"][:10] != reference["counts"]:
             raise ValueError(f"page {number} BOP counts: {page['counts'][:10]} != {reference['counts']}")
         expected = reference["events"]
@@ -217,7 +220,8 @@ def expanded_pages(inspection):
                 font = page["fonts"][event[1]]
                 event = ["g", font["name"], font["size"], *event[2:]]
             events.append(event)
-        pages.append({"counts": page["counts"][:10], "events": events})
+        pages.append({"magnification": page["magnification"],
+                      "counts": page["counts"][:10], "events": events})
     return pages
 
 
@@ -280,7 +284,8 @@ def main():
                        {name.removesuffix(".tfm").encode(): path.read_bytes() for name, path in tfms},
                        args.nonvisual_special)
     calendar = datetime.fromtimestamp(args.source_date_epoch, timezone.utc)
-    report = {"pages": len(native), "glyphs": sum(
+    report = {"pages": len(native),
+        "magnification": native[0]["magnification"] if native else None, "glyphs": sum(
         event[0] == "g" for page in native for event in page["events"]), "rules": sum(
         event[0] == "r" for page in native for event in page["events"]),
         "comparison": "all ordered events match", "bop_counts": args.compare_counts}

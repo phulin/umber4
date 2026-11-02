@@ -29,9 +29,83 @@ fn character(c: u8) -> Kind {
 }
 
 #[test]
+fn magnification_distinguishes_identical_raw_pages_and_font_sizes() {
+    let render = |mag| {
+        let mut e = Engine::new(
+            br"\catcode123=1\catcode125=2\font\f=test\f\hoffset=2pt\shipout\hbox{ab}\end",
+        );
+        e.register_tfm(b"test", &basic()).unwrap();
+        e.document.scalars[crate::scalars::Target::MAG].value = mag;
+        assert_eq!(e.advance(usize::MAX).unwrap(), Progress::Complete);
+        e.outcome()
+    };
+    let normal = render(1000);
+    let magnified = render(1095);
+    let a = normal.pages.get(0).unwrap();
+    let b = magnified.pages.get(0).unwrap();
+    assert_eq!((a.magnification(), b.magnification()), (1000, 1095));
+    assert_eq!(a.boxes(), b.boxes());
+    assert!(a.placements().eq(b.placements()));
+    assert_eq!(a.fonts()[0].size(), b.fonts()[0].size());
+    assert_eq!(a.fonts()[0].metrics(b'a'), b.fonts()[0].metrics(b'a'));
+}
+
+#[test]
+fn true_units_compensate_raw_geometry_without_changing_page_magnification() {
+    let mut e = Engine::new(
+        br"\catcode123=1\catcode125=2\mag=1095\hoffset=1truept\shipout\hbox{\vrule width10truept height1pt depth0pt}\end",
+    );
+    assert_eq!(e.advance(usize::MAX).unwrap(), Progress::Complete);
+    let out = e.outcome();
+    let page = out.pages.get(0).unwrap();
+    assert_eq!(page.magnification(), 1095);
+    assert_eq!(
+        page.placements().next(),
+        Some(Placement::Rule {
+            x: 65536 * 1000 / 1095,
+            y: 0,
+            width: 10 * 65536 * 1000 / 1095,
+            height: 65536,
+        })
+    );
+}
+
+#[test]
+fn retained_magnification_uses_prepared_state_across_register_changes_and_restore() {
+    let mut e = Engine::new(br"\end");
+    let initial = e.checkpoint().unwrap();
+    e.document.scalars[crate::scalars::Target::MAG].value = 1095;
+    let page = e.document.nodes.alloc_box(BoxData::default()).unwrap();
+    e.publish_page(page).unwrap();
+    let retained = e.outcome();
+    let first = e.checkpoint().unwrap();
+    // Later publication uses the validated frozen factor, without revalidating
+    // the current register (job-finalization checks are separate).
+    e.document.scalars[crate::scalars::Target::MAG].value = 0;
+    let page = e.document.nodes.alloc_box(BoxData::default()).unwrap();
+    e.publish_page(page).unwrap();
+    assert_eq!(e.outcome().pages.get(1).unwrap().magnification(), 1095);
+    e.restore(&first).unwrap();
+    assert_eq!(e.outcome().pages.len(), 1);
+    let page = e.document.nodes.alloc_box(BoxData::default()).unwrap();
+    e.publish_page(page).unwrap();
+    assert_eq!(e.outcome().pages.get(1).unwrap().magnification(), 1095);
+    e.restore(&initial).unwrap();
+    let page = e.document.nodes.alloc_box(BoxData::default()).unwrap();
+    e.publish_page(page).unwrap();
+    let restarted = e.outcome();
+    drop(e);
+    drop(initial);
+    drop(first);
+    assert_eq!(retained.pages.len(), 1);
+    assert_eq!(retained.pages.get(0).unwrap().magnification(), 1095);
+    assert_eq!(restarted.pages.get(0).unwrap().magnification(), 1000);
+}
+
+#[test]
 fn run_iterator_wraps_and_borrows_retained_metrics_after_engine_drop() {
     let e = engine();
-    let mut page = Page::new(&e.output_pools, [0; 256], 0);
+    let mut page = Page::new(&e.output_pools, [0; 256], 0, 1000);
     let resource = &e.font_catalog.scaled[0];
     let font = page.font(resource);
     assert_eq!(page.font(&resource.clone()), font);
@@ -82,7 +156,7 @@ fn run_iterator_wraps_and_borrows_retained_metrics_after_engine_drop() {
 #[test]
 fn aggregate_placement_capacity_is_checked_before_glyph_or_rule_storage() {
     let pools = Pools::default();
-    let mut page = Page::new(&pools, [0; 256], 0);
+    let mut page = Page::new(&pools, [0; 256], 0, 1000);
     let mut runs = Runs::default();
     // Simulate the preceding placements without constructing a giant fixture.
     page.placement_count = u32::MAX - 1;

@@ -194,7 +194,12 @@ fn inspect(outcome: &Outcome) -> RunResult<()> {
         if index != 0 {
             write!(out, ",")?;
         }
-        write!(out, "{{\"counts\":{:?},\"fonts\":[", page.counts)?;
+        write!(
+            out,
+            "{{\"magnification\":{},\"counts\":{:?},\"fonts\":[",
+            page.magnification(),
+            page.counts
+        )?;
         for (index, font) in page.fonts().iter().enumerate() {
             if index != 0 {
                 write!(out, ",")?;
