@@ -51,6 +51,53 @@ fn portable_format_relocates_aliases_definitions_tables_and_owned_token_bytes() 
 }
 
 #[test]
+fn complete_format_installs_owned_fonts_before_glyph_boxes_and_replays_without_tfms() {
+    let setup = r"\font\f=test\f\patterns{a1b}\hyphenation{a-b}\setbox0=\hbox{AVffi}\setbox255=\vbox{\copy0}";
+    let source = format!(r"{BOOT}{setup}\dump");
+    let tfm = crate::font_test_data::basic();
+    let mut init = Engine::new(source.as_bytes());
+    init.register_tfm(b"test", &tfm).unwrap();
+    init.advance(usize::MAX).unwrap();
+    let image = init.encode_format().unwrap();
+    let job = br"\shipout\copy0\shipout\box255\end";
+    let mut loaded = Engine::from_format(&image, job).unwrap();
+    assert_eq!(loaded.document.fonts.len, 2);
+    assert!(!loaded.document.boxes.head(0).is_null());
+    assert!(!loaded.document.boxes.head(255).is_null());
+    let direct_source = format!("{BOOT}{setup}{}", std::str::from_utf8(job).unwrap());
+    let mut direct = Engine::new(direct_source.as_bytes());
+    direct.register_tfm(b"test", &tfm).unwrap();
+    let expected = direct.run().unwrap();
+    drop(init);
+    drop(image);
+    drop(tfm);
+    let checkpoint = loaded.checkpoint().unwrap();
+    loaded.advance(usize::MAX).unwrap();
+    let first = loaded.outcome();
+    loaded.restore(&checkpoint).unwrap();
+    loaded.advance(usize::MAX).unwrap();
+    let replay = loaded.outcome();
+    for result in [&first, &replay] {
+        assert_eq!(result.counts, expected.counts);
+        assert_eq!(result.diagnostics, expected.diagnostics);
+        assert_eq!(result.pages.len(), 2);
+        for i in 0..2 {
+            let actual = result.pages.get(i).unwrap();
+            let expected = expected.pages.get(i).unwrap();
+            assert_eq!(actual.counts, expected.counts);
+            assert_eq!(actual.boxes(), expected.boxes());
+            assert!(actual.placements().eq(expected.placements()));
+            assert_eq!(actual.fonts().len(), expected.fonts().len());
+            for (actual, expected) in actual.fonts().iter().zip(expected.fonts()) {
+                assert_eq!(actual.name(), expected.name());
+                assert_eq!(actual.size(), expected.size());
+                assert_eq!(actual.tfm_bytes(), expected.tfm_bytes());
+            }
+        }
+    }
+}
+
+#[test]
 fn startup_hook_calendar_magnification_and_checkpoints_belong_to_the_new_job() {
     let bytes = image(
         r"\count0=7\time=999\day=8\month=9\year=1900\mag=1000\dimen0=1truept\prevdepth=5pt\everyjob{\global\advance\count0by1\message{HOOK:\the\year/\the\time}}",

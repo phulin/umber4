@@ -35,7 +35,7 @@ impl<'a> Engine<'a> {
             && self.document.page.insert_penalties == 0
     }
     /// Encode initial semantics, excluding input cursors and all job output.
-    /// Fonts and hyphenation persist; live box registers currently return Unsupported.
+    /// Fonts, hyphenation and live ordinary box-register forests persist.
     pub fn encode_format(&self) -> Result<Vec<u8>> {
         if !self.quiescent
             || !self.format_state_ready()

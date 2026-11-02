@@ -65,9 +65,9 @@ pooled headers and token chunks. No pointer, Rust layout/padding, usize, Rc coun
 chunk handle, hash bucket, free list, or KMP failure array appears in the image.
 
 Dependent sections use tag 0 for their supported empty/canonical state and tag 1
-for complete font, hyphenation, and box records. The font codec retains loaded font identities, mutable
-parameters, and exact raw TFM bytes once per used resource; existing checked
-parsing/scaling rebuilds derived metrics. Hyphenation uses logical trie nodes,
+for complete font, hyphenation, and box records. The font codec retains loaded
+font identities, mutable parameters, and exact raw TFM bytes once per used
+resource; existing checked parsing/scaling rebuilds derived metrics. Hyphenation uses logical trie nodes,
 sparse operations and language-qualified exceptions, with checked tree structure,
 bounded paths and operation ranges. Exception buckets are derived. Box data must
 form disjoint acyclic ordinary forests; transient Free/Unset nodes are inadmissible.
