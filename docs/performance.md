@@ -61,8 +61,8 @@ Umber and native pdfTeX. Time full execution, including startup and output. Repo
 source-built format preparation, cold format loading, and warm baseline reuse
 separately. Start with ordinary release; retain native PGO results separately from
 it. Evaluate cases outside the training inputs before claiming generalization.
-The existing [profile builder](../benchmarks/pgo.py) is a separate native-profile,
-synthetic-training diagnostic with custom LLVM settings.
+The optional [PGO helper](../benchmarks/pgo.py) uses the ordinary release profile
+and one explicit real-document CLI training job.
 
 A useful result needs the revision/build, engine versions, machine/runtime, workload,
 cache conditions, repeated timings, and the command to reproduce it. Retain raw
@@ -78,46 +78,40 @@ substitute for the paragraph/page/checkpoint slice.
 
 ### Optional default-feature PGO
 
-An optional native build can train on unchanged Gentle using its own plain format
-and the existing source/format/replay oracle. Keep the normal release profile and
-default features; change only `profile-generate` to `profile-use`. Use the matching
-compiler's `llvm-profdata`, fresh checkout-local target directories and an empty
-raw-profile directory. For example, from the checkout root with a prepared
-`.tools/formats/plain.ufmt` and the native Gentle reference available:
+The [PGO helper](../benchmarks/pgo.py) builds the CLI with default features and the
+normal release profile. Its only extra compiler flags are `profile-generate` and
+`profile-use`. It discovers the matching installed host `llvm-profdata` under the
+compiler's sysroot and builds offline, without downloading tools or inputs.
+
+Supply exactly one Umber CLI argument list after `--` and a fresh directory below
+checkout `target`. Output and training paths are interpreted relative to the
+checkout root, even when the helper is invoked elsewhere. Conflicting compiler
+flags, release-profile overrides and target overrides must be unset. For example,
+with a prepared `.tools/formats/plain.ufmt` and native Gentle reference available:
 
 ```bash
-set -e
-unset RUSTFLAGS CARGO_ENCODED_RUSTFLAGS LLVM_PROFILE_FILE
-pgo_root="$(pwd)/target/pgo-general/gentle"
-pgo_host="$(rustc -vV | sed -n 's/^host: //p')"
-pgo_profdata="$(rustc --print sysroot)/lib/rustlib/$pgo_host/bin/llvm-profdata"
-mkdir -p target/pgo-general
-mkdir "$pgo_root"
-mkdir "$pgo_root/raw"
-CARGO_TARGET_DIR="$pgo_root/generate" RUSTFLAGS="-C profile-generate=$pgo_root/raw" \
-  cargo build --release -p umber --bin umber --example layout
-export LLVM_PROFILE_FILE="$pgo_root/raw/%m-%p.profraw"
-"$pgo_root/generate/release/umber" .tools/corpus/gentle.tex \
-  --format .tools/formats/plain.ufmt --calendar 0,1,3,2026
+python3 benchmarks/pgo.py --output target/pgo/gentle -- \
+  .tools/corpus/gentle.tex --format .tools/formats/plain.ufmt --calendar 0,1,3,2026
 python3 benchmarks/gentle.py --assets-root . \
-  --adapter "$pgo_root/generate/release/examples/layout" \
-  --format .tools/formats/plain.ufmt --compare-counts --replay --repeats 1 --iterations 1
-unset LLVM_PROFILE_FILE
-"$pgo_profdata" merge -o "$pgo_root/gentle.profdata" "$pgo_root"/raw/*.profraw
-CARGO_TARGET_DIR="$pgo_root/use" RUSTFLAGS="-C profile-use=$pgo_root/gentle.profdata" \
-  cargo build --release -p umber --bin umber --example layout
-python3 benchmarks/gentle.py --assets-root . \
-  --adapter "$pgo_root/use/release/examples/layout" \
+  --adapter target/pgo/gentle/use/release/examples/layout \
   --format .tools/formats/plain.ufmt --compare-counts --replay --repeats 1 --iterations 1
 ```
 
-The optimized CLI is `$pgo_root/use/release/umber`; ordinary `target/release`
-artifacts remain separate. The short replay settings train and validate, not
-measure speed. Compare standard and profile-use executables in a separate quiet,
-alternating timing cohort. Record code size and RSS as well as CPU; PGO can increase
-both. Keep profiles and binaries ignored. The
-[controlled Gentle comparison](../benchmarks/results/gentle-pgo-general.json)
-uses Gentle for training and evaluation and establishes no held-out coverage.
+The helper runs only the supplied CLI job, merges its fresh raw profiles, and
+builds `use/release/umber` plus `use/release/examples/layout` below the chosen
+output. Generate/use caches and profiles stay there; ordinary `target/release`
+artifacts remain separate. Failed training or missing profiles stops the build.
+The helper neither chooses workloads nor runs validation or measurements.
+
+The second command validates native/source-format output and retained replay;
+its short replay settings are correctness checks, not speed measurements. Keep
+CHOMP or other held-out documents outside training and validate them separately.
+Compare standard and profile-use executables in a separate quiet, alternating
+timing cohort. Record code size and RSS as well as CPU; PGO can increase both.
+The retained [Gentle](../benchmarks/results/gentle-pgo-general.json) and
+[Gentle/CHOMP](../benchmarks/results/gentle-chomp-pgo.json) comparisons used broader
+manual Gentle training, including source/format inspection and replay. Their
+measured gains do not describe this helper's single-job training configuration.
 
 ### Implemented layout measurement scope
 

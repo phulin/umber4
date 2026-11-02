@@ -273,48 +273,27 @@ and retains allocation/peak-memory diagnostics. Original-baseline core CPU rises
 2.6% and broader CPU falls 1.9%; parameter/long-argument penalties remain explicit.
 Allocation plateaus and shared live-state backing are preserved.
 
-An optional native profile build uses the same generators for compiler training:
+An optional [PGO helper](pgo.py) uses the ordinary default-feature release build
+and one explicit real-document CLI training job:
 
 ```bash
-rustup component add llvm-tools
-python3 benchmarks/pgo.py
-python3 benchmarks/mvp.py --umber target/pgo/use/release/umber
-python3 benchmarks/expansion.py --umber target/pgo/use/release/umber
+python3 benchmarks/pgo.py --output target/pgo/gentle -- .tools/corpus/gentle.tex --format .tools/formats/plain.ufmt --calendar 0,1,3,2026
+python3 benchmarks/gentle.py --adapter target/pgo/gentle/use/release/examples/layout --format .tools/formats/plain.ufmt --compare-counts --replay --repeats 1 --iterations 1
 ```
 
-Training checks every workload's result at 75,031 core iterations and 7,003
-expanded records, then runs the native oracle. The final build passes the oracle
-again. Artifacts and input/compiler identities stay under `target/pgo`; the
-ordinary release and Wasm builds use their existing paths. The profile builder
-also produces `target/pgo/use/release/examples/allocations` for diagnostics.
-Its LLVM inlining settings and 64-byte function alignment are measured choices
-for the recorded compiler. The builder enables `native-profile`, which lets the
-trained compiler choose whether to inline physical-line loading. Ordinary and
-Wasm builds keep that loader in a separate function. The feature also allows
-compiler-selected argument-reset inlining and keeps name lookup behind a measured
-Rust call boundary. It reads published spelling entries directly; ordinary
-builds retain the measured reset call and checked spelling reads.
-Stored-list scans in profile builds classify spaces, letters, and other
-characters through one contiguous token range, with the existing checks for
-all remaining words. Ordinary builds retain their previous classification path.
-Grouped stored-argument scans test four immutable words together before
-advancing, falling back to their scalar tail for structural words and window
-ends. Native release code uses SIMD comparisons for that read. The retained
-[definition-storage comparison](results/definition-storage-followup.json) includes
-allocation diagnostics and nine paired repetitions against the preceding profile
-build, including its CPU regressions.
-Profile delimiter matching caches the immutable failure-table cursor in its Rust
-frame, retaining checked fallback reads. The
-[delimiter comparison](results/profile-delimiter-cursor-followup.json) records
-nine paired repetitions, unchanged allocation samples, and execution-text
-identities for the profile change and ordinary rebuild.
-Interned spelling bytes share stable session-owned chunks. The
-[spelling-store comparison](results/name-spelling-arena-followup.json) retains
-nine paired repetitions for all eighteen workloads, 21-repetition confirmations
-for selected gains and regressions, and ordinary/profile allocation diagnostics.
-The current full sweeps in `results/` compare reclaimable immutable values against
-the spelling-store build; the earlier follow-ups retain their original identities.
-Compare both suites when changing these settings or updating Rust.
+Choose a fresh checkout-local output directory; paths resolve from the checkout
+root. The helper requires installed matching LLVM tools and cached dependencies,
+uses only generate/use profile flags, and leaves ordinary release artifacts
+untouched. It does not select workloads, download inputs, validate output or
+measure performance. See [usage and limits](../docs/performance.md#optional-default-feature-pgo).
+CHOMP stays held out. Historical measured reports used broader training and do
+not establish a performance claim for this single-job helper.
+
+Historical `native-profile` macro experiments used synthetic training and custom
+LLVM settings. Their retained [definition-storage](results/definition-storage-followup.json),
+[delimiter](results/profile-delimiter-cursor-followup.json) and
+[spelling-store](results/name-spelling-arena-followup.json) comparisons describe
+those builds and remain scoped to their original identities.
 
 | Expanded workload    | Measured behavior                                                                                                                                                |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -332,14 +311,14 @@ Compare both suites when changing these settings or updating Rust.
 count and token-register alias indices across 0–255 and uses normal, changed,
 and disabled escape characters. Every `\meaning` serialization is compared with
 an independently generated token literal. This case is separate from the default
-nine-workload sweep and profile training.
+nine-workload sweep and historical profile training.
 
 The [ordinary report](results/register-meanings-native.json),
 [profile report](results/register-meanings-native-pgo.json), and
 [profile coverage comparison](results/register-meaning-coverage-followup.json)
-retain this baseline. Instrumented oracle runs also feed the profile builder;
-the added all-index fixture changes those frequencies without changing runtime
-sources or the default eighteen benchmark training inputs.
+retain this historical baseline. Instrumented oracle runs fed that older profile
+builder; the added all-index fixture changed its training frequencies without
+changing runtime sources or its default eighteen benchmark training inputs.
 
 `numeric-references` uses 256 numbered names with positive and negative register
 values from three to ten digits. Each record forms a name in `\ifcsname` and
