@@ -191,7 +191,9 @@ counters cover engine construction and execution, excluding the host input buffe
 checkpoint replay; `examples/layout_allocations.rs` separately counts system
 allocation and retention phases. They share `examples/layout_support/mod.rs`.
 `examples/layout_support/document.rs` supplies the separate full-document
-inspection mode with immutable input/font bundles and ordered output JSON.
+inspection mode with immutable input/font bundles and ordered output JSON;
+`document_replay.rs` prepares page-progress checkpoints and validates replay,
+with separate timing and allocation stages through the existing example wrappers.
 
 `lexing/`, built only with the `lexing-prototype` feature, is the whole-file lexer
 prototype from `docs/fast-lexing.md`: `scan.rs` splits lines and runs the shared

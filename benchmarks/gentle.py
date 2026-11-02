@@ -239,7 +239,16 @@ def main():
     parser.add_argument("--source-date-epoch", type=int, default=1772323200)
     parser.add_argument("--compare-counts", action="store_true")
     parser.add_argument("--nonvisual-special", action="append", default=[], type=bytes.fromhex)
+    parser.add_argument("--replay", action="store_true")
+    parser.add_argument("--allocation-adapter", type=Path)
+    parser.add_argument("--ready-message")
+    parser.add_argument("--repeats", type=int, default=5)
+    parser.add_argument("--iterations", type=int, default=200)
     args = parser.parse_args()
+    if args.repeats <= 0 or args.iterations <= 0:
+        parser.error("repeats and iterations must be positive")
+    if args.ready_message is not None and args.wrapper is None:
+        parser.error("--ready-message requires an explicit --wrapper")
     reference = args.assets_root / ".tools/corpus/gentle-native-pdftex14025-tl2026"
     inputs = args.input or [
         ("plain", args.texmf / "tex/plain/base/plain.tex"),
@@ -254,28 +263,44 @@ def main():
                        {name.removesuffix(".tfm").encode(): path.read_bytes() for name, path in tfms},
                        args.nonvisual_special)
     calendar = datetime.fromtimestamp(args.source_date_epoch, timezone.utc)
+    report = {"pages": len(native), "glyphs": sum(
+        event[0] == "g" for page in native for event in page["events"]), "rules": sum(
+        event[0] == "r" for page in native for event in page["events"]),
+        "comparison": "all ordered events match", "bop_counts": args.compare_counts}
     with tempfile.TemporaryDirectory(prefix="umber-gentle-inspect-") as temporary:
         wrapper = args.wrapper
+        ready = args.ready_message
         if wrapper is None:
             wrapper = Path(temporary) / "gentle.tex"
-            wrapper.write_bytes(b"\\input plain \\input gentle \\end\n")
+            if args.replay or args.allocation_adapter:
+                ready = "UMBER:DOCUMENT:READY:END"
+                wrapper.write_text(r"\input plain \message{" + ready + r"} \input gentle \end" + "\n")
+            else:
+                wrapper.write_bytes(b"\\input plain \\input gentle \\end\n")
         command = [str(args.adapter), "document-inspect", str(wrapper), "--calendar",
                    f"{calendar.hour * 60 + calendar.minute},{calendar.day},{calendar.month},{calendar.year}"]
         for option, bundle in [("--input", inputs), ("--tfm", tfms)]:
             for name, path in bundle:
                 command.extend([option, f"{name}={path}"])
         inspection = json.loads(subprocess.check_output(command))
-    compare(inspection, native, args.compare_counts)
-    print(json.dumps({"pages": len(native), "glyphs": sum(
-        event[0] == "g" for page in native for event in page["events"]), "rules": sum(
-        event[0] == "r" for page in native for event in page["events"]),
-        "comparison": "all ordered events match", "bop_counts": args.compare_counts}))
+        compare(inspection, native, args.compare_counts)
+        prepared_args = [*command[2:], "--repeats", str(args.repeats),
+                         "--iterations", str(args.iterations)]
+        if ready is not None:
+            prepared_args.extend(["--ready-message", ready])
+        if args.replay:
+            report["prepared_replay"] = json.loads(subprocess.check_output(
+                [str(args.adapter), "document-replay", *prepared_args]))
+        if args.allocation_adapter:
+            report["prepared_allocations"] = json.loads(subprocess.check_output(
+                [str(args.allocation_adapter), "document-alloc", *prepared_args]))
+    print(json.dumps(report))
 
 
 if __name__ == "__main__":
     try:
         main()
     except subprocess.CalledProcessError as error:
-        raise SystemExit(f"document-inspect failed (exit {error.returncode}); no output comparison performed") from error
+        raise SystemExit(f"document adapter failed (exit {error.returncode}); comparison/measurements incomplete") from error
     except (ValueError, OSError) as error:
         raise SystemExit(str(error)) from error

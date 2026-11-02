@@ -43,7 +43,7 @@ unsafe impl GlobalAlloc for Counted {
 #[global_allocator]
 static ALLOCATOR: Counted = Counted;
 fn main() {
-    let mut stages = Vec::with_capacity(16);
+    let mut stages = Vec::with_capacity(32);
     layout_support::run(|label| {
         if label == "begin" {
             ACTIVE.store(true, Relaxed);

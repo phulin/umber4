@@ -12,18 +12,19 @@ fn equal(a: &Outcome, b: &Outcome) {
     assert_eq!(a.diagnostics, b.diagnostics);
     assert_eq!(a.pages.len(), b.pages.len());
     for i in 0..a.pages.len() {
-        let a = a.pages.get(i).unwrap();
-        let b = b.pages.get(i).unwrap();
-        assert_eq!(a.counts, b.counts);
-        assert_eq!(a.output_penalty, b.output_penalty);
-        assert_eq!(a.boxes(), b.boxes());
-        assert!(a.placements().eq(b.placements()));
-        assert_eq!(a.fonts().len(), b.fonts().len());
-        for (a, b) in a.fonts().iter().zip(b.fonts()) {
-            assert_eq!(a.name(), b.name());
-            assert_eq!(a.size(), b.size());
-            assert_eq!(a.tfm_bytes(), b.tfm_bytes());
-        }
+        equal_page(a.pages.get(i).unwrap(), b.pages.get(i).unwrap());
+    }
+}
+fn equal_page(a: &umber::Page, b: &umber::Page) {
+    assert_eq!(a.counts, b.counts);
+    assert_eq!(a.output_penalty, b.output_penalty);
+    assert_eq!(a.boxes(), b.boxes());
+    assert!(a.placements().eq(b.placements()));
+    assert_eq!(a.fonts().len(), b.fonts().len());
+    for (a, b) in a.fonts().iter().zip(b.fonts()) {
+        assert_eq!(a.name(), b.name());
+        assert_eq!(a.size(), b.size());
+        assert_eq!(a.tfm_bytes(), b.tfm_bytes());
     }
 }
 
@@ -62,9 +63,12 @@ fn inspect(outcome: &Outcome) {
 pub fn run(mut mark: impl FnMut(&'static str)) {
     let mut args = std::env::args().skip(1);
     let mode = args.next().expect("MODE SOURCE FONT_NAME TFM_PATH");
-    if mode == "document-inspect" {
-        if let Err(error) = document::run(args) {
-            eprintln!("document-inspect: {error}");
+    if matches!(
+        mode.as_str(),
+        "document-inspect" | "document-replay" | "document-alloc"
+    ) {
+        if let Err(error) = document::run(&mode, args, &mut mark) {
+            eprintln!("{mode}: {error}");
             std::process::exit(1);
         }
         return;

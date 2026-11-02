@@ -1,6 +1,34 @@
 //! Full-document inspection through immutable host bundles and public output.
 use std::{error::Error, io, io::Write, path::Path};
-use umber::{Engine, InputFile, InputResolver, Placement, Progress};
+use umber::{Engine, InputFile, InputResolver, Outcome, Placement};
+#[path = "document_replay.rs"]
+mod replay;
+type RunResult<T> = Result<T, Box<dyn Error>>;
+
+struct Bundle {
+    name: Vec<u8>,
+    source: Vec<u8>,
+    inputs: Inputs,
+    fonts: Vec<Entry>,
+    calendar: Option<[i32; 4]>,
+}
+impl Bundle {
+    fn make(&self) -> RunResult<Engine<'_>> {
+        let mut engine = Engine::with_inputs(&self.name, &self.source, &self.inputs);
+        for font in &self.fonts {
+            engine.register_tfm(&font.logical, &font.bytes)?;
+        }
+        if let Some([minutes, day, month, year]) = self.calendar {
+            engine.set_calendar(minutes, day, month, year);
+        }
+        Ok(engine)
+    }
+}
+struct Settings {
+    ready: Option<Vec<u8>>,
+    repeats: usize,
+    iterations: usize,
+}
 
 struct Entry {
     logical: Vec<u8>,
@@ -54,7 +82,11 @@ fn entry(argument: String) -> Result<Entry, Box<dyn Error>> {
         bytes: std::fs::read(path)?,
     })
 }
-pub(super) fn run(mut args: impl Iterator<Item = String>) -> Result<(), Box<dyn Error>> {
+pub(super) fn run(
+    mode: &str,
+    mut args: impl Iterator<Item = String>,
+    mark: &mut impl FnMut(&'static str),
+) -> RunResult<()> {
     let wrapper = args.next().ok_or_else(|| {
         io::Error::other("expected WRAPPER [--input NAME=PATH] [--tfm NAME=PATH]")
     })?;
@@ -63,6 +95,11 @@ pub(super) fn run(mut args: impl Iterator<Item = String>) -> Result<(), Box<dyn 
     let mut inputs = Inputs(Vec::new());
     let mut fonts = Vec::new();
     let mut calendar = None;
+    let mut settings = Settings {
+        ready: None,
+        repeats: 5,
+        iterations: 200,
+    };
     while let Some(option) = args.next() {
         let value = args
             .next()
@@ -86,20 +123,39 @@ pub(super) fn run(mut args: impl Iterator<Item = String>) -> Result<(), Box<dyn 
                         io::Error::other("calendar must be MINUTES,DAY,MONTH,YEAR")
                     })?);
             }
+            "--ready-message" => settings.ready = Some(value.into_bytes()),
+            "--repeats" => settings.repeats = value.parse()?,
+            "--iterations" => settings.iterations = value.parse()?,
             _ => return Err(io::Error::other(format!("unknown option {option}")).into()),
         }
     }
-    let mut engine = Engine::with_inputs(wrapper.as_os_str().as_encoded_bytes(), &source, &inputs);
-    for font in &fonts {
-        engine.register_tfm(&font.logical, &font.bytes)?;
+    if settings.repeats == 0 || settings.iterations == 0 {
+        return Err(io::Error::other("repeats and iterations must be positive").into());
     }
-    if let Some([minutes, day, month, year]) = calendar {
-        engine.set_calendar(minutes, day, month, year);
+    let bundle = Bundle {
+        name: wrapper.as_os_str().as_encoded_bytes().to_vec(),
+        source,
+        inputs,
+        fonts,
+        calendar,
+    };
+    match mode {
+        "document-replay" => replay::run(&bundle, &settings),
+        "document-alloc" => replay::alloc(&bundle, &settings, mark),
+        _ => {
+            let mut engine = bundle.make()?;
+            complete(&mut engine)?;
+            inspect(&engine.outcome())
+        }
     }
-    if engine.advance(usize::MAX)? != Progress::Complete {
+}
+fn complete(engine: &mut Engine<'_>) -> RunResult<()> {
+    if engine.advance(usize::MAX)? != umber::Progress::Complete {
         return Err(io::Error::other("document did not complete").into());
     }
-    let outcome = engine.outcome();
+    Ok(())
+}
+fn inspect(outcome: &Outcome) -> RunResult<()> {
     let mut out = io::BufWriter::new(io::stdout().lock());
     write!(out, "{{\"pages\":[")?;
     for (index, page) in outcome.pages.iter().enumerate() {

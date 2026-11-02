@@ -1,7 +1,7 @@
 # Native benchmarks
 
-`gentle.py` compares full-document detached output with an existing native DVI;
-it performs no timing or checkpoint measurements. `layout document-inspect`
+`gentle.py` compares full-document detached output with an existing native DVI.
+`layout document-inspect`
 accepts a wrapper, immutable `--input NAME=PATH` and `--tfm NAME=PATH` bundles,
 and an optional `--calendar MINUTES,DAY,MONTH,YEAR`. Its JSON records page counts,
 page-local font names as byte arrays and scaled sizes, and ordered glyph/rule
@@ -25,6 +25,42 @@ The independent DVI reader scales advances directly from raw TFM bytes at each
 DVI font size, including TeX's integer size reduction. Unknown specials fail;
 only exact payloads explicitly declared with `--nonvisual-special HEX` are ignored.
 Interpreter errors fail the comparison without claiming partial-page success.
+
+`--replay` additionally runs prepared checkpoint measurements through
+`document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the
+separate `layout_allocations` executable. Both validate complete replay output,
+including retained old prefixes and completed results. Checkpoints use the first
+eligible outer boundary at or beyond 10%, 50%, and 90% of the uninterrupted page
+count; reports give actual page progress. With the generated wrapper, an extra
+diagnostic sentinel after unchanged plain loading supplies a READY checkpoint.
+An explicit wrapper can opt in with `--ready-message TEXT`; its bytes must occur
+as a complete diagnostic. Neither plain nor Gentle source is rewritten.
+
+Prepared replay uses wall-clock nanoseconds. Its reference setup/TFM registration,
+uninterrupted execution, and Outcome acquisition are one-shot endpoints.
+Per-checkpoint samples separate the first restore from
+completed state, stable restore, bulk retained checkpoint capture/release, suffix
+execution, Outcome acquisition/release, and equality validation. Equality includes
+the full result and all retained prefixes; the initial retained-completed-result
+validation is outside sample timers, as are host file loading, checkpoint
+discovery, and JSON serialization. One warmup precedes `--repeats` retained samples (default
+five); `--iterations` controls capture/release and stable-restore batches (default
+200). These endpoints are distinct from total CLI execution.
+
+Allocation stages include engine construction and preparation, followed by deltas
+for prepared capture/restore and repeated replay at the late checkpoint. All
+selected checkpoints are validated during preparation. Discovery precedes the
+prepared stage. Fixed result lifetimes and several simultaneously retained suffixes are
+reported separately; existing pools retain their semantic high-water capacity.
+Preparation retains independent reference output/resources alongside the replay
+engine and checkpoint prefixes, including discovery/validation high-water work;
+this is not a cold single-engine footprint. Host bundles and pre-reserved helper
+and diagnostic stage buffers are allocated before counting starts.
+The first suffix separates execution, Outcome and validation stages; repeated
+replay stages include transient Outcome acquisition, equality, and release.
+The last stage follows release
+of the engine, checkpoints, reference, and all retained results. Allocation mode
+emits only its stage JSON and never supplies ordinary timing samples.
 
 `layout.py` measures three prose documents with real TFM fonts, line/page
 construction, and checkpoint replay. It checks all native DVI glyph coordinates
