@@ -354,35 +354,49 @@ impl Engine<'_> {
     pub(crate) fn space_node(&self, normal: bool) -> Result<Kind> {
         let font = self.document.fonts.current.value as usize;
         let sf = self.document.text.space_factor;
+        if !normal && sf >= 2000 {
+            let xspaces = self.document.layout_values.glues[GlueParam::XSpace.index()].value;
+            if xspaces != Glue::default() {
+                return Ok(Kind::Glue {
+                    spec: xspaces,
+                    subtype: GlueKind::XSpaceSkip,
+                });
+            }
+        }
         let spaces = self.document.layout_values.glues[GlueParam::Space.index()].value;
-        let xspaces = self.document.layout_values.glues[GlueParam::XSpace.index()].value;
-        let mut g = if spaces != Glue::default() {
-            spaces
-        } else {
-            Glue {
-                width: self.font_parameter(font, 2),
-                stretch: self.font_parameter(font, 3),
-                shrink: self.font_parameter(font, 4),
-                ..Glue::default()
+        // Resolve mutable font state only on its first use in this operation.
+        let mut parameters = None;
+        let mut parameter = |n: usize| {
+            let (base, count) = *parameters.get_or_insert_with(|| {
+                let f = &self.document.fonts.descriptors[font];
+                (f.params, f.count)
+            });
+            if n == 0 || n > count {
+                Scaled::ZERO
+            } else {
+                self.document.fonts.parameters[base + n - 1]
             }
         };
-        let mut subtype = if spaces != Glue::default() {
-            GlueKind::SpaceSkip
+        let (mut g, mut subtype) = if spaces != Glue::default() {
+            (spaces, GlueKind::SpaceSkip)
         } else {
-            GlueKind::Normal
+            (
+                Glue {
+                    width: parameter(2),
+                    stretch: parameter(3),
+                    shrink: parameter(4),
+                    ..Glue::default()
+                },
+                GlueKind::Normal,
+            )
         };
         if !normal && sf != 1000 {
             subtype = GlueKind::Normal;
-            if sf >= 2000 && xspaces != Glue::default() {
-                g = xspaces;
-                subtype = GlueKind::XSpaceSkip;
-            } else {
-                if sf >= 2000 {
-                    g.width = g.width.advance(self.font_parameter(font, 7));
-                }
-                g.stretch = Scaled(ratio(g.stretch.0, sf, 1000)?);
-                g.shrink = Scaled(ratio(g.shrink.0, 1000, sf)?);
+            if sf >= 2000 {
+                g.width = g.width.advance(parameter(7));
             }
+            g.stretch = Scaled(ratio(g.stretch.0, sf, 1000)?);
+            g.shrink = Scaled(ratio(g.shrink.0, 1000, sf)?);
         }
         Ok(Kind::Glue { spec: g, subtype })
     }

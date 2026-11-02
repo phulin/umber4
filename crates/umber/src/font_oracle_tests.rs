@@ -220,6 +220,11 @@ fn upstream_font_metrics_and_horizontal_nodes() {
         r"\sfcode`\.=3000 a. A. ",
         r"\spacefactor=2000\spaceskip=5pt plus 3pt minus 2pt\fontdimen7\f=1pt\ ",
         r"\xspaceskip=9pt\spacefactor=2000\kern0pt{} ",
+        r"\spaceskip=0pt plus1fil minus-2fill\relax{} ",
+        r"\spaceskip=0pt plus1fil minus-2fill\spacefactor=500\relax{} ",
+        r"\xspaceskip=9pt plus2fil minus3fill\fontdimen3\f=10000pt\spacefactor=32767\relax{} ",
+        r"\spaceskip=5pt plus3fil minus2fill\fontdimen7\f=1pt\spacefactor=2000\relax{} ",
+        r"\fontdimen2\f=1pt\fontdimen3\f=2pt\fontdimen4\f=3pt\fontdimen7\f=4pt\spacefactor=2000\relax{} {\fontdimen2\f=5pt\fontdimen3\f=-6pt\fontdimen4\f=7pt\fontdimen7\f=8pt\spacefactor=2000\relax{} }\spacefactor=2000\relax{} ",
     ] {
         oracle.compare_shape(&bytes, body);
     }

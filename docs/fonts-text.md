@@ -193,7 +193,12 @@ the accent's singleton hbox has shift `x-h`.
 Spaces freeze inline glue at execution, using current font parameters, spaceskip,
 xspaceskip, and exact space-factor arithmetic. Control space uses the normal
 space path without changing the current factor. Font mutations affect subsequent
-spaces only. Missing glyphs create no character node, as in TeX; tracing lost
+spaces only. An adjusted space selects a nonzero xspaceskip before reading base
+font spacing; otherwise font parameters are read only when selected by the base
+glue or extra-space rule. One operation lazily resolves the descriptor's parameter
+span and reuses its offset/count, without retaining a font-glue cache. Width
+addition precedes stretch scaling and then shrink scaling. Missing glyphs create
+no character node, as in TeX; tracing lost
 characters is outside this stage's diagnostic profile.
 
 A nonempty paragraph remains owned by the horizontal root until the

@@ -216,31 +216,6 @@ fn ligatures_kerns_expansion_char_and_hyphen_components() {
     assert!(!e.can_checkpoint());
 }
 #[test]
-fn spacing_sf_codes_and_control_spaces() {
-    let cases:[(&[u8],i32,i32);4]=[
-        (br"\font\f=test \f\noindent\sfcode`\.=3000 a. \end",291270,327678),
-        (br"\font\f=test \f\noindent\sfcode`\.=3000 A. \end",218453,109226),
-        (br"\font\f=test \f\noindent\spacefactor=2000\spaceskip=5pt plus 3pt minus 2pt\fontdimen7\f=1pt \ \end",5*65536,3*65536),
-        (br"\font\f=test \f\noindent\xspaceskip=9pt\spacefactor=2000\relax{} \end",9*65536,0),
-    ];
-    for (source, width, stretch) in cases {
-        let mut e = engine(source);
-        build(&mut e);
-        let mut p = e.document.text.horizontal.head();
-        let mut glues = Vec::new();
-        while !p.is_null() {
-            let n = e.document.nodes.get(p);
-            if let Kind::Glue { spec, .. } = &n.kind {
-                glues.push(*spec);
-            }
-            p = n.next;
-        }
-        assert_eq!(glues.len(), 1);
-        assert_eq!(glues[0].width.0, width);
-        assert_eq!(glues[0].stretch.0, stretch);
-    }
-}
-#[test]
 fn boundary_ligatures_noboundary_and_retaining_operations() {
     for op in [0, 1, 2, 3, 5, 6, 7, 11] {
         for hyphen in *b"abc" {
@@ -552,3 +527,6 @@ fn literal_character_reads_preserve_missing_character_and_error_consumption() {
         vec![(b'a', false), (b'b', false), (b'c', false)]
     );
 }
+
+#[path = "font_spacing_tests.rs"]
+mod spacing;
