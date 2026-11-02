@@ -68,6 +68,12 @@ preparation. The first accepted page validates magnification in 1 through 32768
 and freezes it, paired with the existing restored first-use state. Later pages
 retain that prepared factor, even if the current integer register changes; they
 do not revalidate the register during publication. Void shipout prepares nothing.
+Successful job completion revalidates the current magnification after the final
+page drain when any page was published, including an empty page. A mismatch
+returns `Number` before completion, preserving the published prefix and preceding
+diagnostics. Zero-page jobs do not perform this final check, even if a true-unit
+scan previously prepared magnification. Polling and failed execution do not
+perform output finalization.
 No raw node or document-font identity crosses the result
 boundary. Both output and font header chunks have sixteen slots; held partial
 output chunks may pin a bounded invisible suffix, and held font chunks pin the

@@ -407,6 +407,8 @@ mod output_routine_tests;
 #[cfg(test)]
 mod output_state_tests;
 #[cfg(test)]
+mod page_finalization_tests;
+#[cfg(test)]
 mod page_tests;
 
 #[cfg(test)]

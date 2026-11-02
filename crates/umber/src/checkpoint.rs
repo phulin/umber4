@@ -146,6 +146,9 @@ impl<'a> Engine<'a> {
                     commands = commands.saturating_add(1);
                     continue;
                 }
+                if !self.document.page.output.is_empty() {
+                    self.prepare_magnification()?;
+                }
                 self.document.complete = true;
                 self.quiescent = true;
                 return Ok(Progress::Complete);
