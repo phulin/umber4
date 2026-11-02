@@ -396,12 +396,13 @@ impl Catalog {
             return Ok(i);
         }
         let r = &self.resources[resource];
+        let scale = Scale::new(size)?;
         let dimension = |index| {
             let start = (r.metrics + index) * 4;
-            scale(r.bytes[start..start + 4].try_into().unwrap(), size)
+            scale.apply(r.bytes[start..start + 4].try_into().unwrap())
         };
         for index in [0, r.nw, r.nw + r.nh, r.nw + r.nh + r.nd] {
-            if dimension(index)? != Scaled::ZERO {
+            if dimension(index) != Scaled::ZERO {
                 return Err(Error::Font);
             }
         }
@@ -416,10 +417,10 @@ impl Catalog {
                 present[character / 64] |= 1u64 << (character % 64);
             }
             metrics.push(Metrics {
-                width: dimension(i.width as usize)?,
-                height: dimension(r.nw + i.height as usize)?,
-                depth: dimension(r.nw + r.nh + i.depth as usize)?,
-                italic: dimension(r.nw + r.nh + r.nd + i.italic as usize)?,
+                width: dimension(i.width as usize),
+                height: dimension(r.nw + i.height as usize),
+                depth: dimension(r.nw + r.nh + i.depth as usize),
+                italic: dimension(r.nw + r.nh + r.nd + i.italic as usize),
             });
         }
         let mut kerns = Buffer::new(&self.dimensions);
@@ -428,7 +429,7 @@ impl Catalog {
             .as_chunks::<4>()
             .0
         {
-            kerns.push(scale(*raw, size)?);
+            kerns.push(scale.apply(*raw));
         }
         let mut params = Buffer::new(&self.dimensions);
         params.reserve(r.np.max(7));
@@ -440,7 +441,7 @@ impl Catalog {
                 if i == 0 {
                     Scaled(i32::from_be_bytes(raw.try_into().unwrap()) >> 4)
                 } else {
-                    scale(raw.try_into().unwrap(), size)?
+                    scale.apply(raw.try_into().unwrap())
                 }
             };
             params.push(v);
@@ -517,21 +518,33 @@ pub(crate) fn ratio(value: i32, n: i32, d: i32) -> Result<i32> {
         Ok(result as i32)
     }
 }
-fn scale(raw: [u8; 4], size: Scaled) -> Result<Scaled> {
-    let [a, b, c, d] = raw;
-    let mut z = i64::from(size.0);
-    let mut alpha = 16;
-    while z >= 8_388_608 {
-        z /= 2;
-        alpha *= 2;
+// Size-dependent factors live only for one scaled-font construction.
+struct Scale {
+    z: i64,
+    alpha: i64,
+    beta: i64,
+}
+impl Scale {
+    fn new(size: Scaled) -> Result<Self> {
+        let mut z = i64::from(size.0);
+        let mut alpha = 16;
+        while z >= 8_388_608 {
+            z /= 2;
+            alpha *= 2;
+        }
+        let beta = 256 / alpha;
+        alpha *= z;
+        if beta == 0 {
+            return Err(Error::Overflow);
+        }
+        Ok(Self { z, alpha, beta })
     }
-    let beta = 256 / alpha;
-    alpha *= z;
-    if beta == 0 {
-        return Err(Error::Overflow);
+    fn apply(&self, raw: [u8; 4]) -> Scaled {
+        let [a, b, c, d] = raw;
+        let Self { z, alpha, beta } = *self;
+        let sw = (((i64::from(d) * z / 256 + i64::from(c) * z) / 256) + i64::from(b) * z) / beta;
+        Scaled(if a == 0 { sw } else { sw - alpha } as i32)
     }
-    let sw = (((i64::from(d) * z / 256 + i64::from(c) * z) / 256) + i64::from(b) * z) / beta;
-    Ok(Scaled(if a == 0 { sw } else { sw - alpha } as i32))
 }
 #[cfg(test)]
 #[path = "tfm_tests.rs"]

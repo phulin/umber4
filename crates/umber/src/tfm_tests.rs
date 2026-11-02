@@ -43,12 +43,29 @@ fn malformed_ranges_cycles_programs_and_recipes() {
 #[test]
 fn staged_scaling_matches_web_not_single_multiply() {
     assert_eq!(
-        scale([0, 127, 255, 255], Scaled(134_217_727)).unwrap().0,
+        Scale::new(Scaled(134_217_727))
+            .unwrap()
+            .apply([0, 127, 255, 255])
+            .0,
         1_073_741_568
     );
-    assert_eq!(scale([255, 240, 0, 1], Scaled(655360)).unwrap().0, -655360);
-    assert_eq!(scale([0, 0, 0, 1], Scaled(655360)).unwrap().0, 0);
+    let scale = Scale::new(Scaled(655360)).unwrap();
+    assert_eq!(scale.apply([255, 240, 0, 1]).0, -655360);
+    assert_eq!(scale.apply([0, 0, 0, 1]).0, 0);
     assert_eq!(ratio(-7, 2, 3).unwrap(), -4);
+}
+#[test]
+fn size_rejection_precedes_zero_metric_validation_without_publishing_a_font() {
+    let mut bytes = basic();
+    // The first width is a valid fix-word, but is nonzero after scaling.
+    let dimensions = (6 + 2 + 128) * 4;
+    bytes[dimensions..dimensions + 4].copy_from_slice(&(1i32 << 20).to_be_bytes());
+    let mut c = Catalog::default();
+    c.register(b"nonzero", &bytes).unwrap();
+    assert_eq!(c.scaled(0, Scaled(134_217_728)), Err(Error::Overflow));
+    assert!(c.scaled.is_empty());
+    assert_eq!(c.scaled(0, Scaled(655360)), Err(Error::Font));
+    assert!(c.scaled.is_empty());
 }
 #[test]
 fn signed_slant_valid_extensible_and_scaled_zero_entries() {
@@ -107,7 +124,9 @@ fn dense_metrics_preserve_presence_fields_and_character_ranges() {
                 let fields = (first..=last).contains(&c).then(|| {
                     let value = |index| {
                         let start = dimensions + index * 4;
-                        scale(full[start..start + 4].try_into().unwrap(), size).unwrap()
+                        Scale::new(size)
+                            .unwrap()
+                            .apply(full[start..start + 4].try_into().unwrap())
                     };
                     Metrics {
                         width: value(info[0] as usize),
@@ -171,11 +190,12 @@ fn byte_character_fields_with_wide_metric_and_program_tables() {
     assert_eq!(catalog.resources[0].entries[2], 255);
     for size in [Scaled(655360), Scaled(13_107_201)] {
         let scaled = catalog.scaled(0, size).unwrap();
+        let scale = Scale::new(size).unwrap();
         let expected = Metrics {
-            width: scale(524288i32.to_be_bytes(), size).unwrap(),
-            height: scale(734003i32.to_be_bytes(), size).unwrap(),
-            depth: scale(209715i32.to_be_bytes(), size).unwrap(),
-            italic: scale(104858i32.to_be_bytes(), size).unwrap(),
+            width: scale.apply(524288i32.to_be_bytes()),
+            height: scale.apply(734003i32.to_be_bytes()),
+            depth: scale.apply(209715i32.to_be_bytes()),
+            italic: scale.apply(104858i32.to_be_bytes()),
         };
         assert_eq!(catalog.metrics(scaled, 255), Some(expected));
         assert_eq!(catalog.metrics(scaled, 0), None);
