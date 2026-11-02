@@ -192,8 +192,10 @@ conversion and case-change output; `expand.rs` dispatches expansion;
 assignments, groups, and deferred tokens; `tests.rs` and `extended_tests.rs`
 contain semantic fixtures; `scan_tests.rs` checks operand cursor boundaries and
 rollback; `names_tests.rs` checks spelling chunk publication and retention;
-`main.rs` is the native file/message adapter. Keep
+`main.rs` is the native file/message and format build/load adapter. Keep
 host access out of the portable library.
+`tests/format_cli.rs` checks fresh-process format build/load, immutable resource
+bundles, calendar/hooks and atomic publication failures through the native CLI.
 
 `examples/allocations.rs` is a separate native diagnostic adapter. Its allocator
 counters cover engine construction and execution, excluding the host input buffer.

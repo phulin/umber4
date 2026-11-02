@@ -88,6 +88,27 @@ source, so restoring them replays the same startup.
 The first physical input line is prepared with the restored endline policy before
 everyjob executes; category-code tokenization still happens on demand.
 
-The CLI build/load workflow and complete dependent codecs are outside the
-foundation API. Their integration must compare freshly loaded plain against
-source initialization and native output, including unchanged Gentle.
+## Native CLI
+
+`umber build-format SETUP.tex -o plain.ufmt` executes setup and writes a validated
+image. Setup normally ends with `\dump`; `\input plain \dump` uses the ordinary
+interpreter. `--input NAME=PATH` and `--tfm NAME=PATH` supply immutable setup assets.
+The completed image is written to a new sibling temporary file and renamed only
+after the full write succeeds. Failed initialization/encoding or publication
+leaves an existing artifact intact. Live box registers still require the box
+codec, so plain's strutbox is outside the current export subset.
+
+`umber DOCUMENT.tex --format plain.ufmt` loads that image before reading the new
+document. The original `umber DOCUMENT.tex` invocation remains available.
+Extra resources are supplied before loaded font handles are constructed. Image
+bytes are released before document execution. `--calendar MINUTES,DAY,MONTH,YEAR`
+applies after image loading and before everyjob; without it, portable calendar
+defaults are unchanged. The CLI writes diagnostics to stdout, never binary image
+bytes. Invalid images or resource conflicts fail before document execution.
+
+The document inspection/replay adapters accept the same format/calendar options.
+A loaded-format READY checkpoint is the initial state before everyjob or source
+execution, with no inserted diagnostic sentinel. Comparisons across source and
+format startup compare page counts and positioned output; plain initialization
+diagnostics deliberately do not belong to the fresh loaded job. Replay equality
+within either startup path still includes complete diagnostics and retained output.

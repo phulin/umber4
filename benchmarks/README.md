@@ -26,6 +26,16 @@ DVI font size, including TeX's integer size reduction. Unknown specials fail;
 only exact payloads explicitly declared with `--nonvisual-special HEX` are ignored.
 Interpreter errors fail the comparison without claiming partial-page success.
 
+`--format plain.ufmt` inspects a loaded format. With default Gentle inputs, the
+adapter reads unchanged `gentle.tex` directly and receives no plain/hyphen mappings
+or TFM mappings: plain's 47 loaded resources already cover Gentle's font names.
+The Python oracle still reads those TFMs independently to interpret native DVI.
+This path also starts a separate source-initialized inspection and compares page
+counts and every positioned event across startup methods. An explicit `--wrapper`
+uses the supplied job and compares it with the requested DVI; it does not synthesize
+a source-initialized equivalent. Explicit `--tfm`/`--input` remain additional job
+resources. Binary format creation uses the ordinary CLI's `build-format` command.
+
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the
 separate `layout_allocations` executable. Both validate complete replay output,
@@ -33,6 +43,8 @@ including retained old prefixes and completed results. Checkpoints use the first
 eligible outer boundary at or beyond 10%, 50%, and 90% of the uninterrupted page
 count; reports give actual page progress. With the generated wrapper, an extra
 diagnostic sentinel after unchanged plain loading supplies a READY checkpoint.
+For a loaded format, READY is captured immediately after decode, before everyjob
+or document input; no sentinel or plain bootstrap runs in that job.
 An explicit wrapper can opt in with `--ready-message TEXT`; its bytes must occur
 as a complete diagnostic. Neither plain nor Gentle source is rewritten.
 

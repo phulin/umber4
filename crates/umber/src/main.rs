@@ -1,7 +1,8 @@
 use std::{
     ffi::{OsStr, OsString},
     io::Write,
-    path::PathBuf,
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicU64, Ordering},
 };
 fn main() {
     match run() {
@@ -84,11 +85,15 @@ fn os_string(value: Vec<u8>) -> Result<OsString, String> {
 }
 fn run() -> Result<umber::Outcome, String> {
     let mut arguments = std::env::args_os().skip(1);
-    let path = PathBuf::from(
+    let first=arguments.next().ok_or("usage: umber FILE.tex [--format FILE] [--tfm NAME=PATH | --input NAME=PATH] [--calendar M,D,M,Y]; umber build-format SETUP.tex -o FILE")?;
+    let build = first == "build-format";
+    let path = PathBuf::from(if build {
         arguments
             .next()
-            .ok_or("usage: umber FILE.tex [--tfm NAME=PATH | --input NAME=PATH]...")?,
-    );
+            .ok_or("expected setup source after build-format")?
+    } else {
+        first
+    });
     let source = std::fs::read(&path).map_err(|e| e.to_string())?;
     let name = bytes(
         std::fs::canonicalize(&path)
@@ -97,16 +102,54 @@ fn run() -> Result<umber::Outcome, String> {
     )?;
     let mut inputs = Inputs(Vec::new());
     let mut fonts = Vec::new();
+    let mut format = None;
+    let mut output = None;
+    let mut calendar = None;
     while let Some(option) = arguments.next() {
-        if option != "--tfm" && option != "--input" {
-            return Err("expected --tfm or --input NAME=PATH".into());
+        let value = arguments.next().ok_or("missing option value")?;
+        if option == "--format" {
+            if build || format.is_some() {
+                return Err("--format is valid once for a document run".into());
+            }
+            format = Some(PathBuf::from(value));
+            continue;
         }
-        let mapping = bytes(&arguments.next().ok_or("expected NAME=PATH")?)?;
+        if option == "-o" {
+            if !build || output.is_some() {
+                return Err("-o is required once for build-format".into());
+            }
+            output = Some(PathBuf::from(value));
+            continue;
+        }
+        if option == "--calendar" {
+            if calendar.is_some() {
+                return Err("duplicate --calendar".into());
+            }
+            let fields = value
+                .to_str()
+                .ok_or("calendar must be MINUTES,DAY,MONTH,YEAR")?
+                .split(',')
+                .map(str::parse::<i32>)
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| e.to_string())?;
+            calendar = Some(
+                <[i32; 4]>::try_from(fields)
+                    .map_err(|_| "calendar must be MINUTES,DAY,MONTH,YEAR")?,
+            );
+            continue;
+        }
+        if option != "--tfm" && option != "--input" {
+            return Err("expected --format, --calendar, --tfm or --input".into());
+        }
+        let mapping = bytes(&value)?;
         let split = mapping
             .iter()
             .position(|&b| b == b'=')
             .ok_or("expected NAME=PATH")?;
         let logical = mapping[..split].to_vec();
+        if logical.is_empty() || split + 1 == mapping.len() {
+            return Err("expected nonempty NAME=PATH".into());
+        }
         let path = PathBuf::from(os_string(mapping[split + 1..].to_vec())?);
         let data = std::fs::read(&path).map_err(|e| e.to_string())?;
         if option == "--tfm" {
@@ -127,11 +170,68 @@ fn run() -> Result<umber::Outcome, String> {
             });
         }
     }
-    let mut engine = umber::Engine::with_inputs(&name, &source, &inputs);
-    for (name, bytes) in fonts {
+    if build && output.is_none() {
+        return Err("build-format requires -o FILE".into());
+    }
+    let mut engine = if let Some(path) = format {
+        let image = std::fs::read(path).map_err(|e| e.to_string())?;
+        let extra: Vec<_> = fonts
+            .iter()
+            .map(|(name, bytes)| (name.as_slice(), bytes.as_slice()))
+            .collect();
+        umber::Engine::with_format_inputs(
+            &image,
+            umber::InputFile {
+                name: &name,
+                bytes: &source,
+            },
+            Some(&inputs),
+            &extra,
+        )
+        .map_err(|e| e.to_string())?
+        // image and extra directory are released before the first command.
+    } else {
+        let mut engine = umber::Engine::with_inputs(&name, &source, &inputs);
+        for (name, bytes) in &fonts {
+            engine
+                .register_tfm(name, bytes)
+                .map_err(|e| e.to_string())?;
+        }
         engine
-            .register_tfm(&name, &bytes)
-            .map_err(|e| e.to_string())?;
+    };
+    drop(fonts);
+    if let Some([minutes, day, month, year]) = calendar {
+        engine.set_calendar(minutes, day, month, year);
+    }
+    if let Some(path) = output {
+        engine.advance(usize::MAX).map_err(|e| e.to_string())?;
+        let image = engine.encode_format().map_err(|e| e.to_string())?;
+        write_format(&path, &image).map_err(|e| e.to_string())?;
+        return Ok(engine.outcome());
     }
     engine.run().map_err(|e| e.to_string())
+}
+
+fn write_format(path: &Path, image: &[u8]) -> std::io::Result<()> {
+    static NEXT: AtomicU64 = AtomicU64::new(0);
+    let mut temporary = path.as_os_str().to_os_string();
+    temporary.push(format!(
+        ".tmp-{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, Ordering::Relaxed)
+    ));
+    let temporary = PathBuf::from(temporary);
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)?;
+    let result = (|| {
+        file.write_all(image)?;
+        drop(file);
+        std::fs::rename(&temporary, path)
+    })();
+    if result.is_err() {
+        let _ = std::fs::remove_file(&temporary);
+    }
+    result
 }

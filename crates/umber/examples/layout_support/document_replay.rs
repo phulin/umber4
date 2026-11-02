@@ -72,6 +72,9 @@ fn prepare<'a>(
         ("late", total - total / 10),
     ];
     let mut engine = bundle.make()?;
+    if bundle.format.is_some() {
+        points.push(point(&engine, "ready", 0, engine.outcome()));
+    }
     let mut selected = 0;
     let mut ready = settings.ready.is_none();
     loop {

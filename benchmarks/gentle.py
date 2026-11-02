@@ -207,6 +207,20 @@ def compare(inspection, native, counts=False):
                 raise ValueError(f"page {number} event {index}: Umber {actual!r}, native {target!r}")
 
 
+def expanded_pages(inspection):
+    """Normalize one source-started result for comparison with a format job."""
+    pages = []
+    for page in inspection["pages"]:
+        events = []
+        for event in page["events"]:
+            if event[0] == "g":
+                font = page["fonts"][event[1]]
+                event = ["g", font["name"], font["size"], *event[2:]]
+            events.append(event)
+        pages.append({"counts": page["counts"][:10], "events": events})
+    return pages
+
+
 def mapping(value):
     name, separator, path = value.partition("=")
     if not separator or not name or not path:
@@ -232,6 +246,7 @@ def main():
     parser.add_argument("--assets-root", type=Path, default=ROOT)
     parser.add_argument("--texmf", type=Path, default=TEXMF)
     parser.add_argument("--wrapper", type=Path)
+    parser.add_argument("--format", type=Path)
     parser.add_argument("--dvi", type=Path)
     parser.add_argument("--input", action="append", default=[], type=mapping)
     parser.add_argument("--tfm", action="append", default=[], type=mapping)
@@ -249,6 +264,8 @@ def main():
         parser.error("repeats and iterations must be positive")
     if args.ready_message is not None and args.wrapper is None:
         parser.error("--ready-message requires an explicit --wrapper")
+    if args.format is not None and args.ready_message is not None:
+        parser.error("loaded format READY is startup; omit --ready-message")
     reference = args.assets_root / ".tools/corpus/gentle-native-pdftex14025-tl2026"
     inputs = args.input or [
         ("plain", args.texmf / "tex/plain/base/plain.tex"),
@@ -271,19 +288,34 @@ def main():
         wrapper = args.wrapper
         ready = args.ready_message
         if wrapper is None:
-            wrapper = Path(temporary) / "gentle.tex"
-            if args.replay or args.allocation_adapter:
+            wrapper = args.assets_root / ".tools/corpus/gentle.tex" if args.format else Path(temporary) / "gentle.tex"
+            if not args.format and (args.replay or args.allocation_adapter):
                 ready = "UMBER:DOCUMENT:READY:END"
                 wrapper.write_text(r"\input plain \message{" + ready + r"} \input gentle \end" + "\n")
-            else:
+            elif not args.format:
                 wrapper.write_bytes(b"\\input plain \\input gentle \\end\n")
-        command = [str(args.adapter), "document-inspect", str(wrapper), "--calendar",
-                   f"{calendar.hour * 60 + calendar.minute},{calendar.day},{calendar.month},{calendar.year}"]
-        for option, bundle in [("--input", inputs), ("--tfm", tfms)]:
+        calendar_arg = f"{calendar.hour * 60 + calendar.minute},{calendar.day},{calendar.month},{calendar.year}"
+        command = [str(args.adapter), "document-inspect", str(wrapper), "--calendar", calendar_arg]
+        if args.format:
+            command.extend(["--format", str(args.format)])
+        for option, bundle in [("--input", args.input if args.format else inputs),
+                               ("--tfm", args.tfm if args.format else tfms)]:
             for name, path in bundle:
                 command.extend([option, f"{name}={path}"])
         inspection = json.loads(subprocess.check_output(command))
         compare(inspection, native, args.compare_counts)
+        if args.format and args.wrapper is None:
+            source_wrapper = Path(temporary) / "source-gentle.tex"
+            source_wrapper.write_bytes(b"\\input plain \\input gentle \\end\n")
+            source_command = [str(args.adapter), "document-inspect", str(source_wrapper),
+                              "--calendar", calendar_arg]
+            for option, bundle in [("--input", inputs), ("--tfm", tfms)]:
+                for name, path in bundle:
+                    source_command.extend([option, f"{name}={path}"])
+            source = json.loads(subprocess.check_output(source_command))
+            compare(inspection, expanded_pages(source), counts=True)
+            report["source_and_format_output_equal"] = True
+        report["startup"] = "format" if args.format else "source"
         prepared_args = [*command[2:], "--repeats", str(args.repeats),
                          "--iterations", str(args.iterations)]
         if ready is not None:

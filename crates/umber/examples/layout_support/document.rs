@@ -11,13 +11,32 @@ struct Bundle {
     inputs: Inputs,
     fonts: Vec<Entry>,
     calendar: Option<[i32; 4]>,
+    format: Option<Vec<u8>>,
 }
 impl Bundle {
     fn make(&self) -> RunResult<Engine<'_>> {
-        let mut engine = Engine::with_inputs(&self.name, &self.source, &self.inputs);
-        for font in &self.fonts {
-            engine.register_tfm(&font.logical, &font.bytes)?;
-        }
+        let mut engine = if let Some(image) = &self.format {
+            let extra: Vec<_> = self
+                .fonts
+                .iter()
+                .map(|f| (f.logical.as_slice(), f.bytes.as_slice()))
+                .collect();
+            Engine::with_format_inputs(
+                image,
+                InputFile {
+                    name: &self.name,
+                    bytes: &self.source,
+                },
+                Some(&self.inputs),
+                &extra,
+            )?
+        } else {
+            let mut engine = Engine::with_inputs(&self.name, &self.source, &self.inputs);
+            for font in &self.fonts {
+                engine.register_tfm(&font.logical, &font.bytes)?;
+            }
+            engine
+        };
         if let Some([minutes, day, month, year]) = self.calendar {
             engine.set_calendar(minutes, day, month, year);
         }
@@ -95,6 +114,7 @@ pub(super) fn run(
     let mut inputs = Inputs(Vec::new());
     let mut fonts = Vec::new();
     let mut calendar = None;
+    let mut format = None;
     let mut settings = Settings {
         ready: None,
         repeats: 5,
@@ -113,6 +133,12 @@ pub(super) fn run(
                 inputs.0.push(input);
             }
             "--tfm" => fonts.push(entry(value)?),
+            "--format" => {
+                if format.is_some() {
+                    return Err(io::Error::other("duplicate --format").into());
+                }
+                format = Some(std::fs::read(value)?);
+            }
             "--calendar" => {
                 let fields = value
                     .split(',')
@@ -132,12 +158,18 @@ pub(super) fn run(
     if settings.repeats == 0 || settings.iterations == 0 {
         return Err(io::Error::other("repeats and iterations must be positive").into());
     }
+    if format.is_some() && settings.ready.is_some() {
+        return Err(
+            io::Error::other("loaded format READY is startup; omit --ready-message").into(),
+        );
+    }
     let bundle = Bundle {
         name: wrapper.as_os_str().as_encoded_bytes().to_vec(),
         source,
         inputs,
         fonts,
         calendar,
+        format,
     };
     match mode {
         "document-replay" => replay::run(&bundle, &settings),
