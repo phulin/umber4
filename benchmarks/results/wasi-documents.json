@@ -1,0 +1,672 @@
+{
+  "measured_at_utc": "2026-11-02T22:24:14.883434+00:00",
+  "runtime_revision": "4020e847b2686687c9819e65ee5f984d379180f1",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "node": "v24.20.0",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "builds": {
+    "native": "Existing default-feature release CLI/layout, fat LTO, codegen-units=1, debug=1; no PGO. Native artifacts were not overwritten.",
+    "wasi_command": [
+      "env",
+      "CARGO_TARGET_DIR=/home/phulin/umber4/target/wasi-portability",
+      "cargo",
+      "build",
+      "--release",
+      "--target",
+      "wasm32-wasip1",
+      "--bin",
+      "umber",
+      "--example",
+      "layout"
+    ],
+    "wasi_target": "wasm32-wasip1, WASI preview1; no custom target flags, dependencies or ABI"
+  },
+  "launcher": "scripts/run-wasi.mjs; Node built-ins, explicit flat guest-to-host --dir mappings, unchanged application arguments, empty guest environment. No automatic path rewriting.",
+  "inputs": {
+    "format": {
+      "path": "/home/phulin/umber4/.tools/formats/plain.ufmt",
+      "bytes": 232021,
+      "sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14"
+    },
+    "documents": {
+      "gentle": {
+        "path": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f"
+      },
+      "chomp": {
+        "path": "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+        "sha256": "442078121d56122d058ea5e30764f49f60b684d68b0e36e71a8f85d534dbe09e"
+      }
+    },
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "loaded_job_tfm_mappings": 0,
+    "loaded_job_input_mappings": 0
+  },
+  "correctness": {
+    "native_reference": "Retained clean pdfTeX 1.40.25 DVI; existing generic helper checks all ordered glyph/font/size/position/rule events, BOP counts and matching preamble/postamble magnification.",
+    "gentle": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "magnification": 1000,
+      "source_format_output": "exact",
+      "native_wasi_full_inspection": "complete parsed objects equal",
+      "retained_replay_pages": [
+        0,
+        10,
+        49,
+        88
+      ]
+    },
+    "chomp": {
+      "pages": 10,
+      "glyphs": 22684,
+      "rules": 2,
+      "magnification": 1095,
+      "source_format_output": "exact",
+      "native_wasi_full_inspection": "complete parsed objects equal",
+      "retained_loaded_replay_pages": [
+        0,
+        1,
+        5,
+        9
+      ],
+      "retained_source_replay_pages": [
+        1,
+        5,
+        9
+      ]
+    },
+    "retained_launcher_commands": {
+      "gentle": {
+        "inspection": [
+          "/home/phulin/.volta/tools/image/node/24.20.0/bin/node",
+          "/home/phulin/umber4/scripts/run-wasi.mjs",
+          "--dir",
+          "/input=/home/phulin/umber4/.tools/corpus",
+          "--dir",
+          "/formats=/home/phulin/umber4/.tools/formats",
+          "--dir",
+          "/chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv",
+          "--",
+          "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm",
+          "document-inspect",
+          "/input/gentle.tex",
+          "--format",
+          "/formats/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        "replay": [
+          "/home/phulin/.volta/tools/image/node/24.20.0/bin/node",
+          "/home/phulin/umber4/scripts/run-wasi.mjs",
+          "--dir",
+          "/input=/home/phulin/umber4/.tools/corpus",
+          "--dir",
+          "/formats=/home/phulin/umber4/.tools/formats",
+          "--dir",
+          "/chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv",
+          "--",
+          "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm",
+          "document-replay",
+          "/input/gentle.tex",
+          "--format",
+          "/formats/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      },
+      "chomp": {
+        "inspection": [
+          "/home/phulin/.volta/tools/image/node/24.20.0/bin/node",
+          "/home/phulin/umber4/scripts/run-wasi.mjs",
+          "--dir",
+          "/input=/home/phulin/umber4/.tools/corpus",
+          "--dir",
+          "/formats=/home/phulin/umber4/.tools/formats",
+          "--dir",
+          "/chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv",
+          "--",
+          "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm",
+          "document-inspect",
+          "/chomp/chomp.tex",
+          "--format",
+          "/formats/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        "replay": [
+          "/home/phulin/.volta/tools/image/node/24.20.0/bin/node",
+          "/home/phulin/umber4/scripts/run-wasi.mjs",
+          "--dir",
+          "/input=/home/phulin/umber4/.tools/corpus",
+          "--dir",
+          "/formats=/home/phulin/umber4/.tools/formats",
+          "--dir",
+          "/chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv",
+          "--",
+          "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm",
+          "document-replay",
+          "/chomp/chomp.tex",
+          "--format",
+          "/formats/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      }
+    },
+    "validation": "The retained launcher independently repeats real loaded-format inspection and retained replay. Native/source-format comparisons reuse the passing reference checks and complete native inspection objects from the same unchanged runtime. All 20 measurement invocations also validate complete output, retained prefixes and results."
+  },
+  "timing": {
+    "clock": "WALL",
+    "endpoint": "Existing document-replay suffix_advance_ns: restore completed before timing; Engine::advance through remaining document completion. Host Outcome acquisition, equality/retained-result consumption and release occur afterward. Input/format loading, checkpoint discovery, independent reference and validation are outside this endpoint. Node startup and initial module compilation are outside the timer. Any residual V8 tiering, scheduling or runtime work during the interval remains included.",
+    "cpu": 3,
+    "started_utc": "2026-11-02T22:24:03.716008+00:00",
+    "ended_utc": "2026-11-02T22:24:14.883434+00:00",
+    "invocations_per_platform_per_document": 5,
+    "internal_repeats": 1,
+    "internal_iterations": 200,
+    "per_point_warmups": 1,
+    "settings": "Default Node/V8 settings. One bounded alternating cohort; no tuning, reruns, cross-VM instruction counts or process CPU comparison.",
+    "host_environment": {
+      "PATH": "/usr/bin:/bin"
+    },
+    "guest_environment": {},
+    "documents": {
+      "gentle": {
+        "commands": {
+          "native": [
+            "/home/phulin/umber4/target/release/examples/layout",
+            "document-replay",
+            "/home/phulin/umber4/.tools/corpus/gentle.tex",
+            "--format",
+            "/home/phulin/umber4/.tools/formats/plain.ufmt",
+            "--calendar",
+            "0,1,3,2026",
+            "--repeats",
+            "1",
+            "--iterations",
+            "200"
+          ],
+          "wasi": [
+            "/home/phulin/.volta/tools/image/node/24.20.0/bin/node",
+            "/home/phulin/umber4/scripts/run-wasi.mjs",
+            "--dir",
+            "/input=/home/phulin/umber4/.tools/corpus",
+            "--dir",
+            "/formats=/home/phulin/umber4/.tools/formats",
+            "--dir",
+            "/chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv",
+            "--",
+            "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm",
+            "document-replay",
+            "/input/gentle.tex",
+            "--format",
+            "/formats/plain.ufmt",
+            "--calendar",
+            "0,1,3,2026",
+            "--repeats",
+            "1",
+            "--iterations",
+            "200"
+          ]
+        },
+        "orders": [
+          [
+            "native",
+            "wasi"
+          ],
+          [
+            "wasi",
+            "native"
+          ],
+          [
+            "native",
+            "wasi"
+          ],
+          [
+            "wasi",
+            "native"
+          ],
+          [
+            "native",
+            "wasi"
+          ]
+        ],
+        "checkpoints": [
+          {
+            "label": "ready",
+            "requested_pages": 0,
+            "actual_pages": 0
+          },
+          {
+            "label": "early",
+            "requested_pages": 10,
+            "actual_pages": 10
+          },
+          {
+            "label": "middle",
+            "requested_pages": 49,
+            "actual_pages": 49
+          },
+          {
+            "label": "late",
+            "requested_pages": 88,
+            "actual_pages": 88
+          }
+        ],
+        "suffix_wall_results": {
+          "ready": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  38755984,
+                  38359380,
+                  37781646,
+                  38506529,
+                  37955409
+                ],
+                "median": 38359380,
+                "minimum": 37781646,
+                "maximum": 38755984
+              },
+              "wasi": {
+                "samples": [
+                  63979891,
+                  63298986,
+                  64006691,
+                  64334347,
+                  71395207
+                ],
+                "median": 64006691,
+                "minimum": 63298986,
+                "maximum": 71395207
+              }
+            },
+            "wasi_over_native_pairs": [
+              1.6508390291419255,
+              1.6501566500814142,
+              1.6941212937096495,
+              1.6707386687592642,
+              1.8810285248144738
+            ],
+            "median_pair_ratio": 1.6707386687592642
+          },
+          "early": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  34551059,
+                  34157297,
+                  34405356,
+                  33738593,
+                  33985355
+                ],
+                "median": 34157297,
+                "minimum": 33738593,
+                "maximum": 34551059
+              },
+              "wasi": {
+                "samples": [
+                  62587919,
+                  65732277,
+                  65048648,
+                  63761384,
+                  62230175
+                ],
+                "median": 63761384,
+                "minimum": 62230175,
+                "maximum": 65732277
+              }
+            },
+            "wasi_over_native_pairs": [
+              1.8114616689462397,
+              1.9243992579389406,
+              1.8906546992276436,
+              1.8898649389439566,
+              1.8310879789250398
+            ],
+            "median_pair_ratio": 1.8898649389439566
+          },
+          "middle": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  17323789,
+                  17010467,
+                  16849465,
+                  17534276,
+                  16751575
+                ],
+                "median": 17010467,
+                "minimum": 16751575,
+                "maximum": 17534276
+              },
+              "wasi": {
+                "samples": [
+                  29481509,
+                  30759794,
+                  27315910,
+                  29982484,
+                  33161938
+                ],
+                "median": 29982484,
+                "minimum": 27315910,
+                "maximum": 33161938
+              }
+            },
+            "wasi_over_native_pairs": [
+              1.7017933547909179,
+              1.8082862745625972,
+              1.6211737286614145,
+              1.709935671139202,
+              1.9796310496177225
+            ],
+            "median_pair_ratio": 1.709935671139202
+          },
+          "late": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  2708479,
+                  2474738,
+                  2529493,
+                  2585959,
+                  2506103
+                ],
+                "median": 2529493,
+                "minimum": 2474738,
+                "maximum": 2708479
+              },
+              "wasi": {
+                "samples": [
+                  5190793,
+                  5947414,
+                  5218626,
+                  4948956,
+                  4333751
+                ],
+                "median": 5190793,
+                "minimum": 4333751,
+                "maximum": 5947414
+              }
+            },
+            "wasi_over_native_pairs": [
+              1.9164974142313822,
+              2.403249960197807,
+              2.063111461466784,
+              1.9137797621694699,
+              1.7292788843874334
+            ],
+            "median_pair_ratio": 1.9164974142313822
+          }
+        }
+      },
+      "chomp": {
+        "commands": {
+          "native": [
+            "/home/phulin/umber4/target/release/examples/layout",
+            "document-replay",
+            "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+            "--format",
+            "/home/phulin/umber4/.tools/formats/plain.ufmt",
+            "--calendar",
+            "0,1,3,2026",
+            "--repeats",
+            "1",
+            "--iterations",
+            "200"
+          ],
+          "wasi": [
+            "/home/phulin/.volta/tools/image/node/24.20.0/bin/node",
+            "/home/phulin/umber4/scripts/run-wasi.mjs",
+            "--dir",
+            "/input=/home/phulin/umber4/.tools/corpus",
+            "--dir",
+            "/formats=/home/phulin/umber4/.tools/formats",
+            "--dir",
+            "/chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv",
+            "--",
+            "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm",
+            "document-replay",
+            "/chomp/chomp.tex",
+            "--format",
+            "/formats/plain.ufmt",
+            "--calendar",
+            "0,1,3,2026",
+            "--repeats",
+            "1",
+            "--iterations",
+            "200"
+          ]
+        },
+        "orders": [
+          [
+            "native",
+            "wasi"
+          ],
+          [
+            "wasi",
+            "native"
+          ],
+          [
+            "native",
+            "wasi"
+          ],
+          [
+            "wasi",
+            "native"
+          ],
+          [
+            "native",
+            "wasi"
+          ]
+        ],
+        "checkpoints": [
+          {
+            "label": "ready",
+            "requested_pages": 0,
+            "actual_pages": 0
+          },
+          {
+            "label": "early",
+            "requested_pages": 1,
+            "actual_pages": 1
+          },
+          {
+            "label": "middle",
+            "requested_pages": 5,
+            "actual_pages": 5
+          },
+          {
+            "label": "late",
+            "requested_pages": 9,
+            "actual_pages": 9
+          }
+        ],
+        "suffix_wall_results": {
+          "ready": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  5707107,
+                  5620242,
+                  5798420,
+                  5711709,
+                  5895951
+                ],
+                "median": 5711709,
+                "minimum": 5620242,
+                "maximum": 5895951
+              },
+              "wasi": {
+                "samples": [
+                  14869545,
+                  14401100,
+                  12872317,
+                  15182400,
+                  14995196
+                ],
+                "median": 14869545,
+                "minimum": 12872317,
+                "maximum": 15182400
+              }
+            },
+            "wasi_over_native_pairs": [
+              2.605443528568853,
+              2.562362972982302,
+              2.219969750380276,
+              2.658118612135177,
+              2.5433040403490463
+            ],
+            "median_pair_ratio": 2.562362972982302
+          },
+          "early": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  5086307,
+                  5014644,
+                  5219457,
+                  5574579,
+                  5519853
+                ],
+                "median": 5219457,
+                "minimum": 5014644,
+                "maximum": 5574579
+              },
+              "wasi": {
+                "samples": [
+                  8098445,
+                  8855957,
+                  7997813,
+                  8337351,
+                  8142622
+                ],
+                "median": 8142622,
+                "minimum": 7997813,
+                "maximum": 8855957
+              }
+            },
+            "wasi_over_native_pairs": [
+              1.5922053073084264,
+              1.7660190833088052,
+              1.5323074794945144,
+              1.4956019100276452,
+              1.4751519650976213
+            ],
+            "median_pair_ratio": 1.5323074794945144
+          },
+          "middle": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  2971986,
+                  2943902,
+                  3114292,
+                  2963858,
+                  3033455
+                ],
+                "median": 2971986,
+                "minimum": 2943902,
+                "maximum": 3114292
+              },
+              "wasi": {
+                "samples": [
+                  9415025,
+                  9540253,
+                  13286986,
+                  7118512,
+                  10616258
+                ],
+                "median": 9540253,
+                "minimum": 7118512,
+                "maximum": 13286986
+              }
+            },
+            "wasi_over_native_pairs": [
+              3.167923738537126,
+              3.2406829439295195,
+              4.266454783302272,
+              2.401772284637118,
+              3.499724901144075
+            ],
+            "median_pair_ratio": 3.2406829439295195
+          },
+          "late": {
+            "wall_ns": {
+              "native": {
+                "samples": [
+                  488570,
+                  564022,
+                  523249,
+                  516753,
+                  521847
+                ],
+                "median": 521847,
+                "minimum": 488570,
+                "maximum": 564022
+              },
+              "wasi": {
+                "samples": [
+                  737744,
+                  5602320,
+                  804770,
+                  900558,
+                  744450
+                ],
+                "median": 804770,
+                "minimum": 737744,
+                "maximum": 5602320
+              }
+            },
+            "wasi_over_native_pairs": [
+              1.5100067544057147,
+              9.932804039558741,
+              1.5380249173911464,
+              1.7427242802654266,
+              1.4265675571575576
+            ],
+            "median_pair_ratio": 1.5380249173911464
+          }
+        }
+      }
+    }
+  },
+  "interpretation": {
+    "gentle": "Middle suffix median wall time: native 17.010467 ms, WASI 29.982484 ms; median paired WASI/native ratio 1.709936. Across checkpoints the median paired ratios range 1.670739\u20131.916497. This is remaining engine execution under the specified hosts, not whole-process startup or browser performance.",
+    "chomp": "Middle suffix median wall time: native 2.971986 ms, WASI 9.540253 ms; median paired ratio 3.240683. Median paired ratios vary by checkpoint (1.532307\u20133.240683). The cohort is too small and variable for a general TeX-wide slowdown estimate.",
+    "variance": "WASI CHOMP middle samples range 7.118512\u201313.286986 ms; late samples range 0.737744\u20135.602320 ms. One late sample is 5.602320 ms while the other four are below 0.901 ms. Normal preparation and per-point warmup do not establish completed JIT tiering; the data do not identify whether tiering, scheduling or another runtime effect caused any individual outlier. All samples remain included.",
+    "scope": "The actual WASI execution and retained-output correctness route is established for these documents. These observations compare the same existing suffix wall endpoint; no claim about whole Node process CPU, startup, instruction equivalence or wasm32-unknown-unknown/browser ABI is made."
+  },
+  "reproduction": {
+    "measurement_driver": "/tmp/umber-wasi-probe/measure-suffix.py",
+    "measurement_driver_sha256": "e82ebacc8f034fbd6dc2ccab5d4220b256d6a8c64c207da33cd7e5c8c98f81f0",
+    "raw_measurement": "/tmp/umber-wasi-probe/suffix-measurement.json",
+    "raw_measurement_sha256": "d814b8ae4cb9c7d30408891ec0d4509f8a84e2c179a41155e805f816a20e2c7b",
+    "individual_helper_json": "/tmp/umber-wasi-probe/DOCUMENT-PLATFORM-suffix-INDEX.json",
+    "sources": {
+      "Node WASI API": "https://nodejs.org/docs/latest-v24.x/api/wasi.html",
+      "Rust target": "https://doc.rust-lang.org/rustc/platform-support/wasm32-wasip1.html"
+    },
+    "artifact_sha256": {
+      "/home/phulin/umber4/scripts/run-wasi.mjs": "f63d7176898c21e404487ef97a141acff3fe510fee4030cdaa414d631aaafe01",
+      "/home/phulin/umber4/target/release/examples/layout": "edcd74ba83853e3f56547447a6e51aba954343ca29ee5e76b8e53aa45aec2331",
+      "/home/phulin/umber4/target/wasi-portability/wasm32-wasip1/release/examples/layout.wasm": "a283da91a5b457f5b824232410786f9e7f156107f1f405d9ef816af2563af24b"
+    }
+  }
+}

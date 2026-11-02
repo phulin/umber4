@@ -19,8 +19,8 @@ packing into an owned contribution list. [Page construction](docs/pages.md)
 implements incremental TeX page breaks and publishes immutable box, glyph, and
 rule records through `Outcome.pages`, with retained font resources and checkpoint
 rollback. Custom output routines and explicit box shipout use detached page
-publication. Output backends, formats, and restart after source edits remain
-design proposals.
+publication. [Portable format images](docs/formats.md) save initialized semantics
+for fresh jobs. Output backends and restart after source edits remain proposals.
 
 [Native measurements](benchmarks/results/expansion.md) compare nine core workloads and
 nine broader macro workloads, including selected kernels from Gentle.
@@ -43,6 +43,30 @@ cargo build --release --lib --target wasm32-unknown-unknown
 The CLI can preload immutable nested inputs with `--input NAME=PATH`; the portable
 engine receives borrowed byte resources through its host resolver. `\input` and
 `\endinput` preserve nested cursors and unchanged-input checkpoint replay.
+
+The existing CLI and layout example also run under Node 24's WASI preview1 API:
+
+```bash
+rustup target add wasm32-wasip1
+CARGO_TARGET_DIR=target/wasi-portability cargo build --release --target wasm32-wasip1 --bin umber --example layout
+node scripts/run-wasi.mjs --dir /input=.tools/corpus --dir /formats=.tools/formats -- target/wasi-portability/wasm32-wasip1/release/umber.wasm /input/gentle.tex --format /formats/plain.ufmt --calendar 0,1,3,2026
+```
+
+This command requires the Gentle source and [plain format image](docs/formats.md#native-cli).
+The launcher uses only Node built-ins, gives the guest an empty environment, and
+passes application arguments unchanged. Each `--dir /guest=HOST` maps an existing
+host directory to a flat guest path. Application file paths, including `--input`
+and `--tfm` mappings, must use those guest paths. Flat mappings let the existing
+CLI canonicalize paths without access to intermediate host directories. There
+is no automatic host-path rewriting. `--help` prints the launcher syntax.
+
+For positioned output or retained replay, use `release/examples/layout.wasm`
+with its existing `document-inspect` or `document-replay` command and the same
+explicit mappings. [Node's WASI API](https://nodejs.org/docs/latest-v24.x/api/wasi.html)
+supplies filesystem, stdio, and clocks. This is a command-line WASI target;
+`wasm32-unknown-unknown` remains a library build check and does not expose a
+browser/JavaScript embedding ABI. [Cross-platform results](benchmarks/results/wasi-documents.json)
+compare the existing prepared suffix wall-time endpoint with native release.
 
 The oracle and benchmark runners use native `pdftex -ini -etex`, without a
 format or fonts. The CLI accepts explicit metric mappings as

@@ -87,6 +87,14 @@ The [local math-frame result](results/gentle-math-driver.json) compares default
 release builds on both documents. Keeping the active conversion frame local
 reduces whole-job instructions by 0.35% on Gentle and 1.03% on CHOMP; the single
 paired CPU cohorts show modest trends with overlapping sample ranges.
+The [native/WASI result](results/wasi-documents.json) checks exact document output
+and retained replay through the explicit [Node launcher](../scripts/run-wasi.mjs).
+Five alternating invocations per platform compare the existing prepared suffix
+WALL endpoint, excluding process startup and output consumption. Middle-suffix
+medians are 17.01/29.98 ms native/WASI for Gentle and 2.97/9.54 ms for CHOMP.
+All samples remain visible, including substantial WASI tail variation; normal
+warmup does not establish completed JIT tiering or a general browser performance
+result. [WASI usage](../README.md) keeps directory mappings explicit.
 
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the

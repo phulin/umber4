@@ -22,7 +22,8 @@ proposal until reviewed with the user.
 - `Cargo.toml`, `Cargo.lock`: explicit workspace membership and dependencies.
 - `fixtures/mvp/`: same-source INITEX compatibility fixtures.
 - `fixtures/output/`: font-free INITEX output-routine and explicit shipout fixtures.
-- `scripts/`: native oracle setup and compatibility comparison.
+- `scripts/`: native oracle setup and compatibility comparison;
+  `run-wasi.mjs` launches WASI preview1 modules with explicit directory mappings.
 - `benchmarks/`: source generators, native profile builds, expansion and prose/layout
   CPU, checkpoint, and memory measurements, and retained measurement reports;
   `corpus/` retains selected Gentle macros, Gentle and arXiv book source provenance,
