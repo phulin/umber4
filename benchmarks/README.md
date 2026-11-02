@@ -68,6 +68,12 @@ demonstrated improvement.
 The [local lowering-frame result](results/gentle-lowering-frame.json) records
 less general traversal bookkeeping, separate instruction evidence, and a modest
 paired CPU trend with overlapping sample ranges.
+The [optional default-feature PGO comparison](results/gentle-pgo-general.json)
+uses Gentle for both training and evaluation: paired CPU is 13.84% lower (21/21
+pairs faster), with a separate 23.94% instruction reduction. Executable text grows
+31.31% and RSS increases by 284–412 KiB. It establishes no held-out result or
+default build-policy change; [usage](../docs/performance.md#optional-default-feature-pgo)
+keeps generated profiles and binaries in ignored checkout-local targets.
 
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the

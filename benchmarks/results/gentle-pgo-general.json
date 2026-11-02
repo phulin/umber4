@@ -1,0 +1,859 @@
+{
+  "measured_at_utc": "2026-11-02T21:02:43.454228+00:00",
+  "revision": "c28ffd0ced1100e1a5e2888e028d6a7f2383996e",
+  "kind": "Controlled default-feature native PGO build comparison; no runtime, harness or default build-policy change.",
+  "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+  "llvm_profdata": "LLVM (http://llvm.org/):\n  LLVM version 22.1.8-rust-1.98.1-stable\n  Optimized build.\n",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "cpu": 3,
+  "build": {
+    "standard": "Existing verified current-HEAD cargo build --release --bin umber --example layout --example layout_allocations; default features, RUSTFLAGS unset. Standard artifacts remain untouched.",
+    "release_profile": "Normal workspace release: fat LTO, codegen-units=1, debug=1. Identical for standard, instrumented and profile-use builds.",
+    "instrumented": {
+      "argv": [
+        "cargo",
+        "build",
+        "--release",
+        "-p",
+        "umber",
+        "--bin",
+        "umber",
+        "--example",
+        "layout"
+      ],
+      "env": {
+        "CARGO_TARGET_DIR": "/home/phulin/umber4/target/pgo-general/gentle-20261102/generate",
+        "CARGO_ENCODED_RUSTFLAGS": "-C\u001fprofile-generate=/home/phulin/umber4/target/pgo-general/gentle-20261102/raw"
+      }
+    },
+    "profile_use": {
+      "argv": [
+        "cargo",
+        "build",
+        "--release",
+        "-p",
+        "umber",
+        "--bin",
+        "umber",
+        "--example",
+        "layout"
+      ],
+      "env": {
+        "CARGO_TARGET_DIR": "/home/phulin/umber4/target/pgo-general/gentle-20261102/use",
+        "CARGO_ENCODED_RUSTFLAGS": "-C\u001fprofile-use=/home/phulin/umber4/target/pgo-general/gentle-20261102/gentle.profdata"
+      }
+    },
+    "cargo_fingerprints": {
+      "generate": {
+        "features": "[]",
+        "rustflags": [
+          "-C",
+          "profile-generate=/home/phulin/umber4/target/pgo-general/gentle-20261102/raw"
+        ],
+        "profile": 2146796760421268657
+      },
+      "use": {
+        "features": "[]",
+        "rustflags": [
+          "-C",
+          "profile-use=/home/phulin/umber4/target/pgo-general/gentle-20261102/gentle.profdata"
+        ],
+        "profile": 2146796760421268657
+      }
+    },
+    "policy": "Only -C profile-generate / -C profile-use differs. No native-profile feature, CPU/target tuning, custom inlining/alignment thresholds, dependencies, synthetic training or modification/use of benchmarks/pgo.py. Separate fresh ignored target caches are used for generate and use."
+  },
+  "inputs": {
+    "source": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "format": "/tmp/umber-pgo-general/plain.ufmt",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "timed_input_mappings": 0,
+    "timed_tfm_mappings": 0
+  },
+  "training": {
+    "corpus": "Unchanged Gentle only, with its existing own-format and source-initialized plain/Gentle paths. One instrumented CLI completion and existing gentle.py source/format inspection plus READY/page10/49/88 retained replay; helper repeats=1/iterations=1 are training/validation only, not speed data. All child adapters use the intended instrumented executable.",
+    "commands": {
+      "LLVM_PROFILE_FILE": "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/%m-%p.profraw",
+      "commands": [
+        {
+          "name": "real-own-format-cli",
+          "argv": [
+            "/home/phulin/umber4/target/pgo-general/gentle-20261102/generate/release/umber",
+            "/home/phulin/umber4/.tools/corpus/gentle.tex",
+            "--format",
+            "/tmp/umber-pgo-general/plain.ufmt",
+            "--calendar",
+            "0,1,3,2026"
+          ]
+        },
+        {
+          "name": "real-source-format-replay",
+          "argv": [
+            "python3",
+            "benchmarks/gentle.py",
+            "--assets-root",
+            "/home/phulin/umber4",
+            "--adapter",
+            "/home/phulin/umber4/target/pgo-general/gentle-20261102/generate/release/examples/layout",
+            "--format",
+            "/tmp/umber-pgo-general/plain.ufmt",
+            "--compare-counts",
+            "--replay",
+            "--repeats",
+            "1",
+            "--iterations",
+            "1"
+          ]
+        }
+      ]
+    },
+    "merge_command": [
+      "/home/phulin/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin/llvm-profdata",
+      "merge",
+      "-o",
+      "/home/phulin/umber4/target/pgo-general/gentle-20261102/gentle.profdata",
+      "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/179382416821374055_0-663390.profraw",
+      "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/179382416821374055_0-663397.profraw",
+      "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/179382416821374055_0-663400.profraw",
+      "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/7344736206310832476_0-663300.profraw"
+    ],
+    "raw_profiles": [
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/179382416821374055_0-663390.profraw",
+        "bytes": 343416,
+        "sha256": "1fdb03ad16e27e3fb749f082ef5cb7bfa67114cd8271bcb0cf4926e277323872"
+      },
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/179382416821374055_0-663397.profraw",
+        "bytes": 343736,
+        "sha256": "8f1b7650b6d4394f4168e4fcec380e6aa018003845eeb6646a218483dcb8a77f"
+      },
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/179382416821374055_0-663400.profraw",
+        "bytes": 343368,
+        "sha256": "22b858eeb346c816cd52a7a8a08d2aa8c1d7e025c869a648d005a76904daa8ef"
+      },
+      {
+        "path": "/home/phulin/umber4/target/pgo-general/gentle-20261102/raw/7344736206310832476_0-663300.profraw",
+        "bytes": 327080,
+        "sha256": "aeb1332da4d2a32c174471fda015925f6aab28642f48cfbd28031231b86babb0"
+      }
+    ],
+    "merged_profile": {
+      "path": "/home/phulin/umber4/target/pgo-general/gentle-20261102/gentle.profdata",
+      "sha256": "77c801da78f1e5d4ca2f2cdd761ec5ffec7af41c16830852d3e4fb30d9988e27",
+      "bytes": 546304,
+      "IR_records": 1516,
+      "records_with_positive_stored_counters": 1048,
+      "records_with_all_zero_stored_counters": 468,
+      "stored_counters": 30884,
+      "positive_stored_counters": 8290
+    },
+    "llvm_summary": "Instrumentation level: IR  entry_first = 0  instrument_loop_entries = 0\nTotal functions: 1516\nMaximum function count: 16632801\nMaximum internal block count: 11189543\nTotal number of blocks: 30884\nTotal count: 394020021\n",
+    "diagnostics": "Generate/use builds and merge emitted no warnings/errors/hash mismatch diagnostics. No extra missing-function LLVM diagnostic flag was enabled. Positive/all-zero stored counters describe IR records, not complete semantic feature coverage; training includes repeated document suffixes and host adapter checks.",
+    "generalization": "Training and evaluation use the same real document. No held-out-document, wider corpus or generalization benefit is established."
+  },
+  "endpoint": "Whole loaded-format native CLI: startup/image decode, unchanged Gentle, retained detached output, diagnostics and teardown; no DVI/JSON serialization. Warm caches, one warmup per endpoint then21 alternating serial pairs on CPU3, using existing layout.py child wall/wait4 CPU/faults. RSS uses3 separate GNU-time children per binary. No concurrent builds, checks or profiles during ordinary timing.",
+  "timing": {
+    "cpu": 3,
+    "warmups_per_endpoint": 1,
+    "retained_pairs": 21,
+    "commands": {
+      "before": [
+        "/tmp/umber-pgo-general/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-pgo-general/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "after": [
+        "/tmp/umber-pgo-general/umber-after",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-pgo-general/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "orders": [
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ]
+    ],
+    "samples": {
+      "before": [
+        {
+          "wall_seconds": 0.04485011,
+          "cpu_seconds": 0.044588,
+          "user_cpu_seconds": 0.040625,
+          "system_cpu_seconds": 0.0039629999999999995,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044619263,
+          "cpu_seconds": 0.044377999999999994,
+          "user_cpu_seconds": 0.038460999999999995,
+          "system_cpu_seconds": 0.0059169999999999995,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044162665,
+          "cpu_seconds": 0.043918,
+          "user_cpu_seconds": 0.038928,
+          "system_cpu_seconds": 0.00499,
+          "minor_page_faults": 1115
+        },
+        {
+          "wall_seconds": 0.044046152,
+          "cpu_seconds": 0.043781,
+          "user_cpu_seconds": 0.039709,
+          "system_cpu_seconds": 0.004072,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.043718466,
+          "cpu_seconds": 0.043498999999999996,
+          "user_cpu_seconds": 0.042488,
+          "system_cpu_seconds": 0.001011,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.044165551,
+          "cpu_seconds": 0.043923000000000004,
+          "user_cpu_seconds": 0.03993,
+          "system_cpu_seconds": 0.003993,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.043710382,
+          "cpu_seconds": 0.043481,
+          "user_cpu_seconds": 0.040517,
+          "system_cpu_seconds": 0.002964,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045818625,
+          "cpu_seconds": 0.045434999999999996,
+          "user_cpu_seconds": 0.043415999999999996,
+          "system_cpu_seconds": 0.002019,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045193032,
+          "cpu_seconds": 0.044889,
+          "user_cpu_seconds": 0.036909,
+          "system_cpu_seconds": 0.00798,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045215069,
+          "cpu_seconds": 0.044934999999999996,
+          "user_cpu_seconds": 0.040941,
+          "system_cpu_seconds": 0.003994,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045989074,
+          "cpu_seconds": 0.045679,
+          "user_cpu_seconds": 0.042634,
+          "system_cpu_seconds": 0.003045,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.047105893,
+          "cpu_seconds": 0.046657,
+          "user_cpu_seconds": 0.042703,
+          "system_cpu_seconds": 0.003954,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045636287,
+          "cpu_seconds": 0.045286,
+          "user_cpu_seconds": 0.040364,
+          "system_cpu_seconds": 0.004922,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046219956,
+          "cpu_seconds": 0.045800999999999994,
+          "user_cpu_seconds": 0.040834999999999996,
+          "system_cpu_seconds": 0.004966,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045757024,
+          "cpu_seconds": 0.045405999999999995,
+          "user_cpu_seconds": 0.038342999999999995,
+          "system_cpu_seconds": 0.007063,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045541491,
+          "cpu_seconds": 0.0453,
+          "user_cpu_seconds": 0.040262,
+          "system_cpu_seconds": 0.005038,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045025425,
+          "cpu_seconds": 0.044761999999999996,
+          "user_cpu_seconds": 0.041777999999999996,
+          "system_cpu_seconds": 0.0029839999999999997,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.044454008,
+          "cpu_seconds": 0.044233,
+          "user_cpu_seconds": 0.039207,
+          "system_cpu_seconds": 0.005026,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044174296,
+          "cpu_seconds": 0.043942,
+          "user_cpu_seconds": 0.040944,
+          "system_cpu_seconds": 0.002998,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.058731244,
+          "cpu_seconds": 0.058329,
+          "user_cpu_seconds": 0.051403,
+          "system_cpu_seconds": 0.006926,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045315993,
+          "cpu_seconds": 0.04496,
+          "user_cpu_seconds": 0.034969,
+          "system_cpu_seconds": 0.009991,
+          "minor_page_faults": 1119
+        }
+      ],
+      "after": [
+        {
+          "wall_seconds": 0.038113915,
+          "cpu_seconds": 0.037883,
+          "user_cpu_seconds": 0.032896,
+          "system_cpu_seconds": 0.004987,
+          "minor_page_faults": 1127
+        },
+        {
+          "wall_seconds": 0.037909583,
+          "cpu_seconds": 0.037697999999999995,
+          "user_cpu_seconds": 0.033729999999999996,
+          "system_cpu_seconds": 0.003968,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.038711078,
+          "cpu_seconds": 0.038484,
+          "user_cpu_seconds": 0.034537,
+          "system_cpu_seconds": 0.003947,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.038142472,
+          "cpu_seconds": 0.037899999999999996,
+          "user_cpu_seconds": 0.033911,
+          "system_cpu_seconds": 0.0039889999999999995,
+          "minor_page_faults": 1129
+        },
+        {
+          "wall_seconds": 0.038269057,
+          "cpu_seconds": 0.037985,
+          "user_cpu_seconds": 0.034987,
+          "system_cpu_seconds": 0.002998,
+          "minor_page_faults": 1127
+        },
+        {
+          "wall_seconds": 0.038687554,
+          "cpu_seconds": 0.038398999999999996,
+          "user_cpu_seconds": 0.034461,
+          "system_cpu_seconds": 0.003938,
+          "minor_page_faults": 1129
+        },
+        {
+          "wall_seconds": 0.038545783,
+          "cpu_seconds": 0.038301,
+          "user_cpu_seconds": 0.034373,
+          "system_cpu_seconds": 0.003928,
+          "minor_page_faults": 1127
+        },
+        {
+          "wall_seconds": 0.038603489,
+          "cpu_seconds": 0.038280999999999996,
+          "user_cpu_seconds": 0.033243999999999996,
+          "system_cpu_seconds": 0.005037,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.037566849,
+          "cpu_seconds": 0.037332,
+          "user_cpu_seconds": 0.033402999999999995,
+          "system_cpu_seconds": 0.003929,
+          "minor_page_faults": 1127
+        },
+        {
+          "wall_seconds": 0.038973713,
+          "cpu_seconds": 0.038716,
+          "user_cpu_seconds": 0.033753,
+          "system_cpu_seconds": 0.0049629999999999995,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.044527425,
+          "cpu_seconds": 0.044156,
+          "user_cpu_seconds": 0.040136,
+          "system_cpu_seconds": 0.00402,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.046968983,
+          "cpu_seconds": 0.04647899999999999,
+          "user_cpu_seconds": 0.038393,
+          "system_cpu_seconds": 0.008086,
+          "minor_page_faults": 1129
+        },
+        {
+          "wall_seconds": 0.038498123,
+          "cpu_seconds": 0.038188,
+          "user_cpu_seconds": 0.034169,
+          "system_cpu_seconds": 0.004019,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.039137888,
+          "cpu_seconds": 0.038784,
+          "user_cpu_seconds": 0.034807,
+          "system_cpu_seconds": 0.003977,
+          "minor_page_faults": 1127
+        },
+        {
+          "wall_seconds": 0.039848911,
+          "cpu_seconds": 0.039502999999999996,
+          "user_cpu_seconds": 0.034433,
+          "system_cpu_seconds": 0.00507,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.039695684,
+          "cpu_seconds": 0.03938,
+          "user_cpu_seconds": 0.034332,
+          "system_cpu_seconds": 0.0050479999999999995,
+          "minor_page_faults": 1129
+        },
+        {
+          "wall_seconds": 0.038226541,
+          "cpu_seconds": 0.037967,
+          "user_cpu_seconds": 0.03497,
+          "system_cpu_seconds": 0.0029969999999999997,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.037763653,
+          "cpu_seconds": 0.037527,
+          "user_cpu_seconds": 0.032586,
+          "system_cpu_seconds": 0.004941,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.039672621,
+          "cpu_seconds": 0.039422,
+          "user_cpu_seconds": 0.032344,
+          "system_cpu_seconds": 0.007078,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.04123182,
+          "cpu_seconds": 0.040886,
+          "user_cpu_seconds": 0.0359,
+          "system_cpu_seconds": 0.004986,
+          "minor_page_faults": 1128
+        },
+        {
+          "wall_seconds": 0.038088817,
+          "cpu_seconds": 0.037841999999999994,
+          "user_cpu_seconds": 0.034852999999999995,
+          "system_cpu_seconds": 0.002989,
+          "minor_page_faults": 1127
+        }
+      ]
+    },
+    "summary": {
+      "before": {
+        "wall_seconds": {
+          "median": 0.045193032,
+          "minimum": 0.043710382,
+          "maximum": 0.058731244
+        },
+        "cpu_seconds": {
+          "median": 0.044889,
+          "minimum": 0.043481,
+          "maximum": 0.058329
+        },
+        "user_cpu_seconds": {
+          "median": 0.040517,
+          "minimum": 0.034969,
+          "maximum": 0.051403
+        },
+        "system_cpu_seconds": {
+          "median": 0.004072,
+          "minimum": 0.001011,
+          "maximum": 0.009991
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1115,
+          "maximum": 1119
+        }
+      },
+      "after": {
+        "wall_seconds": {
+          "median": 0.038603489,
+          "minimum": 0.037566849,
+          "maximum": 0.046968983
+        },
+        "cpu_seconds": {
+          "median": 0.038301,
+          "minimum": 0.037332,
+          "maximum": 0.04647899999999999
+        },
+        "user_cpu_seconds": {
+          "median": 0.034373,
+          "minimum": 0.032344,
+          "maximum": 0.040136
+        },
+        "system_cpu_seconds": {
+          "median": 0.004019,
+          "minimum": 0.002989,
+          "maximum": 0.008086
+        },
+        "minor_page_faults": {
+          "median": 1128,
+          "minimum": 1127,
+          "maximum": 1129
+        }
+      }
+    },
+    "rss_kib": {
+      "before": [
+        6400,
+        6400,
+        6400
+      ],
+      "after": [
+        6684,
+        6684,
+        6812
+      ]
+    },
+    "after_over_before_cpu_pairs": [
+      0.8496232170090607,
+      0.8494749650727839,
+      0.8762694111753723,
+      0.8656723236106986,
+      0.8732384652520748,
+      0.8742344557521115,
+      0.8808675053471632,
+      0.8425442940464399,
+      0.8316514068034485,
+      0.8616000890174698,
+      0.9666586396374702,
+      0.9961849240199755,
+      0.8432628185311134,
+      0.8467937381279885,
+      0.8699951548253535,
+      0.8693156732891831,
+      0.8481971314954649,
+      0.8483937331856306,
+      0.8971371353147329,
+      0.7009549280803716,
+      0.8416814946619215
+    ],
+    "median_pair_ratio": 0.8616000890174698,
+    "candidate_faster_pairs": 21
+  },
+  "instruction_diagnostic": {
+    "scope": "Separate whole-CLI Callgrind pair after ordinary timing. Ir is not CPU-time shares or an independent speedup prediction. PGO changes inlining and function boundaries, so only whole-job totals are compared.",
+    "commands": {
+      "before": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-pgo-general/before.callgrind",
+        "--log-file=/tmp/umber-pgo-general/before-callgrind.stderr",
+        "/tmp/umber-pgo-general/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-pgo-general/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "after": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-pgo-general/after.callgrind",
+        "--log-file=/tmp/umber-pgo-general/after-callgrind.stderr",
+        "/tmp/umber-pgo-general/umber-after",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-pgo-general/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "before_ir": 256190232,
+    "after_ir": 194853920,
+    "delta_ir": -61336312,
+    "reduction_percent": 23.941705942949454,
+    "artifacts": {
+      "/tmp/umber-pgo-general/before.callgrind": "a17833fba761eff2dddb84de7dc36aa72eaaf164660f9be124c2db9fc27d9d47",
+      "/tmp/umber-pgo-general/after.callgrind": "6004909367df625913d89a01d81a65a46a0943e4fd669be9c53477c206801129"
+    }
+  },
+  "binary_sizes": {
+    "size_output": "   text\t   data\t    bss\t    dec\t    hex\tfilename\n1086008\t  36440\t   1856\t1124304\t 1127d0\t/tmp/umber-pgo-general/umber-before\n1426032\t  36704\t   1544\t1464280\t 1657d8\t/tmp/umber-pgo-general/umber-after\n",
+    "standard_text_bytes": 1086008,
+    "pgo_text_bytes": 1426032,
+    "text_growth_percent": 31.30952994821401
+  },
+  "interpretation": {
+    "cpu": "Median paired profile-use/standard CPU ratio0.8616001, about13.84% lower CPU in this cohort;21/21 pairs faster. Endpoint CPU medians44.889/38.301ms; wall medians45.193/38.603ms. This is one cohort, not a default compiler-policy recommendation.",
+    "work": "Whole-job instruction count falls23.94%; this diagnostic is distinct from CPU measurement. No source architecture or fast-path change was made.",
+    "tradeoffs": "Text segment grows31.31%. Separate standard RSS samples6400KiB versus profile-use6684/6684/6812KiB. Training requires matching compiler/profile tooling and a representative corpus; current evidence is Gentle-only."
+  },
+  "correctness": {
+    "baseline": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "replay": {
+        "checkpoints": [
+          {
+            "label": "ready",
+            "requested_pages": 0,
+            "actual_pages": 0
+          },
+          {
+            "label": "early",
+            "requested_pages": 10,
+            "actual_pages": 10
+          },
+          {
+            "label": "middle",
+            "requested_pages": 49,
+            "actual_pages": 49
+          },
+          {
+            "label": "late",
+            "requested_pages": 88,
+            "actual_pages": 88
+          }
+        ],
+        "validation": "complete output and retained prefixes/results equal"
+      },
+      "artifact": "/tmp/umber-pgo-general/baseline-gate.json",
+      "sha256": "e853e9bc95a3d86e1df256c02d11a675f41b0b7380ebd80fafafe774ab4c641f"
+    },
+    "training": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "replay": {
+        "checkpoints": [
+          {
+            "label": "ready",
+            "requested_pages": 0,
+            "actual_pages": 0
+          },
+          {
+            "label": "early",
+            "requested_pages": 10,
+            "actual_pages": 10
+          },
+          {
+            "label": "middle",
+            "requested_pages": 49,
+            "actual_pages": 49
+          },
+          {
+            "label": "late",
+            "requested_pages": 88,
+            "actual_pages": 88
+          }
+        ],
+        "validation": "complete output and retained prefixes/results equal"
+      },
+      "artifact": "/tmp/umber-pgo-general/training-gate.json",
+      "sha256": "05e9ae8dab379d165502defa74d39174836db797f14a0233db7ff289412f6350"
+    },
+    "optimized": {
+      "pages": 97,
+      "glyphs": 121839,
+      "rules": 864,
+      "comparison": "all ordered events match",
+      "bop_counts": true,
+      "source_and_format_output_equal": true,
+      "replay": {
+        "checkpoints": [
+          {
+            "label": "ready",
+            "requested_pages": 0,
+            "actual_pages": 0
+          },
+          {
+            "label": "early",
+            "requested_pages": 10,
+            "actual_pages": 10
+          },
+          {
+            "label": "middle",
+            "requested_pages": 49,
+            "actual_pages": 49
+          },
+          {
+            "label": "late",
+            "requested_pages": 88,
+            "actual_pages": 88
+          }
+        ],
+        "validation": "complete output and retained prefixes/results equal"
+      },
+      "artifact": "/tmp/umber-pgo-general/optimized-gate.json",
+      "sha256": "8e8ad5a7aa7a84dfecdf644758e5cafc7028dab2c6069fe50bcae088f5f03367"
+    }
+  },
+  "validation": "Native reference is unchanged clean pdfTeX1.40.25 DVI. Standard, instrumented and profile-use builds each match97pages/121839glyphs/864rules, all ordered positioned events/font identities/sizes and BOP counts; source and own-format output match and all retained checkpoint replay results remain equal. No source changes, so unrelated Rust/fmt/Clippy/Wasm checks were not repeated. JSON/arithmetic/hash/diff validation applies to this report.",
+  "provenance": {
+    "sha256": {
+      "/tmp/umber-pgo-general/umber-before": "7e011a9a1ff52cea5f81db96b984d93d5e71d2a5864048d365d469985c9ebf20",
+      "/tmp/umber-pgo-general/umber-after": "e92f1668bcba80f0376427ff12e2442480a1598301db07c13d74461cb71683e1",
+      "/tmp/umber-pgo-general/layout-before": "7e9a6ab5671a0e016bf497e3eb0e9cb5cf98fef561ed91be9437a882c9a6fa3d",
+      "/tmp/umber-pgo-general/layout-after": "4a13795ebfca8e5704a53cdecb0ac2dda94cb7679210dd218759b0d64301dee9",
+      "/tmp/umber-pgo-general/plain.ufmt": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+      "/home/phulin/umber4/.tools/corpus/gentle.tex": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+      "/home/phulin/umber4/Cargo.toml": "b57d6d898953c2026932f86230034314a55d29d9606154265d04d51e0ec6dc6d",
+      "/home/phulin/umber4/Cargo.lock": "10a10bf32f4e26e4f32fdae57cc9456b76714cf69d8e731d5dbdef01f24d3cb5",
+      "/home/phulin/umber4/crates/umber/Cargo.toml": "9db79ca2a3db2266429ed80b96e1ba35585df02ff640d2b187fb1dd8f1715585"
+    },
+    "scratch": "/tmp/umber-pgo-general",
+    "timing_driver_command": [
+      "python3",
+      "/tmp/umber-pgo-general/measure.py"
+    ],
+    "timing_driver_sha256": "3fea3b3f7881764e7a8d5e62d5bb9ab096608d1bea4b7af6cbf4b8c43f7e6dfe",
+    "profile_summary_artifact": "/tmp/umber-pgo-general/profile-summary.txt",
+    "profile_functions_sha256": "705fb3cd84492d4092a39c169e2e04387c3e002e665fbc8f631a0f8f05802c05",
+    "build_log_sha256": {
+      "/tmp/umber-pgo-general/generate-build.log": "8fdc69c47abae4a3d6a59906fbcb05ed520010648ad6ce201e91137808a84451",
+      "/tmp/umber-pgo-general/use-build.log": "134ee578799da08a4c5f6728b91562d21777d872d7b4347ddeb30775c4591566"
+    },
+    "helpers": [
+      "benchmarks/gentle.py existing native/source-format/replay routes",
+      "benchmarks/layout.py existing child()/rss() measurement helpers"
+    ],
+    "artifacts": "All compiled binaries/raw profiles/profdata remain checkout-local ignored target/pgo-general or /tmp. Only this report/index are committed."
+  }
+}
