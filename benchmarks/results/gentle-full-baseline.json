@@ -1,0 +1,2622 @@
+{
+  "revision": "f5be382fcdbcb7fdd9e618a6287655dc62be2432",
+  "date_utc": "2026-11-02T00:18:14.439463+00:00",
+  "cpu": 3,
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "build": "cargo build --release --bin umber --example layout; default features, fat LTO, codegen-units=1",
+  "native_version": "pdfTeX 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian)",
+  "hashes": {
+    "umber": "cfbf054610651f959a8ca576eefa60f202107983d762a397568f31c46de34e01",
+    "adapter": "faa9c1c38c99ca911b77d477aae81d991907e5dde23761a49c6871f78d7f9be0",
+    "pdftex": "bdf084260e5e3ca3b1453a8ec1465efa5c0b23180d3bba7992fdd3ee1aeee45b",
+    "gentle": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "plain": "7c1223b880fa513542a616b86c4fa02d5ee703839427951982d7e311fd9049b2",
+    "wrapper": "e6b9d6f3f242b5a2935bc6bb3b6a2b02177bf43602d61e346954c7c167f42c00",
+    "native_format": "1ac04f66addb1c2775009871a52a505d0c15ee6869ddbdd7aec64e705ffa4b65",
+    "hyphen": "2c18acdc04c1a066aeb1759905e7ca449f0616c314b5ed6aebe55b9d4a89b8d4",
+    "native_reference_dvi": "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54"
+  },
+  "calendar": [
+    0,
+    1,
+    3,
+    2026
+  ],
+  "tfm_count": 47,
+  "commands": {
+    "umber_plain_source": [
+      "/home/phulin/umber4/target/release/umber",
+      "/tmp/umber-gentle-perf-baseline/gentle.tex",
+      "--input",
+      "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+      "--input",
+      "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+      "--input",
+      "gentle=/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "--tfm",
+      "cmbsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+      "--tfm",
+      "cmbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+      "--tfm",
+      "cmbx5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+      "--tfm",
+      "cmbx6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+      "--tfm",
+      "cmbx7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+      "--tfm",
+      "cmbx8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+      "--tfm",
+      "cmbx9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+      "--tfm",
+      "cmcsc10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+      "--tfm",
+      "cmdunh10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+      "--tfm",
+      "cmex10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+      "--tfm",
+      "cmmi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+      "--tfm",
+      "cmmi5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+      "--tfm",
+      "cmmi6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+      "--tfm",
+      "cmmi7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+      "--tfm",
+      "cmmi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+      "--tfm",
+      "cmmi9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+      "--tfm",
+      "cmmib10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+      "--tfm",
+      "cmr10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+      "--tfm",
+      "cmr5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+      "--tfm",
+      "cmr6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+      "--tfm",
+      "cmr7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+      "--tfm",
+      "cmr8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+      "--tfm",
+      "cmr9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+      "--tfm",
+      "cmsl10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+      "--tfm",
+      "cmsl8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+      "--tfm",
+      "cmsl9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+      "--tfm",
+      "cmsltt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+      "--tfm",
+      "cmss10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+      "--tfm",
+      "cmssbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+      "--tfm",
+      "cmssi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+      "--tfm",
+      "cmssq8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+      "--tfm",
+      "cmssqi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+      "--tfm",
+      "cmsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+      "--tfm",
+      "cmsy5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+      "--tfm",
+      "cmsy6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+      "--tfm",
+      "cmsy7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+      "--tfm",
+      "cmsy8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+      "--tfm",
+      "cmsy9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+      "--tfm",
+      "cmti10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+      "--tfm",
+      "cmti7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+      "--tfm",
+      "cmti8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+      "--tfm",
+      "cmti9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+      "--tfm",
+      "cmtt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+      "--tfm",
+      "cmtt8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+      "--tfm",
+      "cmtt9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+      "--tfm",
+      "cmu10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+      "--tfm",
+      "manfnt=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm"
+    ],
+    "native_plain_format": [
+      "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+      "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+      "-progname=pdftex",
+      "-jobname=gentle",
+      "-output-format=dvi",
+      "-no-shell-escape",
+      "-interaction=nonstopmode",
+      "-halt-on-error",
+      "-output-directory=/tmp/umber-gentle-perf-baseline/native_plain_format",
+      "/home/phulin/umber4/.tools/corpus/gentle.tex"
+    ],
+    "native_plain_source": [
+      "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+      "-ini",
+      "-etex",
+      "-progname=pdftex",
+      "-jobname=gentle",
+      "-output-format=dvi",
+      "-no-shell-escape",
+      "-interaction=nonstopmode",
+      "-halt-on-error",
+      "-output-directory=/tmp/umber-gentle-perf-baseline/native_plain_source",
+      "/tmp/umber-gentle-perf-baseline/gentle.tex"
+    ]
+  },
+  "native_environment": {
+    "LD_LIBRARY_PATH": "/home/phulin/umber4/.tools/pdftex/root/usr/lib/x86_64-linux-gnu",
+    "TEXMFCNF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/web2c",
+    "TEXMF": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist",
+    "TEXINPUTS": ".:/home/phulin/umber4/.tools/corpus:/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex//",
+    "TFMFONTS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm//",
+    "TEXFONTMAPS": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/map//",
+    "SOURCE_DATE_EPOCH": "1772323200",
+    "FORCE_SOURCE_DATE": "1"
+  },
+  "output_gate": {
+    "pages": 97,
+    "glyphs": 121839,
+    "rules": 864,
+    "comparison": "all ordered events match",
+    "bop_counts": true
+  },
+  "gate_command": [
+    "python3",
+    "/home/phulin/umber4/benchmarks/gentle.py",
+    "--assets-root",
+    "/home/phulin/umber4",
+    "--adapter",
+    "/home/phulin/umber4/target/release/examples/layout",
+    "--wrapper",
+    "/tmp/umber-gentle-perf-baseline/gentle.tex",
+    "--texmf",
+    "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist",
+    "--compare-counts"
+  ],
+  "endpoint_note": "Umber CLI parses plain+Gentle and retains detached output without DVI/JSON serialization; native writes DVI/log. Warm caches; no recorder; complete child process including startup/teardown.",
+  "warmups_per_endpoint_per_case": 1,
+  "cases": [
+    {
+      "name": "practical_format_vs_source",
+      "samples": {
+        "umber_plain_source": [
+          {
+            "wall_seconds": 0.050031355,
+            "cpu_seconds": 0.049727999999999994,
+            "user_cpu_seconds": 0.042752,
+            "system_cpu_seconds": 0.0069759999999999996,
+            "minor_page_faults": 1078
+          },
+          {
+            "wall_seconds": 0.050541807,
+            "cpu_seconds": 0.050196,
+            "user_cpu_seconds": 0.044173,
+            "system_cpu_seconds": 0.006023,
+            "minor_page_faults": 1076
+          },
+          {
+            "wall_seconds": 0.051936573,
+            "cpu_seconds": 0.051529000000000005,
+            "user_cpu_seconds": 0.042436,
+            "system_cpu_seconds": 0.009093,
+            "minor_page_faults": 1077
+          },
+          {
+            "wall_seconds": 0.051357516,
+            "cpu_seconds": 0.05097499999999999,
+            "user_cpu_seconds": 0.042978999999999996,
+            "system_cpu_seconds": 0.007996,
+            "minor_page_faults": 1078
+          },
+          {
+            "wall_seconds": 0.050523601,
+            "cpu_seconds": 0.050098,
+            "user_cpu_seconds": 0.041081,
+            "system_cpu_seconds": 0.009016999999999999,
+            "minor_page_faults": 1077
+          },
+          {
+            "wall_seconds": 0.049773164,
+            "cpu_seconds": 0.049426,
+            "user_cpu_seconds": 0.044383,
+            "system_cpu_seconds": 0.005043,
+            "minor_page_faults": 1078
+          },
+          {
+            "wall_seconds": 0.051185786,
+            "cpu_seconds": 0.050815,
+            "user_cpu_seconds": 0.048783,
+            "system_cpu_seconds": 0.002032,
+            "minor_page_faults": 1077
+          }
+        ],
+        "native_plain_format": [
+          {
+            "wall_seconds": 0.059436641,
+            "cpu_seconds": 0.059011999999999995,
+            "user_cpu_seconds": 0.040007999999999995,
+            "system_cpu_seconds": 0.019004,
+            "minor_page_faults": 3403
+          },
+          {
+            "wall_seconds": 0.057237406,
+            "cpu_seconds": 0.056842,
+            "user_cpu_seconds": 0.038891999999999996,
+            "system_cpu_seconds": 0.01795,
+            "minor_page_faults": 3403
+          },
+          {
+            "wall_seconds": 0.070408711,
+            "cpu_seconds": 0.06976199999999999,
+            "user_cpu_seconds": 0.046516999999999996,
+            "system_cpu_seconds": 0.023245,
+            "minor_page_faults": 3407
+          },
+          {
+            "wall_seconds": 0.058802626,
+            "cpu_seconds": 0.05835799999999999,
+            "user_cpu_seconds": 0.038576,
+            "system_cpu_seconds": 0.019781999999999998,
+            "minor_page_faults": 3404
+          },
+          {
+            "wall_seconds": 0.057499014,
+            "cpu_seconds": 0.057085,
+            "user_cpu_seconds": 0.03803,
+            "system_cpu_seconds": 0.019055,
+            "minor_page_faults": 3403
+          },
+          {
+            "wall_seconds": 0.060562796,
+            "cpu_seconds": 0.060031,
+            "user_cpu_seconds": 0.038013,
+            "system_cpu_seconds": 0.022018,
+            "minor_page_faults": 3400
+          },
+          {
+            "wall_seconds": 0.058165099,
+            "cpu_seconds": 0.05776799999999999,
+            "user_cpu_seconds": 0.034859999999999995,
+            "system_cpu_seconds": 0.022907999999999998,
+            "minor_page_faults": 3403
+          }
+        ]
+      },
+      "summary": {
+        "umber_plain_source": {
+          "wall_seconds": {
+            "median": 0.050541807,
+            "minimum": 0.049773164,
+            "maximum": 0.051936573
+          },
+          "cpu_seconds": {
+            "median": 0.050196,
+            "minimum": 0.049426,
+            "maximum": 0.051529000000000005
+          },
+          "user_cpu_seconds": {
+            "median": 0.042978999999999996,
+            "minimum": 0.041081,
+            "maximum": 0.048783
+          },
+          "system_cpu_seconds": {
+            "median": 0.0069759999999999996,
+            "minimum": 0.002032,
+            "maximum": 0.009093
+          },
+          "minor_page_faults": {
+            "median": 1077,
+            "minimum": 1076,
+            "maximum": 1078
+          }
+        },
+        "native_plain_format": {
+          "wall_seconds": {
+            "median": 0.058802626,
+            "minimum": 0.057237406,
+            "maximum": 0.070408711
+          },
+          "cpu_seconds": {
+            "median": 0.05835799999999999,
+            "minimum": 0.056842,
+            "maximum": 0.06976199999999999
+          },
+          "user_cpu_seconds": {
+            "median": 0.038576,
+            "minimum": 0.034859999999999995,
+            "maximum": 0.046516999999999996
+          },
+          "system_cpu_seconds": {
+            "median": 0.019781999999999998,
+            "minimum": 0.01795,
+            "maximum": 0.023245
+          },
+          "minor_page_faults": {
+            "median": 3403,
+            "minimum": 3400,
+            "maximum": 3407
+          }
+        }
+      },
+      "stdout_sha256": {
+        "native_plain_format": "3d05c4a6671452723f145fa90dad930f40204e18640279794f3639cc8e9f6590",
+        "umber_plain_source": "f6f4d5b2594e1dda8625d5b19aebf9a16330cb6ca521513a276c1ed6fc009888"
+      },
+      "native_dvi_sha256": [
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54"
+      ],
+      "cpu_ratio_umber_over_native": 0.8601391411631654,
+      "rss_kib": {
+        "umber_plain_source": [
+          6360,
+          6272,
+          6400
+        ],
+        "native_plain_format": [
+          17948,
+          17824,
+          17696
+        ]
+      },
+      "rss_summary_kib": {
+        "umber_plain_source": {
+          "median": 6360,
+          "minimum": 6272,
+          "maximum": 6400
+        },
+        "native_plain_format": {
+          "median": 17824,
+          "minimum": 17696,
+          "maximum": 17948
+        }
+      }
+    },
+    {
+      "name": "same_source_initex",
+      "samples": {
+        "umber_plain_source": [
+          {
+            "wall_seconds": 0.0576986,
+            "cpu_seconds": 0.057357,
+            "user_cpu_seconds": 0.051424,
+            "system_cpu_seconds": 0.005933,
+            "minor_page_faults": 1077
+          },
+          {
+            "wall_seconds": 0.048898272,
+            "cpu_seconds": 0.048618999999999996,
+            "user_cpu_seconds": 0.044650999999999996,
+            "system_cpu_seconds": 0.003968,
+            "minor_page_faults": 1077
+          },
+          {
+            "wall_seconds": 0.050170706,
+            "cpu_seconds": 0.049821,
+            "user_cpu_seconds": 0.043843,
+            "system_cpu_seconds": 0.005978,
+            "minor_page_faults": 1078
+          },
+          {
+            "wall_seconds": 0.049037347,
+            "cpu_seconds": 0.048674,
+            "user_cpu_seconds": 0.045632,
+            "system_cpu_seconds": 0.003042,
+            "minor_page_faults": 1077
+          },
+          {
+            "wall_seconds": 0.049125356,
+            "cpu_seconds": 0.04882399999999999,
+            "user_cpu_seconds": 0.044858999999999996,
+            "system_cpu_seconds": 0.003965,
+            "minor_page_faults": 1077
+          },
+          {
+            "wall_seconds": 0.050090583,
+            "cpu_seconds": 0.049687,
+            "user_cpu_seconds": 0.046645,
+            "system_cpu_seconds": 0.003042,
+            "minor_page_faults": 1078
+          },
+          {
+            "wall_seconds": 0.04921129,
+            "cpu_seconds": 0.048912,
+            "user_cpu_seconds": 0.042922999999999996,
+            "system_cpu_seconds": 0.0059889999999999995,
+            "minor_page_faults": 1077
+          }
+        ],
+        "native_plain_source": [
+          {
+            "wall_seconds": 0.200426839,
+            "cpu_seconds": 0.20004699999999997,
+            "user_cpu_seconds": 0.113467,
+            "system_cpu_seconds": 0.08657999999999999,
+            "minor_page_faults": 4934
+          },
+          {
+            "wall_seconds": 0.202046524,
+            "cpu_seconds": 0.201618,
+            "user_cpu_seconds": 0.11176,
+            "system_cpu_seconds": 0.089858,
+            "minor_page_faults": 4933
+          },
+          {
+            "wall_seconds": 0.196431889,
+            "cpu_seconds": 0.19603299999999999,
+            "user_cpu_seconds": 0.101016,
+            "system_cpu_seconds": 0.09501699999999999,
+            "minor_page_faults": 4933
+          },
+          {
+            "wall_seconds": 0.200089942,
+            "cpu_seconds": 0.19963399999999998,
+            "user_cpu_seconds": 0.11380699999999999,
+            "system_cpu_seconds": 0.085827,
+            "minor_page_faults": 4933
+          },
+          {
+            "wall_seconds": 0.203881768,
+            "cpu_seconds": 0.203424,
+            "user_cpu_seconds": 0.120251,
+            "system_cpu_seconds": 0.083173,
+            "minor_page_faults": 4934
+          },
+          {
+            "wall_seconds": 0.196537979,
+            "cpu_seconds": 0.19608799999999998,
+            "user_cpu_seconds": 0.101077,
+            "system_cpu_seconds": 0.095011,
+            "minor_page_faults": 4934
+          },
+          {
+            "wall_seconds": 0.193240907,
+            "cpu_seconds": 0.192875,
+            "user_cpu_seconds": 0.095938,
+            "system_cpu_seconds": 0.096937,
+            "minor_page_faults": 4935
+          }
+        ]
+      },
+      "summary": {
+        "umber_plain_source": {
+          "wall_seconds": {
+            "median": 0.04921129,
+            "minimum": 0.048898272,
+            "maximum": 0.0576986
+          },
+          "cpu_seconds": {
+            "median": 0.048912,
+            "minimum": 0.048618999999999996,
+            "maximum": 0.057357
+          },
+          "user_cpu_seconds": {
+            "median": 0.044858999999999996,
+            "minimum": 0.042922999999999996,
+            "maximum": 0.051424
+          },
+          "system_cpu_seconds": {
+            "median": 0.003968,
+            "minimum": 0.003042,
+            "maximum": 0.0059889999999999995
+          },
+          "minor_page_faults": {
+            "median": 1077,
+            "minimum": 1077,
+            "maximum": 1078
+          }
+        },
+        "native_plain_source": {
+          "wall_seconds": {
+            "median": 0.200089942,
+            "minimum": 0.193240907,
+            "maximum": 0.203881768
+          },
+          "cpu_seconds": {
+            "median": 0.19963399999999998,
+            "minimum": 0.192875,
+            "maximum": 0.203424
+          },
+          "user_cpu_seconds": {
+            "median": 0.11176,
+            "minimum": 0.095938,
+            "maximum": 0.120251
+          },
+          "system_cpu_seconds": {
+            "median": 0.089858,
+            "minimum": 0.083173,
+            "maximum": 0.096937
+          },
+          "minor_page_faults": {
+            "median": 4934,
+            "minimum": 4933,
+            "maximum": 4935
+          }
+        }
+      },
+      "stdout_sha256": {
+        "native_plain_source": "2ecf4b4327a72ae7bdd50d37d261d34ddf51c9aef7845e5dfe3a572a5f352a55",
+        "umber_plain_source": "f6f4d5b2594e1dda8625d5b19aebf9a16330cb6ca521513a276c1ed6fc009888"
+      },
+      "native_dvi_sha256": [
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54",
+        "7be21fa24f3efa157264a4018054954cfa9f349e2d4f82e04b3b8bf8273e8d54"
+      ],
+      "cpu_ratio_umber_over_native": 0.24500836530851458,
+      "rss_kib": {
+        "umber_plain_source": [
+          6360,
+          6360,
+          6272
+        ],
+        "native_plain_source": [
+          23840,
+          23840,
+          23968
+        ]
+      },
+      "rss_summary_kib": {
+        "umber_plain_source": {
+          "median": 6360,
+          "minimum": 6272,
+          "maximum": 6360
+        },
+        "native_plain_source": {
+          "median": 23840,
+          "minimum": 23840,
+          "maximum": 23968
+        }
+      }
+    }
+  ],
+  "tfm_bundle": [
+    {
+      "name": "cmbsy10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+      "sha256": "b5a0bf8a30db124f56f4e48237b510be6b1a78886da1540f2394ddfaf3186c25"
+    },
+    {
+      "name": "cmbx10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+      "sha256": "ae296e8e41b2b0f73e9a17fdc42c743b9ddcc58d23c30acaa3411206f7824780"
+    },
+    {
+      "name": "cmbx5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+      "sha256": "a746151d8e3a521965bbfae2666e1528374a514375daa7d620e9b89ebbbfb0ae"
+    },
+    {
+      "name": "cmbx6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+      "sha256": "38ded79d7cce07fa28921f37f6b88e67bd86951a3e5af709c219d63454786ce1"
+    },
+    {
+      "name": "cmbx7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+      "sha256": "e7b284f0ee98b7773be9b57ca652b4bb14391370509a424b5b62b06b5cae86e4"
+    },
+    {
+      "name": "cmbx8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+      "sha256": "6dab44c885b7cbf567771d9cfa565f3df34d0e8124132b9b6f9fdc496a1c2eda"
+    },
+    {
+      "name": "cmbx9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+      "sha256": "9fb9cbe254c828bc6bdcc0ca66f81b6cb9b713edf0ef1b7fa67e231920112499"
+    },
+    {
+      "name": "cmcsc10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+      "sha256": "0d691f70f365e55b83096764fe0c65338842d704bd5b979ed0c6882f9e17ce0d"
+    },
+    {
+      "name": "cmdunh10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+      "sha256": "a94093bba5082a6e63fc95dd9bf4d10a8152a2a5f9e3913ab04dd6f60974d843"
+    },
+    {
+      "name": "cmex10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+      "sha256": "0890bccea1dd4d27f001ac30e86c63af35bc803e0557c35aafb1903c8d208e92"
+    },
+    {
+      "name": "cmmi10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+      "sha256": "e442c5487f84df70218ff37f775c87060856f5b6e04c011b6cadbbadfcf46645"
+    },
+    {
+      "name": "cmmi5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+      "sha256": "8839e40838381a0a3c976bdd5becf72afd60bde5a965c3d9b985c3479c6cf75e"
+    },
+    {
+      "name": "cmmi6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+      "sha256": "ab6ecb4aaba9ca1b4259b1d1f64309a785bbaeb09183fd79a066b7764a448a28"
+    },
+    {
+      "name": "cmmi7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+      "sha256": "ce55681703aae565f17286d800ea9780223132589bdbaeda1751b869aba26a38"
+    },
+    {
+      "name": "cmmi8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+      "sha256": "65af8c1e162a952cab8e93c834fcf43ce09b508e6c16e512ebb673cd850b0d41"
+    },
+    {
+      "name": "cmmi9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+      "sha256": "20672649a2f07eef8fe07ccb42eeb731023e48f2e0797ecef57c0887da46c032"
+    },
+    {
+      "name": "cmmib10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+      "sha256": "4465d20955917959c68d0254647e5caba1f38c4516a1fd212eab2da9b8645874"
+    },
+    {
+      "name": "cmr10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+      "sha256": "87f2d8981927644cbecaf3d639e96e348ea4e7be49d8804468bd8ba9ff3f5244"
+    },
+    {
+      "name": "cmr5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+      "sha256": "581be818f67bd11a1792d05e129abe3ea30c5cbdfce3bed8da7c5fb50f5ba95b"
+    },
+    {
+      "name": "cmr6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+      "sha256": "106afa9172f0c00e58b9f5cbc72b302a18aaeeaddf50caca145af9cc0b81afd2"
+    },
+    {
+      "name": "cmr7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+      "sha256": "28f9f4d237bdae4babef4a59d90f17686a09d6f9df0b2c3c23b2ba15f20eee82"
+    },
+    {
+      "name": "cmr8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+      "sha256": "4c5ae243ac0aa254e7ec7f0602cc2a4351e5011ff0cb6dc150a5f6de19585de6"
+    },
+    {
+      "name": "cmr9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+      "sha256": "2ffa73e8446c1d46c3509a0f65ff97d4d09de46f48e1ce578a1004498b67dba9"
+    },
+    {
+      "name": "cmsl10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+      "sha256": "dcbfc25c5aac16dc2b820e089a00aedef20a1af6d8d3c2efa54f6f17a985d33f"
+    },
+    {
+      "name": "cmsl8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+      "sha256": "581080f4ebd96f58b4b6f774ea2882f5e83fef7c932647a7c957f7e8db1f7823"
+    },
+    {
+      "name": "cmsl9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+      "sha256": "bb0f9deb6852caed902cb04bfc8e8333345a37946bd0b6bd56d11848e729d3ca"
+    },
+    {
+      "name": "cmsltt10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+      "sha256": "c093023e8958e30678808a843f4f4248f5ab609f8994182fded845590fe19cc3"
+    },
+    {
+      "name": "cmss10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+      "sha256": "431472f34665b6243a32936215f2e17d1f124cdf8513e86e2bedc4c3de3f980b"
+    },
+    {
+      "name": "cmssbx10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+      "sha256": "59fcefaa9436cb00b1579a549b4a16b38606bb1b6138743d05ea35a74f168f54"
+    },
+    {
+      "name": "cmssi10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+      "sha256": "9faee1d46e86de1eb7a8f7a53522d15fa8f06e75d292d8e6989dfcd252b322c7"
+    },
+    {
+      "name": "cmssq8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+      "sha256": "a813de9f318949969010f4a363b2c3076e5cefa4436e779404453b2c34435504"
+    },
+    {
+      "name": "cmssqi8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+      "sha256": "78673efe5657b8a293e160c0ac88834778cf9a5ed1922a0bfcca3f5562c17f88"
+    },
+    {
+      "name": "cmsy10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+      "sha256": "0ca13d421ac7133271aed7c935099ecf3d1d08ac9e15f81acb34a16564ab8a46"
+    },
+    {
+      "name": "cmsy5",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+      "sha256": "6b7dc18cba9ca8996d7b146f1ed78d9227577b26248083310fec227692198ca5"
+    },
+    {
+      "name": "cmsy6",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+      "sha256": "137eb9f38f661c66309614066a7b5d63d8969d33aba0c9efee9f844a4ce65b50"
+    },
+    {
+      "name": "cmsy7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+      "sha256": "4f59bbf683e947c807158641621982dc83f55fec042fea7963d8ce9f9da98256"
+    },
+    {
+      "name": "cmsy8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+      "sha256": "84c37f07ca360c41ad0a0fba7387d279d72457c69bdae03653208c683d8de6bc"
+    },
+    {
+      "name": "cmsy9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+      "sha256": "b57c5c42a7991a004ee1b40b340d7bd12cc75ab0a6f7daf7a207827504f91712"
+    },
+    {
+      "name": "cmti10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+      "sha256": "46a66e937f809c4fbe317947b583a14b408aca41ecb835eca3be46391190432a"
+    },
+    {
+      "name": "cmti7",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+      "sha256": "78921699d46fd39b25e2e3ea08b96d9c3ad9c858a6ad2cc1aa60204a36ce88f0"
+    },
+    {
+      "name": "cmti8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+      "sha256": "7a212edaa5bbb6898b6196e32a5753811dc3295a18b9bcd9c727c23ce0c21a4e"
+    },
+    {
+      "name": "cmti9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+      "sha256": "bae91797b96e40fbeb97e2ea3184070e7cf707b72422c7c107edf1d1d5a10abb"
+    },
+    {
+      "name": "cmtt10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+      "sha256": "11f3331c958b696fd484fe45c28285622617a2593d7a34511a1d6b279e1578a2"
+    },
+    {
+      "name": "cmtt8",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+      "sha256": "62f6142387fe8d4be3ba2d46034e76fd6c3fc1d22ab44663a4eaa3f42b97039e"
+    },
+    {
+      "name": "cmtt9",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+      "sha256": "2989dbdeed1533cdeba5dcd0edee59c4509b5c934b3db8847de78d8c94a9966d"
+    },
+    {
+      "name": "cmu10",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+      "sha256": "7896645187499d599c330a8cbebc4ba1e21fa88b4ad46a86ef3db53cfa39b6f7"
+    },
+    {
+      "name": "manfnt",
+      "path": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm",
+      "sha256": "74b8999aada95b6c45d8a8846c3e210050383a852322518a109e98a54ac5a4ad"
+    }
+  ],
+  "measurement_driver": {
+    "path": "/home/phulin/umber4/.tools/gentle-perf.py",
+    "sha256": "bf7e4414d000f261f3789de7e129aeb81ac23986daf6883a279bf14d62f2baf1",
+    "command": [
+      "python3",
+      "/home/phulin/umber4/.tools/gentle-perf.py",
+      "--report",
+      "/tmp/umber-gentle-perf-baseline.json",
+      "--work",
+      "/tmp/umber-gentle-perf-baseline",
+      "--cpu",
+      "3",
+      "--repeats",
+      "7"
+    ],
+    "status": "ignored local driver; uses existing benchmarks/layout.py child/rss and benchmarks/gentle.py comparison helpers"
+  },
+  "profiles": {
+    "tool": "Valgrind/Callgrind 3.22.0, Ir only, actual default-feature release binaries, no recorder",
+    "scope": "Separate whole-process instruction diagnostics. Self function counts aggregate inlined source-file entries by physical function name; parser self sum equals program total. These are not CPU time shares and are never subtracted from child CPU timings.",
+    "endpoints": {
+      "umber": {
+        "instructions": 291986613,
+        "self_functions": [
+          {
+            "name": "<umber::Engine>::character_run",
+            "ir": 35927573,
+            "percent": 12.304527468182249,
+            "calls": 28056
+          },
+          {
+            "name": "<umber::Engine>::fetch_raw::<true>",
+            "ir": 21887365,
+            "percent": 7.496016606761351,
+            "calls": 309127
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "ir": 19338816,
+            "percent": 6.623185837632906,
+            "calls": 805784
+          },
+          {
+            "name": "<umber::Engine>::publish_page",
+            "ir": 18127048,
+            "percent": 6.208177770122632,
+            "calls": 97
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "ir": 15234804,
+            "percent": 5.217637837389483,
+            "calls": 585954
+          },
+          {
+            "name": "<umber::Engine>::finish_paragraph",
+            "ir": 10325319,
+            "percent": 3.5362302723104637,
+            "calls": 1088
+          },
+          {
+            "name": "<umber::line_search::Search>::try_break",
+            "ir": 10095108,
+            "percent": 3.4573872741213654,
+            "calls": 26012
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "ir": 10022953,
+            "percent": 3.432675524750856,
+            "calls": 49610
+          },
+          {
+            "name": "<umber::Engine>::alignment_token",
+            "ir": 9136796,
+            "percent": 3.1291831862168284,
+            "calls": 325977
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_with_limit",
+            "ir": 8418217,
+            "percent": 2.8830832049139183,
+            "calls": 179111
+          },
+          {
+            "name": "<umber::Engine>::wrap_ligature",
+            "ir": 7919028,
+            "percent": 2.712120229977804,
+            "calls": 116237
+          },
+          {
+            "name": "<umber::Engine>::run_input",
+            "ir": 7847274,
+            "percent": 2.6875458156706657,
+            "calls": 1
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "ir": 7529080,
+            "percent": 2.5785702716446113,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::Engine>::hpack_inner",
+            "ir": 6972256,
+            "percent": 2.3878683780615653,
+            "calls": 8195
+          },
+          {
+            "name": "<umber::fonts::MetricReader>::get",
+            "ir": 6517099,
+            "percent": 2.2319855465428478,
+            "calls": 225711
+          },
+          {
+            "name": "<umber::Engine>::execute_with_set_box_permission",
+            "ir": 6344950,
+            "percent": 2.173027706581877,
+            "calls": 101759
+          },
+          {
+            "name": "<umber::tfm::Resource>::lig_instruction",
+            "ir": 5174220,
+            "percent": 1.7720743930133536,
+            "calls": 122972
+          },
+          {
+            "name": "<umber::hyphenation::Patterns>::child",
+            "ir": 5095186,
+            "percent": 1.7450067137153304,
+            "calls": 23863
+          },
+          {
+            "name": "<umber::hyphenation::Patterns>::insert_child",
+            "ir": 4793603,
+            "percent": 1.6417201291348245,
+            "calls": 22442
+          },
+          {
+            "name": "<umber::Engine>::text_command",
+            "ir": 4500506,
+            "percent": 1.5413398421796825,
+            "calls": 91720
+          },
+          {
+            "name": "<umber::Engine>::font_parameter",
+            "ir": 3437322,
+            "percent": 1.1772190391482091,
+            "calls": 81841
+          },
+          {
+            "name": "<umber::Engine>::space_node",
+            "ir": 3338640,
+            "percent": 1.1434222842264348,
+            "calls": 25779
+          },
+          {
+            "name": "<umber::math::converting::Conversion>::run",
+            "ir": 3155432,
+            "percent": 1.08067694185692,
+            "calls": 879
+          },
+          {
+            "name": "<umber::Engine>::nonspace",
+            "ir": 3131594,
+            "percent": 1.0725128689375907,
+            "calls": 40428
+          },
+          {
+            "name": "<umber::Engine>::push_backed",
+            "ir": 2651196,
+            "percent": 0.9079854630184706,
+            "calls": 65447
+          },
+          {
+            "name": "<umber::Engine>::hyphenation_assignment",
+            "ir": 2625287,
+            "percent": 0.8991121110062673,
+            "calls": 2
+          },
+          {
+            "name": "<umber::Engine>::scan_keyword",
+            "ir": 2442334,
+            "percent": 0.8364541014077245,
+            "calls": 19669
+          },
+          {
+            "name": "<umber::Engine>::pop_source",
+            "ir": 2319739,
+            "percent": 0.7944675874575112,
+            "calls": 84418
+          },
+          {
+            "name": "<umber::token::Meaning>::expandable",
+            "ir": 2005842,
+            "percent": 0.6869636862426977,
+            "calls": 287404
+          },
+          {
+            "name": "<umber::tfm::Catalog>::scaled",
+            "ir": 1991943,
+            "percent": 0.6822035365025451,
+            "calls": 58
+          },
+          {
+            "name": "<umber::Engine>::close_group",
+            "ir": 1751406,
+            "percent": 0.5998240748112654,
+            "calls": 11059
+          },
+          {
+            "name": "__memcpy_avx_unaligned_erms",
+            "ir": 1714487,
+            "percent": 0.5871800019818032,
+            "calls": 21880
+          },
+          {
+            "name": "<umber::Engine>::quantity",
+            "ir": 1677049,
+            "percent": 0.574358181277304,
+            "calls": 25779
+          },
+          {
+            "name": "<umber::Engine>::next_lookup_meaning",
+            "ir": 1612656,
+            "percent": 0.552304772958889,
+            "calls": 16850
+          },
+          {
+            "name": "<umber::Engine>::append_space",
+            "ir": 1391692,
+            "percent": 0.4766287007822513,
+            "calls": 25779
+          },
+          {
+            "name": "<umber::Engine>::build_page",
+            "ir": 1349236,
+            "percent": 0.4620883081376063,
+            "calls": 3487
+          },
+          {
+            "name": "<umber::input::FileInput>::load",
+            "ir": 1250984,
+            "percent": 0.42843882024139235,
+            "calls": 11108
+          },
+          {
+            "name": "<umber::Engine>::push_body",
+            "ir": 1073926,
+            "percent": 0.3677997388188478,
+            "calls": 13992
+          },
+          {
+            "name": "<umber::tables::Table<umber::nodes::box_slots::Slot> as core::ops::index::IndexMut<usize>>::index_mut",
+            "ir": 1023360,
+            "percent": 0.3504818215758405,
+            "calls": 24960
+          },
+          {
+            "name": "<umber::Engine>::page_quantity",
+            "ir": 968879,
+            "percent": 0.3318230894373229,
+            "calls": 34582
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_box_with_limit",
+            "ir": 909146,
+            "percent": 0.3113656446982383,
+            "calls": 11123
+          },
+          {
+            "name": "<umber::Engine>::scan_int_slow",
+            "ir": 896918,
+            "percent": 0.3071777814690429,
+            "calls": 14895
+          },
+          {
+            "name": "<umber::Engine>::current_source_exhausted",
+            "ir": 837661,
+            "percent": 0.2868833579024392,
+            "calls": 39493
+          },
+          {
+            "name": "<umber::Engine>::dimension_from::<false>",
+            "ir": 829508,
+            "percent": 0.2840911066015208,
+            "calls": 5997
+          },
+          {
+            "name": "<umber::tables::Table<umber::hyphenation::TrieNode> as core::ops::index::IndexMut<usize>>::index_mut",
+            "ir": 768176,
+            "percent": 0.2630860340162239,
+            "calls": 18671
+          }
+        ],
+        "source_files": [
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/nodes.rs",
+            "ir": 49392879,
+            "percent": 16.91614505628037
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/ligatures.rs",
+            "ir": 30244201,
+            "percent": 10.358077957498688
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/input_tokens.rs",
+            "ir": 21633684,
+            "percent": 7.409135568828288
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/tables.rs",
+            "ir": 15201452,
+            "percent": 5.206215395909264
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs",
+            "ir": 14571578,
+            "percent": 4.99049523205367
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/page_output.rs",
+            "ir": 8462215,
+            "percent": 2.8981517039618527
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/text.rs",
+            "ir": 7923080,
+            "percent": 2.713507964832621
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/value_metadata.rs",
+            "ir": 7083412,
+            "percent": 2.425937246650414
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/tfm.rs",
+            "ir": 7002128,
+            "percent": 2.398098984079109
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/line_search.rs",
+            "ir": 6874552,
+            "percent": 2.3544065700025776
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/alignment_reader.rs",
+            "ir": 6182055,
+            "percent": 2.11723919000355
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs",
+            "ir": 5985867,
+            "percent": 2.0500484383508364
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/alloc/src/vec/mod.rs",
+            "ir": 5461512,
+            "percent": 1.8704665751234286
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/token.rs",
+            "ir": 5336741,
+            "percent": 1.8277348215275884
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/input.rs",
+            "ir": 5165541,
+            "percent": 1.7691019964672148
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/execute.rs",
+            "ir": 5159286,
+            "percent": 1.7669597749674915
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/lib.rs",
+            "ir": 5125482,
+            "percent": 1.755382531869706
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/packing.rs",
+            "ir": 5041902,
+            "percent": 1.7267579318781987
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mod.rs",
+            "ir": 4833573,
+            "percent": 1.6554091128828567
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/hyphenation.rs",
+            "ir": 4208945,
+            "percent": 1.4414856067391006
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/scan.rs",
+            "ir": 3670350,
+            "percent": 1.2570268075954565
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/node_transfer.rs",
+            "ir": 3658639,
+            "percent": 1.2530160072783885
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/line_break.rs",
+            "ir": 3627996,
+            "percent": 1.2425213480592003
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs",
+            "ir": 3535373,
+            "percent": 1.21079968827201
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/mem/mod.rs",
+            "ir": 3442078,
+            "percent": 1.1788478809471994
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/alloc/src/rc.rs",
+            "ir": 3310273,
+            "percent": 1.133707112798353
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/fonts.rs",
+            "ir": 3207681,
+            "percent": 1.098571255388342
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/index.rs",
+            "ir": 2465469,
+            "percent": 0.8443774098643351
+          },
+          {
+            "name": "/home/phulin/umber4/crates/umber/src/input_files.rs",
+            "ir": 2067850,
+            "percent": 0.708200276291434
+          },
+          {
+            "name": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/alloc/src/raw_vec/mod.rs",
+            "ir": 2062995,
+            "percent": 0.7065375288284192
+          }
+        ],
+        "node_store_functions": [
+          {
+            "name": "<umber::nodes::NodeStore>::split_after",
+            "self_ir": 110968,
+            "calls": 2637
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::take_box",
+            "self_ir": 9870,
+            "calls": 141
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::append",
+            "self_ir": 104244,
+            "calls": 4373
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::remove_after",
+            "self_ir": 4851,
+            "calls": 81
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::splice",
+            "self_ir": 41364,
+            "calls": 1366
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::insert_after",
+            "self_ir": 22763,
+            "calls": 1339
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::leader_dimensions",
+            "self_ir": 5832,
+            "calls": 90
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_leader_with_limit",
+            "self_ir": 6654,
+            "calls": 86
+          },
+          {
+            "name": "core::ptr::drop_glue::<umber::nodes::NodeStore>",
+            "self_ir": 31,
+            "calls": 1
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::allocation_page",
+            "self_ir": 7529080,
+            "calls": 190331
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release",
+            "self_ir": 10022953,
+            "calls": 49610
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_with_limit",
+            "self_ir": 8418217,
+            "calls": 179111
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::copy_list",
+            "self_ir": 105419,
+            "calls": 427
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::get",
+            "self_ir": 19338816,
+            "calls": 805784
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_box_with_limit",
+            "self_ir": 909146,
+            "calls": 11123
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::box_mut",
+            "self_ir": 72,
+            "calls": 4
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::writable",
+            "self_ir": 15234804,
+            "calls": 585954
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::release_kind",
+            "self_ir": 9671,
+            "calls": 509
+          },
+          {
+            "name": "<umber::nodes::NodeStore>::alloc_insertion_with_limit",
+            "self_ir": 879,
+            "calls": 11
+          }
+        ],
+        "selected_callers": {
+          "<umber::Engine>::fetch_raw::<true>": [
+            {
+              "caller": "<umber::Engine>::run_input",
+              "calls": 119650
+            },
+            {
+              "caller": "<umber::Engine>::character_run",
+              "calls": 45329
+            },
+            {
+              "caller": "<umber::Engine>::nonspace",
+              "calls": 41404
+            },
+            {
+              "caller": "<umber::Engine>::hyphenation_assignment",
+              "calls": 27475
+            },
+            {
+              "caller": "<umber::Engine>::scan_keyword",
+              "calls": 24051
+            },
+            {
+              "caller": "<umber::Engine>::next_raw",
+              "calls": 9760
+            },
+            {
+              "caller": "<umber::Engine>::dimension_from::<false>",
+              "calls": 7813
+            },
+            {
+              "caller": "<umber::Engine>::scan_body::<false, umber::values::Builder>",
+              "calls": 7121
+            },
+            {
+              "caller": "<umber::Engine>::opening_brace",
+              "calls": 4831
+            },
+            {
+              "caller": "<umber::Engine>::peek_alignment_entry",
+              "calls": 3300
+            },
+            {
+              "caller": "<umber::Engine>::dimension_space",
+              "calls": 3182
+            },
+            {
+              "caller": "<umber::Engine>::scan_int_slow",
+              "calls": 1831
+            }
+          ],
+          "<umber::Engine>::character_run": [
+            {
+              "caller": "<umber::Engine>::text_command",
+              "calls": 28056
+            }
+          ],
+          "<umber::hyphenation::Patterns>::child": [
+            {
+              "caller": "<umber::Engine>::finish_paragraph",
+              "calls": 23863
+            }
+          ],
+          "<umber::hyphenation::Patterns>::insert_child": [
+            {
+              "caller": "<umber::Engine>::hyphenation_assignment",
+              "calls": 22442
+            }
+          ],
+          "<umber::nodes::NodeStore>::allocation_page": [
+            {
+              "caller": "<umber::nodes::NodeStore>::alloc_with_limit",
+              "calls": 179111
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::alloc_box_with_limit",
+              "calls": 11123
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::alloc_leader_with_limit",
+              "calls": 86
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::alloc_insertion_with_limit",
+              "calls": 11
+            }
+          ],
+          "<umber::nodes::NodeStore>::get": [
+            {
+              "caller": "<umber::Engine>::finish_paragraph",
+              "calls": 326057
+            },
+            {
+              "caller": "<umber::Engine>::publish_page",
+              "calls": 199600
+            },
+            {
+              "caller": "<umber::Engine>::hpack_inner",
+              "calls": 175376
+            },
+            {
+              "caller": "<umber::Engine>::build_page",
+              "calls": 47080
+            },
+            {
+              "caller": "<umber::Engine>::vpackage",
+              "calls": 17414
+            },
+            {
+              "caller": "<umber::Engine>::finish_alignment_layout_shifted",
+              "calls": 8553
+            },
+            {
+              "caller": "<umber::line_search::Search>::try_break",
+              "calls": 6993
+            },
+            {
+              "caller": "<umber::Engine>::text_command",
+              "calls": 5086
+            },
+            {
+              "caller": "<umber::Engine>::make_box",
+              "calls": 3474
+            },
+            {
+              "caller": "<umber::Engine>::append_to_vlist",
+              "calls": 3127
+            },
+            {
+              "caller": "<umber::Engine>::finish_box",
+              "calls": 2462
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::split_after",
+              "calls": 2417
+            }
+          ],
+          "<umber::nodes::NodeStore>::writable": [
+            {
+              "caller": "<umber::nodes::NodeStore>::release",
+              "calls": 190182
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::alloc_with_limit",
+              "calls": 179111
+            },
+            {
+              "caller": "<umber::Engine>::wrap_ligature",
+              "calls": 115352
+            },
+            {
+              "caller": "<umber::Engine>::append_space",
+              "calls": 25757
+            },
+            {
+              "caller": "<umber::Engine>::build_page",
+              "calls": 15739
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::alloc_box_with_limit",
+              "calls": 11123
+            },
+            {
+              "caller": "<umber::Engine>::finish_paragraph",
+              "calls": 10376
+            },
+            {
+              "caller": "<umber::Engine>::character_run",
+              "calls": 7518
+            },
+            {
+              "caller": "<umber::Engine>::append_to_vlist",
+              "calls": 4143
+            },
+            {
+              "caller": "<umber::Engine>::alignment_cell",
+              "calls": 4017
+            },
+            {
+              "caller": "<umber::Engine>::append_horizontal",
+              "calls": 3640
+            },
+            {
+              "caller": "<umber::nodes::NodeStore>::append",
+              "calls": 2973
+            }
+          ],
+          "<umber::Engine>::publish_page": [
+            {
+              "caller": "<umber::Engine>::finish_box",
+              "calls": 97
+            }
+          ]
+        }
+      },
+      "native_plain_format": {
+        "instructions": 192803740,
+        "self_functions": [
+          {
+            "name": "0x000000000008a680",
+            "ir": 24938362,
+            "percent": 12.93458415277629,
+            "calls": 363879
+          },
+          {
+            "name": "0x00000000000cd150",
+            "ir": 19787523,
+            "percent": 10.263038984617207,
+            "calls": 1
+          },
+          {
+            "name": "0x000000000006da90",
+            "ir": 11340016,
+            "percent": 5.881636943349751,
+            "calls": 1
+          },
+          {
+            "name": "0x00000000000b9550",
+            "ir": 9897308,
+            "percent": 5.133358927580969,
+            "calls": 26012
+          },
+          {
+            "name": "0x00000000000b08d0",
+            "ir": 9253034,
+            "percent": 4.799198397292501,
+            "calls": 11053
+          },
+          {
+            "name": "0x000000000009ca70",
+            "ir": 9063105,
+            "percent": 4.700689416087053,
+            "calls": 2677
+          },
+          {
+            "name": "0x00000000000763d0",
+            "ir": 8180037,
+            "percent": 4.242675479220476,
+            "calls": 143745
+          },
+          {
+            "name": "0x0000000000064460",
+            "ir": 7718066,
+            "percent": 4.003068612673178,
+            "calls": 1054
+          },
+          {
+            "name": "0x0000000000094bb0",
+            "ir": 7225341,
+            "percent": 3.747510810734273,
+            "calls": 44818
+          },
+          {
+            "name": "0x00000000000024c0",
+            "ir": 5582655,
+            "percent": 2.895511777935428,
+            "calls": 44
+          },
+          {
+            "name": "0x000000000005fc10",
+            "ir": 5212685,
+            "percent": 2.7036223467449334,
+            "calls": 5395
+          },
+          {
+            "name": "0x00000000000a2910",
+            "ir": 4347090,
+            "percent": 2.2546709934153766,
+            "calls": 144903
+          },
+          {
+            "name": "getc",
+            "ir": 4212289,
+            "percent": 2.184754818552794,
+            "calls": 210623
+          },
+          {
+            "name": "0x0000000000074900",
+            "ir": 3545910,
+            "percent": 1.8391292617041557,
+            "calls": 196995
+          },
+          {
+            "name": "0x000000000007c9f0'2",
+            "ir": 3321794,
+            "percent": 1.722888777987398,
+            "calls": 12363
+          },
+          {
+            "name": "0x0000000000094680",
+            "ir": 3154896,
+            "percent": 1.6363251044818943,
+            "calls": 116848
+          },
+          {
+            "name": "0x000000000009ca70'2",
+            "ir": 2942148,
+            "percent": 1.5259807719497558,
+            "calls": 6872
+          },
+          {
+            "name": "0x0000000000089dd0",
+            "ir": 2833926,
+            "percent": 1.4698501180526893,
+            "calls": 472321
+          },
+          {
+            "name": "0x0000000000091ab0",
+            "ir": 2667473,
+            "percent": 1.3835172491985892,
+            "calls": 167602
+          },
+          {
+            "name": "0x0000000000088ac0",
+            "ir": 2602458,
+            "percent": 1.349796430297462,
+            "calls": 63529
+          },
+          {
+            "name": "0x0000000000076610",
+            "ir": 2440027,
+            "percent": 1.2655496205623398,
+            "calls": 143531
+          },
+          {
+            "name": "0x0000000000088c60",
+            "ir": 1847546,
+            "percent": 0.9582521583865541,
+            "calls": 43029
+          },
+          {
+            "name": "0x000000000005ab90",
+            "ir": 1664706,
+            "percent": 0.8634199730772858,
+            "calls": 1
+          },
+          {
+            "name": "0x000000000008bab0",
+            "ir": 1557541,
+            "percent": 0.8078375450600699,
+            "calls": 13793
+          },
+          {
+            "name": "crc32_z",
+            "ir": 1424807,
+            "percent": 0.7389934448367028,
+            "calls": 33
+          },
+          {
+            "name": "0x00000000000602b0",
+            "ir": 1390041,
+            "percent": 0.720961636947499,
+            "calls": 7408
+          },
+          {
+            "name": "0x0000000000076300",
+            "ir": 1277898,
+            "percent": 0.6627973088073914,
+            "calls": 103463
+          },
+          {
+            "name": "0x0000000000091d50",
+            "ir": 1251016,
+            "percent": 0.6488546332140652,
+            "calls": 19803
+          },
+          {
+            "name": "0x00000000000cc120",
+            "ir": 1071315,
+            "percent": 0.5556505283559333,
+            "calls": 8222
+          },
+          {
+            "name": "0x0000000000091ef0",
+            "ir": 1058280,
+            "percent": 0.5488897673872923,
+            "calls": 17789
+          },
+          {
+            "name": "do_lookup_x",
+            "ir": 901779,
+            "percent": 0.46771862413042403,
+            "calls": 2192
+          },
+          {
+            "name": "str_llist_add",
+            "ir": 847591,
+            "percent": 0.4396133601972659,
+            "calls": 898
+          },
+          {
+            "name": "0x000000000008eeb0",
+            "ir": 830075,
+            "percent": 0.4305284741883119,
+            "calls": 6107
+          },
+          {
+            "name": "read_line",
+            "ir": 821753,
+            "percent": 0.4262121678759966,
+            "calls": 1080
+          },
+          {
+            "name": "0x00000000000887e0",
+            "ir": 791162,
+            "percent": 0.4103457744128822,
+            "calls": 19014
+          },
+          {
+            "name": "0x0000000000146b20",
+            "ir": 784060,
+            "percent": 0.4066622359089092,
+            "calls": 33790
+          },
+          {
+            "name": "_int_malloc",
+            "ir": 774541,
+            "percent": 0.40172509101742526,
+            "calls": 5403
+          },
+          {
+            "name": "0x0000000000085d10",
+            "ir": 729280,
+            "percent": 0.3782499239900637,
+            "calls": 5533
+          },
+          {
+            "name": "0x0000000000092cc0",
+            "ir": 728125,
+            "percent": 0.3776508692206904,
+            "calls": 10263
+          },
+          {
+            "name": "_dl_lookup_symbol_x",
+            "ir": 717553,
+            "percent": 0.37216757309790777,
+            "calls": 2192
+          },
+          {
+            "name": "0x000000000008c8a0",
+            "ir": 713002,
+            "percent": 0.36980714170793577,
+            "calls": 14492
+          },
+          {
+            "name": "0x000000000008f970",
+            "ir": 704313,
+            "percent": 0.3653004863909798,
+            "calls": 7477
+          },
+          {
+            "name": "0x00000000000bb8f0",
+            "ir": 698093,
+            "percent": 0.36207440789270995,
+            "calls": 5096
+          },
+          {
+            "name": "0x00000000000768d0",
+            "ir": 656982,
+            "percent": 0.34075168873798817,
+            "calls": 34578
+          },
+          {
+            "name": "hash_insert",
+            "ir": 636101,
+            "percent": 0.329921504634713,
+            "calls": 1164
+          }
+        ],
+        "source_files": [
+          {
+            "name": "???",
+            "ir": 182686352,
+            "percent": 94.75249390909119
+          },
+          {
+            "name": "./libio/./libio/getc.c",
+            "ir": 4212289,
+            "percent": 2.184754818552794
+          },
+          {
+            "name": "./malloc/./malloc/malloc.c",
+            "ir": 1342512,
+            "percent": 0.6963101441911863
+          },
+          {
+            "name": "./elf/./elf/dl-lookup.c",
+            "ir": 1224968,
+            "percent": 0.635344521843819
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+            "ir": 561970,
+            "percent": 0.29147256168371005
+          },
+          {
+            "name": "./elf/../sysdeps/generic/dl-new-hash.h",
+            "ir": 505196,
+            "percent": 0.26202603746172143
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+            "ir": 466779,
+            "percent": 0.24210059410673257
+          },
+          {
+            "name": "./elf/../sysdeps/x86_64/dl-machine.h",
+            "ir": 234781,
+            "percent": 0.12177201541837311
+          },
+          {
+            "name": "./elf/./elf/do-rel.h",
+            "ir": 191713,
+            "percent": 0.0994342744596137
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strlen-avx2.S",
+            "ir": 183570,
+            "percent": 0.09521080866999779
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strcpy-avx2.S",
+            "ir": 179726,
+            "percent": 0.09321707141158155
+          },
+          {
+            "name": "./elf/./elf/dl-reloc.c",
+            "ir": 163609,
+            "percent": 0.08485779373366928
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/../multiarch/strcmp-sse2.S",
+            "ir": 101543,
+            "percent": 0.05266650947746138
+          },
+          {
+            "name": "./stdlib/./stdlib/getenv.c",
+            "ir": 79347,
+            "percent": 0.041154284662735276
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strcmp-avx2.S",
+            "ir": 75566,
+            "percent": 0.03919322311901211
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strcat-strlen-avx2.h.S",
+            "ir": 54422,
+            "percent": 0.028226630873446748
+          },
+          {
+            "name": "./dirent/../sysdeps/unix/sysv/linux/readdir64.c",
+            "ir": 42111,
+            "percent": 0.02184138129270729
+          },
+          {
+            "name": "./libio/./libio/fileops.c",
+            "ir": 41811,
+            "percent": 0.02168578265131164
+          },
+          {
+            "name": "./libio/./libio/putc.c",
+            "ir": 39288,
+            "percent": 0.020377198077174228
+          },
+          {
+            "name": "./ctype/../include/ctype.h",
+            "ir": 32656,
+            "percent": 0.01693743077805441
+          },
+          {
+            "name": "./elf/./elf/dl-tunables.c",
+            "ir": 30725,
+            "percent": 0.015935894189604415
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strncpy-avx2.S",
+            "ir": 28126,
+            "percent": 0.014587891292980106
+          },
+          {
+            "name": "./csu/./csu/errno-loc.c",
+            "ir": 24252,
+            "percent": 0.012578594170424288
+          },
+          {
+            "name": "./elf/../sysdeps/generic/ldsodefs.h",
+            "ir": 22351,
+            "percent": 0.011592617446113857
+          },
+          {
+            "name": "./elf/./elf/dl-version.c",
+            "ir": 20877,
+            "percent": 0.010828109454723234
+          },
+          {
+            "name": "./stdio-common/./stdio-common/flockfile.c",
+            "ir": 20520,
+            "percent": 0.01064294707146241
+          },
+          {
+            "name": "./malloc/./malloc/arena.c",
+            "ir": 17794,
+            "percent": 0.009229074083313945
+          },
+          {
+            "name": "./elf/./elf/dl-load.c",
+            "ir": 16888,
+            "percent": 0.008759166186299083
+          },
+          {
+            "name": "./libio/./libio/genops.c",
+            "ir": 13331,
+            "percent": 0.0069142849614846685
+          },
+          {
+            "name": "./stdio-common/./stdio-common/funlockfile.c",
+            "ir": 10800,
+            "percent": 0.005601551090243374
+          }
+        ]
+      },
+      "native_plain_source": {
+        "instructions": 279170975,
+        "self_functions": [
+          {
+            "name": "str_llist_add",
+            "ir": 50145070,
+            "percent": 17.962135927633593,
+            "calls": 5860
+          },
+          {
+            "name": "0x000000000008a680",
+            "ir": 28792021,
+            "percent": 10.313400596175875,
+            "calls": 407084
+          },
+          {
+            "name": "0x00000000000cd150",
+            "ir": 19823182,
+            "percent": 7.100731729005854,
+            "calls": 1
+          },
+          {
+            "name": "0x00000000000b9550",
+            "ir": 9897308,
+            "percent": 3.5452496449532407,
+            "calls": 26012
+          },
+          {
+            "name": "0x00000000000b08d0",
+            "ir": 9253312,
+            "percent": 3.3145680706957448,
+            "calls": 11055
+          },
+          {
+            "name": "0x000000000005ab90",
+            "ir": 9177396,
+            "percent": 3.2873746993218047,
+            "calls": 1
+          },
+          {
+            "name": "0x000000000009ca70",
+            "ir": 9063105,
+            "percent": 3.246435271431781,
+            "calls": 2677
+          },
+          {
+            "name": "0x00000000000763d0",
+            "ir": 8184667,
+            "percent": 2.931775769311262,
+            "calls": 143838
+          },
+          {
+            "name": "0x0000000000064460",
+            "ir": 7718068,
+            "percent": 2.7646384084162046,
+            "calls": 1054
+          },
+          {
+            "name": "0x000000000005fc10",
+            "ir": 7258749,
+            "percent": 2.6001087684706476,
+            "calls": 11108
+          },
+          {
+            "name": "0x0000000000094bb0",
+            "ir": 7225341,
+            "percent": 2.5881419083771156,
+            "calls": 44818
+          },
+          {
+            "name": "getc",
+            "ir": 6939996,
+            "percent": 2.485930351462934,
+            "calls": 347019
+          },
+          {
+            "name": "__memset_avx2_unaligned_erms",
+            "ir": 5271369,
+            "percent": 1.8882224414626199,
+            "calls": 13
+          },
+          {
+            "name": "hash_lookup",
+            "ir": 5145504,
+            "percent": 1.8431371671070031,
+            "calls": 7208
+          },
+          {
+            "name": "hash_insert",
+            "ir": 4761949,
+            "percent": 1.7057464516144631,
+            "calls": 7100
+          },
+          {
+            "name": "0x0000000000074900",
+            "ir": 4706730,
+            "percent": 1.6859668165718158,
+            "calls": 261485
+          },
+          {
+            "name": "0x00000000000a2910",
+            "ir": 4347150,
+            "percent": 1.5571640282446984,
+            "calls": 144905
+          },
+          {
+            "name": "_int_malloc",
+            "ir": 3892965,
+            "percent": 1.394473404694023,
+            "calls": 27816
+          },
+          {
+            "name": "0x000000000007c9f0'2",
+            "ir": 3321794,
+            "percent": 1.1898779950172111,
+            "calls": 12363
+          },
+          {
+            "name": "0x0000000000060d70",
+            "ir": 3256522,
+            "percent": 1.1664973409216342,
+            "calls": 1
+          },
+          {
+            "name": "0x0000000000091ab0",
+            "ir": 3176243,
+            "percent": 1.137741127995129,
+            "calls": 201359
+          },
+          {
+            "name": "0x0000000000094680",
+            "ir": 3154923,
+            "percent": 1.1301042309287346,
+            "calls": 116849
+          },
+          {
+            "name": "0x00000000000639a0",
+            "ir": 2975511,
+            "percent": 1.0658382376606308,
+            "calls": 1
+          },
+          {
+            "name": "0x000000000009ca70'2",
+            "ir": 2942148,
+            "percent": 1.0538874967213192,
+            "calls": 6872
+          },
+          {
+            "name": "0x0000000000089dd0",
+            "ir": 2833944,
+            "percent": 1.0151284530922313,
+            "calls": 472324
+          },
+          {
+            "name": "0x0000000000088ac0",
+            "ir": 2681333,
+            "percent": 0.9604626698746171,
+            "calls": 65405
+          },
+          {
+            "name": "0x0000000000076610",
+            "ir": 2441251,
+            "percent": 0.8744644746825847,
+            "calls": 143603
+          },
+          {
+            "name": "__strcmp_avx2",
+            "ir": 1888132,
+            "percent": 0.6763353532723092,
+            "calls": 52686
+          },
+          {
+            "name": "0x0000000000088c60",
+            "ir": 1887449,
+            "percent": 0.6760907003315799,
+            "calls": 44010
+          },
+          {
+            "name": "0x000000000008bab0",
+            "ir": 1607129,
+            "percent": 0.5756791156387229,
+            "calls": 13992
+          },
+          {
+            "name": "0x0000000000085d10",
+            "ir": 1428154,
+            "percent": 0.5115696572682744,
+            "calls": 9605
+          },
+          {
+            "name": "malloc",
+            "ir": 1415582,
+            "percent": 0.5070663237824061,
+            "calls": 30324
+          },
+          {
+            "name": "0x0000000000076300",
+            "ir": 1402230,
+            "percent": 0.502283591623377,
+            "calls": 111392
+          },
+          {
+            "name": "__strlen_avx2",
+            "ir": 1334430,
+            "percent": 0.47799739926401735,
+            "calls": 66129
+          },
+          {
+            "name": "0x0000000000091d50",
+            "ir": 1284239,
+            "percent": 0.4600188110529757,
+            "calls": 20280
+          },
+          {
+            "name": "__strcat_avx2",
+            "ir": 1247440,
+            "percent": 0.44683728313804827,
+            "calls": 32835
+          },
+          {
+            "name": "0x0000000000091ef0",
+            "ir": 1130408,
+            "percent": 0.4049160196542638,
+            "calls": 18592
+          },
+          {
+            "name": "__strcpy_avx2",
+            "ir": 1120530,
+            "percent": 0.4013776862010816,
+            "calls": 32413
+          },
+          {
+            "name": "0x0000000000099a20",
+            "ir": 1081610,
+            "percent": 0.3874364088172132,
+            "calls": 58
+          },
+          {
+            "name": "0x00000000000cc120",
+            "ir": 1072508,
+            "percent": 0.3841760412234832,
+            "calls": 8231
+          },
+          {
+            "name": "0x000000000005e040",
+            "ir": 1031918,
+            "percent": 0.369636564116309,
+            "calls": 2047
+          },
+          {
+            "name": "0x0000000000074df0",
+            "ir": 939157,
+            "percent": 0.33640925601237737,
+            "calls": 84
+          },
+          {
+            "name": "do_lookup_x",
+            "ir": 897482,
+            "percent": 0.321481128186768,
+            "calls": 2184
+          },
+          {
+            "name": "0x000000000008eeb0",
+            "ir": 838484,
+            "percent": 0.3003478423929995,
+            "calls": 6173
+          },
+          {
+            "name": "read_line",
+            "ir": 822790,
+            "percent": 0.2947261978076338,
+            "calls": 1080
+          }
+        ],
+        "source_files": [
+          {
+            "name": "???",
+            "ir": 251555445,
+            "percent": 90.10802251201079
+          },
+          {
+            "name": "./libio/./libio/getc.c",
+            "ir": 6939996,
+            "percent": 2.485930351462934
+          },
+          {
+            "name": "./malloc/./malloc/malloc.c",
+            "ir": 5822527,
+            "percent": 2.085649125952295
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+            "ir": 5271369,
+            "percent": 1.8882224414626199
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strcpy-avx2.S",
+            "ir": 1925138,
+            "percent": 0.6895910292966524
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strcmp-avx2.S",
+            "ir": 1921257,
+            "percent": 0.688200841795964
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strlen-avx2.S",
+            "ir": 1334538,
+            "percent": 0.47803608523414726
+          },
+          {
+            "name": "./elf/./elf/dl-lookup.c",
+            "ir": 1219384,
+            "percent": 0.4367875277865115
+          },
+          {
+            "name": "./elf/../sysdeps/generic/dl-new-hash.h",
+            "ir": 504832,
+            "percent": 0.1808325525244879
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strcat-strlen-avx2.h.S",
+            "ir": 442832,
+            "percent": 0.15862394004247754
+          },
+          {
+            "name": "./dirent/../sysdeps/unix/sysv/linux/readdir64.c",
+            "ir": 301824,
+            "percent": 0.10811439118984342
+          },
+          {
+            "name": "./elf/../sysdeps/x86_64/dl-machine.h",
+            "ir": 234773,
+            "percent": 0.08409649319740349
+          },
+          {
+            "name": "./elf/./elf/do-rel.h",
+            "ir": 191713,
+            "percent": 0.06867225362522017
+          },
+          {
+            "name": "./io/../sysdeps/unix/sysv/linux/access.c",
+            "ir": 187631,
+            "percent": 0.06721006723567878
+          },
+          {
+            "name": "./elf/./elf/dl-reloc.c",
+            "ir": 163609,
+            "percent": 0.05860530450918116
+          },
+          {
+            "name": "./stdlib/./stdlib/getenv.c",
+            "ir": 159574,
+            "percent": 0.05715995368071484
+          },
+          {
+            "name": "./csu/./csu/errno-loc.c",
+            "ir": 119336,
+            "percent": 0.04274656417989012
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/../multiarch/strcmp-sse2.S",
+            "ir": 100504,
+            "percent": 0.03600087724019304
+          },
+          {
+            "name": "./libio/./libio/putc.c",
+            "ir": 70824,
+            "percent": 0.025369399522998406
+          },
+          {
+            "name": "./malloc/./malloc/arena.c",
+            "ir": 67878,
+            "percent": 0.024314132226675784
+          },
+          {
+            "name": "./libio/./libio/fileops.c",
+            "ir": 64124,
+            "percent": 0.02296943656123277
+          },
+          {
+            "name": "./io/../sysdeps/unix/sysv/linux/fstatat64.c",
+            "ir": 55396,
+            "percent": 0.01984303704924912
+          },
+          {
+            "name": "./libio/./libio/genops.c",
+            "ir": 47997,
+            "percent": 0.017192689891920174
+          },
+          {
+            "name": "./io/../sysdeps/unix/sysv/linux/stat64.c",
+            "ir": 41478,
+            "percent": 0.014857561750464926
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/strncpy-avx2.S",
+            "ir": 39838,
+            "percent": 0.01427010812997304
+          },
+          {
+            "name": "./ctype/../include/ctype.h",
+            "ir": 32580,
+            "percent": 0.011670267655869312
+          },
+          {
+            "name": "./elf/./elf/dl-tunables.c",
+            "ir": 30725,
+            "percent": 0.011005800298544647
+          },
+          {
+            "name": "./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+            "ir": 22965,
+            "percent": 0.00822614170402206
+          },
+          {
+            "name": "./elf/../sysdeps/generic/ldsodefs.h",
+            "ir": 22311,
+            "percent": 0.007991876662679564
+          },
+          {
+            "name": "./elf/./elf/dl-version.c",
+            "ir": 20877,
+            "percent": 0.007478212948176292
+          }
+        ]
+      }
+    },
+    "commands": {
+      "umber": [
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-gentle-perf-profile/umber.callgrind",
+        "--log-file=/tmp/umber-gentle-perf-profile/umber.stderr",
+        "/home/phulin/umber4/target/release/umber",
+        "/tmp/umber-gentle-perf-baseline/gentle.tex",
+        "--input",
+        "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+        "--input",
+        "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+        "--input",
+        "gentle=/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--tfm",
+        "cmbsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm",
+        "--tfm",
+        "cmbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm",
+        "--tfm",
+        "cmbx5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx5.tfm",
+        "--tfm",
+        "cmbx6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx6.tfm",
+        "--tfm",
+        "cmbx7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx7.tfm",
+        "--tfm",
+        "cmbx8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx8.tfm",
+        "--tfm",
+        "cmbx9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmbx9.tfm",
+        "--tfm",
+        "cmcsc10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmcsc10.tfm",
+        "--tfm",
+        "cmdunh10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmdunh10.tfm",
+        "--tfm",
+        "cmex10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmex10.tfm",
+        "--tfm",
+        "cmmi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm",
+        "--tfm",
+        "cmmi5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi5.tfm",
+        "--tfm",
+        "cmmi6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi6.tfm",
+        "--tfm",
+        "cmmi7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi7.tfm",
+        "--tfm",
+        "cmmi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi8.tfm",
+        "--tfm",
+        "cmmi9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmi9.tfm",
+        "--tfm",
+        "cmmib10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmmib10.tfm",
+        "--tfm",
+        "cmr10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr10.tfm",
+        "--tfm",
+        "cmr5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr5.tfm",
+        "--tfm",
+        "cmr6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr6.tfm",
+        "--tfm",
+        "cmr7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr7.tfm",
+        "--tfm",
+        "cmr8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr8.tfm",
+        "--tfm",
+        "cmr9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmr9.tfm",
+        "--tfm",
+        "cmsl10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl10.tfm",
+        "--tfm",
+        "cmsl8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl8.tfm",
+        "--tfm",
+        "cmsl9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsl9.tfm",
+        "--tfm",
+        "cmsltt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsltt10.tfm",
+        "--tfm",
+        "cmss10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmss10.tfm",
+        "--tfm",
+        "cmssbx10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssbx10.tfm",
+        "--tfm",
+        "cmssi10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssi10.tfm",
+        "--tfm",
+        "cmssq8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssq8.tfm",
+        "--tfm",
+        "cmssqi8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmssqi8.tfm",
+        "--tfm",
+        "cmsy10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm",
+        "--tfm",
+        "cmsy5=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy5.tfm",
+        "--tfm",
+        "cmsy6=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm",
+        "--tfm",
+        "cmsy7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy7.tfm",
+        "--tfm",
+        "cmsy8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm",
+        "--tfm",
+        "cmsy9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmsy9.tfm",
+        "--tfm",
+        "cmti10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti10.tfm",
+        "--tfm",
+        "cmti7=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti7.tfm",
+        "--tfm",
+        "cmti8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti8.tfm",
+        "--tfm",
+        "cmti9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmti9.tfm",
+        "--tfm",
+        "cmtt10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm",
+        "--tfm",
+        "cmtt8=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt8.tfm",
+        "--tfm",
+        "cmtt9=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmtt9.tfm",
+        "--tfm",
+        "cmu10=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/cm/cmu10.tfm",
+        "--tfm",
+        "manfnt=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public/knuth-lib/manfnt.tfm"
+      ],
+      "native_plain_format": [
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-gentle-perf-profile/native_plain_format.callgrind",
+        "--log-file=/tmp/umber-gentle-perf-profile/native_plain_format.stderr",
+        "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+        "-fmt=/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fmt",
+        "-progname=pdftex",
+        "-jobname=gentle",
+        "-output-format=dvi",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-output-directory=/tmp/umber-gentle-perf-baseline/native_plain_format",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex"
+      ],
+      "native_plain_source": [
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-gentle-perf-profile/native_plain_source.callgrind",
+        "--log-file=/tmp/umber-gentle-perf-profile/native_plain_source.stderr",
+        "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+        "-ini",
+        "-etex",
+        "-progname=pdftex",
+        "-jobname=gentle",
+        "-output-format=dvi",
+        "-no-shell-escape",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-output-directory=/tmp/umber-gentle-perf-baseline/native_plain_source",
+        "/tmp/umber-gentle-perf-baseline/gentle.tex"
+      ]
+    },
+    "artifacts": {
+      "umber": {
+        "path": "/tmp/umber-gentle-perf-profile/umber.callgrind",
+        "sha256": "bf510746e4a1b09515eccfa40030e32a0368856b461b7e77f128e83fe8d28ec6"
+      },
+      "native_plain_format": {
+        "path": "/tmp/umber-gentle-perf-profile/native_plain_format.callgrind",
+        "sha256": "5512f13aeb80c31181ddc41e4e46b4fa3406afbe09fbef1f8781f87dbcdaa132"
+      },
+      "native_plain_source": {
+        "path": "/tmp/umber-gentle-perf-profile/native_plain_source.callgrind",
+        "sha256": "6499d848b6482df43aea41334edada04b187a18f2df327f252e2f2ee5fb7d21d"
+      }
+    },
+    "source_annotations": [
+      "/tmp/umber-gentle-perf-profile/nodes.annotated",
+      "/tmp/umber-gentle-perf-profile/alignment.annotated"
+    ],
+    "output_check": "All profiled processes exit 0; Umber stdout equals ordinary stdout; native final DVI events/counts equal the retained reference."
+  },
+  "sampling_limit": {
+    "perf_event_paranoid": 4,
+    "cpu_time_sampling": "Not available. Existing gprofng attempt on this host did not provide usable samples; see benchmarks/results/layout-node-singleton.json sampling_probe. No CPU hotspot fractions inferred from Ir."
+  },
+  "historical_native_comparison": "The retained earlier broad-search native practical samples in probe.json have median 202.987 ms CPU. This run uses the explicit immutable TeX Live search environment recorded above (58.358 ms). Different startup/search setup, not an engine optimization or longitudinal speedup.",
+  "ranked_diagnostics": [
+    {
+      "rank": 1,
+      "area": "Node access, construction and reclamation",
+      "named_self_ir": 61875634,
+      "named_self_ir_percent": 21.191257148491257,
+      "observations": "805,784 calls to NodeStore::get and 585,954 to writable in the physical call graph. Main get callers: paragraph 326,057; lowering 199,600; hpack 175,376. Source annotation executes no node-chunk COW copy body; allocation_page draws a backing page 581 times for 190,331 node allocations. Counts describe repeated resolving/ownership work, not demonstrated allocation growth.",
+      "assessment": "A future scoped chunk traversal/build interface is the clearest structural candidate, but no prototype benefit is established. Preserve version ownership and quiescent checkpoints; wait for full-document replay allocation results before choosing work."
+    },
+    {
+      "rank": 2,
+      "area": "Glyph construction and lowering",
+      "observations": "character_run: 35,927,573 self Ir (12.30%); publish_page: 18,127,048 self Ir (6.21%). These include necessary text/ligature processing and detached output. Their node-helper descendants overlap the first area; inclusive shares cannot be added. Font lookup is already bound per run/traversal and glyph/node storage is pooled.",
+      "assessment": "No isolated algorithmic pathology or justification for a generic shaping layer, skipped output, or per-case micro-tuning."
+    },
+    {
+      "rank": 3,
+      "area": "Token input, expansion and alignment control",
+      "observations": "fetch_raw: 21,887,365 self Ir (7.50%); alignment_token: 9,136,796 self Ir (3.13%) across 325,977 hook calls. The alignment hook immediately exits when inactive, while active input preserves brace/template semantics. Pattern child/insert_child use 5,095,186/4,793,603 self Ir; plain source loading is included.",
+      "assessment": "Distributed interpreter costs. Prepared plain/checkpoint replay is a distinct endpoint and should be measured before optimizing format loading or token plumbing."
+    }
+  ],
+  "conclusion": "Healthy ordinary full-document baseline (about 49\u201350 ms CPU and 6.21 MiB RSS) with distributed instruction work. No engine optimization implemented or approved from this profile. Compare prepared checkpoint replay and allocation/high-water behavior separately; do not conflate those with fresh-process native ratios."
+}
