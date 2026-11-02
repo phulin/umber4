@@ -40,11 +40,13 @@ impl Engine<'_> {
         let font = self.document.fonts.current.value as u32;
         self.adjust_space_factor(first);
         self.fix_language()?;
-        let Some(scaled) = self.document.fonts.descriptors[font as usize].scaled else {
+        let descriptor = self.document.fonts.descriptors[font as usize];
+        let Some(scaled) = descriptor.scaled else {
             // Missing nullfont glyphs are discarded, but their sfcode still ran.
             self.document.text.cancel_boundary = false;
             return Ok(());
         };
+        let hyphen = descriptor.hyphen;
         let resource = self.font_catalog.scaled[scaled].clone();
         let metrics = resource.descriptor();
         let r = resource.source();
@@ -183,6 +185,7 @@ impl Engine<'_> {
                         &mut left_hit,
                         &mut right_hit,
                         scratch.stack.is_empty(),
+                        hyphen,
                     )?;
                     state = State::Move;
                 }
@@ -201,6 +204,7 @@ impl Engine<'_> {
                             &mut left_hit,
                             &mut right_hit,
                             scratch.stack.is_empty(),
+                            hyphen,
                         )?;
                         let width = metrics.kern(256 * (op as usize - 128) + rem as usize);
                         self.append_horizontal(Kind::Kern {
@@ -251,6 +255,7 @@ impl Engine<'_> {
                                 &mut left_hit,
                                 &mut right_hit,
                                 false,
+                                hyphen,
                             )?;
                             prefix = self.document.text.horizontal.tail();
                             left = rem as u16;
@@ -289,11 +294,11 @@ impl Engine<'_> {
         left_hit: &mut bool,
         right_hit: &mut bool,
         at_boundary: bool,
+        hyphen: i32,
     ) -> Result<()> {
         if left == 256 {
             return Ok(());
         }
-        let hyphen = self.document.fonts.descriptors[font as usize].hyphen;
         let disc = if prefix == self.document.text.horizontal.tail() {
             false
         } else if !*ligature {

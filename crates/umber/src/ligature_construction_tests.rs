@@ -278,3 +278,51 @@ fn language_marker_stays_before_ligature_components_and_checkpoint_replays() {
         e.restore(&saved).unwrap();
     }
 }
+
+#[test]
+fn hyphen_binding_survives_expanded_fontdimen_reads_and_refreshes_after_assignment() {
+    let source = br"\font\f=test\f\hyphenchar\f=97\def\A{a}\noindent a\the\fontdimen255\f\A\hyphenchar\f=353 a\hyphenchar\f=-159 a\relax\end";
+    let mut e = Engine::new(source);
+    e.register_tfm(b"test", &font_test_data::basic()).unwrap();
+    for (c, cat) in [(123, 1), (125, 2), (35, 6)] {
+        e.document.scalars[Target::catcode(c)].value = cat;
+    }
+    let initial = e.checkpoint().unwrap();
+    for _ in 0..2 {
+        finish(&mut e).unwrap();
+        assert_eq!(
+            glyphs(&e).into_iter().map(|(c, _)| c).collect::<Vec<_>>(),
+            b"a0.0ptaaa"
+        );
+        let mut p = e.document.text.horizontal.head();
+        let mut discs = 0;
+        while !p.is_null() {
+            let node = e.document.nodes.get(p);
+            discs += usize::from(matches!(node.kind, Kind::Discretionary { .. }));
+            p = node.next;
+        }
+        assert_eq!(discs, 2);
+        assert_eq!(e.document.fonts.descriptors[1].count, 255);
+        assert_eq!(e.document.fonts.descriptors[1].hyphen, -159);
+        e.restore(&initial).unwrap();
+    }
+}
+
+#[test]
+#[ignore = "native run-local hyphen bindings: set UMBER_PDFTEX"]
+fn upstream_hyphen_assignments_end_runs_and_preserve_signed_values() {
+    let oracle = crate::page_oracle_tests::Oracle::new();
+    let bytes = font_test_data::basic();
+    oracle.compare(
+        &bytes,
+        r"\hsize=8pt\pretolerance=10000",
+        r"\noindent\hyphenchar\f=97 aaa\hyphenchar\f=98 bbbb\par",
+    );
+    for value in [-159, 353] {
+        oracle.compare(
+            &bytes,
+            &format!(r"\hsize=8pt\pretolerance=10000\hyphenchar\f={value}"),
+            r"\noindent aaaa\par",
+        );
+    }
+}

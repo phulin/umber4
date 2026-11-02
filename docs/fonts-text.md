@@ -139,7 +139,9 @@ scaled descriptor and source TFM for existence, ligature-program, boundary, and
 kern access across input expansion. Each program search borrows its raw instruction
 slice after resolving the character or explicit boundary entry. Mutable font
 parameters remain in document state; an unexpandable assignment ends the run before
-execution.
+execution. The selected font ID and its signed hyphen character are bound once
+per run. Expanded quantity reads can extend a parameter span but cannot assign a
+hyphen character; the next run reads any intervening assignment's value.
 All TFM ligature operations retain original components and boundary-hit flags.
 Boundary programs, false boundary characters, and `\noboundary` follow upstream.
 Before consuming a real character, its original code must lie in the declared
