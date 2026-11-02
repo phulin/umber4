@@ -1,0 +1,858 @@
+{
+  "measured_at_utc": "2026-11-02T20:15:27.887695+00:00",
+  "base_revision": "b6aa5b702a617ce8f4fb14d80ebd163237765482",
+  "candidate_revision": "f54279eda98be9fc160461a45077ff515fb696be",
+  "candidate_source_sha256": {
+    "crates/umber/src/ligatures.rs": "87a1c63731bb8f7c7f9b8a89a2477246d5c83b2b554e3c0b1d766daac1c6abe8",
+    "crates/umber/src/node_transfer.rs": "c7ef9003a8412ffc3dbb1524cff24aa25e8e72a1a1837e45fdcb85225753b733"
+  },
+  "build": "cargo build --release --bin umber --example layout --example layout_allocations; default features, fat LTO/codegen-units=1/debug=1",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu": 3,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "machine": "Linux-6.8.0-31-generic-x86_64-with-glibc2.39",
+  "inputs": {
+    "gentle": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "gentle_sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "format": "/tmp/umber-scalar-transfer/plain.ufmt",
+    "format_sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "input_mappings": 0,
+    "tfm_mappings": 0
+  },
+  "change": "Two private general-path dataflow simplifications: bind the signed hyphen character from the already selected font descriptor once per text run and pass it to three wrapping sites; read and clear a detached list head successor through one writable node borrow. No persistent cache, new owner/type, unsafe, separate character path or changed public API.",
+  "endpoint": "Whole loaded-format CLI: image read/decode, unchanged Gentle, retained detached output, diagnostics and teardown; no DVI/JSON serialization. Warm caches, one warmup per binary, 21 alternating serial pairs pinned CPU3. layout.py child uses wall/wait4 CPU/faults; RSS is three separate GNU-time children per binary. No builds, tests or profiles overlapped ordinary timing.",
+  "timing": {
+    "cpu": 3,
+    "warmups_per_endpoint": 1,
+    "retained_pairs": 21,
+    "commands": {
+      "before": [
+        "/tmp/umber-scalar-transfer/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-scalar-transfer/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "after": [
+        "/tmp/umber-scalar-transfer/umber-after",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-scalar-transfer/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "orders": [
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ],
+      [
+        "after",
+        "before"
+      ],
+      [
+        "before",
+        "after"
+      ]
+    ],
+    "samples": {
+      "before": [
+        {
+          "wall_seconds": 0.045838465,
+          "cpu_seconds": 0.045441999999999996,
+          "user_cpu_seconds": 0.042413,
+          "system_cpu_seconds": 0.003029,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046290432,
+          "cpu_seconds": 0.045968999999999996,
+          "user_cpu_seconds": 0.040972999999999996,
+          "system_cpu_seconds": 0.004996,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.044384411,
+          "cpu_seconds": 0.044128999999999995,
+          "user_cpu_seconds": 0.041121,
+          "system_cpu_seconds": 0.003008,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.044481914,
+          "cpu_seconds": 0.044237,
+          "user_cpu_seconds": 0.041221,
+          "system_cpu_seconds": 0.003016,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.045576749,
+          "cpu_seconds": 0.045337,
+          "user_cpu_seconds": 0.039422,
+          "system_cpu_seconds": 0.005915,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.046169726,
+          "cpu_seconds": 0.045885999999999996,
+          "user_cpu_seconds": 0.039901,
+          "system_cpu_seconds": 0.005985,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046038686,
+          "cpu_seconds": 0.045774999999999996,
+          "user_cpu_seconds": 0.042789999999999995,
+          "system_cpu_seconds": 0.002985,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.044211908,
+          "cpu_seconds": 0.04396,
+          "user_cpu_seconds": 0.036964,
+          "system_cpu_seconds": 0.006996,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.043215831,
+          "cpu_seconds": 0.043043,
+          "user_cpu_seconds": 0.039039,
+          "system_cpu_seconds": 0.004004,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.043647491,
+          "cpu_seconds": 0.043422999999999996,
+          "user_cpu_seconds": 0.038374,
+          "system_cpu_seconds": 0.005049,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.043611585,
+          "cpu_seconds": 0.043379999999999995,
+          "user_cpu_seconds": 0.03734,
+          "system_cpu_seconds": 0.006039999999999999,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.044022043,
+          "cpu_seconds": 0.043784,
+          "user_cpu_seconds": 0.036819,
+          "system_cpu_seconds": 0.006965,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.04457591,
+          "cpu_seconds": 0.044313,
+          "user_cpu_seconds": 0.041359,
+          "system_cpu_seconds": 0.002954,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.044516893,
+          "cpu_seconds": 0.044159,
+          "user_cpu_seconds": 0.041149,
+          "system_cpu_seconds": 0.0030099999999999997,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.044177547,
+          "cpu_seconds": 0.04389,
+          "user_cpu_seconds": 0.038903,
+          "system_cpu_seconds": 0.004987,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.04502724,
+          "cpu_seconds": 0.044725999999999995,
+          "user_cpu_seconds": 0.041745,
+          "system_cpu_seconds": 0.0029809999999999997,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045889855,
+          "cpu_seconds": 0.045522,
+          "user_cpu_seconds": 0.040464,
+          "system_cpu_seconds": 0.005058,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.04515004,
+          "cpu_seconds": 0.044856999999999994,
+          "user_cpu_seconds": 0.038872,
+          "system_cpu_seconds": 0.005985,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044823012,
+          "cpu_seconds": 0.044518,
+          "user_cpu_seconds": 0.040471,
+          "system_cpu_seconds": 0.004047,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046172588,
+          "cpu_seconds": 0.045826,
+          "user_cpu_seconds": 0.041838,
+          "system_cpu_seconds": 0.003988,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045572005,
+          "cpu_seconds": 0.045194,
+          "user_cpu_seconds": 0.040173,
+          "system_cpu_seconds": 0.005020999999999999,
+          "minor_page_faults": 1121
+        }
+      ],
+      "after": [
+        {
+          "wall_seconds": 0.045792675,
+          "cpu_seconds": 0.045418,
+          "user_cpu_seconds": 0.042391,
+          "system_cpu_seconds": 0.0030269999999999997,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.046301576,
+          "cpu_seconds": 0.045929,
+          "user_cpu_seconds": 0.040937,
+          "system_cpu_seconds": 0.004992,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045549695,
+          "cpu_seconds": 0.04533,
+          "user_cpu_seconds": 0.040403,
+          "system_cpu_seconds": 0.004927,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.04437995,
+          "cpu_seconds": 0.04418,
+          "user_cpu_seconds": 0.043176,
+          "system_cpu_seconds": 0.001004,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.046305476,
+          "cpu_seconds": 0.046008,
+          "user_cpu_seconds": 0.043008,
+          "system_cpu_seconds": 0.003,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.046321517,
+          "cpu_seconds": 0.045991000000000004,
+          "user_cpu_seconds": 0.041992,
+          "system_cpu_seconds": 0.003999,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.045305907,
+          "cpu_seconds": 0.044971,
+          "user_cpu_seconds": 0.040971,
+          "system_cpu_seconds": 0.004,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045174704,
+          "cpu_seconds": 0.04493,
+          "user_cpu_seconds": 0.037940999999999996,
+          "system_cpu_seconds": 0.0069889999999999996,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.043407676,
+          "cpu_seconds": 0.043196,
+          "user_cpu_seconds": 0.039178,
+          "system_cpu_seconds": 0.004018,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.043894484,
+          "cpu_seconds": 0.043612,
+          "user_cpu_seconds": 0.041583999999999996,
+          "system_cpu_seconds": 0.002028,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.043979136,
+          "cpu_seconds": 0.043736,
+          "user_cpu_seconds": 0.038765999999999995,
+          "system_cpu_seconds": 0.00497,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.04461173,
+          "cpu_seconds": 0.044313,
+          "user_cpu_seconds": 0.039278,
+          "system_cpu_seconds": 0.0050349999999999995,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.043836405,
+          "cpu_seconds": 0.043609,
+          "user_cpu_seconds": 0.039645,
+          "system_cpu_seconds": 0.003964,
+          "minor_page_faults": 1118
+        },
+        {
+          "wall_seconds": 0.044153665,
+          "cpu_seconds": 0.043918,
+          "user_cpu_seconds": 0.038928,
+          "system_cpu_seconds": 0.00499,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.043981063,
+          "cpu_seconds": 0.043713,
+          "user_cpu_seconds": 0.040664,
+          "system_cpu_seconds": 0.003049,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044222591,
+          "cpu_seconds": 0.043972,
+          "user_cpu_seconds": 0.037975999999999996,
+          "system_cpu_seconds": 0.005996,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.047616403,
+          "cpu_seconds": 0.047252999999999996,
+          "user_cpu_seconds": 0.043223,
+          "system_cpu_seconds": 0.00403,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.045768505,
+          "cpu_seconds": 0.045492,
+          "user_cpu_seconds": 0.040548,
+          "system_cpu_seconds": 0.004944,
+          "minor_page_faults": 1119
+        },
+        {
+          "wall_seconds": 0.044484561,
+          "cpu_seconds": 0.044236,
+          "user_cpu_seconds": 0.040211,
+          "system_cpu_seconds": 0.004025,
+          "minor_page_faults": 1117
+        },
+        {
+          "wall_seconds": 0.044360995,
+          "cpu_seconds": 0.04407,
+          "user_cpu_seconds": 0.038194,
+          "system_cpu_seconds": 0.005876,
+          "minor_page_faults": 1116
+        },
+        {
+          "wall_seconds": 0.050072765,
+          "cpu_seconds": 0.049678,
+          "user_cpu_seconds": 0.043717,
+          "system_cpu_seconds": 0.005961,
+          "minor_page_faults": 1118
+        }
+      ]
+    },
+    "summary": {
+      "before": {
+        "wall_seconds": {
+          "median": 0.044823012,
+          "minimum": 0.043215831,
+          "maximum": 0.046290432
+        },
+        "cpu_seconds": {
+          "median": 0.044518,
+          "minimum": 0.043043,
+          "maximum": 0.045968999999999996
+        },
+        "user_cpu_seconds": {
+          "median": 0.040464,
+          "minimum": 0.036819,
+          "maximum": 0.042789999999999995
+        },
+        "system_cpu_seconds": {
+          "median": 0.004987,
+          "minimum": 0.002954,
+          "maximum": 0.006996
+        },
+        "minor_page_faults": {
+          "median": 1118,
+          "minimum": 1116,
+          "maximum": 1121
+        }
+      },
+      "after": {
+        "wall_seconds": {
+          "median": 0.04461173,
+          "minimum": 0.043407676,
+          "maximum": 0.050072765
+        },
+        "cpu_seconds": {
+          "median": 0.044313,
+          "minimum": 0.043196,
+          "maximum": 0.049678
+        },
+        "user_cpu_seconds": {
+          "median": 0.040548,
+          "minimum": 0.037940999999999996,
+          "maximum": 0.043717
+        },
+        "system_cpu_seconds": {
+          "median": 0.00403,
+          "minimum": 0.001004,
+          "maximum": 0.0069889999999999996
+        },
+        "minor_page_faults": {
+          "median": 1117,
+          "minimum": 1116,
+          "maximum": 1119
+        }
+      }
+    },
+    "rss_kib": {
+      "before": [
+        6400,
+        6400,
+        6400
+      ],
+      "after": [
+        6524,
+        6400,
+        6524
+      ]
+    },
+    "after_over_before_cpu_pairs": [
+      0.9994718542317681,
+      0.9991298483760795,
+      1.0272156631693445,
+      0.9987114858602527,
+      1.0148002735072899,
+      1.0022882796495665,
+      0.9824358274167122,
+      1.0220655141037307,
+      1.0035545849499339,
+      1.0043525320682587,
+      1.0082065467957584,
+      1.0120820391010414,
+      0.9841130142396137,
+      0.9945424488779184,
+      0.9959671907040328,
+      0.9831417967177928,
+      1.0380255700540397,
+      1.0141560960385225,
+      0.9936654836246012,
+      0.9616811417099463,
+      1.0992167101827677
+    ],
+    "median_pair_ratio": 1.0022882796495665,
+    "candidate_faster_pairs": 10
+  },
+  "interpretation": {
+    "cpu": "No demonstrated CPU gain. Before/after medians are 44.518/44.313 ms but the median paired after/before ratio is 1.0022883, with only 10/21 faster pairs and overlapping ranges. No additional rounds were taken.",
+    "instructions": "A separate deterministic Callgrind diagnostic records 2244084 fewer Ir (0.8623%). Instruction shares are not CPU-time fractions or a predicted CPU benefit. This batch does not isolate the two changes.",
+    "rss": "Separate RSS samples range 6400\u20136524 KiB; no memory improvement is established."
+  },
+  "profile": {
+    "commands": {
+      "before": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-scalar-transfer/before.callgrind",
+        "--log-file=/tmp/umber-scalar-transfer/before-callgrind.stderr",
+        "/tmp/umber-scalar-transfer/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-scalar-transfer/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "after": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-scalar-transfer/after.callgrind",
+        "--log-file=/tmp/umber-scalar-transfer/after-callgrind.stderr",
+        "/tmp/umber-scalar-transfer/umber-after",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-scalar-transfer/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "before_ir": 260237307,
+    "after_ir": 257993223,
+    "delta_ir": -2244084,
+    "reduction_percent": 0.8623221727390495,
+    "selected": {
+      "before": [
+        {
+          "name": "<umber::Engine>::character_run",
+          "self_ir": 26585562,
+          "self_percent": 10.215891912837847,
+          "inclusive_ir": 60692157,
+          "calls": 28055
+        },
+        {
+          "name": "<umber::nodes::NodeStore>::get",
+          "self_ir": 19030464,
+          "self_percent": 7.312734757126886,
+          "inclusive_ir": 19030464,
+          "calls": 792936
+        },
+        {
+          "name": "<umber::nodes::NodeStore>::writable",
+          "self_ir": 15281292,
+          "self_percent": 5.872060457496204,
+          "inclusive_ir": 15281292,
+          "calls": 587742
+        },
+        {
+          "name": "<umber::Engine>::wrap_ligature",
+          "self_ir": 6095169,
+          "self_percent": 2.3421580365493098,
+          "inclusive_ir": 6272682,
+          "calls": 116236
+        }
+      ],
+      "after": [
+        {
+          "name": "<umber::Engine>::character_run",
+          "self_ir": 26874144,
+          "self_percent": 10.416608501379123,
+          "inclusive_ir": 58772255,
+          "calls": 28055
+        },
+        {
+          "name": "<umber::nodes::NodeStore>::get",
+          "self_ir": 18757752,
+          "self_percent": 7.270637492675534,
+          "inclusive_ir": 18757752,
+          "calls": 781573
+        },
+        {
+          "name": "<umber::nodes::NodeStore>::writable",
+          "self_ir": 15281292,
+          "self_percent": 5.9231369810051175,
+          "inclusive_ir": 15281292,
+          "calls": 587742
+        },
+        {
+          "name": "<umber::Engine>::wrap_ligature",
+          "self_ir": 3886685,
+          "self_percent": 1.5065066263387856,
+          "inclusive_ir": 4064198,
+          "calls": 116236
+        }
+      ]
+    },
+    "artifacts": {
+      "/tmp/umber-scalar-transfer/before.callgrind": "36f78efaaff0fa01df22b5869cd1e9c11e7822b3dd700d668bb8d86afc1ae643",
+      "/tmp/umber-scalar-transfer/after.callgrind": "de819cbb98b2cdf46d32a1d018b9d1595415c146c940fb02d3c49b63555f8641"
+    }
+  },
+  "assembly": {
+    "commands": [
+      [
+        "objdump",
+        "-d",
+        "-l",
+        "--demangle",
+        "/tmp/umber-scalar-transfer/umber-before"
+      ],
+      [
+        "objdump",
+        "-d",
+        "-l",
+        "--demangle",
+        "/tmp/umber-scalar-transfer/umber-after"
+      ]
+    ],
+    "wrap_ligature_bytes": {
+      "before": 796,
+      "after": 682
+    },
+    "character_run_bytes": {
+      "before": 4756,
+      "after": 4804
+    },
+    "finding": "The paged Font table lookup disappears from wrap_ligature; its stack frame remains 0x28 bytes and character_run remains 0x138. The new signed scalar is one extra stack argument at each of three callsites; there is no frame-size growth or full descriptor copy. Inlined pop_front sites use writable once and read/clear that same node; the separate NodeStore::get call disappears. Aggregate get calls fall 792936\u2192781573; writable calls remain 587742."
+  },
+  "correctness": {
+    "pages": 97,
+    "glyphs": 121839,
+    "rules": 864,
+    "comparison": "all ordered events match",
+    "bop_counts": true,
+    "source_and_format_output_equal": true,
+    "gate_command": [
+      "python3",
+      "benchmarks/gentle.py",
+      "--assets-root",
+      "/home/phulin/umber4",
+      "--adapter",
+      "/tmp/umber-scalar-transfer/layout-after",
+      "--format",
+      "/tmp/umber-scalar-transfer/plain.ufmt",
+      "--compare-counts",
+      "--replay"
+    ],
+    "gate_artifact": "/tmp/umber-scalar-transfer/after-gate.json",
+    "gate_sha256": "fe1242af9d477a1265c79dc823b0b18bc9babd077690c2b5c1b59af010600b6c",
+    "prepared_replay": {
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ],
+      "validation": "complete output and retained prefixes/results equal"
+    },
+    "new_regressions": [
+      "Expanded fontdimen255 getter extends the live descriptor during shaping; intervening hyphen assignments apply on the next run; signed -159/353 do not truncate to byte97; checkpoint restore repeats the same result.",
+      "Native paragraph comparison checks assignment boundaries and both signed out-of-range values."
+    ],
+    "review": "Independent node_box_payload review confirms one writable-version borrow preserves list transfer and retained COW snapshots."
+  },
+  "validation": {
+    "checks": [
+      {
+        "name": "tests",
+        "command": [
+          "cargo",
+          "test",
+          "--workspace",
+          "--all-features"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "native-metrics",
+        "command": [
+          "cargo",
+          "test",
+          "-p",
+          "umber",
+          "--lib",
+          "upstream_font_metrics_and_horizontal_nodes",
+          "--",
+          "--ignored"
+        ],
+        "exit": 0,
+        "initial_attempt": "oracle environment absent; rerun with explicit clean native binary and original TFM assets"
+      },
+      {
+        "name": "native-hyphen-nodes",
+        "command": [
+          "cargo",
+          "test",
+          "-p",
+          "umber",
+          "--lib",
+          "upstream_automatic_hyphenation_nodes",
+          "--",
+          "--ignored"
+        ],
+        "exit": 0,
+        "initial_attempt": "oracle environment absent; rerun with explicit clean native binary and original TFM assets"
+      },
+      {
+        "name": "native-hyphen-pages",
+        "command": [
+          "cargo",
+          "test",
+          "-p",
+          "umber",
+          "--lib",
+          "upstream_automatic_hyphenation_page_placements",
+          "--",
+          "--ignored"
+        ],
+        "exit": 0,
+        "initial_attempt": "oracle environment absent; rerun with explicit clean native binary and original TFM assets"
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--workspace",
+          "--all-targets",
+          "--all-features",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "exit": 0
+      },
+      {
+        "name": "wasm",
+        "command": [
+          "cargo",
+          "check",
+          "-p",
+          "umber",
+          "--lib",
+          "--target",
+          "wasm32-unknown-unknown"
+        ],
+        "exit": 0
+      }
+    ],
+    "library_tests_passed": 481,
+    "cli_tests_passed": 3,
+    "doctests_passed": 1,
+    "targeted_node_tests_passed": 13,
+    "targeted_ligature_tests_passed": 14,
+    "native_hyphen_assignment_test_passed": true,
+    "native_environment": {
+      "UMBER_PDFTEX": "/home/phulin/umber4/.tools/pdftex/root/usr/bin/pdftex",
+      "LD_LIBRARY_PATH": "/home/phulin/umber4/.tools/pdftex/root/usr/lib/x86_64-linux-gnu",
+      "UMBER_TFM_DIR": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/fonts/tfm/public",
+      "UMBER_HYPHEN_TEX": "/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex"
+    },
+    "miri": "Not rerun: copied scalar and same existing mutable operation add no ownership primitive or lifetime path."
+  },
+  "reproduction": {
+    "scratch": "/tmp/umber-scalar-transfer",
+    "driver_command": [
+      "python3",
+      "/tmp/umber-scalar-transfer/measure.py"
+    ],
+    "timing_driver_sha256": "1ce222d7a9c8c88ef8fa5e43af4213554f4474ea446f924cdf0f971567152f13",
+    "profile_parser_command": [
+      "python3",
+      "/tmp/umber-scalar-transfer/profile.py",
+      "/tmp/umber-scalar-transfer/before.callgrind"
+    ],
+    "profile_parser_sha256": "669daa8aa5046c08adfffe4b188116cb339f63c661baa2f9cf46a8c749afda64",
+    "binary_sha256": {
+      "/tmp/umber-scalar-transfer/umber-before": "8e886a680398c83a5ed35e0e69020bfbc78c3cd2c975eee8538e6c19bdf96fe4",
+      "/tmp/umber-scalar-transfer/umber-after": "e27a50ce04159904b1672c16204a7923cd0ebeedf564632ce79497355d740a4e"
+    },
+    "adapter_sha256": {
+      "/tmp/umber-scalar-transfer/layout-before": "0a2d2f04751ac2766a715b6db34e962dc2a4216b709c1eafb90b52df03f4a3eb",
+      "/tmp/umber-scalar-transfer/layout-after": "a34ff7e0654290a04977f37635d896496882ffbe74b3e78fa90012b81073f795"
+    },
+    "helpers": [
+      "benchmarks/layout.py: child() and rss()",
+      "benchmarks/gentle.py: native/source-format event and replay comparison"
+    ]
+  }
+}
