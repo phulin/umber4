@@ -1,0 +1,784 @@
+{
+  "measured_at_utc": "2026-11-02T20:34:06.309604+00:00",
+  "revision": "491d89635181f1cfb42ec35d35188927559476fa",
+  "build": "cargo build --release --example layout; default features, fat LTO/codegen-units=1/debug=1; Cargo confirmed existing binary fresh before timing",
+  "rustc": "rustc 1.98.1 (48a229cea 2026-09-01)",
+  "cpu": 3,
+  "cpu_model": "AMD EPYC 7642 48-Core Processor",
+  "inputs": {
+    "gentle": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "format": "/home/phulin/umber4/.tools/formats/plain.ufmt",
+    "calendar": [
+      0,
+      1,
+      3,
+      2026
+    ],
+    "extra_input_mappings": 0,
+    "extra_tfm_mappings": 0
+  },
+  "sha256": {
+    "target/release/examples/layout": "7e9a6ab5671a0e016bf497e3eb0e9cb5cf98fef561ed91be9437a882c9a6fa3d",
+    ".tools/formats/plain.ufmt": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14",
+    ".tools/corpus/gentle.tex": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f",
+    "crates/umber/examples/layout_support/document_replay.rs": "d50b3273e5fa754077d43a79c043128ffcdf8dd9d290f04b3e21d3f9ea004d68",
+    "crates/umber/examples/layout_support/document.rs": "d768cbdb766219adc38abe0f9caa70511157b7b2aea7521b33fde726d46929c5"
+  },
+  "endpoint": "Existing document-replay adapter, own-format startup. An independent complete reference precedes discovery and validation of READY/page10/49/88 snapshots and retained prefixes/results. One warmup per point, then five retained samples; stable restore/capture/release each use 200 iterations. All durations below use Instant wall clock, not CPU. Whole-process CPU/resource usage is not substituted for suffix CPU.",
+  "command": [
+    "taskset",
+    "-c",
+    "3",
+    "/home/phulin/umber4/target/release/examples/layout",
+    "document-replay",
+    "/home/phulin/umber4/.tools/corpus/gentle.tex",
+    "--format",
+    "/home/phulin/umber4/.tools/formats/plain.ufmt",
+    "--calendar",
+    "0,1,3,2026",
+    "--repeats",
+    "5",
+    "--iterations",
+    "200"
+  ],
+  "ordinary_measurement": {
+    "cohorts": 1,
+    "quiet_cpu_affinity": 3,
+    "concurrent_builds_profiles_checks": false,
+    "raw": {
+      "pages": 97,
+      "clock": "wall",
+      "repeats": 5,
+      "warmups": 1,
+      "iterations": 200,
+      "reference": {
+        "samples": 1,
+        "engine_setup_ns": 2776121,
+        "advance_ns": 65430624,
+        "outcome_ns": 3843
+      },
+      "checkpoints": [
+        {
+          "label": "ready",
+          "requested_pages": 0,
+          "actual_pages": 0
+        },
+        {
+          "label": "early",
+          "requested_pages": 10,
+          "actual_pages": 10
+        },
+        {
+          "label": "middle",
+          "requested_pages": 49,
+          "actual_pages": 49
+        },
+        {
+          "label": "late",
+          "requested_pages": 88,
+          "actual_pages": 88
+        }
+      ],
+      "samples": [
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 92536,
+          "stable_restore_ns": 1751.03,
+          "capture_retained_ns": 4918.47,
+          "release_retained_ns": 741.555,
+          "suffix_advance_ns": 39043201,
+          "outcome_ns": 3113,
+          "equality_ns": 6472156,
+          "outcome_release_ns": 1782
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 90413,
+          "stable_restore_ns": 1734.92,
+          "capture_retained_ns": 4932.64,
+          "release_retained_ns": 828.525,
+          "suffix_advance_ns": 39505237,
+          "outcome_ns": 3112,
+          "equality_ns": 6288145,
+          "outcome_release_ns": 1430
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 40003,
+          "stable_restore_ns": 1777.66,
+          "capture_retained_ns": 3911.945,
+          "release_retained_ns": 966.195,
+          "suffix_advance_ns": 39265971,
+          "outcome_ns": 3442,
+          "equality_ns": 6730727,
+          "outcome_release_ns": 2992
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 81587,
+          "stable_restore_ns": 1824.045,
+          "capture_retained_ns": 5188.645,
+          "release_retained_ns": 822.675,
+          "suffix_advance_ns": 39550585,
+          "outcome_ns": 3262,
+          "equality_ns": 6434766,
+          "outcome_release_ns": 1381
+        },
+        {
+          "checkpoint": "ready",
+          "restore_completed_ns": 39952,
+          "stable_restore_ns": 1850.97,
+          "capture_retained_ns": 3829.135,
+          "release_retained_ns": 809.015,
+          "suffix_advance_ns": 39213834,
+          "outcome_ns": 2463,
+          "equality_ns": 6332392,
+          "outcome_release_ns": 1581
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 99261,
+          "stable_restore_ns": 2161.52,
+          "capture_retained_ns": 4243.02,
+          "release_retained_ns": 906.24,
+          "suffix_advance_ns": 35436438,
+          "outcome_ns": 6044,
+          "equality_ns": 6750154,
+          "outcome_release_ns": 3052
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 59308,
+          "stable_restore_ns": 2299.08,
+          "capture_retained_ns": 5685.555,
+          "release_retained_ns": 1021.935,
+          "suffix_advance_ns": 35213575,
+          "outcome_ns": 3112,
+          "equality_ns": 6248503,
+          "outcome_release_ns": 2412
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 53694,
+          "stable_restore_ns": 2107.17,
+          "capture_retained_ns": 5097.475,
+          "release_retained_ns": 917.95,
+          "suffix_advance_ns": 37260109,
+          "outcome_ns": 4394,
+          "equality_ns": 6429631,
+          "outcome_release_ns": 3903
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 65934,
+          "stable_restore_ns": 2050.93,
+          "capture_retained_ns": 5481.885,
+          "release_retained_ns": 1092.35,
+          "suffix_advance_ns": 34156921,
+          "outcome_ns": 3523,
+          "equality_ns": 6001902,
+          "outcome_release_ns": 2322
+        },
+        {
+          "checkpoint": "early",
+          "restore_completed_ns": 35490,
+          "stable_restore_ns": 2050.38,
+          "capture_retained_ns": 3856.605,
+          "release_retained_ns": 908.445,
+          "suffix_advance_ns": 34604046,
+          "outcome_ns": 3114,
+          "equality_ns": 6378560,
+          "outcome_release_ns": 1972
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 43176,
+          "stable_restore_ns": 2032.465,
+          "capture_retained_ns": 5088.81,
+          "release_retained_ns": 952.28,
+          "suffix_advance_ns": 17575752,
+          "outcome_ns": 2442,
+          "equality_ns": 6034657,
+          "outcome_release_ns": 1441
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 23308,
+          "stable_restore_ns": 2068.195,
+          "capture_retained_ns": 3194.865,
+          "release_retained_ns": 928.865,
+          "suffix_advance_ns": 18200123,
+          "outcome_ns": 2652,
+          "equality_ns": 6070628,
+          "outcome_release_ns": 1551
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 25631,
+          "stable_restore_ns": 2101.12,
+          "capture_retained_ns": 3721.095,
+          "release_retained_ns": 895.48,
+          "suffix_advance_ns": 18010809,
+          "outcome_ns": 3723,
+          "equality_ns": 6505154,
+          "outcome_release_ns": 2922
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 54956,
+          "stable_restore_ns": 2114.18,
+          "capture_retained_ns": 5775.88,
+          "release_retained_ns": 1067.07,
+          "suffix_advance_ns": 17434146,
+          "outcome_ns": 3613,
+          "equality_ns": 6131708,
+          "outcome_release_ns": 2301
+        },
+        {
+          "checkpoint": "middle",
+          "restore_completed_ns": 34157,
+          "stable_restore_ns": 2029.36,
+          "capture_retained_ns": 4235.865,
+          "release_retained_ns": 911.695,
+          "suffix_advance_ns": 17087282,
+          "outcome_ns": 2872,
+          "equality_ns": 6008628,
+          "outcome_release_ns": 3292
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 20507,
+          "stable_restore_ns": 2152.81,
+          "capture_retained_ns": 3314.565,
+          "release_retained_ns": 936.67,
+          "suffix_advance_ns": 2602770,
+          "outcome_ns": 2112,
+          "equality_ns": 5769601,
+          "outcome_release_ns": 1671
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 13561,
+          "stable_restore_ns": 2226.12,
+          "capture_retained_ns": 2681.395,
+          "release_retained_ns": 1058.27,
+          "suffix_advance_ns": 2574587,
+          "outcome_ns": 1711,
+          "equality_ns": 5856102,
+          "outcome_release_ns": 2221
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 19777,
+          "stable_restore_ns": 2241.685,
+          "capture_retained_ns": 3311.505,
+          "release_retained_ns": 932.015,
+          "suffix_advance_ns": 2806507,
+          "outcome_ns": 2962,
+          "equality_ns": 6192107,
+          "outcome_release_ns": 3243
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 29313,
+          "stable_restore_ns": 2276.115,
+          "capture_retained_ns": 4745.23,
+          "release_retained_ns": 984.7,
+          "suffix_advance_ns": 2716153,
+          "outcome_ns": 2192,
+          "equality_ns": 5958876,
+          "outcome_release_ns": 2272
+        },
+        {
+          "checkpoint": "late",
+          "restore_completed_ns": 17294,
+          "stable_restore_ns": 2143.71,
+          "capture_retained_ns": 3189.36,
+          "release_retained_ns": 946.03,
+          "suffix_advance_ns": 2681954,
+          "outcome_ns": 1771,
+          "equality_ns": 6091485,
+          "outcome_release_ns": 4914
+        }
+      ],
+      "validation": "complete output and retained prefixes/results equal"
+    },
+    "summary_ns": {
+      "ready": {
+        "restore_completed_ns": {
+          "median": 81587,
+          "minimum": 39952,
+          "maximum": 92536
+        },
+        "stable_restore_ns": {
+          "median": 1777.66,
+          "minimum": 1734.92,
+          "maximum": 1850.97
+        },
+        "capture_retained_ns": {
+          "median": 4918.47,
+          "minimum": 3829.135,
+          "maximum": 5188.645
+        },
+        "release_retained_ns": {
+          "median": 822.675,
+          "minimum": 741.555,
+          "maximum": 966.195
+        },
+        "suffix_advance_ns": {
+          "median": 39265971,
+          "minimum": 39043201,
+          "maximum": 39550585
+        },
+        "outcome_ns": {
+          "median": 3113,
+          "minimum": 2463,
+          "maximum": 3442
+        },
+        "equality_ns": {
+          "median": 6434766,
+          "minimum": 6288145,
+          "maximum": 6730727
+        },
+        "outcome_release_ns": {
+          "median": 1581,
+          "minimum": 1381,
+          "maximum": 2992
+        }
+      },
+      "early": {
+        "restore_completed_ns": {
+          "median": 59308,
+          "minimum": 35490,
+          "maximum": 99261
+        },
+        "stable_restore_ns": {
+          "median": 2107.17,
+          "minimum": 2050.38,
+          "maximum": 2299.08
+        },
+        "capture_retained_ns": {
+          "median": 5097.475,
+          "minimum": 3856.605,
+          "maximum": 5685.555
+        },
+        "release_retained_ns": {
+          "median": 917.95,
+          "minimum": 906.24,
+          "maximum": 1092.35
+        },
+        "suffix_advance_ns": {
+          "median": 35213575,
+          "minimum": 34156921,
+          "maximum": 37260109
+        },
+        "outcome_ns": {
+          "median": 3523,
+          "minimum": 3112,
+          "maximum": 6044
+        },
+        "equality_ns": {
+          "median": 6378560,
+          "minimum": 6001902,
+          "maximum": 6750154
+        },
+        "outcome_release_ns": {
+          "median": 2412,
+          "minimum": 1972,
+          "maximum": 3903
+        }
+      },
+      "middle": {
+        "restore_completed_ns": {
+          "median": 34157,
+          "minimum": 23308,
+          "maximum": 54956
+        },
+        "stable_restore_ns": {
+          "median": 2068.195,
+          "minimum": 2029.36,
+          "maximum": 2114.18
+        },
+        "capture_retained_ns": {
+          "median": 4235.865,
+          "minimum": 3194.865,
+          "maximum": 5775.88
+        },
+        "release_retained_ns": {
+          "median": 928.865,
+          "minimum": 895.48,
+          "maximum": 1067.07
+        },
+        "suffix_advance_ns": {
+          "median": 17575752,
+          "minimum": 17087282,
+          "maximum": 18200123
+        },
+        "outcome_ns": {
+          "median": 2872,
+          "minimum": 2442,
+          "maximum": 3723
+        },
+        "equality_ns": {
+          "median": 6070628,
+          "minimum": 6008628,
+          "maximum": 6505154
+        },
+        "outcome_release_ns": {
+          "median": 2301,
+          "minimum": 1441,
+          "maximum": 3292
+        }
+      },
+      "late": {
+        "restore_completed_ns": {
+          "median": 19777,
+          "minimum": 13561,
+          "maximum": 29313
+        },
+        "stable_restore_ns": {
+          "median": 2226.12,
+          "minimum": 2143.71,
+          "maximum": 2276.115
+        },
+        "capture_retained_ns": {
+          "median": 3311.505,
+          "minimum": 2681.395,
+          "maximum": 4745.23
+        },
+        "release_retained_ns": {
+          "median": 946.03,
+          "minimum": 932.015,
+          "maximum": 1058.27
+        },
+        "suffix_advance_ns": {
+          "median": 2681954,
+          "minimum": 2574587,
+          "maximum": 2806507
+        },
+        "outcome_ns": {
+          "median": 2112,
+          "minimum": 1711,
+          "maximum": 2962
+        },
+        "equality_ns": {
+          "median": 5958876,
+          "minimum": 5769601,
+          "maximum": 6192107
+        },
+        "outcome_release_ns": {
+          "median": 2272,
+          "minimum": 1671,
+          "maximum": 4914
+        }
+      }
+    },
+    "artifact": "/tmp/umber-gentle-resume/replay.json",
+    "sha256": "397cb89bcb762f78639a137e209ca246921e47763509f2c250f010b63e1f6413"
+  },
+  "diagnostic": {
+    "tool": "valgrind-3.22.0",
+    "command": [
+      "taskset",
+      "-c",
+      "3",
+      "valgrind",
+      "--tool=callgrind",
+      "--collect-atstart=no",
+      "--toggle-collect=layout::layout_support::document::complete",
+      "--zero-before=layout::layout_support::document::complete",
+      "--dump-after=layout::layout_support::document::complete",
+      "--callgrind-out-file=/tmp/umber-gentle-resume/exact.callgrind",
+      "--log-file=/tmp/umber-gentle-resume/exact-callgrind.stderr",
+      "/home/phulin/umber4/target/release/examples/layout",
+      "document-replay",
+      "/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "--format",
+      "/home/phulin/umber4/.tools/formats/plain.ufmt",
+      "--calendar",
+      "0,1,3,2026",
+      "--repeats",
+      "1",
+      "--iterations",
+      "200"
+    ],
+    "collection": "Exact emitted function layout::layout_support::document::complete; collect-atstart=no, toggle on entry/off on exit, zero-before and dump-after the same exact symbol. This measures interpreter advance through completion, including normal internal cleanup/COW, and excludes format/setup, restore, capture, host Outcome acquisition/equality and host result teardown. Instrumented wall times are not measurements of execution speed.",
+    "gate_verification": "Fourteen per-call dump parts have the expected dump-after trigger. Each entry resets costs; termination dump has zero Ir. Source callflow: reference1, four validation suffixes2\u20135 and repeat late6, then each point warmup/sample. Part12 is page49\u219297 after part11 warmup, with exactly one Engine::advance and 48 publish_page calls.",
+    "parts": [
+      {
+        "part": 1,
+        "invocation": 1,
+        "phase": "independent reference",
+        "ir": 249219556,
+        "sha256": "4669669c3b9867cfece5a5d10e607bb052ee2751f819d6cc1945776f7ab3a7b7"
+      },
+      {
+        "part": 2,
+        "invocation": 2,
+        "phase": "validation READY",
+        "ir": 248809092,
+        "sha256": "8adcb8feb64f361cae44426e08963f42fa194486cea3bb9484783b78e9465fea"
+      },
+      {
+        "part": 3,
+        "invocation": 3,
+        "phase": "validation page10",
+        "ir": 221995784,
+        "sha256": "b91892b7148c05fb3ecf285917fdf54276ebefd13b1cf1f8d9382ba45575bc4d"
+      },
+      {
+        "part": 4,
+        "invocation": 4,
+        "phase": "validation page49",
+        "ir": 112857524,
+        "sha256": "a4e029f5473bd24f3a22e33ac954924b90f72612fedb82e5375c885945c98112"
+      },
+      {
+        "part": 5,
+        "invocation": 5,
+        "phase": "validation page88",
+        "ir": 16155398,
+        "sha256": "7cd85cc789ad41dd52b64a167b0a6a8cd98cd962be649715bef4ccff3a86703c"
+      },
+      {
+        "part": 6,
+        "invocation": 6,
+        "phase": "validation page88 again",
+        "ir": 16150011,
+        "sha256": "d3a1dc5725405d50de17000fe9bd6125d5157497ac673607f877d61d1c8542b6"
+      },
+      {
+        "part": 7,
+        "invocation": 7,
+        "phase": "READY warmup",
+        "ir": 248703809,
+        "sha256": "f8f7665fb517f9eba8a0a7acb761c405452d239b2b7a7407c8a9c2003f427ce7"
+      },
+      {
+        "part": 8,
+        "invocation": 8,
+        "phase": "READY sample",
+        "ir": 248703963,
+        "sha256": "6eaf215344409828027339cb8535c2e893753d7d54176b53c036b4d5e79b9c4b"
+      },
+      {
+        "part": 9,
+        "invocation": 9,
+        "phase": "page10 warmup",
+        "ir": 221931575,
+        "sha256": "2eaa4234ac83852da0feec5c076132debf1a17615bc403ab81c2dad7041519d4"
+      },
+      {
+        "part": 10,
+        "invocation": 10,
+        "phase": "page10 sample",
+        "ir": 221931930,
+        "sha256": "aab7646033b6681a7136ec278fc8f7362d32a049d7073c37cbbf5ae7a609699d"
+      },
+      {
+        "part": 11,
+        "invocation": 11,
+        "phase": "page49 warmup",
+        "ir": 112825440,
+        "sha256": "fcdede8bde047414d49c2b001bb8143cc9ee1b2358457831285a83174ba7f8f4"
+      },
+      {
+        "part": 12,
+        "invocation": 12,
+        "phase": "page49 sample",
+        "ir": 112825722,
+        "sha256": "f455bdc1d0ec021b1ed6a3bb542b066fbe513ebe7fe68ca6bd778943ed5dbac4"
+      },
+      {
+        "part": 13,
+        "invocation": 13,
+        "phase": "page88 warmup",
+        "ir": 16147920,
+        "sha256": "c3e5202410eb3289ef3369bdb92064e293893249796d3cc7e56408d4c3893df9"
+      },
+      {
+        "part": 14,
+        "invocation": 14,
+        "phase": "page88 sample",
+        "ir": 16148491,
+        "sha256": "03e9e952bb62fd326cb02850c0d6766608a887a0bc0094f28e89165ff0b2fc74"
+      }
+    ],
+    "selected_part": 12,
+    "selected_ir": 112825722,
+    "selected_regions": [
+      {
+        "name": "<umber::Engine>::character_run",
+        "self_ir": 11500626,
+        "self_percent": 10.193266035558807,
+        "inclusive_ir": 24975474,
+        "calls": 12255
+      },
+      {
+        "name": "<umber::Engine>::fetch_raw::<true>",
+        "self_ir": 9481587,
+        "self_percent": 8.403745911770013,
+        "inclusive_ir": 11441797,
+        "calls": 139979
+      },
+      {
+        "name": "<umber::Engine>::finish_paragraph",
+        "self_ir": 3775156,
+        "self_percent": 3.346006507274999,
+        "inclusive_ir": 18118726,
+        "calls": 690
+      },
+      {
+        "name": "<umber::Engine>::hpack_inner",
+        "self_ir": 3192745,
+        "self_percent": 2.82980240977319,
+        "inclusive_ir": 7365279,
+        "calls": 4841
+      },
+      {
+        "name": "<umber::Engine>::publish_page",
+        "self_ir": 5589208,
+        "self_percent": 4.953841997128988,
+        "inclusive_ir": 13755035,
+        "calls": 48
+      },
+      {
+        "name": "<umber::line_search::Search>::try_break",
+        "self_ir": 3712527,
+        "self_percent": 3.290497002093193,
+        "inclusive_ir": 3767727,
+        "calls": 11035
+      },
+      {
+        "name": "<umber::nodes::NodeStore>::get",
+        "self_ir": 7940400,
+        "self_percent": 7.037756868952276,
+        "inclusive_ir": 7940400,
+        "calls": 330850
+      },
+      {
+        "name": "<umber::nodes::NodeStore>::writable",
+        "self_ir": 6617500,
+        "self_percent": 5.865240552149979,
+        "inclusive_ir": 6617542,
+        "calls": 254375
+      },
+      {
+        "name": "<umber::nodes::NodeStore>::release",
+        "self_ir": 3938780,
+        "self_percent": 3.491030174839032,
+        "inclusive_ir": 6072944,
+        "calls": 9130
+      },
+      {
+        "name": "<umber::nodes::NodeStore>::alloc_with_limit",
+        "self_ir": 3537079,
+        "self_percent": 3.134993454772663,
+        "inclusive_ir": 8467081,
+        "calls": 75257
+      },
+      {
+        "name": "<umber::Engine>::advance",
+        "self_ir": 4133801,
+        "self_percent": 3.663881716617776,
+        "inclusive_ir": 112825707,
+        "calls": 1
+      },
+      {
+        "name": "layout::layout_support::document::complete",
+        "self_ir": 15,
+        "self_percent": 1.3294840692444228e-05,
+        "inclusive_ir": 112825722,
+        "calls": 1
+      }
+    ],
+    "region_meaning": {
+      "character_run": "General TFM text cursor and its expansion/lookahead, ligature/kern and node-production callees.",
+      "fetch_raw": "General raw token/input retrieval; its inclusive total includes reader callees.",
+      "finish_paragraph": "Paragraph preparation, line search and line construction.",
+      "hpack_inner": "Horizontal box measurement/packing across ordinary callers.",
+      "publish_page": "Detached page lowering and page output construction.",
+      "NodeStore": "Shared node read/COW/allocation/reclamation infrastructure used across text, paragraph and output, not a separate replay stage."
+    },
+    "limits": "Self rows are exclusive; inclusive rows overlap each other and include shared callees. Ir is deterministic diagnostic work, not CPU fractions. A retained checkpoint can require normal COW writes during advance; this profile does not separately isolate that cost or establish that it is redundant.",
+    "profile_artifact": "/tmp/umber-gentle-resume/exact.callgrind.12",
+    "profile_sha256": "f455bdc1d0ec021b1ed6a3bb542b066fbe513ebe7fe68ca6bd778943ed5dbac4",
+    "parsed_artifact": "/tmp/umber-gentle-resume/middle-profile.json",
+    "parsed_sha256": "32903923e68170feb33f7c7d7bcf7ec35c298814ccfd0a82c0e7ea59fabe2f8f",
+    "parser_command": [
+      "python3",
+      "/tmp/umber-gentle-resume/profile.py",
+      "/tmp/umber-gentle-resume/exact.callgrind.12"
+    ],
+    "parser_sha256": "669daa8aa5046c08adfffe4b188116cb339f63c661baa2f9cf46a8c749afda64",
+    "delimiter_correction": "The first diagnostic used an identical wildcard for all three function options and produced only an aggregate across14 complete calls. It is not used for page49 attribution. One corrected diagnostic uses the verified exact emitted name and yields independently delimited parts. No ordinary timing cohort was repeated.",
+    "discarded_phase_attribution_command": [
+      "taskset",
+      "-c",
+      "3",
+      "valgrind",
+      "--tool=callgrind",
+      "--collect-atstart=no",
+      "--toggle-collect=*layout_support::document::complete*",
+      "--zero-before=*layout_support::document::complete*",
+      "--dump-after=*layout_support::document::complete*",
+      "--callgrind-out-file=/tmp/umber-gentle-resume/suffix.callgrind",
+      "--log-file=/tmp/umber-gentle-resume/callgrind.stderr",
+      "/home/phulin/umber4/target/release/examples/layout",
+      "document-replay",
+      "/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "--format",
+      "/home/phulin/umber4/.tools/formats/plain.ufmt",
+      "--calendar",
+      "0,1,3,2026",
+      "--repeats",
+      "1",
+      "--iterations",
+      "200"
+    ]
+  },
+  "finding": {
+    "suffix_wall_medians_ms": {
+      "ready": 39.265971,
+      "page10": 35.213575,
+      "page49": 17.575752,
+      "page88": 2.681954
+    },
+    "stable_restore_wall_medians_us": {
+      "ready": 1.77766,
+      "page10": 2.10717,
+      "page49": 2.068195,
+      "page88": 2.22612
+    },
+    "interpretation": "The measured suffix follows remaining document work: the middle suffix emits48 pages. The gated profile is distributed across ordinary text, reading, paragraph search/packing, shared node access and output. It identifies no material avoidable replay-specific bookkeeping. No engine change is proposed from this result. Earlier format/replay baselines are different revisions/cohorts; these wall observations are not a paired speedup claim. Earlier source-READY allocation counts are not predictions for this loaded-format run."
+  },
+  "validation": {
+    "pages": 97,
+    "checkpoints": [
+      {
+        "label": "ready",
+        "requested_pages": 0,
+        "actual_pages": 0
+      },
+      {
+        "label": "early",
+        "requested_pages": 10,
+        "actual_pages": 10
+      },
+      {
+        "label": "middle",
+        "requested_pages": 49,
+        "actual_pages": 49
+      },
+      {
+        "label": "late",
+        "requested_pages": 88,
+        "actual_pages": 88
+      }
+    ],
+    "retained_output": "complete output and retained prefixes/results equal",
+    "profile_run_retained_output": "complete output and retained prefixes/results equal",
+    "scope": "Existing independent-reference and retained-result equality checks at current HEAD. This measurement does not rerun the native DVI gate; current HEAD native/source-format compatibility was already validated before this lease. No runtime/harness changes, so Rust tests/fmt/Clippy/Wasm were not repeated.",
+    "report_checks": "JSON parsing, sample counts/summary arithmetic, source/binary hashes, gate trigger/phase map, selected advance/page counts and zero termination counts checked."
+  }
+}
