@@ -177,10 +177,9 @@ impl Engine<'_> {
         scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
         let mut runs = Runs::default();
         let mut font_binding: Option<(u32, &crate::tfm::ScaledFont, u32)> = None;
-        while let Some(work) = scratch.frames.last_mut() {
-            if let Work::Repeat(repeat) = work {
+        'work: while let Some(work) = scratch.frames.pop() {
+            if let Work::Repeat(mut repeat) = work {
                 let Some((x, y)) = repeat.next() else {
-                    scratch.frames.pop();
                     continue;
                 };
                 let Kind::Box(id) = &self.document.nodes.get(repeat.template).kind else {
@@ -189,113 +188,120 @@ impl Engine<'_> {
                 let b = self.document.nodes.box_data(id);
                 runs.finish(page);
                 let index = page.box_record(record(b, Some(repeat.parent), x, y));
+                scratch.frames.push(Work::Repeat(repeat));
                 if !b.list.is_empty() {
                     scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
                 }
                 continue;
             }
-            let Work::List(frame) = work else {
+            let Work::List(mut frame) = work else {
                 unreachable!()
             };
-            if frame.next.is_null() {
-                runs.finish(page);
-                scratch.frames.pop();
-                continue;
-            }
-            let node = self.document.nodes.get(frame.next);
-            frame.next = node.next;
-            if !matches!(node.kind, Kind::Character { .. } | Kind::Ligature { .. }) {
-                runs.finish(page);
-            }
-            match &node.kind {
-                Kind::Character { font, character }
-                | Kind::Ligature {
-                    font, character, ..
-                } => {
-                    if frame.vertical {
-                        return Err(Error::Unsupported);
-                    }
-                    let (m, local) = match font_binding {
-                        Some((id, metrics, local)) if id == *font => {
-                            (metrics.metrics(*character).ok_or(Error::Font)?, local)
+            while !frame.next.is_null() {
+                let node = self.document.nodes.get(frame.next);
+                frame.next = node.next;
+                if !matches!(node.kind, Kind::Character { .. } | Kind::Ligature { .. }) {
+                    runs.finish(page);
+                }
+                match &node.kind {
+                    Kind::Character { font, character }
+                    | Kind::Ligature {
+                        font, character, ..
+                    } => {
+                        if frame.vertical {
+                            return Err(Error::Unsupported);
                         }
-                        _ => {
-                            if *font as usize >= self.document.fonts.len {
-                                return Err(Error::Font);
+                        let (m, local) = match font_binding {
+                            Some((id, metrics, local)) if id == *font => {
+                                (metrics.metrics(*character).ok_or(Error::Font)?, local)
                             }
-                            let scaled = self.document.fonts.descriptors[*font as usize]
-                                .scaled
-                                .ok_or(Error::Font)?;
-                            let resource = &self.font_catalog.scaled[scaled];
-                            let metrics = resource.descriptor();
-                            let m = metrics.metrics(*character).ok_or(Error::Font)?;
-                            runs.finish(page);
-                            let local = page.font(resource);
-                            font_binding = Some((*font, metrics, local));
-                            (m, local)
+                            _ => {
+                                if *font as usize >= self.document.fonts.len {
+                                    return Err(Error::Font);
+                                }
+                                let scaled = self.document.fonts.descriptors[*font as usize]
+                                    .scaled
+                                    .ok_or(Error::Font)?;
+                                let resource = &self.font_catalog.scaled[scaled];
+                                let metrics = resource.descriptor();
+                                let m = metrics.metrics(*character).ok_or(Error::Font)?;
+                                runs.finish(page);
+                                let local = page.font(resource);
+                                font_binding = Some((*font, metrics, local));
+                                (m, local)
+                            }
+                        };
+                        runs.glyph(page, local, *character, frame.x, frame.baseline);
+                        frame.x = frame.x.wrapping_add(m.width.0);
+                    }
+                    Kind::Box(b) => {
+                        let b = self.document.nodes.box_data(b);
+                        let (x, y) = if frame.vertical {
+                            (
+                                frame.left.wrapping_add(b.shift.0),
+                                frame.y.wrapping_add(b.height.0),
+                            )
+                        } else {
+                            (frame.x, frame.baseline.wrapping_add(b.shift.0))
+                        };
+                        let index = page.box_record(record(b, Some(frame.box_index), x, y));
+                        if frame.vertical {
+                            frame.y = frame.y.wrapping_add(b.height.0).wrapping_add(b.depth.0);
+                        } else {
+                            frame.x = frame.x.wrapping_add(b.width.0);
                         }
-                    };
-                    runs.glyph(page, local, *character, frame.x, frame.baseline);
-                    frame.x = frame.x.wrapping_add(m.width.0);
-                }
-                Kind::Box(b) => {
-                    let b = self.document.nodes.box_data(b);
-                    let (x, y) = if frame.vertical {
-                        (
-                            frame.left.wrapping_add(b.shift.0),
-                            frame.y.wrapping_add(b.height.0),
-                        )
-                    } else {
-                        (frame.x, frame.baseline.wrapping_add(b.shift.0))
-                    };
-                    let index = page.box_record(record(b, Some(frame.box_index), x, y));
-                    if frame.vertical {
-                        frame.y = frame.y.wrapping_add(b.height.0).wrapping_add(b.depth.0);
-                    } else {
-                        frame.x = frame.x.wrapping_add(b.width.0);
+                        if !b.list.is_empty() {
+                            if !frame.next.is_null() {
+                                scratch.frames.push(Work::List(frame));
+                            }
+                            scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
+                            continue 'work;
+                        }
                     }
-                    if !b.list.is_empty() {
-                        scratch.frames.push(Work::List(Frame::new(b, index, x, y)));
+                    Kind::Rule {
+                        width,
+                        height,
+                        depth,
+                    } => {
+                        frame.rule(width.0, height.0, depth.0, page);
                     }
-                }
-                Kind::Rule {
-                    width,
-                    height,
-                    depth,
-                } => {
-                    frame.rule(width.0, height.0, depth.0, page);
-                }
-                Kind::Leader(id) => {
-                    if let Some(repeat) = self.lower_leader(id, frame, page) {
-                        scratch.frames.push(Work::Repeat(repeat));
+                    Kind::Leader(id) => {
+                        if let Some(repeat) = self.lower_leader(id, &mut frame, page) {
+                            if !frame.next.is_null() {
+                                scratch.frames.push(Work::List(frame));
+                            }
+                            scratch.frames.push(Work::Repeat(repeat));
+                            continue 'work;
+                        }
                     }
-                }
-                Kind::Glue { spec, .. } => {
-                    let width = frame.glue(*spec);
-                    if frame.vertical {
-                        frame.y = frame.y.wrapping_add(width);
-                    } else {
-                        frame.x = frame.x.wrapping_add(width);
+                    Kind::Glue { spec, .. } => {
+                        let width = frame.glue(*spec);
+                        if frame.vertical {
+                            frame.y = frame.y.wrapping_add(width);
+                        } else {
+                            frame.x = frame.x.wrapping_add(width);
+                        }
                     }
-                }
-                Kind::Kern { width, .. } => {
-                    if frame.vertical {
-                        frame.y = frame.y.wrapping_add(width.0);
-                    } else {
+                    Kind::Kern { width, .. } => {
+                        if frame.vertical {
+                            frame.y = frame.y.wrapping_add(width.0);
+                        } else {
+                            frame.x = frame.x.wrapping_add(width.0);
+                        }
+                    }
+                    Kind::MathBoundary { width, .. } => {
                         frame.x = frame.x.wrapping_add(width.0);
                     }
+                    Kind::Penalty(_)
+                    | Kind::Discretionary { .. }
+                    | Kind::Insertion(_)
+                    | Kind::Adjustment(_)
+                    | Kind::Language(_) => {}
+                    Kind::Unset(_) => return Err(Error::Unsupported),
+                    Kind::Free => unreachable!(),
                 }
-                Kind::MathBoundary { width, .. } => {
-                    frame.x = frame.x.wrapping_add(width.0);
-                }
-                Kind::Penalty(_)
-                | Kind::Discretionary { .. }
-                | Kind::Insertion(_)
-                | Kind::Adjustment(_)
-                | Kind::Language(_) => {}
-                Kind::Unset(_) => return Err(Error::Unsupported),
-                Kind::Free => unreachable!(),
             }
+            runs.finish(page);
         }
         Ok(())
     }
@@ -305,3 +311,7 @@ pub(crate) const RUNNING: i32 = -1_073_741_824;
 #[cfg(test)]
 #[path = "page_offset_tests.rs"]
 mod offset_tests;
+
+#[cfg(test)]
+#[path = "page_lowering_tests.rs"]
+mod tests;

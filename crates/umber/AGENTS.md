@@ -172,7 +172,8 @@ returned material, counters, and checkpoint replay;
 page state, default/custom output, and its suspended frame; `vertical.rs` executes
 vertical contributions and page quantities, `page_leaders.rs` schedules borrowed repeated templates; `page_output.rs` lowers owned nodes
 with reusable traversal scratch, and `output.rs` retains detached page/box/glyph/
-rule records in immutable prefixes; `output_tests.rs` checks positioned run
+rule records in immutable prefixes; `page_lowering_tests.rs` checks local-frame
+failure/replay ownership and deep terminal descent; `output_tests.rs` checks positioned run
 iteration, aggregate capacity, and nested movement boundaries. `page_tests.rs` covers page/replay/resource
 ownership; `page_oracle_tests.rs` compares native boxes and placements with the
 small test-only DVI reader in `page_dvi_tests.rs`; `page_offset_tests.rs` checks

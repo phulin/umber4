@@ -49,6 +49,11 @@ every page.
 The traversal uses existing node lists and cumulative glue rounding, writes
 records and glyph bytes directly into typed pooled buffers, and releases the live page tree on
 success or failure. Only complete successful traversals append a page record.
+Each active list frame walks locally until a nonempty child box, repeated
+template, or list end; traversal scratch holds only suspended continuations.
+These frames borrow numeric node identities. The original detached root remains
+the sole tree owner throughout lowering and releases the whole forest after
+scratch is cleared, including when a local frame exits through an error.
 Shipout samples the current `\outputpenalty`, count registers, and offsets,
 including assignments made inside an output routine. It consumes any nonvoid
 horizontal or vertical box and resets dead cycles even on huge-box rejection.
