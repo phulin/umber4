@@ -1,0 +1,2208 @@
+{
+  "measured_at_utc": "2026-11-02T21:57:56.445238+00:00",
+  "baseline_commit": "f4766d2bde49957d5de8d7d7e97bd82b1734253f",
+  "change": "Keep the active affine math Task local across Action::Again; preserve initial, child, replacement, completion, interruption and error boundaries.",
+  "scope": "General iterative conversion driver only. No formula-specific path, persistent cache, ownership/storage/API change or step-function change.",
+  "build": {
+    "profile": "default release",
+    "features": "default",
+    "compiler": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-unknown-linux-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8",
+    "lto": "fat",
+    "codegen_units": 1,
+    "command": [
+      "cargo",
+      "build",
+      "--release",
+      "-p",
+      "umber",
+      "--bin",
+      "umber",
+      "--example",
+      "layout"
+    ]
+  },
+  "runtime_source_sha256": {
+    "before": "cbadc35afd88ea11f3c928a5f94b526aa543e5a1dae751d76259f3728701346c",
+    "after": "c4eac724073da73fc66a8d294e4d37177fe7902038ad38e4243ed3b6a8778f48"
+  },
+  "binaries": {
+    "before": {
+      "umber": {
+        "path": "/tmp/umber-math-driver/umber-before",
+        "bytes": 7096184,
+        "sha256": "f356f730f8c91b089d7ca5bf9411e1b9e62a8c461e135ae6dacc0bafea5a4ddb"
+      },
+      "layout": {
+        "path": "/tmp/umber-math-driver/layout-before",
+        "bytes": 7579000,
+        "sha256": "0ade28dfcb45b64252149a4fcc7169f2dd736ea59ab15347733f061bdbf46ed7"
+      }
+    },
+    "after": {
+      "umber": {
+        "path": "/tmp/umber-math-driver/umber-after",
+        "bytes": 7099232,
+        "sha256": "f874bc1ad7474fb6e67fc56d6b5548210413051799c209f1c891f4ed53139ba4"
+      },
+      "layout": {
+        "path": "/tmp/umber-math-driver/layout-after",
+        "bytes": 7582032,
+        "sha256": "e70ded66a578fd0190fd8861dc067d4797b8069a3d6a7a9c0b64afb3fc0b4edb"
+      }
+    }
+  },
+  "workloads": {
+    "gentle": {
+      "path": "/home/phulin/umber4/.tools/corpus/gentle.tex",
+      "bytes": 200195,
+      "sha256": "b3e1acf4a6feb6a13b0ace279a5be7f1546ac2198452188f6fb22b4eb590ba3f"
+    },
+    "chomp": {
+      "path": "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+      "bytes": 30861,
+      "sha256": "442078121d56122d058ea5e30764f49f60b684d68b0e36e71a8f85d534dbe09e"
+    },
+    "own_format": {
+      "path": "/tmp/umber-pgo-cross-document/plain.ufmt",
+      "bytes": 232021,
+      "sha256": "0c59e6c5c2b49bfc39824a3aa54f5047404275edb615426c6b2b75c50560bc14"
+    },
+    "calendar": "0,1,3,2026",
+    "native": "Retained clean pdfTeX 1.40.25 DVI, unchanged source; controlled and CM math oracles executed with the same clean binary."
+  },
+  "correctness": {
+    "commands": {
+      "before": {
+        "gentle": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-math-driver/layout-before",
+          "--compare-counts",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-format": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-math-driver/layout-before",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-source": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-math-driver/layout-before",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/source-chomp.tex",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--input",
+          "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+          "--input",
+          "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+          "--input",
+          "chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      },
+      "after": {
+        "gentle": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-math-driver/layout-after",
+          "--compare-counts",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-format": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-math-driver/layout-after",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ],
+        "chomp-source": [
+          "/usr/bin/python3",
+          "/home/phulin/umber4/benchmarks/gentle.py",
+          "--adapter",
+          "/tmp/umber-math-driver/layout-after",
+          "--compare-counts",
+          "--wrapper",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/source-chomp.tex",
+          "--dvi",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.dvi",
+          "--fls",
+          "/home/phulin/umber4/.tools/corpus/gentle-native-pdftex14025-tl2026/format/gentle-plain.fls",
+          "--fls",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.fls",
+          "--input",
+          "plain=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/plain/base/plain.tex",
+          "--input",
+          "hyphen=/home/phulin/umber/third_party/texlive-20260301-texmf/texmf-dist/tex/generic/hyphen/hyphen.tex",
+          "--input",
+          "chomp=/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--replay",
+          "--repeats",
+          "1",
+          "--iterations",
+          "1"
+        ]
+      }
+    },
+    "results": {
+      "before": {
+        "gentle": {
+          "pages": 97,
+          "magnification": 1000,
+          "glyphs": 121839,
+          "rules": 864,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": true,
+          "retained_replay_validation": "complete output and retained prefixes/results equal",
+          "checkpoint_pages": [
+            0,
+            10,
+            49,
+            88
+          ]
+        },
+        "chomp-format": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": null,
+          "retained_replay_validation": "complete output and retained prefixes/results equal",
+          "checkpoint_pages": [
+            0,
+            1,
+            5,
+            9
+          ]
+        },
+        "chomp-source": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "source",
+          "source_and_format_output_equal": null,
+          "retained_replay_validation": "complete output and retained prefixes/results equal",
+          "checkpoint_pages": [
+            1,
+            5,
+            9
+          ]
+        }
+      },
+      "after": {
+        "gentle": {
+          "pages": 97,
+          "magnification": 1000,
+          "glyphs": 121839,
+          "rules": 864,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": true,
+          "retained_replay_validation": "complete output and retained prefixes/results equal",
+          "checkpoint_pages": [
+            0,
+            10,
+            49,
+            88
+          ]
+        },
+        "chomp-format": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "format",
+          "source_and_format_output_equal": null,
+          "retained_replay_validation": "complete output and retained prefixes/results equal",
+          "checkpoint_pages": [
+            0,
+            1,
+            5,
+            9
+          ]
+        },
+        "chomp-source": {
+          "pages": 10,
+          "magnification": 1095,
+          "glyphs": 22684,
+          "rules": 2,
+          "comparison": "all ordered events match",
+          "bop_counts": true,
+          "startup": "source",
+          "source_and_format_output_equal": null,
+          "retained_replay_validation": "complete output and retained prefixes/results equal",
+          "checkpoint_pages": [
+            1,
+            5,
+            9
+          ]
+        }
+      }
+    },
+    "chomp_source_and_format": "Both routes match all native ordered events, font definitions, magnification and BOP counters from the same native DVI.",
+    "review": "Independent source/affine-ownership review by math_frontend_design: clear.",
+    "tests": {
+      "ordinary_workspace": "483 library tests, 3 CLI integration tests and 1 doctest passed; 47 explicitly ignored native tests.",
+      "focused_math": "86 passed; 22 native oracles separately passed.",
+      "focused_miri": "math_every_suspended_handoff_cleans_only_owned_forests_and_reuses_box_slots passed; exhaustive per-step interruptions, unrelated COW root and payload reuse. Existing coverage sufficient; no new test.",
+      "formatting": "cargo fmt --all -- --check passed",
+      "clippy": "cargo clippy --workspace --all-targets --all-features -- -D warnings passed",
+      "wasm": "cargo check -p umber --lib --target wasm32-unknown-unknown passed"
+    }
+  },
+  "cpu_method": {
+    "cpu": 3,
+    "cpu_model": "AMD EPYC 7642 48-Core Processor",
+    "pairs_per_document": 21,
+    "order": "Alternating before/after and after/before, one warmup per endpoint. Quiet cohorts; all other validation stopped. No extra timing rounds.",
+    "measurement": "Fresh CLI child user+system CPU from wait4, wall and minor faults; includes process startup, own-format load, source read, full compilation and detached output retention.",
+    "limits": "Single short-job cohort per document; sample ranges overlap. Modest paired trends do not establish a robust CPU speedup or TeX-wide claim. Native is a correctness oracle here, not a timed performance endpoint. No prepared replay speed claim."
+  },
+  "timing": {
+    "gentle": {
+      "commands": {
+        "before": [
+          "/tmp/umber-math-driver/umber-before",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        "after": [
+          "/tmp/umber-math-driver/umber-after",
+          "/home/phulin/umber4/.tools/corpus/gentle.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ]
+      },
+      "warmups_per_endpoint": 1,
+      "pairs": 21,
+      "orders": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.048492787,
+            "cpu_seconds": 0.048169000000000003,
+            "user_cpu_seconds": 0.044155,
+            "system_cpu_seconds": 0.004014,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.047154433,
+            "cpu_seconds": 0.046792,
+            "user_cpu_seconds": 0.040819,
+            "system_cpu_seconds": 0.005973,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.045730131,
+            "cpu_seconds": 0.045327,
+            "user_cpu_seconds": 0.042305999999999996,
+            "system_cpu_seconds": 0.003021,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.046010079,
+            "cpu_seconds": 0.045706,
+            "user_cpu_seconds": 0.042726,
+            "system_cpu_seconds": 0.00298,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045334108,
+            "cpu_seconds": 0.045059999999999996,
+            "user_cpu_seconds": 0.041142,
+            "system_cpu_seconds": 0.003918,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.045938149,
+            "cpu_seconds": 0.04570199999999999,
+            "user_cpu_seconds": 0.042721999999999996,
+            "system_cpu_seconds": 0.00298,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.044949312,
+            "cpu_seconds": 0.044714,
+            "user_cpu_seconds": 0.04074,
+            "system_cpu_seconds": 0.003974,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.045224619,
+            "cpu_seconds": 0.044957,
+            "user_cpu_seconds": 0.04196,
+            "system_cpu_seconds": 0.0029969999999999997,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.044841965,
+            "cpu_seconds": 0.044510999999999995,
+            "user_cpu_seconds": 0.039566,
+            "system_cpu_seconds": 0.004945,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.047751393,
+            "cpu_seconds": 0.04746499999999999,
+            "user_cpu_seconds": 0.042520999999999996,
+            "system_cpu_seconds": 0.004944,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.048647093,
+            "cpu_seconds": 0.048325999999999994,
+            "user_cpu_seconds": 0.042408999999999995,
+            "system_cpu_seconds": 0.0059169999999999995,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.044626678,
+            "cpu_seconds": 0.044393999999999996,
+            "user_cpu_seconds": 0.037332,
+            "system_cpu_seconds": 0.007062,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.044232627,
+            "cpu_seconds": 0.04403,
+            "user_cpu_seconds": 0.039027,
+            "system_cpu_seconds": 0.005003,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.044535895,
+            "cpu_seconds": 0.044260999999999995,
+            "user_cpu_seconds": 0.038225999999999996,
+            "system_cpu_seconds": 0.0060349999999999996,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.044440571,
+            "cpu_seconds": 0.044192999999999996,
+            "user_cpu_seconds": 0.039171,
+            "system_cpu_seconds": 0.0050219999999999996,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.043828525,
+            "cpu_seconds": 0.043635999999999994,
+            "user_cpu_seconds": 0.041606,
+            "system_cpu_seconds": 0.00203,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.044012608,
+            "cpu_seconds": 0.043794,
+            "user_cpu_seconds": 0.039813,
+            "system_cpu_seconds": 0.003981,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.047502437,
+            "cpu_seconds": 0.047167999999999995,
+            "user_cpu_seconds": 0.041146999999999996,
+            "system_cpu_seconds": 0.0060209999999999994,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.056518411,
+            "cpu_seconds": 0.05609599999999999,
+            "user_cpu_seconds": 0.046251999999999995,
+            "system_cpu_seconds": 0.009844,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.044697356,
+            "cpu_seconds": 0.044474,
+            "user_cpu_seconds": 0.040521,
+            "system_cpu_seconds": 0.003953,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.044648447,
+            "cpu_seconds": 0.044445,
+            "user_cpu_seconds": 0.040494999999999996,
+            "system_cpu_seconds": 0.0039499999999999995,
+            "minor_page_faults": 1118
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.044886992,
+            "cpu_seconds": 0.044566,
+            "user_cpu_seconds": 0.038481,
+            "system_cpu_seconds": 0.006085,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.046902657,
+            "cpu_seconds": 0.046526,
+            "user_cpu_seconds": 0.040458,
+            "system_cpu_seconds": 0.006068,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045120912,
+            "cpu_seconds": 0.044827,
+            "user_cpu_seconds": 0.039847,
+            "system_cpu_seconds": 0.00498,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045205018,
+            "cpu_seconds": 0.044906,
+            "user_cpu_seconds": 0.040915,
+            "system_cpu_seconds": 0.003991,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.04522845,
+            "cpu_seconds": 0.044976,
+            "user_cpu_seconds": 0.041978,
+            "system_cpu_seconds": 0.002998,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.04480376,
+            "cpu_seconds": 0.044555,
+            "user_cpu_seconds": 0.040595,
+            "system_cpu_seconds": 0.00396,
+            "minor_page_faults": 1115
+          },
+          {
+            "wall_seconds": 0.045288195,
+            "cpu_seconds": 0.044973,
+            "user_cpu_seconds": 0.040084999999999996,
+            "system_cpu_seconds": 0.004888,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.045666659,
+            "cpu_seconds": 0.045313,
+            "user_cpu_seconds": 0.041285999999999996,
+            "system_cpu_seconds": 0.004027,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045111719,
+            "cpu_seconds": 0.044896,
+            "user_cpu_seconds": 0.040906,
+            "system_cpu_seconds": 0.00399,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045618771,
+            "cpu_seconds": 0.045292,
+            "user_cpu_seconds": 0.041266,
+            "system_cpu_seconds": 0.004026,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.045353363,
+            "cpu_seconds": 0.045076,
+            "user_cpu_seconds": 0.042071,
+            "system_cpu_seconds": 0.003005,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.044967178,
+            "cpu_seconds": 0.044686,
+            "user_cpu_seconds": 0.042699999999999995,
+            "system_cpu_seconds": 0.001986,
+            "minor_page_faults": 1119
+          },
+          {
+            "wall_seconds": 0.043917761,
+            "cpu_seconds": 0.043692999999999996,
+            "user_cpu_seconds": 0.038728,
+            "system_cpu_seconds": 0.004965,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.0441866,
+            "cpu_seconds": 0.043916,
+            "user_cpu_seconds": 0.038925999999999995,
+            "system_cpu_seconds": 0.00499,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.043810418,
+            "cpu_seconds": 0.043575,
+            "user_cpu_seconds": 0.039522,
+            "system_cpu_seconds": 0.004053,
+            "minor_page_faults": 1116
+          },
+          {
+            "wall_seconds": 0.043680785,
+            "cpu_seconds": 0.043491999999999996,
+            "user_cpu_seconds": 0.042481,
+            "system_cpu_seconds": 0.001011,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.0438681,
+            "cpu_seconds": 0.043654,
+            "user_cpu_seconds": 0.040609,
+            "system_cpu_seconds": 0.003045,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.043674282,
+            "cpu_seconds": 0.043482,
+            "user_cpu_seconds": 0.039438,
+            "system_cpu_seconds": 0.004044,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.046046539,
+            "cpu_seconds": 0.045697,
+            "user_cpu_seconds": 0.039737,
+            "system_cpu_seconds": 0.00596,
+            "minor_page_faults": 1117
+          },
+          {
+            "wall_seconds": 0.04385184,
+            "cpu_seconds": 0.043587,
+            "user_cpu_seconds": 0.039625,
+            "system_cpu_seconds": 0.003962,
+            "minor_page_faults": 1118
+          },
+          {
+            "wall_seconds": 0.045231515,
+            "cpu_seconds": 0.044988,
+            "user_cpu_seconds": 0.040048,
+            "system_cpu_seconds": 0.00494,
+            "minor_page_faults": 1118
+          }
+        ]
+      },
+      "summary": {
+        "before": {
+          "wall_seconds": {
+            "median": 0.045224619,
+            "minimum": 0.043828525,
+            "maximum": 0.056518411
+          },
+          "cpu_seconds": {
+            "median": 0.044957,
+            "minimum": 0.043635999999999994,
+            "maximum": 0.05609599999999999
+          },
+          "user_cpu_seconds": {
+            "median": 0.041142,
+            "minimum": 0.037332,
+            "maximum": 0.046251999999999995
+          },
+          "system_cpu_seconds": {
+            "median": 0.004014,
+            "minimum": 0.00203,
+            "maximum": 0.009844
+          },
+          "minor_page_faults": {
+            "median": 1116,
+            "minimum": 1115,
+            "maximum": 1118
+          }
+        },
+        "after": {
+          "wall_seconds": {
+            "median": 0.045111719,
+            "minimum": 0.043674282,
+            "maximum": 0.046902657
+          },
+          "cpu_seconds": {
+            "median": 0.044827,
+            "minimum": 0.043482,
+            "maximum": 0.046526
+          },
+          "user_cpu_seconds": {
+            "median": 0.040458,
+            "minimum": 0.038481,
+            "maximum": 0.042699999999999995
+          },
+          "system_cpu_seconds": {
+            "median": 0.004027,
+            "minimum": 0.001011,
+            "maximum": 0.006085
+          },
+          "minor_page_faults": {
+            "median": 1117,
+            "minimum": 1115,
+            "maximum": 1119
+          }
+        }
+      },
+      "paired_cpu_after_before": [
+        0.9252008553218874,
+        0.9943152675671054,
+        0.9889690471462925,
+        0.9824968275499936,
+        0.9981358189081226,
+        0.9749026300818346,
+        1.005792369280315,
+        1.0079186778477212,
+        1.008649547302914,
+        0.9542188981354683,
+        0.9327484170012003,
+        1.0065774654232553,
+        0.9923461276402452,
+        0.9922053274892118,
+        0.9860158848686446,
+        0.9966999724997708,
+        0.9968032150522902,
+        0.9218537991858888,
+        0.814621363377068,
+        0.9800557629176598,
+        1.012217347283159
+      ],
+      "median_paired_cpu_ratio": 0.9922053274892118,
+      "after_faster_pairs": 16,
+      "median_paired_cpu_reduction_percent": 0.7794672510788248
+    },
+    "chomp": {
+      "commands": {
+        "before": [
+          "/tmp/umber-math-driver/umber-before",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ],
+        "after": [
+          "/tmp/umber-math-driver/umber-after",
+          "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+          "--format",
+          "/tmp/umber-pgo-cross-document/plain.ufmt",
+          "--calendar",
+          "0,1,3,2026"
+        ]
+      },
+      "warmups_per_endpoint": 1,
+      "pairs": 21,
+      "orders": [
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ],
+        [
+          "after",
+          "before"
+        ],
+        [
+          "before",
+          "after"
+        ]
+      ],
+      "samples": {
+        "before": [
+          {
+            "wall_seconds": 0.009535608,
+            "cpu_seconds": 0.009396999999999999,
+            "user_cpu_seconds": 0.005638,
+            "system_cpu_seconds": 0.0037589999999999998,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009440681,
+            "cpu_seconds": 0.009304,
+            "user_cpu_seconds": 0.0072369999999999995,
+            "system_cpu_seconds": 0.002067,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009642327,
+            "cpu_seconds": 0.009488,
+            "user_cpu_seconds": 0.007591,
+            "system_cpu_seconds": 0.0018969999999999998,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009633559,
+            "cpu_seconds": 0.009493,
+            "user_cpu_seconds": 0.005696,
+            "system_cpu_seconds": 0.003797,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009803677,
+            "cpu_seconds": 0.009656,
+            "user_cpu_seconds": 0.006758999999999999,
+            "system_cpu_seconds": 0.002897,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009928819,
+            "cpu_seconds": 0.009743,
+            "user_cpu_seconds": 0.007578,
+            "system_cpu_seconds": 0.002165,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009638402,
+            "cpu_seconds": 0.009486999999999999,
+            "user_cpu_seconds": 0.008433,
+            "system_cpu_seconds": 0.001054,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009673562,
+            "cpu_seconds": 0.009537,
+            "user_cpu_seconds": 0.006676,
+            "system_cpu_seconds": 0.002861,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009579834,
+            "cpu_seconds": 0.00944,
+            "user_cpu_seconds": 0.005664,
+            "system_cpu_seconds": 0.003776,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.009739739,
+            "cpu_seconds": 0.009600999999999998,
+            "user_cpu_seconds": 0.0067139999999999995,
+            "system_cpu_seconds": 0.002887,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.010107546,
+            "cpu_seconds": 0.009936999999999998,
+            "user_cpu_seconds": 0.008943999999999999,
+            "system_cpu_seconds": 0.000993,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009791591,
+            "cpu_seconds": 0.009613,
+            "user_cpu_seconds": 0.008652,
+            "system_cpu_seconds": 0.0009609999999999999,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009625713,
+            "cpu_seconds": 0.009439,
+            "user_cpu_seconds": 0.006293,
+            "system_cpu_seconds": 0.003146,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.01005248,
+            "cpu_seconds": 0.009840999999999999,
+            "user_cpu_seconds": 0.006888999999999999,
+            "system_cpu_seconds": 0.0029519999999999998,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.009983404,
+            "cpu_seconds": 0.009787,
+            "user_cpu_seconds": 0.00783,
+            "system_cpu_seconds": 0.001957,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009706648,
+            "cpu_seconds": 0.009477,
+            "user_cpu_seconds": 0.006318,
+            "system_cpu_seconds": 0.003159,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.010024077,
+            "cpu_seconds": 0.009795,
+            "user_cpu_seconds": 0.006856999999999999,
+            "system_cpu_seconds": 0.002938,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009911961,
+            "cpu_seconds": 0.009711,
+            "user_cpu_seconds": 0.008622,
+            "system_cpu_seconds": 0.001089,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009643056,
+            "cpu_seconds": 0.009460999999999999,
+            "user_cpu_seconds": 0.008409999999999999,
+            "system_cpu_seconds": 0.0010509999999999999,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.010327643,
+            "cpu_seconds": 0.010136999999999998,
+            "user_cpu_seconds": 0.009120999999999999,
+            "system_cpu_seconds": 0.001016,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009861264,
+            "cpu_seconds": 0.009706,
+            "user_cpu_seconds": 0.007548999999999999,
+            "system_cpu_seconds": 0.002157,
+            "minor_page_faults": 549
+          }
+        ],
+        "after": [
+          {
+            "wall_seconds": 0.009409997,
+            "cpu_seconds": 0.009271999999999999,
+            "user_cpu_seconds": 0.007212,
+            "system_cpu_seconds": 0.0020599999999999998,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009400059,
+            "cpu_seconds": 0.009260999999999998,
+            "user_cpu_seconds": 0.0055569999999999994,
+            "system_cpu_seconds": 0.003704,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.009463859,
+            "cpu_seconds": 0.009333,
+            "user_cpu_seconds": 0.0056,
+            "system_cpu_seconds": 0.0037329999999999998,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009486519,
+            "cpu_seconds": 0.009352,
+            "user_cpu_seconds": 0.008313,
+            "system_cpu_seconds": 0.001039,
+            "minor_page_faults": 546
+          },
+          {
+            "wall_seconds": 0.009828668,
+            "cpu_seconds": 0.009653,
+            "user_cpu_seconds": 0.007723,
+            "system_cpu_seconds": 0.0019299999999999999,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009492104,
+            "cpu_seconds": 0.009322,
+            "user_cpu_seconds": 0.006215,
+            "system_cpu_seconds": 0.003107,
+            "minor_page_faults": 546
+          },
+          {
+            "wall_seconds": 0.009523385,
+            "cpu_seconds": 0.009364,
+            "user_cpu_seconds": 0.006555,
+            "system_cpu_seconds": 0.002809,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009352769,
+            "cpu_seconds": 0.009216,
+            "user_cpu_seconds": 0.007168,
+            "system_cpu_seconds": 0.002048,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.009491944,
+            "cpu_seconds": 0.009355,
+            "user_cpu_seconds": 0.008316,
+            "system_cpu_seconds": 0.001039,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009520555,
+            "cpu_seconds": 0.009326999999999998,
+            "user_cpu_seconds": 0.005595999999999999,
+            "system_cpu_seconds": 0.003731,
+            "minor_page_faults": 546
+          },
+          {
+            "wall_seconds": 0.009955652,
+            "cpu_seconds": 0.009786999999999999,
+            "user_cpu_seconds": 0.008808999999999999,
+            "system_cpu_seconds": 0.000978,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009823714,
+            "cpu_seconds": 0.009663,
+            "user_cpu_seconds": 0.006764,
+            "system_cpu_seconds": 0.0028989999999999997,
+            "minor_page_faults": 549
+          },
+          {
+            "wall_seconds": 0.009925086,
+            "cpu_seconds": 0.009715999999999999,
+            "user_cpu_seconds": 0.008636999999999999,
+            "system_cpu_seconds": 0.0010789999999999999,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.010075459,
+            "cpu_seconds": 0.009859999999999999,
+            "user_cpu_seconds": 0.007888,
+            "system_cpu_seconds": 0.001972,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.010522512,
+            "cpu_seconds": 0.010326,
+            "user_cpu_seconds": 0.006579,
+            "system_cpu_seconds": 0.003747,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009506635,
+            "cpu_seconds": 0.009345,
+            "user_cpu_seconds": 0.006229999999999999,
+            "system_cpu_seconds": 0.0031149999999999997,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.010293703,
+            "cpu_seconds": 0.010124,
+            "user_cpu_seconds": 0.007363,
+            "system_cpu_seconds": 0.002761,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009599071,
+            "cpu_seconds": 0.009453,
+            "user_cpu_seconds": 0.0063019999999999994,
+            "system_cpu_seconds": 0.0031509999999999997,
+            "minor_page_faults": 550
+          },
+          {
+            "wall_seconds": 0.009674411,
+            "cpu_seconds": 0.009477999999999999,
+            "user_cpu_seconds": 0.005686999999999999,
+            "system_cpu_seconds": 0.0037909999999999997,
+            "minor_page_faults": 548
+          },
+          {
+            "wall_seconds": 0.009884684,
+            "cpu_seconds": 0.009675999999999999,
+            "user_cpu_seconds": 0.007741,
+            "system_cpu_seconds": 0.0019349999999999999,
+            "minor_page_faults": 547
+          },
+          {
+            "wall_seconds": 0.009748793,
+            "cpu_seconds": 0.009628,
+            "user_cpu_seconds": 0.007489,
+            "system_cpu_seconds": 0.002139,
+            "minor_page_faults": 551
+          }
+        ]
+      },
+      "summary": {
+        "before": {
+          "wall_seconds": {
+            "median": 0.009739739,
+            "minimum": 0.009440681,
+            "maximum": 0.010327643
+          },
+          "cpu_seconds": {
+            "median": 0.009600999999999998,
+            "minimum": 0.009304,
+            "maximum": 0.010136999999999998
+          },
+          "user_cpu_seconds": {
+            "median": 0.0072369999999999995,
+            "minimum": 0.005638,
+            "maximum": 0.009120999999999999
+          },
+          "system_cpu_seconds": {
+            "median": 0.002165,
+            "minimum": 0.0009609999999999999,
+            "maximum": 0.003797
+          },
+          "minor_page_faults": {
+            "median": 549,
+            "minimum": 547,
+            "maximum": 550
+          }
+        },
+        "after": {
+          "wall_seconds": {
+            "median": 0.009599071,
+            "minimum": 0.009352769,
+            "maximum": 0.010522512
+          },
+          "cpu_seconds": {
+            "median": 0.009453,
+            "minimum": 0.009216,
+            "maximum": 0.010326
+          },
+          "user_cpu_seconds": {
+            "median": 0.007168,
+            "minimum": 0.0055569999999999994,
+            "maximum": 0.008808999999999999
+          },
+          "system_cpu_seconds": {
+            "median": 0.002761,
+            "minimum": 0.000978,
+            "maximum": 0.0037909999999999997
+          },
+          "minor_page_faults": {
+            "median": 548,
+            "minimum": 546,
+            "maximum": 551
+          }
+        }
+      },
+      "paired_cpu_after_before": [
+        0.9866978823028626,
+        0.9953783319002578,
+        0.9836635750421584,
+        0.9851469503844937,
+        0.9996893123446562,
+        0.9567894898901776,
+        0.9870348898492676,
+        0.966341616860648,
+        0.9909957627118644,
+        0.9714613061139464,
+        0.9849049008755159,
+        1.0052012899199,
+        1.0293463290602818,
+        1.0019306980997866,
+        1.0550730560948196,
+        0.9860715416270972,
+        1.033588565594691,
+        0.9734321902996602,
+        1.0017968502272487,
+        0.9545230344283319,
+        0.991963733772924
+      ],
+      "median_paired_cpu_ratio": 0.9870348898492676,
+      "after_faster_pairs": 15,
+      "median_paired_cpu_reduction_percent": 1.2965110150732428
+    }
+  },
+  "instructions": {
+    "method": "Separate single whole-job Callgrind run per endpoint/document, CPU3, collect-jumps=yes, default release. Ir counts executed instructions, not CPU time; inclusive function costs overlap.",
+    "commands": {
+      "gentle-before": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-math-driver/gentle-before.callgrind",
+        "--log-file=/tmp/umber-math-driver/gentle-before.stderr",
+        "/tmp/umber-math-driver/umber-before",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-pgo-cross-document/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "gentle-after": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-math-driver/gentle-after.callgrind",
+        "--log-file=/tmp/umber-math-driver/gentle-after.stderr",
+        "/tmp/umber-math-driver/umber-after",
+        "/home/phulin/umber4/.tools/corpus/gentle.tex",
+        "--format",
+        "/tmp/umber-pgo-cross-document/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "chomp-before": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-math-driver/chomp-before.callgrind",
+        "--log-file=/tmp/umber-math-driver/chomp-before.stderr",
+        "/tmp/umber-math-driver/umber-before",
+        "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+        "--format",
+        "/tmp/umber-pgo-cross-document/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ],
+      "chomp-after": [
+        "taskset",
+        "-c",
+        "3",
+        "valgrind",
+        "--tool=callgrind",
+        "--collect-jumps=yes",
+        "--callgrind-out-file=/tmp/umber-math-driver/chomp-after.callgrind",
+        "--log-file=/tmp/umber-math-driver/chomp-after.stderr",
+        "/tmp/umber-math-driver/umber-after",
+        "/home/phulin/umber4/.tools/chomp-heldout-x57_0cjv/chomp.tex",
+        "--format",
+        "/tmp/umber-pgo-cross-document/plain.ufmt",
+        "--calendar",
+        "0,1,3,2026"
+      ]
+    },
+    "results": {
+      "gentle": {
+        "before": {
+          "total_ir": 256193148,
+          "functions": [
+            {
+              "name": "<umber::Engine>::convert_math",
+              "self_ir": 121306,
+              "inclusive_ir": 6481897,
+              "calls": 879
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::run",
+              "self_ir": 3155432,
+              "inclusive_ir": 6253126,
+              "calls": 879
+            },
+            {
+              "name": "<umber::Engine>::hpack_inner",
+              "self_ir": 6851099,
+              "inclusive_ir": 15738653,
+              "calls": 8193
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::glyph",
+              "self_ir": 129436,
+              "inclusive_ir": 278764,
+              "calls": 2448
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::append_noad",
+              "self_ir": 199634,
+              "inclusive_ir": 526314,
+              "calls": 2713
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::release_task",
+              "self_ir": 298443,
+              "inclusive_ir": 841173,
+              "calls": 4416
+            }
+          ],
+          "run_self_sources": [
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_convert.rs",
+              "ir": 1145801
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mod.rs",
+              "ir": 647425
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_lists.rs",
+              "ir": 297350
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/value_metadata.rs",
+              "ir": 290985
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math.rs",
+              "ir": 219394
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_atoms.rs",
+              "ir": 193947
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/mem/mod.rs",
+              "ir": 140907
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mut_ptr.rs",
+              "ir": 39196
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs",
+              "ir": 31972
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_transfer.rs",
+              "ir": 23199
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/nodes.rs",
+              "ir": 21827
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs",
+              "ir": 19651
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_clean.rs",
+              "ir": 18526
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_fraction.rs",
+              "ir": 8107
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/packing.rs",
+              "ir": 7180
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/numeric.rs",
+              "ir": 6833
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_scripts.rs",
+              "ir": 6104
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_accents.rs",
+              "ir": 5335
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_forms.rs",
+              "ir": 4856
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tables.rs",
+              "ir": 4730
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/scalars.rs",
+              "ir": 4421
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_boxes.rs",
+              "ir": 3503
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/cmp.rs",
+              "ir": 3453
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tfm.rs",
+              "ir": 3262
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/int_macros.rs",
+              "ir": 3222
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/lib.rs",
+              "ir": 2479
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/adapters/flatten.rs",
+              "ir": 419
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/index_range.rs",
+              "ir": 389
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_boxing.rs",
+              "ir": 260
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/uint_macros.rs",
+              "ir": 230
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/convert/num.rs",
+              "ir": 192
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/index.rs",
+              "ir": 60
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/bool.rs",
+              "ir": 60
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/macros/mod.rs",
+              "ir": 55
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/traits/iterator.rs",
+              "ir": 49
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs",
+              "ir": 30
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/array/iter/iter_inner.rs",
+              "ir": 14
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs",
+              "ir": 7
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs",
+              "ir": 2
+            }
+          ],
+          "profile": {
+            "path": "/tmp/umber-math-driver/gentle-before.callgrind",
+            "bytes": 735748,
+            "sha256": "504f2e0c8937b347aea675c9396db27067f18e7593efe1b5847fefbd5a9dbd10"
+          }
+        },
+        "after": {
+          "total_ir": 255296975,
+          "functions": [
+            {
+              "name": "<umber::Engine>::hpack_inner",
+              "self_ir": 6851099,
+              "inclusive_ir": 15738653,
+              "calls": 8193
+            },
+            {
+              "name": "<umber::Engine>::convert_math",
+              "self_ir": 121306,
+              "inclusive_ir": 5583449,
+              "calls": 879
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::run",
+              "self_ir": 2278071,
+              "inclusive_ir": 5354678,
+              "calls": 879
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::append_noad",
+              "self_ir": 199634,
+              "inclusive_ir": 526314,
+              "calls": 2713
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::glyph",
+              "self_ir": 129436,
+              "inclusive_ir": 278764,
+              "calls": 2448
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::release_task",
+              "self_ir": 298443,
+              "inclusive_ir": 841173,
+              "calls": 4416
+            }
+          ],
+          "run_self_sources": [
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_convert.rs",
+              "ir": 766054
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mod.rs",
+              "ir": 365575
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_lists.rs",
+              "ir": 276497
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math.rs",
+              "ir": 216671
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_atoms.rs",
+              "ir": 166740
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/value_metadata.rs",
+              "ir": 160050
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/mem/mod.rs",
+              "ir": 134752
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs",
+              "ir": 28928
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/nodes.rs",
+              "ir": 25447
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_transfer.rs",
+              "ir": 23408
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs",
+              "ir": 20988
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_clean.rs",
+              "ir": 16886
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mut_ptr.rs",
+              "ir": 14859
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_fraction.rs",
+              "ir": 6957
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/packing.rs",
+              "ir": 6452
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_scripts.rs",
+              "ir": 5932
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_accents.rs",
+              "ir": 4926
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/numeric.rs",
+              "ir": 4907
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_forms.rs",
+              "ir": 4748
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tables.rs",
+              "ir": 4580
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/scalars.rs",
+              "ir": 4300
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tfm.rs",
+              "ir": 3694
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_boxes.rs",
+              "ir": 3503
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/cmp.rs",
+              "ir": 3423
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/int_macros.rs",
+              "ir": 3305
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/lib.rs",
+              "ir": 2677
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/adapters/flatten.rs",
+              "ir": 405
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/index_range.rs",
+              "ir": 389
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/uint_macros.rs",
+              "ir": 264
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_boxing.rs",
+              "ir": 260
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/convert/num.rs",
+              "ir": 192
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/index.rs",
+              "ir": 70
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/bool.rs",
+              "ir": 70
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/macros/mod.rs",
+              "ir": 55
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/traits/iterator.rs",
+              "ir": 49
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs",
+              "ir": 35
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/array/iter/iter_inner.rs",
+              "ir": 14
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs",
+              "ir": 7
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs",
+              "ir": 2
+            }
+          ],
+          "profile": {
+            "path": "/tmp/umber-math-driver/gentle-after.callgrind",
+            "bytes": 735912,
+            "sha256": "b4a6db7cf517f08472d2b75db98e1906f51573e89f29dd171b6c6dfed95a2162"
+          }
+        },
+        "whole_job_reduction_percent": 0.34980365673167313
+      },
+      "chomp": {
+        "before": {
+          "total_ir": 45702467,
+          "functions": [
+            {
+              "name": "<umber::Engine>::hpack_inner",
+              "self_ir": 1125285,
+              "inclusive_ir": 2591987,
+              "calls": 602
+            },
+            {
+              "name": "<umber::Engine>::convert_math",
+              "self_ir": 53962,
+              "inclusive_ir": 3186577,
+              "calls": 391
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::release_task",
+              "self_ir": 155957,
+              "inclusive_ir": 443101,
+              "calls": 2133
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::run",
+              "self_ir": 1638854,
+              "inclusive_ir": 3084096,
+              "calls": 391
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::glyph",
+              "self_ir": 96272,
+              "inclusive_ir": 208573,
+              "calls": 1841
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::append_noad",
+              "self_ir": 143406,
+              "inclusive_ir": 425921,
+              "calls": 1602
+            }
+          ],
+          "run_self_sources": [
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_convert.rs",
+              "ir": 588967
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mod.rs",
+              "ir": 329002
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_lists.rs",
+              "ir": 156132
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/value_metadata.rs",
+              "ir": 145701
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_atoms.rs",
+              "ir": 128443
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math.rs",
+              "ir": 124001
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/mem/mod.rs",
+              "ir": 76366
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mut_ptr.rs",
+              "ir": 20060
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs",
+              "ir": 18278
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs",
+              "ir": 9474
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_transfer.rs",
+              "ir": 8947
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/nodes.rs",
+              "ir": 8750
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/numeric.rs",
+              "ir": 4686
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_clean.rs",
+              "ir": 3463
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tables.rs",
+              "ir": 3117
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tfm.rs",
+              "ir": 2784
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_scripts.rs",
+              "ir": 2272
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/cmp.rs",
+              "ir": 1891
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/lib.rs",
+              "ir": 1598
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/packing.rs",
+              "ir": 1415
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_boxes.rs",
+              "ir": 947
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/scalars.rs",
+              "ir": 815
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_fraction.rs",
+              "ir": 521
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/int_macros.rs",
+              "ir": 424
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/index_range.rs",
+              "ir": 258
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/adapters/flatten.rs",
+              "ir": 221
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_forms.rs",
+              "ir": 213
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/macros/mod.rs",
+              "ir": 56
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/uint_macros.rs",
+              "ir": 20
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/traits/iterator.rs",
+              "ir": 14
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_accents.rs",
+              "ir": 5
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_boxing.rs",
+              "ir": 5
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/array/iter/iter_inner.rs",
+              "ir": 4
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs",
+              "ir": 2
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs",
+              "ir": 2
+            }
+          ],
+          "profile": {
+            "path": "/tmp/umber-math-driver/chomp-before.callgrind",
+            "bytes": 600340,
+            "sha256": "8454da063bbdb57d4063ff0a4b119a784b1c0067b55de1a353f2da7a6263b2fb"
+          }
+        },
+        "after": {
+          "total_ir": 45233164,
+          "functions": [
+            {
+              "name": "<umber::Engine>::hpack_inner",
+              "self_ir": 1125285,
+              "inclusive_ir": 2591987,
+              "calls": 602
+            },
+            {
+              "name": "<umber::Engine>::convert_math",
+              "self_ir": 53962,
+              "inclusive_ir": 2715003,
+              "calls": 391
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::run",
+              "self_ir": 1179242,
+              "inclusive_ir": 2612522,
+              "calls": 391
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::append_noad",
+              "self_ir": 143406,
+              "inclusive_ir": 425921,
+              "calls": 1602
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::glyph",
+              "self_ir": 96272,
+              "inclusive_ir": 208573,
+              "calls": 1841
+            },
+            {
+              "name": "<umber::math::converting::Conversion>::release_task",
+              "self_ir": 155957,
+              "inclusive_ir": 443101,
+              "calls": 2133
+            }
+          ],
+          "run_self_sources": [
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_convert.rs",
+              "ir": 389982
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mod.rs",
+              "ir": 180937
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_lists.rs",
+              "ir": 147631
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math.rs",
+              "ir": 121341
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_atoms.rs",
+              "ir": 109875
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/value_metadata.rs",
+              "ir": 76640
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/mem/mod.rs",
+              "ir": 72799
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/result.rs",
+              "ir": 17109
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/nodes.rs",
+              "ir": 11870
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/option.rs",
+              "ir": 10658
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_transfer.rs",
+              "ir": 10463
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ptr/mut_ptr.rs",
+              "ir": 7353
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_clean.rs",
+              "ir": 3239
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/numeric.rs",
+              "ir": 3201
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tables.rs",
+              "ir": 3141
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/tfm.rs",
+              "ir": 2826
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_scripts.rs",
+              "ir": 2251
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/cmp.rs",
+              "ir": 1836
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/lib.rs",
+              "ir": 1613
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/packing.rs",
+              "ir": 1043
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/node_boxes.rs",
+              "ir": 947
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/scalars.rs",
+              "ir": 811
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_fraction.rs",
+              "ir": 446
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/int_macros.rs",
+              "ir": 431
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/index_range.rs",
+              "ir": 258
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/adapters/flatten.rs",
+              "ir": 217
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_forms.rs",
+              "ir": 201
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/macros/mod.rs",
+              "ir": 56
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/num/uint_macros.rs",
+              "ir": 30
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/iter/traits/iterator.rs",
+              "ir": 14
+            },
+            {
+              "file": "/home/phulin/umber4/crates/umber/src/math_boxing.rs",
+              "ir": 5
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/index.rs",
+              "ir": 4
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/bool.rs",
+              "ir": 4
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/array/iter/iter_inner.rs",
+              "ir": 4
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/intrinsics/mod.rs",
+              "ir": 2
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/slice/mod.rs",
+              "ir": 2
+            },
+            {
+              "file": "/rustc/48a229ceaefd4985c50990b14116b6d856af0985/library/core/src/ops/function.rs",
+              "ir": 2
+            }
+          ],
+          "profile": {
+            "path": "/tmp/umber-math-driver/chomp-after.callgrind",
+            "bytes": 600128,
+            "sha256": "a714fee08ee6934c7871e5c7cec4eb334a2e9bd439478b9def693cc319be64ef"
+          }
+        },
+        "whole_job_reduction_percent": 1.0268657926059022
+      }
+    }
+  },
+  "assembly": {
+    "method": "Separate bounded Conversion::run disassembly from the exact saved default-release binaries. Before Again path copies the active frame and enters Buffer::push; after Again returns directly to local dispatch. Child/Replace pushes remain.",
+    "results": {
+      "before": {
+        "run_symbol_bytes": 27021,
+        "run_instruction_count": 5684,
+        "stack_frame_bytes": 728,
+        "disassembly": {
+          "path": "/tmp/umber-math-driver/before-math-run.asm",
+          "bytes": 362136,
+          "sha256": "83dfa0afbb4d20531bab70e5854eac9066ec6409ec065f3ada1bf3a404b7c88b"
+        }
+      },
+      "after": {
+        "run_symbol_bytes": 28292,
+        "run_instruction_count": 6002,
+        "stack_frame_bytes": 760,
+        "disassembly": {
+          "path": "/tmp/umber-math-driver/after-math-run.asm",
+          "bytes": 381349,
+          "sha256": "030b8c63753b788be439d23423565c9e4544871ab26547e5e165d6341573b481"
+        }
+      }
+    },
+    "limits": "Compiler function body grows by 1,271 bytes and stack frame by 32 bytes; dynamic instruction work still falls. No assembly-specific tuning performed."
+  },
+  "ownership": "The active local Task owns its forests; suspended tasks remain on the same stack. Interruption checks occur once before every semantic step, including after Again. Active task is released before existing result/parent cleanup. An Again push previously reused the popped slot and could not grow storage; all potentially growing initial/child pushes remain unchanged.",
+  "conclusion": "Keep the small general dataflow simplification: exact output/replay and ownership checks pass; whole-job instruction work falls on both documents. CPU changes are modest and separately limited."
+}

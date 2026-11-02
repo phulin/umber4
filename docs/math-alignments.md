@@ -213,7 +213,8 @@ delimiter handle needed by incomplete fractions.
 
 ## 2. Conversion to horizontal material
 
-Conversion uses an iterative work stack instead of Rust recursion. Frames own
+Conversion holds the active frame locally across successive steps and uses an
+iterative work stack for suspended frames instead of Rust recursion. Frames own
 subsidiary lists and partial ordinary outputs until transferring them exactly once
 to their parent. Clean-box work, scripts, operators, and nested math lists use the
 same stack. Success and failure leave scratch empty; failure releases the disjoint

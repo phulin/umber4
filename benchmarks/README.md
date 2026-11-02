@@ -83,6 +83,10 @@ after page/job magnification validation, still training only on Gentle. Held-out
 CHOMP matches native geometry, magnification and replay; paired CLI CPU is 7.43%
 lower, versus 13.84% on Gentle. Separate prepared replay samples consume retained
 output and report suffix wall time, with no generic TeX-wide claim.
+The [local math-frame result](results/gentle-math-driver.json) compares default
+release builds on both documents. Keeping the active conversion frame local
+reduces whole-job instructions by 0.35% on Gentle and 1.03% on CHOMP; the single
+paired CPU cohorts show modest trends with overlapping sample ranges.
 
 `--replay` additionally runs prepared checkpoint measurements through
 `document-replay`; `--allocation-adapter PATH` runs `document-alloc` through the

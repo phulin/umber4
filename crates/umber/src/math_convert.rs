@@ -234,42 +234,45 @@ impl Engine<'_> {
 impl Conversion<'_, '_, '_> {
     fn run(&mut self) -> Result<List> {
         while let Some(mut task) = self.scratch.tasks.pop() {
-            // Test every ownership handoff without imposing a production limit.
-            #[cfg(test)]
-            if let Some(left) = &mut self.scratch.fail_after {
-                if *left == 0 {
-                    self.release_task(task);
-                    return Err(Error::Capacity);
+            loop {
+                // Test every ownership handoff without imposing a production limit.
+                #[cfg(test)]
+                if let Some(left) = &mut self.scratch.fail_after {
+                    if *left == 0 {
+                        self.release_task(task);
+                        return Err(Error::Capacity);
+                    }
+                    *left -= 1;
                 }
-                *left -= 1;
-            }
-            let step = match &mut task {
-                Task::List(w) => self.list_step(w),
-                Task::Atom(w) => self.atom_step(w),
-                Task::Clean(w) => self.clean_step(w),
-                Task::Form(w) => self.form_step(w),
-                Task::Fraction(w) => self.fraction_step(w),
-                Task::Accent(w) => self.accent_step(w),
-            };
-            match step {
-                Ok(Action::Again) => self.scratch.tasks.push(task),
-                Ok(Action::Child(child)) => {
-                    self.scratch.tasks.push(task);
-                    self.scratch.tasks.push(child);
+                let step = match &mut task {
+                    Task::List(w) => self.list_step(w),
+                    Task::Atom(w) => self.atom_step(w),
+                    Task::Clean(w) => self.clean_step(w),
+                    Task::Form(w) => self.form_step(w),
+                    Task::Fraction(w) => self.fraction_step(w),
+                    Task::Accent(w) => self.accent_step(w),
+                };
+                match step {
+                    Ok(Action::Again) => continue,
+                    Ok(Action::Child(child)) => {
+                        self.scratch.tasks.push(task);
+                        self.scratch.tasks.push(child);
+                    }
+                    Ok(Action::Replace(next)) => {
+                        self.release_task(task);
+                        self.scratch.tasks.push(next);
+                    }
+                    Ok(Action::Done(value)) => {
+                        self.release_task(task);
+                        assert!(self.scratch.result.is_none());
+                        self.scratch.result = Some(value);
+                    }
+                    Err(error) => {
+                        self.release_task(task);
+                        return Err(error);
+                    }
                 }
-                Ok(Action::Replace(next)) => {
-                    self.release_task(task);
-                    self.scratch.tasks.push(next);
-                }
-                Ok(Action::Done(value)) => {
-                    self.release_task(task);
-                    assert!(self.scratch.result.is_none());
-                    self.scratch.result = Some(value);
-                }
-                Err(error) => {
-                    self.release_task(task);
-                    return Err(error);
-                }
+                break;
             }
         }
         Ok(self.scratch.result.take().expect("root math result").list())
