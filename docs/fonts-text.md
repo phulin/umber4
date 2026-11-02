@@ -77,6 +77,17 @@ selected resource and any size differing from its design size. Checkpoints retai
 font-token bodies, family slots, and the matching descriptor/identifier roots;
 session metric-cache indices are not document font identities.
 
+Format images retain every loaded font in document ID order, including fonts
+whose selectors are no longer bound. Each used resource contributes its exact
+name and original TFM bytes once. Mutable parameter spans, including an extended
+nullfont, hyphen/skew characters, identifier spellings, and the current font are
+separate records. Loading reconstructs validated immutable metrics through the
+ordinary TFM loader and scaling code; scaled-cache indices are not encoded.
+Embedded resources and upfront extra resources are registered before scaled
+handles seal the catalog. Equal normalized names require byte-identical resources;
+different bytes are a resource error. Unused host registrations are not format
+state. Image bytes and host extra bytes need not survive loading.
+
 TFM loading validates size fields, character indices, next-larger cycles,
 ligature/restart/kern references, and extensible recipes. Extra trailing bytes
 are permitted, as in TeX. Character existence means a nonzero width index;

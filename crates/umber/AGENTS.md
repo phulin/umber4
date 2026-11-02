@@ -7,8 +7,12 @@ with replay and ownership tests in `checkpoint_tests.rs`;
 `format.rs` captures and loads pointer-free initial semantic state through the
 checked `format_wire.rs` codec; `format_values.rs`, `format_tables.rs`,
 `format_validate.rs` and `scalar_format.rs` own packed Values, tables and validation.
-`font_format.rs`, `hyphenation_format.rs` and `box_format.rs` supply explicit
-canonical/empty subsystem codecs; `format_tests.rs` checks roundtrip, malformed
+`font_format.rs` embeds exact used TFM resources and loaded font state;
+`hyphenation_format.rs` checks compiled trie/operation records and rebuilds
+exception buckets. Their separate `font_format_tests.rs` and
+`hyphenation_format_tests.rs` check fresh images, references, failure cleanup and
+checkpoint independence. `box_format.rs` supplies an explicit empty subsystem
+codec; `format_tests.rs` checks roundtrip, malformed
 images, new-job startup and ownership across checkpoints.
 `tables.rs` supplies pooled COW table pages with ownership tests in
 `tables_tests.rs`; `messages.rs` retains immutable chronological diagnostic prefixes with tests

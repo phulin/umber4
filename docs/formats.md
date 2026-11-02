@@ -12,10 +12,10 @@ shape, and token parameters including output and everyjob. Distinct Values stay
 distinct; aliases share one Value. Validated token ranges reconstruct macro
 delimiter/KMP metadata directly in the existing pooled destination buffers.
 
-The foundation admits canonical nullfont state, empty hyphenation data, and void
-box registers. Nonempty dependent state returns Unsupported; it is never reset
-or silently dropped. Reserved subsystem sections allow complete codecs for fonts
-and TFM resources, hyphenation patterns/exceptions, and live box-register forests.
+Loaded font identities, mutable parameters and exact used TFM resources persist,
+as do compiled hyphenation patterns and exceptions. Void box registers are
+supported; live box-register forests return Unsupported and are never reset or
+silently dropped.
 
 `Engine::encode_format` requires a quiescent external-vertical boundary, closed
 groups/conditionals, no pending afterassignment, no construction/output frames,
@@ -39,11 +39,13 @@ identities have reserved IDs. Values use dense file IDs relocated once into
 pooled headers and token chunks. No pointer, Rust layout/padding, usize, Rc count,
 chunk handle, hash bucket, free list, or KMP failure array appears in the image.
 
-Dependent sections use tag 0 for their supported empty/canonical state. Tag 1 is
-reserved for a complete codec and returns Unsupported until implemented. The
-font codec retains loaded font identities, mutable parameters, and exact raw TFM
-bytes once per used resource; existing checked parsing/scaling can rebuild derived
-metrics. Hyphenation uses logical trie operations and exceptions. Box data must
+Dependent sections use tag 0 for their supported empty/canonical state. Fonts and
+hyphenation use tag 1 for complete records; the box section reserves tag 1 and
+returns Unsupported. The font codec retains loaded font identities, mutable
+parameters, and exact raw TFM bytes once per used resource; existing checked
+parsing/scaling rebuilds derived metrics. Hyphenation uses logical trie nodes,
+sparse operations and language-qualified exceptions, with checked tree structure,
+bounded paths and operation ranges. Exception buckets are derived. Box data must
 form disjoint acyclic ordinary forests; transient Free/Unset nodes are inadmissible.
 
 Images are limited to 64 MiB and individual counts to 1,048,576. Counts must also
@@ -53,6 +55,14 @@ signatures/parameter references, table bounds and glue-order tags before publish
 owners. Invalid data returns Format, budget exhaustion returns Capacity, and
 unsupported dependent state returns Unsupported. Loading constructs a temporary
 fresh Engine and publishes it only on success; a failed load mutates no live job.
+
+Derived font payloads and resource/scaled headers have a separate cumulative
+64 MiB logical-size budget, independent of allocator rounding and store capacity.
+Embedded-name and font-cache searches are bounded to 67,108,864 candidate
+comparisons per image. Resource headers and name-search work are checked before
+the first resource is parsed, and scaled payloads before scaling; the same budgets
+apply to export. Raw TFM counts therefore cannot amplify a small record section
+into unbounded metric storage or cache-search work.
 
 ## Startup and resources
 

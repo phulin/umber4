@@ -193,11 +193,17 @@ impl Catalog {
         self.resources.iter().position(|r| r.name.as_ref() == name)
     }
     pub fn register(&mut self, name: &[u8], bytes: &[u8]) -> Result<()> {
+        self.register_named(Self::normalized(name), bytes)
+    }
+    // Images contain stored resource names, after the host's one normalization.
+    pub(crate) fn register_format_embedded(&mut self, name: &[u8], bytes: &[u8]) -> Result<()> {
+        self.register_named(name, bytes)
+    }
+    fn register_named(&mut self, name: &[u8], bytes: &[u8]) -> Result<()> {
         if self.sealed {
             return Err(Error::Resource);
         }
-        let name = Self::normalized(name);
-        if name.is_empty() || self.find(name).is_some() {
+        if name.is_empty() || self.resources.iter().any(|r| r.name.as_ref() == name) {
             return Err(Error::Resource);
         }
         let resource = self.parse(name, bytes)?;
@@ -473,6 +479,18 @@ impl Catalog {
             slot,
         });
         Ok(id)
+    }
+    // Validated TFM counts are at most 32767 (characters at most 256), so this
+    // bound fits usize on both targets. Include headers as well as payloads.
+    pub(crate) fn scaled_allocation_bytes(&self, resource: usize) -> usize {
+        let r = &self.resources[resource];
+        size_of::<ScaledFont>()
+            + size_of::<FontResource>()
+            + r.chars().len() * size_of::<Metrics>()
+            + (r.nk + r.np.max(7)) * size_of::<Scaled>()
+    }
+    pub(crate) fn format_resource_bytes() -> usize {
+        size_of::<Resource>()
     }
     pub fn metrics(&self, scaled: usize, c: u8) -> Option<Metrics> {
         self.scaled[scaled].descriptor().metrics(c)

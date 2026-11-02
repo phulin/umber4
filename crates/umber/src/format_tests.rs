@@ -97,12 +97,8 @@ fn dump_abandons_invocation_sources_but_rejects_semantic_work_and_dependent_stat
         let mut e = Engine::new(source.as_bytes());
         assert_eq!(e.advance(usize::MAX), Err(error));
     }
-    for body in [
-        r"\patterns{a1b}",
-        r"\hyphenation{a-b}",
-        r"\setbox0=\hbox{\kern1pt}",
-        r"\fontdimen1\nullfont=2pt",
-    ] {
+    {
+        let body = r"\setbox0=\hbox{\kern1pt}";
         let source = format!(r"{BOOT}{body}\end");
         let mut e = Engine::new(source.as_bytes());
         e.advance(usize::MAX).unwrap();
@@ -113,7 +109,9 @@ fn dump_abandons_invocation_sources_but_rejects_semantic_work_and_dependent_stat
     e.register_tfm(b"test", &crate::font_test_data::basic())
         .unwrap();
     e.advance(usize::MAX).unwrap();
-    assert_eq!(e.encode_format(), Err(Error::Unsupported));
+    let image = e.encode_format().unwrap();
+    let loaded = Engine::from_format(&image, b"").unwrap();
+    assert_eq!(loaded.document.fonts.len, 2);
     let source = format!(r"{BOOT}\def\m{{\count0=1\count0=2}}\m\end");
     let mut e = Engine::new(source.as_bytes());
     e.advance(2).unwrap();
@@ -213,10 +211,7 @@ fn malformed_images_never_publish_invalid_ids_metadata_or_unbounded_allocations(
     }
     let mut bad = bytes.clone();
     bad[parts[1].0] = 1;
-    assert!(matches!(
-        Engine::from_format(&bad, b""),
-        Err(Error::Unsupported)
-    ));
+    assert!(matches!(Engine::from_format(&bad, b""), Err(Error::Format)));
     let mut bad = bytes.clone();
     bad[parts[2].0..parts[2].0 + 4].copy_from_slice(&u32::MAX.to_le_bytes());
     assert!(matches!(

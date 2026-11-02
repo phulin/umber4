@@ -300,6 +300,14 @@ These rules follow `new_patterns`, `new_hyph_exceptions`, and `hyphenate` in
 including Web2C's replacement of repeated exceptions in
 [tex.ch](https://github.com/TeX-Live/texlive-source/blob/trunk/texk/web2c/tex.ch).
 
+Format images encode the logical compiled hyphenation trie and sparse operations,
+plus language-qualified exception words and break positions. Storage pages,
+reference counts and exception hash buckets are not encoded. Loading checks trie
+links, sibling ordering, bounded path lengths, operation ranges and exception
+records before publishing the new engine. It derives exception buckets and freezes
+pattern assignments, including for an empty trie; exception assignments remain
+available and participate in ordinary checkpoint copy-on-write behavior.
+
 ### Paragraph integration
 
 Paragraph entry captures normalized language and left/right minima before
