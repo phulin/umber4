@@ -80,8 +80,9 @@ impl NodeStore {
             return None;
         }
         let id = list.head;
-        list.head = self.get(id).next;
-        self.get_mut(id).next = NodeId::NULL;
+        let node = self.get_mut(id);
+        list.head = node.next;
+        node.next = NodeId::NULL;
         if list.head.is_null() {
             list.tail = NodeId::NULL;
         }
