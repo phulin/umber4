@@ -327,11 +327,12 @@ impl Drop for Chunk {
     fn drop(&mut self) {
         // Release long unique histories iteratively, without a recursive Rc chain.
         let mut previous = std::mem::take(&mut self.previous);
-        while let Some(tail) = previous.tail.take() {
-            match Rc::try_unwrap(tail) {
-                Ok(mut chunk) => previous = std::mem::take(&mut chunk.previous),
-                Err(_) => break,
-            }
+        while let Some(mut tail) = previous.tail.take() {
+            // Private chunk links have no Weak handles; failure means shared.
+            let Some(chunk) = Rc::get_mut(&mut tail) else {
+                break;
+            };
+            previous = std::mem::take(&mut chunk.previous);
         }
     }
 }
