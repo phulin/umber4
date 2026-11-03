@@ -408,15 +408,16 @@ impl Conversion<'_, '_, '_> {
         )
     }
     fn mu_glue(&self, style: Style, spec: Glue) -> Result<Glue> {
+        let mu = self.symbol(style, 6) / 18;
         Ok(Glue {
-            width: self.mu_dimension(style, spec.width)?,
+            width: Self::scale_mu(mu, spec.width)?,
             stretch: if spec.stretch_order == GlueOrder::Normal {
-                self.mu_dimension(style, spec.stretch)?
+                Self::scale_mu(mu, spec.stretch)?
             } else {
                 spec.stretch
             },
             shrink: if spec.shrink_order == GlueOrder::Normal {
-                self.mu_dimension(style, spec.shrink)?
+                Self::scale_mu(mu, spec.shrink)?
             } else {
                 spec.shrink
             },
@@ -424,7 +425,9 @@ impl Conversion<'_, '_, '_> {
         })
     }
     fn mu_dimension(&self, style: Style, value: Scaled) -> Result<Scaled> {
-        let mu = self.symbol(style, 6) / 18;
+        Self::scale_mu(self.symbol(style, 6) / 18, value)
+    }
+    fn scale_mu(mu: i32, value: Scaled) -> Result<Scaled> {
         Scaled::checked(
             i64::from(mu.div_euclid(65536)) * i64::from(value.0)
                 + i64::from(value.0) * i64::from(mu.rem_euclid(65536)) / 65536,
