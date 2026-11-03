@@ -23,6 +23,8 @@ fn upstream_inline_math_frontend_geometry_and_dvi() {
         r"\setbox0=\hbox{a}$\copy0\box0\box0^b\hbox{$$}$",
         r"$a\/b\kern1pt c\hskip2pt plus1fil\penalty50 d$",
         r"$a\vrule width3pt height4pt depth2pt b$",
+        r"$a\unhbox0\unhcopy0 b$",
+        r"\def\leavevmode{\unhbox0}\def\_{\leavevmode\kern.06em\vbox{\hrule width.3em}}$a\_b$",
         r"$\mkern1.5mu a\scriptstyle\mkern1.5mu b\scriptscriptstyle\mkern1.5mu c$",
         r"$a_{\mkern1.5mu b}^{\mkern-1.5mu c}\kern2pt\mkern2mu d$",
         r"\everymath{\ifmmode\message{UMBER:M:END}\fi\ifinner\message{UMBER:I:END}\fi}$\ifmmode a\else b\fi$",

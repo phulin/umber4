@@ -288,3 +288,65 @@ mod fractions;
 mod mu;
 #[path = "math_frontend_oracle_tests.rs"]
 mod oracle;
+
+#[test]
+fn void_horizontal_unboxing_in_math_consumes_operands_and_replays() {
+    let source = input(r"\noindent$a\unhbox0\unhcopy0 b$\end");
+    let mut e = engine(source.as_bytes());
+    let initial = e.checkpoint().unwrap();
+    for _ in 0..2 {
+        build(&mut e).unwrap();
+        assert_eq!(
+            glyphs(&e, &e.document.text.horizontal),
+            [(1, b'a'), (1, b'b')]
+        );
+        assert!(e.document.boxes.head(0).is_null());
+        assert!(e.document.math_frames.is_empty());
+        assert_eq!(e.math.as_ref().unwrap().live_count(), 0);
+        e.restore(&initial).unwrap();
+        assert_eq!(e.document.nodes.live_count(), 0);
+    }
+}
+
+#[test]
+fn vertical_math_unboxing_rejects_before_expanding_or_scanning_the_operand() {
+    for op in ["unvbox", "unvcopy"] {
+        let source = input(&format!(r"\noindent$a\{op}\csname notcreated\endcsname"));
+        let mut e = engine(source.as_bytes());
+        let initial = e.checkpoint().unwrap();
+        assert_eq!(e.advance(usize::MAX), Err(Error::Syntax));
+        assert_eq!(e.names.lookup(b"notcreated"), None);
+        assert_eq!(e.next_token().unwrap().meaning.command, cmd::CSNAME);
+        e.restore(&initial).unwrap();
+        assert!(e.can_checkpoint());
+        assert_eq!(e.document.nodes.live_count(), 0);
+    }
+}
+
+#[test]
+fn nonvoid_horizontal_math_unboxing_scans_before_rejecting_without_taking_owners() {
+    for op in ["unhbox", "unhcopy"] {
+        for contents in ["", r"\vrule width1pt height2pt depth0pt"] {
+            let source = input(&format!(
+                r"\setbox0=\hbox{{{contents}}}\count0=1\relax\noindent$a\{op}0 \relax"
+            ));
+            let mut e = engine(source.as_bytes());
+            while e.outcome().counts[0] != 1 {
+                e.advance(1).unwrap();
+            }
+            let saved = e.checkpoint().unwrap();
+            let head = e.document.boxes.head(0);
+            let nodes = e.document.nodes.live_count();
+            assert!(!head.is_null(), "an allocated empty box is not void");
+            for _ in 0..2 {
+                assert_eq!(e.advance(usize::MAX), Err(Error::Syntax));
+                assert_eq!(e.document.boxes.head(0), head);
+                assert_eq!(e.next_expanded().unwrap().meaning.command, cmd::RELAX);
+                e.restore(&saved).unwrap();
+                assert_eq!(e.document.boxes.head(0), head);
+                assert_eq!(e.document.nodes.live_count(), nodes);
+                assert!(e.can_checkpoint());
+            }
+        }
+    }
+}

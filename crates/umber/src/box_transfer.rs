@@ -34,6 +34,9 @@ impl Engine<'_> {
         if head.is_null() {
             return Ok(());
         }
+        if self.document.text.mode.is_math() {
+            return Err(Error::Syntax);
+        }
         let Kind::Box(id) = &self.document.nodes.get(head).kind else {
             unreachable!("box register")
         };

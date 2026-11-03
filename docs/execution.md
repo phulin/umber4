@@ -125,6 +125,10 @@ vertical mode backs its command before starting a paragraph and `\everypar`;
 vertical unboxing in ordinary horizontal mode backs its command behind the
 current `\par` token. Both reread that command's meaning and scan operands only
 after intervening hooks. Vertical unboxing in restricted horizontal mode fails.
+In math, horizontal unboxing scans its index and accepts a void register as a
+no-op. A nonvoid register, including an allocated empty box, fails with `Syntax`
+before copying or taking its owner. Vertical unboxing in math fails with `Syntax`
+before scanning the operand; interactive missing-dollar recovery is not performed.
 
 `\lastbox` takes only a genuine trailing box outside discretionary replacement
 ranges, clears its shift, and preserves list auxiliary state. Empty or nonbox

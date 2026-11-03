@@ -195,7 +195,8 @@ impl Engine<'_> {
             }
             cmd::BOX_SHIFT => self.shift_box(read.meaning.value)?,
             cmd::PAR | cmd::VSKIP | cmd::RULE | cmd::ACCENT => return Err(Error::Syntax),
-            cmd::UNBOX | cmd::START_PAR => return Err(Error::Unsupported),
+            cmd::UNBOX => self.unbox(read.meaning.value)?,
+            cmd::START_PAR => return Err(Error::Unsupported),
             _ => return Ok(false),
         }
         Ok(true)
