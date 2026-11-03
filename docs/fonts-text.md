@@ -105,6 +105,9 @@ These are relative indices, with maxima 255, 15, 15, 63, 3, and 255; table offse
 and combined metric indices use host-sized arithmetic. Registration validates the
 widened fields against the original table lengths before indexing. It validates
 all tables before retaining the host byte copy; trailing bytes never extend a table.
+New-size construction scales each addressable dimension-table entry once into
+352 words of operation-local stack scratch, then fills the final dense records.
+Larger unused table tails retain full raw validation and determine table offsets.
 
 Each immutable TFM resource holds one 256-entry table of 16-bit ligature/kern
 program starts, shared by all its scaled fonts. Registration prepares the table

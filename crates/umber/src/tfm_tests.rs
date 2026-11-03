@@ -207,6 +207,18 @@ fn byte_character_fields_with_wide_metric_and_program_tables() {
             })
         );
     }
+    // Words beyond every character-index domain remain fully validated.
+    let widths = 6 + 2 + 256;
+    for index in [
+        widths + 256,
+        widths + nw + 16,
+        widths + nw + nh + 16,
+        widths + nw + nh + nd + 64,
+    ] {
+        let mut bad = bytes.clone();
+        bad[index * 4] = 1;
+        assert_eq!(Catalog::default().register(b"bad", &bad), Err(Error::Font));
+    }
     // Out-of-range fields remain errors before any indexed access. In
     // particular tag/remainder values must not be confused with table lengths.
     for (offset, value) in [(0, 255), (1, 0xf1), (1, 0x1f), (2, 252), (2, 3), (2, 2)] {

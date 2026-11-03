@@ -409,6 +409,20 @@ impl Catalog {
         let mut metrics = Buffer::new(&self.metrics);
         let chars = r.chars();
         metrics.reserve(chars.len());
+        // Index widths bound reachable prefixes, not validated table counts.
+        // Entry zero in each table was already scaled and checked above.
+        let mut dimensions = [Scaled::ZERO; 256 + 16 + 16 + 64];
+        let (widths, rest) = dimensions.split_at_mut(256);
+        let (heights, rest) = rest.split_at_mut(16);
+        let (depths, italics) = rest.split_at_mut(16);
+        let w = r.metrics;
+        let h = w + r.nw;
+        let d = h + r.nh;
+        let i = d + r.nd;
+        scale.table(&r.bytes[w * 4..h * 4], widths);
+        scale.table(&r.bytes[h * 4..d * 4], heights);
+        scale.table(&r.bytes[d * 4..i * 4], depths);
+        scale.table(&r.bytes[i * 4..r.program_start * 4], italics);
         let mut present = [0; 4];
         for (index, &raw) in chars.iter().enumerate() {
             let i = CharInfo::decode(raw);
@@ -417,10 +431,10 @@ impl Catalog {
                 present[character / 64] |= 1u64 << (character % 64);
             }
             metrics.push(Metrics {
-                width: dimension(i.width as usize),
-                height: dimension(r.nw + i.height as usize),
-                depth: dimension(r.nw + r.nh + i.depth as usize),
-                italic: dimension(r.nw + r.nh + r.nd + i.italic as usize),
+                width: widths[i.width as usize],
+                height: heights[i.height as usize],
+                depth: depths[i.depth as usize],
+                italic: italics[i.italic as usize],
             });
         }
         let mut kerns = Buffer::new(&self.dimensions);
@@ -544,6 +558,13 @@ impl Scale {
         let Self { z, alpha, beta } = *self;
         let sw = (((i64::from(d) * z / 256 + i64::from(c) * z) / 256) + i64::from(b) * z) / beta;
         Scaled(if a == 0 { sw } else { sw - alpha } as i32)
+    }
+    fn table(&self, raw: &[u8], output: &mut [Scaled]) {
+        // All raw words, including unreachable tails, were validated at parse.
+        // The checked zero is already present; zip bounds the reachable prefix.
+        for (value, word) in output.iter_mut().zip(raw.as_chunks::<4>().0).skip(1) {
+            *value = self.apply(*word);
+        }
     }
 }
 #[cfg(test)]
