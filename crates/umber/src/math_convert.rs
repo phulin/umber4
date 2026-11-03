@@ -263,7 +263,7 @@ impl Conversion<'_, '_, '_> {
                         self.scratch.tasks.push(next);
                     }
                     Ok(Action::Done(value)) => {
-                        self.release_task(task);
+                        // Done has transferred or consumed every task-owned forest.
                         assert!(self.scratch.result.is_none());
                         self.scratch.result = Some(value);
                     }
